@@ -1,6 +1,6 @@
 #summary Anotações feitas em Dez/2011 sobre requisitos funcionais e de interface para o processo de aproveitamento de ACGs.
 
-= Formulário de solicitação de aproveitamento (aluno) =
+== Formulário de solicitação de aproveitamento (aluno) ==
 
 * Matrícula e nome do aluno preenchidos a partir das informações de cadastro do aluno no sistema (desejável)
 * Dropdown do sub-tipo de atividade deve estar ligado com dropdown da classificação da atividade (obrigatório)

@@ -2,6 +2,6 @@
 
 == Documentos de referência sobre ACGs ==
 
-  * Resolução no 22/99 da UFSM, que estabelece normas para registro de Atividades Complementares de Graduação (ACG);
+  * Resolução no 22/99 da UFSM, que estabelece normas para registro de Atividades Complementares de Graduação (ACG)
   * [http://www.inf.ufsm.br/index/graduacao/cc/normas-internas Normas internas do Curso de Ciência da Computação]
   * [http://www.inf.ufsm.br/index/graduacao/si/normas-internas Normas internas do Curso de Sistemas de Informação]

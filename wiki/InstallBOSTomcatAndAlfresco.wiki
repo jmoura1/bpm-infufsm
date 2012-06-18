@@ -7,5 +7,5 @@
 
 == Currently running on ==
 
-bpm:8080/bonita
-bpm:9090/alfresco
+  * bpm:8080/bonita
+  * bpm:9090/alfresco

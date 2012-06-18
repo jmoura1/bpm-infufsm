@@ -1,0 +1,4 @@
+#summary Anotações para administradores de sistema
+#labels Phase-Deploy
+
+[Install BOS-Tomcat bundle http://www.bonitasoft.com/resources/documentation/bos-57/system-administration/installation/install-bos-bundles/install-bos-tomcat-bundle] (authentication required on BonitaSoft)

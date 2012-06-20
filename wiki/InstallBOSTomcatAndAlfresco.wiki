@@ -1,4 +1,4 @@
-#summary Anotações para administradores de sistema
+#summary Anotações para administradores de sistema.
 #labels Phase-Deploy
 
 == HowTos ==

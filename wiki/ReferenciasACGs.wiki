@@ -1,8 +1,0 @@
-#summary Documentos de referência sobre ACGs.
-#labels Phase-Requirements,Phase-Design
-
-== Documentos de referência sobre ACGs ==
-
-  * [http://portal.ufsm.br/documentos/documentos/arquivo.html?arquivo=240 Resolução no 22/99] da UFSM, que estabelece normas para registro de Atividades Complementares de Graduação (ACG). Também disponível na pág. 109 do [http://sucuri.cpd.ufsm.br/_pdf/docs/guiadoestudante2012.pdf Guia do Estudante 2012] 
-  * [http://www.inf.ufsm.br/index/graduacao/cc/normas-internas Normas internas do Curso de Ciência da Computação]
-  * [http://www.inf.ufsm.br/index/graduacao/si/normas-internas Normas internas do Curso de Sistemas de Informação]

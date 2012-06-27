@@ -12,9 +12,14 @@
 
 === Start server ===
 
+{{{
 /home/jmoura/alfresco-3.4.d/alfresco.sh start
 /home/jmoura/novo/BOS-5.6.1-Tomcat-6.0.33/bin/startup.sh
+}}}
 
 === Stop server ====
+
+{{{
 /home/jmoura/alfresco-3.4.d/alfresco.sh stop
 /home/jmoura/novo/BOS-5.6.1-Tomcat-6.0.33/bin/shutdown.sh
+}}}

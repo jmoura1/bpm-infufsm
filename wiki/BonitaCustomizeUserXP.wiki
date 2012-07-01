@@ -1,13 +1,9 @@
 #summary Anotações sobre customização da interface de usuário.
+#labels Phase-Implementation,Phase-Deploy
 
-= Introduction =
+= Customização da interface de usuário =
 
-Add your content here.
+== Links ==
 
-
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+  * http://www.bonitasoft.org/blog/tutorial/customize-user-xp/
+  * http://www.bonitasoft.com/resources/documentation/bos-56/development/customize-user-experience-looknfeel-manually

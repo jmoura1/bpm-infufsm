@@ -4,6 +4,7 @@
 == HowTos ==
 
  * [http://www.bonitasoft.com/resources/documentation/bos-57/system-administration/installation/install-bos-bundles/install-bos-tomcat-bundle Install BOS-Tomcat bundle] (authentication required on [http://www.bonitasoft.com BonitaSoft])
+ * Download: http://www.bonitasoft.com/products/download/tomcat-6.0.33-1
 
 == Currently running on ==
 

@@ -1,0 +1,7 @@
+#summary Instruções para compilação do código
+
+= Referências =
+  * [http://www.bonitasoft.org/forum/viewtopic.php?id=8280 Tutorial : How to Build 5.6.1 bonita source code and use User XP built]
+
+= Details =
+

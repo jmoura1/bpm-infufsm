@@ -10,3 +10,4 @@
 
  * Repositório SVN do Bonita: http://www.bonitasoft.org/websvn
  * SVN - Vendor Branches: http://svnbook.red-bean.com/nightly/en/svn.advanced.vendorbr.html (esquema usado num repositório SVN quando é preciso manter código de outro projeto que é modificado localmente)
+ * Subversion Best Practices: http://svn.apache.org/repos/asf/subversion/trunk/doc/user/svn-best-practices.html

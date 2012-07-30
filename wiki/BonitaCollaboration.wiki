@@ -1,0 +1,6 @@
+#summary Anotações sobre repositórios compartilhados e outras ferramentas de colaboração.
+
+ * No BOS 5.7 Subscription Pack há recursos para manter repositórios de processos: http://www.bonitasoft.com/resources/documentation/bos-56/process-design/design-collaboration-sp
+
+ * No nosso caso (sem SP), a ideia 
+é usar o projeto code.google.com para compartilhar processos e código fonte. Antes disso, precisamos planejar a estrutura do repositório.

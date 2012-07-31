@@ -4,19 +4,19 @@
 == Name the connector ==
 Specify the connector parameters
 
- * Name: upload
+ * Name: `upload`
  * Description:
- * Select event: on finish
- * If connector fails... Raise exception
+ * Select event: `on finish`
+ * If connector fails... `Raise exception`
  * Named Error:
 
 == Alfresco Configuration ==
 Alfresco host/port and user authorization
 
- * Host: bpm
- * Port: 9090
- * User name: admin
- * Password:
+ * Host: `bpm`
+ * Port: `9090`
+ * User name: `admin`
+ * Password: omitido por motivo de segurança
 
 == Funcion parameters ==
 
@@ -25,7 +25,8 @@ Alfresco host/port and user authorization
  * Description: 
  * Mime type: 
 {{{
-${import javax.activation.MimetypesFileTypeMap; 
+${import javax.activation.MimetypesFileTypeMap;
+
 new MimetypesFileTypeMap().getContentType(file.getFileName());}
 }}}
  * Destination folder: `/Guest%20Home`
@@ -41,7 +42,7 @@ import org.apache.abdera.model.Element;
 Document<Element> doc = (Document<Element>)responseDocument;
 Entry entry = (Entry)doc.getRoot();
 return entry.getId().toString();
-}}
+}}}
 goes to:
 Destination variable: link
 

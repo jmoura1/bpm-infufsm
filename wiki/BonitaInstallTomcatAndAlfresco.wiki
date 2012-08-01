@@ -24,3 +24,18 @@
 /home/jmoura/alfresco-3.4.d/alfresco.sh stop
 /home/jmoura/novo/BOS-5.6.1-Tomcat-6.0.33/bin/shutdown.sh
 }}}
+
+== Running Tomcat on port 80 ==
+
+Following these tips: http://hacksforge.com/How-to-run-Tomcat-on-port-80.html
+
+On bpm.inf.ufsm.br:
+{{{
+pacman -S iptables
+vim /etc/rc.conf
+iptables -nvL
+rc.d start iptables
+iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+rc.d save iptables
+rc.d restart iptables
+}}}

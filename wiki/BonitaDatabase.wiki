@@ -20,11 +20,11 @@
 
 Start up the built-in org.h2.tools.Server and browse port 8082:
 {{{
-java -cp ./studio/plugins/org.bonitasoft.studio.engine.libs_1.0.0.5_6_1/lib/h2-1.2.139.jar org.h2.tools.Server
+java -cp /home/andrea/tools/BOS-5.6.1/studio/plugins/org.bonitasoft.studio.engine.libs_1.0.0.5_6_1/lib/h2-1.2.139.jar org.h2.tools.Server
 
-JDBC URL: jdbc:h2:~/home/andrea/tools/BOS-5.6.1/studio/workspace/bonita/server/default/work/databases/bonita_journal.db.h2.db
+jdbc:h2:/home/andrea/tools/BOS-5.6.1/studio/workspace/bonita/server/default/work/databases/bonita_history.db
 
-JDBC URL: jdbc:h2:~/home/andrea/tools/BOS-5.6.1/studio/workspace/bonita/server/default/work/databases/bonita_history.db.h2.db
+jdbc:h2:/home/andrea/tools/BOS-5.6.1/studio/workspace/bonita/server/default/work/databases/bonita_journal.db
 
 User Name: bonita
 Password: bpm

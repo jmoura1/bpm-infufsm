@@ -11,10 +11,10 @@
 
 
 === Jar location ===
-{{
+{{{
 ./studio/workspace/local_default_My Extensions/provided-libs/database/lib/h2-1.1.106.jar
 ./studio/plugins/org.bonitasoft.studio.engine.libs_1.0.0.5_6_1/lib/h2-1.2.139.jar
-}}
+}}}
 
 === Browsing ===
 

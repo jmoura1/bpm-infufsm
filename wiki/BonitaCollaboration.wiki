@@ -4,7 +4,7 @@
 
  * No BOS 5.7 Subscription Pack há recursos para manter repositórios de processos: http://www.bonitasoft.com/resources/documentation/bos-56/process-design/design-collaboration-sp
  * Create shared repository: http://www.bonitasoft.com/resources/documentation/bos-56/process-design/design-collaboration-sp/create-shared-repository
-
+ * http://www.bonitasoft.org/forum/viewtopic.php?id=2570
  * No nosso caso (sem SP), a ideia é usar o projeto code.google.com para compartilhar processos e código fonte. Antes disso, precisamos planejar a estrutura do repositório.
 
 == Sobre SVN ==

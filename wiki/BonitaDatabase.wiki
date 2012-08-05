@@ -32,3 +32,4 @@ Password: bpm
 
 == References ==
 
+ * http://www.bonitasoft.org/forum/viewtopic.php?id=2907

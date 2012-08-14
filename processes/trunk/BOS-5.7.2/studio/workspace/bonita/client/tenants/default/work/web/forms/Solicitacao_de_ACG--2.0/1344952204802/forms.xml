@@ -1,0 +1,1211 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<forms-definition product-version="5.7">
+  <migration-product-version>5.7</migration-product-version>
+  <application name="Solicitacao_de_ACG" version="2.0">
+    <permissions>process#Solicitacao_de_ACG--2.0</permissions>
+    <application-label>Solicitacao_de_ACG</application-label>
+    <application-layout>html/Solicitacao_de_ACG_process_template.html</application-layout>
+    <mandatory-symbol>*</mandatory-symbol>
+    <error-template>html/Solicitacao_de_ACG_error_template.html</error-template>
+    <forms>
+      <form id="Solicitacao_de_ACG--2.0$entry">
+        <form-type>entry</form-type>
+        <permissions>process#Solicitacao_de_ACG--2.0</permissions>
+      </form>
+      <form first-page="Solicitacao_de_Atividade_Complementar_de_Graduacao__1_2_" id="Solicitacao_de_ACG--2.0--Solicita_ACG$entry">
+        <form-type>entry</form-type>
+        <permissions>activity#Solicitacao_de_ACG--2.0--Solicita_ACG</permissions>
+        <pages>
+          <page id="Solicitacao_de_Atividade_Complementar_de_Graduacao__1_2_">
+            <page-label>Solicitação de ACG</page-label>
+            <allow-html-in-label>false</allow-html-in-label>
+            <page-layout>html/Solicita_ACG_Solicitacao_de_Atividade_Complementar_de_Graduacao__1_2_.html</page-layout>
+            <widgets>
+              <widget id="dataSolAluno" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.getCurrentDate()}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data da solicitação:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.getCurrentDate()}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto7" type="TEXTBOX">
+                <initial-value>
+                  <expression>${GroupsUtil.nameOfLoggedUser()}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <mandatory>true</mandatory>
+                <readonly>false</readonly>
+                <label>Login:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${login}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto9" type="TEXTBOX">
+                <allow-html-in-field>false</allow-html-in-field>
+                <mandatory>true</mandatory>
+                <readonly>false</readonly>
+                <label>Nome</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${name}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto2" type="TEXTBOX">
+                <allow-html-in-field>false</allow-html-in-field>
+                <mandatory>true</mandatory>
+                <readonly>false</readonly>
+                <label>Matrícula:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${numeroMatricula}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto8" type="TEXTBOX">
+                <allow-html-in-field>false</allow-html-in-field>
+                <mandatory>true</mandatory>
+                <readonly>false</readonly>
+                <label>Local da atividade:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${local}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto6" type="TEXTBOX">
+                <allow-html-in-field>false</allow-html-in-field>
+                <mandatory>true</mandatory>
+                <validators>
+                  <validator id="Campo_de_texto6Validador1">
+                    <label>Carga horária deve ser maior que 0.</label>
+                    <classname>org.bonitasoft.forms.server.validator.GroovyFieldValidator</classname>
+                    <parameter>return (Integer.parseInt(field_Campo_de_texto6)&gt;0)</parameter>
+                    <position>BOTTOM</position>
+                  </validator>
+                </validators>
+                <readonly>false</readonly>
+                <label>Carga Horária:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${cargaHoraria}</variable-bound>
+              </widget>
+              <widget id="DataInicio" type="DATE">
+                <mandatory>true</mandatory>
+                <validators>
+                  <validator id="DataInicio_default_validator">
+                    <label>#dateFieldValidatorLabel</label>
+                    <classname>org.bonitasoft.forms.server.validator.DateFieldValidator</classname>
+                    <style/>
+                    <position>BOTTOM</position>
+                  </validator>
+                </validators>
+                <readonly>false</readonly>
+                <label>Data início:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${dataInicio}</variable-bound>
+              </widget>
+              <widget id="DataFim" type="DATE">
+                <mandatory>true</mandatory>
+                <readonly>false</readonly>
+                <label>Data fim:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${dataFim}</variable-bound>
+              </widget>
+              <widget id="Copia_de_TipoDeACG" type="LISTBOX_SIMPLE">
+                <initial-value>
+                  <expression>VIII - Monitoria;</expression>
+                </initial-value>
+                <available-values>
+                  <values-list>
+                    <available-value>
+                      <label>I - Participacao em eventos;</label>
+                      <value>I - Participacao em eventos;</value>
+                    </available-value>
+                    <available-value>
+                      <label>II - Atuacao em nucleos tematicos;</label>
+                      <value>II - Atuacao em nucleos tematicos;</value>
+                    </available-value>
+                    <available-value>
+                      <label>III - Atividades de extensao</label>
+                      <value>III - Atividades de extensao</value>
+                    </available-value>
+                    <available-value>
+                      <label>IV - Estagio extra-curricular</label>
+                      <value>IV - Estagio extra-curricular</value>
+                    </available-value>
+                    <available-value>
+                      <label>V - Atividade de iniciacao cientifica;</label>
+                      <value>V - Atividade de iniciacao cientifica;</value>
+                    </available-value>
+                    <available-value>
+                      <label>VI - Publicacao de trabalho;</label>
+                      <value>VI - Publicacao de trabalho;</value>
+                    </available-value>
+                    <available-value>
+                      <label>VII - Participacao em orgaos colegiados;</label>
+                      <value>VII - Participacao em orgaos colegiados;</value>
+                    </available-value>
+                    <available-value>
+                      <label>VIII - Monitoria;</label>
+                      <value>VIII - Monitoria;</value>
+                    </available-value>
+                    <available-value>
+                      <label>IX - Outra atividade a criterio do Colegiado.</label>
+                      <value>IX - Outra atividade a criterio do Colegiado.</value>
+                    </available-value>
+                  </values-list>
+                </available-values>
+                <mandatory>true</mandatory>
+                <readonly>false</readonly>
+                <label>Tipo de ACG:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <title/>
+                <variable-bound>${tipoACG}</variable-bound>
+              </widget>
+              <widget id="Proximo1" type="BUTTON_NEXT">
+                <label-button>false</label-button>
+                <label>Próximo</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+            </widgets>
+            <actions>
+              <action type="SET_VARIABLE">
+                <variable>numeroMatricula</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Campo_de_texto2</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>cargaHoraria</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Campo_de_texto6</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>dataInicio</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_DataInicio</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>dataFim</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_DataFim</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>login</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Campo_de_texto7</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>tipoACG</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Copia_de_TipoDeACG</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>local</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Campo_de_texto8</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>name</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Campo_de_texto9</expression>
+              </action>
+            </actions>
+            <next-page>Solicitacao_de_Atividade_Complementar_de_Graduacao__2_2_</next-page>
+          </page>
+          <page id="Solicitacao_de_Atividade_Complementar_de_Graduacao__2_2_">
+            <page-label>Solicitação de ACG</page-label>
+            <allow-html-in-label>false</allow-html-in-label>
+            <page-layout>html/Solicita_ACG_Solicitacao_de_Atividade_Complementar_de_Graduacao__2_2_.html</page-layout>
+            <widgets>
+              <widget id="Selecao2" type="LISTBOX_SIMPLE">
+                <available-values>
+                  <expression>${GroupsUtil.listaSubtipos(field_Copia_de_TipoDeACG)}</expression>
+                </available-values>
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Sub-Tipos:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${subtipoACG}</variable-bound>
+              </widget>
+              <widget id="Selecao3" type="LISTBOX_SIMPLE">
+                <available-values>
+                  <expression>${GroupsUtil.usuariosDoGrupo(["tutores"])}</expression>
+                </available-values>
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Tutor:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <title/>
+                <variable-bound>${nomeTutor}</variable-bound>
+                <display-condition>${field_Copia_de_TipoDeACG=="II - Atuacao em nucleos tematicos;" || field_Copia_de_TipoDeACG=="III - Atividades de extensao" || field_Copia_de_TipoDeACG=="IV - Estagio extra-curricular" || field_Copia_de_TipoDeACG=="V - Atividade de iniciacao cientifica;" || field_Copia_de_TipoDeACG=="VIII - Monitoria;"}</display-condition>
+              </widget>
+              <widget id="Mensagem1" type="MESSAGE">
+                <initial-value>
+                  <expression>${GroupsUtil.mensagem(field_Copia_de_TipoDeACG)}</expression>
+                </initial-value>
+                <allow-html-in-field>true</allow-html-in-field>
+                <style>input_Solicita_ACG_Solicitacao_de_Atividade_Complementar_de_Graduacao__2_2__Mensagem1</style>
+                <variable-bound>${GroupsUtil.mensagem(field_Copia_de_TipoDeACG)}</variable-bound>
+              </widget>
+              <widget id="Arquivo1" type="FILEUPLOAD">
+                <display-attachment-image>false</display-attachment-image>
+                <mandatory>true</mandatory>
+                <readonly>false</readonly>
+                <label>Arquivo</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>file</variable-bound>
+              </widget>
+              <widget id="Anterior1" type="BUTTON_PREVIOUS">
+                <label-button>false</label-button>
+                <label>Anterior</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+              <widget id="Enviar1" type="BUTTON_SUBMIT">
+                <label-button>false</label-button>
+                <label>Enviar</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+            </widgets>
+            <actions>
+              <action type="SET_VARIABLE">
+                <variable>subtipoACG</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Selecao2</expression>
+              </action>
+              <action type="SET_ATTACHMENT">
+                <attachment>file</attachment>
+                <expression>field_Arquivo1</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>nomeTutor</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Selecao3</expression>
+              </action>
+            </actions>
+          </page>
+        </pages>
+        <transient-data>
+          <data name="listOfAllGroups">
+            <classname>java.util.List</classname>
+          </data>
+        </transient-data>
+        <confirmation-message>Solicitação realizada com sucesso.</confirmation-message>
+      </form>
+      <form first-page="Alteracao_Tutor" id="Solicitacao_de_ACG--2.0--Etapa2$entry">
+        <form-type>entry</form-type>
+        <permissions>activity#Solicitacao_de_ACG--2.0--Etapa2</permissions>
+        <pages>
+          <page id="Alteracao_Tutor">
+            <page-label>Alteração Tutor</page-label>
+            <allow-html-in-label>false</allow-html-in-label>
+            <page-layout>html/Etapa2_Alteracao_Tutor.html</page-layout>
+            <widgets>
+              <widget id="Mensagem1" type="MESSAGE">
+                <initial-value>
+                  <expression>"O professor/tutor realizou algumas alterações na sua solicitação."</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <variable-bound>"O professor/tutor realizou algumas alterações na sua solicitação."</variable-bound>
+              </widget>
+              <widget id="dataSolAluno" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.getCurrentDate()}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data da solicitação:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.getCurrentDate()}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto7" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.nameOfLoggedUser()}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Nome:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.nameOfLoggedUser()}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto5" type="TEXT">
+                <initial-value>
+                  <expression>${local}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Local da atividade:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${local}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto6" type="TEXT">
+                <initial-value>
+                  <expression>${cargaHoraria}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Carga Horária  Alterada* :</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${cargaHoraria}</variable-bound>
+                <display-condition>${mudaCarga}</display-condition>
+              </widget>
+              <widget id="Texto2" type="TEXT">
+                <initial-value>
+                  <expression>${cargaHoraria}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Carga Horária:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${cargaHoraria}</variable-bound>
+                <display-condition>${!mudaCarga}</display-condition>
+              </widget>
+              <widget id="Campo_de_texto3" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.formataData(dataInicio)}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data Inicio:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.formataData(dataInicio)}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto4" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.formataData(dataFim)}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data Fim:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.formataData(dataFim)}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto8" type="TEXT">
+                <initial-value>
+                  <expression>${tipoACG}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Tipo de ACG:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${tipoACG}</variable-bound>
+                <display-condition>${mudaACG}</display-condition>
+              </widget>
+              <widget id="Selecao2" type="LISTBOX_SIMPLE">
+                <available-values>
+                  <expression>${GroupsUtil.listaSubtipos(tipoACG)}</expression>
+                </available-values>
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Sub-Tipos:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${subtipoACG}</variable-bound>
+                <display-condition>${mudaACG}</display-condition>
+              </widget>
+              <widget id="Copia_de_Mensagem1" type="MESSAGE">
+                <initial-value>
+                  <expression>${GroupsUtil.mensagem(tipoACG)}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Cópia de Mensagem1</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.mensagem(tipoACG)}</variable-bound>
+                <display-condition>${mudaACG}</display-condition>
+              </widget>
+              <widget id="Arquivo1" type="FILEUPLOAD">
+                <display-attachment-image>false</display-attachment-image>
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Arquivo</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>file</variable-bound>
+                <display-condition>${mudaACG}</display-condition>
+              </widget>
+              <widget id="Enviar1" type="BUTTON_SUBMIT">
+                <label-button>false</label-button>
+                <label>Enviar1</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+            </widgets>
+            <actions>
+              <action type="SET_VARIABLE">
+                <variable>subtipoACG</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Selecao2</expression>
+              </action>
+              <action type="SET_ATTACHMENT">
+                <attachment>file</attachment>
+                <expression>field_Arquivo1</expression>
+              </action>
+            </actions>
+          </page>
+        </pages>
+      </form>
+      <form first-page="Avisa__ao_aluno___Pedido_rejeitado" id="Solicitacao_de_ACG--2.0--Avisa__ao_aluno___Pedido_rejeitado$entry">
+        <form-type>entry</form-type>
+        <permissions>activity#Solicitacao_de_ACG--2.0--Avisa__ao_aluno___Pedido_rejeitado</permissions>
+        <pages>
+          <page id="Avisa__ao_aluno___Pedido_rejeitado">
+            <page-label>Avisa  ao aluno - Pedido rejeitado</page-label>
+            <allow-html-in-label>false</allow-html-in-label>
+            <page-layout>html/Avisa__ao_aluno___Pedido_rejeitado_Avisa__ao_aluno___Pedido_rejeitado.html</page-layout>
+            <widgets>
+              <widget id="Mensagem1" type="MESSAGE">
+                <initial-value>
+                  <expression>Sua solicitação não foi aceita!</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <variable-bound>Sua solicitação não foi aceita!</variable-bound>
+              </widget>
+              <widget id="Enviar1" type="BUTTON_SUBMIT">
+                <label-button>false</label-button>
+                <label>Enviar1</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+            </widgets>
+          </page>
+        </pages>
+      </form>
+      <form first-page="Avisa__ao_aluno___Pedido_rejeitado" id="Solicitacao_de_ACG--2.0--Avisa__ao_aluno___Pedido_rejeitado$view">
+        <form-type>view</form-type>
+        <permissions>activity#Solicitacao_de_ACG--2.0--Avisa__ao_aluno___Pedido_rejeitado</permissions>
+        <pages>
+          <page id="Avisa__ao_aluno___Pedido_rejeitado">
+            <page-label>Avisa  ao aluno - Pedido rejeitado</page-label>
+            <allow-html-in-label>false</allow-html-in-label>
+            <page-layout>html/Avisa__ao_aluno___Pedido_rejeitado_consultation_Avisa__ao_aluno___Pedido_rejeitado.html</page-layout>
+            <widgets>
+              <widget id="Campo_de_texto1" type="TEXTBOX">
+                <initial-value>
+                  <expression>Nao deu!</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <mandatory>false</mandatory>
+                <readonly>true</readonly>
+                <label>Campo_de_texto1</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+            </widgets>
+          </page>
+        </pages>
+      </form>
+      <form first-page="Avisa_ao_aluno___pedido_aceito" id="Solicitacao_de_ACG--2.0--Avisa_ao_aluno___pedido_aceito$entry">
+        <form-type>entry</form-type>
+        <permissions>activity#Solicitacao_de_ACG--2.0--Avisa_ao_aluno___pedido_aceito</permissions>
+        <pages>
+          <page id="Avisa_ao_aluno___pedido_aceito">
+            <page-label>Avisa ao aluno - pedido aceito</page-label>
+            <allow-html-in-label>false</allow-html-in-label>
+            <page-layout>html/Avisa_ao_aluno___pedido_aceito_Avisa_ao_aluno___pedido_aceito.html</page-layout>
+            <widgets>
+              <widget id="Mensagem2" type="MESSAGE">
+                <initial-value>
+                  <expression>Sua solicitação foi aceita referente a ${cargaHoraria} horas de Atividade complementar de Graduação do tipo: ${GroupsUtil.concat(tipoACG,subtipoACG)} , foi aceita!</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <variable-bound>Sua solicitação foi aceita referente a ${cargaHoraria} horas de Atividade complementar de Graduação do tipo: ${GroupsUtil.concat(tipoACG,subtipoACG)} , foi aceita!</variable-bound>
+              </widget>
+              <widget id="Enviar1" type="BUTTON_SUBMIT">
+                <label-button>false</label-button>
+                <label>Fim</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+            </widgets>
+          </page>
+        </pages>
+      </form>
+      <form first-page="Avisa_ao_aluno___pedido_aceito" id="Solicitacao_de_ACG--2.0--Avisa_ao_aluno___pedido_aceito$view">
+        <form-type>view</form-type>
+        <permissions>activity#Solicitacao_de_ACG--2.0--Avisa_ao_aluno___pedido_aceito</permissions>
+        <pages>
+          <page id="Avisa_ao_aluno___pedido_aceito">
+            <page-label>Avisa ao aluno - pedido aceito</page-label>
+            <allow-html-in-label>false</allow-html-in-label>
+            <page-layout>html/Avisa_ao_aluno___pedido_aceito_consultation_Avisa_ao_aluno___pedido_aceito.html</page-layout>
+            <widgets>
+              <widget id="Mensagem1" type="MESSAGE">
+                <initial-value>
+                  <expression>Sua solicitação foi aceita!</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+              </widget>
+            </widgets>
+          </page>
+        </pages>
+      </form>
+      <form first-page="Tutor_avalia_ACG" id="Solicitacao_de_ACG--2.0--Tutor_avalia_a_ACG$entry">
+        <form-type>entry</form-type>
+        <permissions>activity#Solicitacao_de_ACG--2.0--Tutor_avalia_a_ACG</permissions>
+        <pages>
+          <page id="Tutor_avalia_ACG">
+            <page-label>Tutor avalia ACG</page-label>
+            <allow-html-in-label>false</allow-html-in-label>
+            <page-layout>html/Tutor_avalia_a_ACG_Tutor_avalia_ACG.html</page-layout>
+            <widgets>
+              <widget id="Campo_de_texto1" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.getCurrentDate()}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data da avaliação:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.getCurrentDate()}</variable-bound>
+              </widget>
+              <widget id="NomeDoAluno" type="TEXT">
+                <initial-value>
+                  <expression>${name}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Nome do aluno:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${name}</variable-bound>
+              </widget>
+              <widget id="matricula" type="TEXT">
+                <initial-value>
+                  <expression>${numeroMatricula}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Matrícula:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${numeroMatricula}</variable-bound>
+              </widget>
+              <widget id="Texto1" type="TEXT">
+                <initial-value>
+                  <expression>${local}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Local da atividade:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${local}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto3" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.formataData(dataInicio)}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data Inicio:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.formataData(dataInicio)}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto4" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.formataData(dataFim)}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data Fim:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.formataData(dataFim)}</variable-bound>
+              </widget>
+              <widget id="cargaHoraria" type="TEXT">
+                <initial-value>
+                  <expression>${cargaHoraria}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Carga Horária:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${cargaHoraria}</variable-bound>
+              </widget>
+              <widget id="Caixa_de_marcar2" type="CHECKBOX">
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Selecione se desejar alterar a carga horária:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${mudaCarga}</variable-bound>
+              </widget>
+              <widget id="tipoACG" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.concat(tipoACG,subtipoACG)}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Tipo de ACG:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.concat(tipoACG,subtipoACG)}</variable-bound>
+              </widget>
+              <widget id="Caixa_de_marcar1" type="CHECKBOX">
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Selecione se desejar alterar o tipo de ACG:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${mudaACG}</variable-bound>
+              </widget>
+              <widget id="Lins" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.createLink(GroupsUtil.concat(numeroMatricula,file.getFileName()), link)}</expression>
+                </initial-value>
+                <allow-html-in-field>true</allow-html-in-field>
+                <label>Link para a documentação:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.createLink(GroupsUtil.concat(numeroMatricula,file.getFileName()), link)}</variable-bound>
+              </widget>
+              <widget id="Texto2" type="TEXT">
+                <initial-value>
+                  <expression>&lt;a href="http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf"&gt;Normas para ACG do Curso de SI&lt;/a&gt;
+
+</expression>
+                </initial-value>
+                <allow-html-in-field>true</allow-html-in-field>
+                <label>Normas:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>&lt;a href="http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf"&gt;Normas para ACG do Curso de SI&lt;/a&gt;
+
+</variable-bound>
+              </widget>
+              <widget id="Area_de_texto1" type="TEXTAREA">
+                <allow-html-in-field>false</allow-html-in-field>
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Parecer</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${parecerTutor}</variable-bound>
+              </widget>
+              <widget id="Selecao1" type="LISTBOX_SIMPLE">
+                <available-values>
+                  <values-list>
+                    <available-value>
+                      <label>Sim</label>
+                      <value>Sim</value>
+                    </available-value>
+                    <available-value>
+                      <label>Nao</label>
+                      <value>Nao</value>
+                    </available-value>
+                  </values-list>
+                </available-values>
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Decisão:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${respostaTutor}</variable-bound>
+              </widget>
+              <widget id="Enviar2" type="BUTTON_SUBMIT">
+                <label-button>false</label-button>
+                <label>Enviar</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+            </widgets>
+            <actions>
+              <action type="SET_VARIABLE">
+                <variable>mudaACG</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Caixa_de_marcar1</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>mudaCarga</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Caixa_de_marcar2</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>parecerTutor</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Area_de_texto1</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>respostaTutor</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Selecao1</expression>
+              </action>
+            </actions>
+          </page>
+        </pages>
+      </form>
+      <form first-page="Etapa4" id="Solicitacao_de_ACG--2.0--Etapa4$entry">
+        <form-type>entry</form-type>
+        <permissions>activity#Solicitacao_de_ACG--2.0--Etapa4</permissions>
+        <pages>
+          <page id="Etapa4">
+            <page-label>Etapa4</page-label>
+            <allow-html-in-label>false</allow-html-in-label>
+            <page-layout>html/Etapa4_Etapa4.html</page-layout>
+            <widgets>
+              <widget id="Campo_de_texto2" type="TEXTBOX">
+                <allow-html-in-field>false</allow-html-in-field>
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Carga Horária Sugerida:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${cargaHoraria}</variable-bound>
+                <display-condition>${mudaCarga == true}</display-condition>
+              </widget>
+              <widget id="Copia_de_TipoDeACG" type="LISTBOX_SIMPLE">
+                <initial-value>
+                  <expression>I - Participacao em eventos;</expression>
+                </initial-value>
+                <available-values>
+                  <values-list>
+                    <available-value>
+                      <label>I - Participacao em eventos;</label>
+                      <value>I - Participacao em eventos;</value>
+                    </available-value>
+                    <available-value>
+                      <label>II - Atuacao em nucleos tematicos;</label>
+                      <value>II - Atuacao em nucleos tematicos;</value>
+                    </available-value>
+                    <available-value>
+                      <label>III - Atividades de extensao</label>
+                      <value>III - Atividades de extensao</value>
+                    </available-value>
+                    <available-value>
+                      <label>IV - Estagio extra-curricular</label>
+                      <value>IV - Estagio extra-curricular</value>
+                    </available-value>
+                    <available-value>
+                      <label>V - Atividade de iniciacao cientifica;</label>
+                      <value>V - Atividade de iniciacao cientifica;</value>
+                    </available-value>
+                    <available-value>
+                      <label>VI - Publicacao de trabalho;</label>
+                      <value>VI - Publicacao de trabalho;</value>
+                    </available-value>
+                    <available-value>
+                      <label>VII - Participacao em orgaos colegiados;</label>
+                      <value>VII - Participacao em orgaos colegiados;</value>
+                    </available-value>
+                    <available-value>
+                      <label>VIII - Monitoria;</label>
+                      <value>VIII - Monitoria;</value>
+                    </available-value>
+                    <available-value>
+                      <label>IX - Outra atividade a criterio do Colegiado.</label>
+                      <value>IX - Outra atividade a criterio do Colegiado.</value>
+                    </available-value>
+                  </values-list>
+                </available-values>
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Tipo de ACG Sugerido:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <title/>
+                <variable-bound>${tipoACG}</variable-bound>
+                <display-condition>${mudaACG == true}</display-condition>
+              </widget>
+              <widget id="Enviar1" type="BUTTON_SUBMIT">
+                <label-button>false</label-button>
+                <label>Enviar</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+            </widgets>
+            <actions>
+              <action type="SET_VARIABLE">
+                <variable>cargaHoraria</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Campo_de_texto2</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>tipoACG</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Copia_de_TipoDeACG</expression>
+              </action>
+            </actions>
+          </page>
+        </pages>
+      </form>
+      <form first-page="Relator_avalia_ACG" id="Solicitacao_de_ACG--2.0--Relator_avalia_ACG$entry">
+        <form-type>entry</form-type>
+        <permissions>activity#Solicitacao_de_ACG--2.0--Relator_avalia_ACG</permissions>
+        <pages>
+          <page id="Relator_avalia_ACG">
+            <page-label>Relator avalia ACG</page-label>
+            <allow-html-in-label>false</allow-html-in-label>
+            <page-layout>html/Relator_avalia_ACG_Relator_avalia_ACG.html</page-layout>
+            <widgets>
+              <widget id="Texto1" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.getCurrentDate()}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data da avaliação:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.getCurrentDate()}</variable-bound>
+              </widget>
+              <widget id="NomeDoAluno" type="TEXT">
+                <initial-value>
+                  <expression>${name}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Nome do aluno:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${name}</variable-bound>
+              </widget>
+              <widget id="matricula" type="TEXT">
+                <initial-value>
+                  <expression>${numeroMatricula}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Matrícula:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${numeroMatricula}</variable-bound>
+              </widget>
+              <widget id="Copia_de_Texto1" type="TEXT">
+                <initial-value>
+                  <expression>${local}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Local da atividade:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${local}</variable-bound>
+              </widget>
+              <widget id="cargaHoraria" type="TEXT">
+                <initial-value>
+                  <expression>${cargaHoraria}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Carga Horária:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${cargaHoraria}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto3" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.formataData(dataInicio)}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data Início:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.formataData(dataInicio)}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto4" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.formataData(dataFim)}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data Fim:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.formataData(dataFim)}</variable-bound>
+              </widget>
+              <widget id="tipoACG" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.concat(tipoACG,subtipoACG)}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Tipo de ACG:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.concat(tipoACG,subtipoACG)}</variable-bound>
+              </widget>
+              <widget id="Lins" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.createLink(GroupsUtil.concat(numeroMatricula,file.getFileName()), link)}</expression>
+                </initial-value>
+                <allow-html-in-field>true</allow-html-in-field>
+                <label>Link para a documentação:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.createLink(GroupsUtil.concat(numeroMatricula,file.getFileName()), link)}</variable-bound>
+              </widget>
+              <widget id="Texto2" type="TEXT">
+                <initial-value>
+                  <expression>${parecerTutor}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Parecer do professor responsável:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${parecerTutor}</variable-bound>
+                <display-condition>boolTutor == true</display-condition>
+              </widget>
+              <widget id="Copia_de_Texto2" type="TEXT">
+                <initial-value>
+                  <expression>&lt;a href="http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf"&gt;Normas para ACG do Curso de SI&lt;/a&gt;</expression>
+                </initial-value>
+                <allow-html-in-field>true</allow-html-in-field>
+                <label>Normas:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>&lt;a href="http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf"&gt;Normas para ACG do Curso de SI&lt;/a&gt;</variable-bound>
+              </widget>
+              <widget id="Area_de_texto1" type="TEXTAREA">
+                <allow-html-in-field>false</allow-html-in-field>
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Parecer:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${parecerRelator}</variable-bound>
+              </widget>
+              <widget id="Botoes_de_radio1" type="RADIOBUTTON_GROUP">
+                <available-values>
+                  <values-list>
+                    <available-value>
+                      <label>Sim</label>
+                      <value>Sim</value>
+                    </available-value>
+                    <available-value>
+                      <label>Nao</label>
+                      <value>Nao</value>
+                    </available-value>
+                  </values-list>
+                </available-values>
+                <allow-html-in-field>false</allow-html-in-field>
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Decisão:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${respostaRelator}</variable-bound>
+              </widget>
+              <widget id="Enviar1" type="BUTTON_SUBMIT">
+                <label-button>false</label-button>
+                <label>Enviar</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+            </widgets>
+            <actions>
+              <action type="SET_VARIABLE">
+                <variable>parecerRelator</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Area_de_texto1</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>respostaRelator</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>field_Botoes_de_radio1</expression>
+              </action>
+            </actions>
+          </page>
+        </pages>
+      </form>
+      <form first-page="Colegiado_avalia_ACG" id="Solicitacao_de_ACG--2.0--Etapa1$entry">
+        <form-type>entry</form-type>
+        <permissions>activity#Solicitacao_de_ACG--2.0--Etapa1</permissions>
+        <pages>
+          <page id="Colegiado_avalia_ACG">
+            <page-label>Colegiado avalia ACG</page-label>
+            <allow-html-in-label>false</allow-html-in-label>
+            <page-layout>html/Etapa1_Colegiado_avalia_ACG.html</page-layout>
+            <widgets>
+              <widget id="t" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.getCurrentDate()}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data da avaliação:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.getCurrentDate()}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto7" type="TEXT">
+                <initial-value>
+                  <expression>${name}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Nome:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${name}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto2" type="TEXT">
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Matrícula:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+              <widget id="Copia_de_Texto1" type="TEXT">
+                <initial-value>
+                  <expression>${local}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Local da atividade:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${local}</variable-bound>
+              </widget>
+              <widget id="Texto1" type="TEXT">
+                <initial-value>
+                  <expression>${cargaHorariaAlterada}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Carga Horária:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${cargaHorariaAlterada}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto3" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.formataData(dataInicio)}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data Inicio:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.formataData(dataInicio)}</variable-bound>
+              </widget>
+              <widget id="Campo_de_texto4" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.formataData(dataFim)}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Data Fim:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.formataData(dataFim)}</variable-bound>
+              </widget>
+              <widget id="Texto2" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.concat(tipoACG,subtipoACG)}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Tipo de ACG:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.concat(tipoACG,subtipoACG)}</variable-bound>
+              </widget>
+              <widget id="Lins" type="TEXT">
+                <initial-value>
+                  <expression>${GroupsUtil.createLink(GroupsUtil.concat(numeroMatricula,file.getFileName()), link)}</expression>
+                </initial-value>
+                <allow-html-in-field>true</allow-html-in-field>
+                <label>Link para a documentação:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${GroupsUtil.createLink(GroupsUtil.concat(numeroMatricula,file.getFileName()), link)}</variable-bound>
+              </widget>
+              <widget id="Texto4" type="TEXT">
+                <initial-value>
+                  <expression>${parecerTutor}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Parecer do tutor:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${parecerTutor}</variable-bound>
+                <display-condition>boolTutor == true</display-condition>
+              </widget>
+              <widget id="Texto3" type="TEXT">
+                <initial-value>
+                  <expression>${parecerRelator}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Parecer do relator:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${parecerRelator}</variable-bound>
+              </widget>
+              <widget id="Texto5" type="TEXT">
+                <initial-value>
+                  <expression>${respostaRelator}</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <label>Decisão do relator:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>${respostaRelator}</variable-bound>
+              </widget>
+              <widget id="Text1" type="TEXT">
+                <initial-value>
+                  <expression>&lt;a href="http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf"&gt;Normas para ACG do Curso de SI&lt;/a&gt;</expression>
+                </initial-value>
+                <allow-html-in-field>true</allow-html-in-field>
+                <label>Normas:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+                <variable-bound>&lt;a href="http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf"&gt;Normas para ACG do Curso de SI&lt;/a&gt;</variable-bound>
+              </widget>
+              <widget id="Botoes_de_radio1" type="RADIOBUTTON_GROUP">
+                <available-values>
+                  <values-list>
+                    <available-value>
+                      <label>Sim</label>
+                      <value>Sim</value>
+                    </available-value>
+                    <available-value>
+                      <label>Nao</label>
+                      <value>Nao</value>
+                    </available-value>
+                  </values-list>
+                </available-values>
+                <allow-html-in-field>false</allow-html-in-field>
+                <mandatory>false</mandatory>
+                <readonly>false</readonly>
+                <label>Decisão:</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+              <widget id="Enviar1" type="BUTTON_SUBMIT">
+                <label-button>false</label-button>
+                <label>Enviar</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+            </widgets>
+            <actions>
+              <action type="SET_VARIABLE">
+                <variable>conta</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>${if(field_Botoes_de_radio1=="Sim") conta+1&#13;else conta}</expression>
+              </action>
+              <action type="SET_VARIABLE">
+                <variable>membros</variable>
+                <variable-type>PROCESS_VARIABLE</variable-type>
+                <expression>${GroupsUtil.numMembros(["colegiado"])}</expression>
+              </action>
+            </actions>
+          </page>
+        </pages>
+      </form>
+      <form first-page="Etapa7" id="Solicitacao_de_ACG--2.0--Etapa7$entry">
+        <form-type>entry</form-type>
+        <permissions>activity#Solicitacao_de_ACG--2.0--Etapa7</permissions>
+        <pages>
+          <page id="Etapa7">
+            <page-label>Etapa7</page-label>
+            <allow-html-in-label>false</allow-html-in-label>
+            <page-layout>html/Etapa7_Etapa7.html</page-layout>
+            <widgets>
+              <widget id="Mensagem1" type="MESSAGE">
+                <initial-value>
+                  <expression>A solicitação de Atividade Complementar de Graduação não obteve unanimidade entre os membros do colegiado.</expression>
+                </initial-value>
+                <allow-html-in-field>false</allow-html-in-field>
+                <variable-bound>A solicitação de Atividade Complementar de Graduação não obteve unanimidade entre os membros do colegiado.</variable-bound>
+              </widget>
+              <widget id="Enviar1" type="BUTTON_SUBMIT">
+                <label-button>false</label-button>
+                <label>Enviar</label>
+                <allow-html-in-label>false</allow-html-in-label>
+                <label-position>LEFT</label-position>
+              </widget>
+            </widgets>
+          </page>
+        </pages>
+      </form>
+    </forms>
+  </application>
+</forms-definition>

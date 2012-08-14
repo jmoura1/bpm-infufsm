@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" ?>
+<rss version="2.0">
+  <channel>
+    <pubDate>2011-07-25</pubDate>
+    <author>BonitaSoft</author>
+    <category>Training</category>
+    <title>BonitaSoft Training</title>
+    <link>http://www.bonitasoft.com/blog</link>
+    <description>Training feed from BonitaSoft</description>
+	<item>
+       <pubDate>2012-08-01</pubDate>
+       <author>Jeremy Lipp</author>
+       <category>Training</category>
+       <title>Advanced Integration (En)</title>
+       <link>http://www.bonitasoft.com/training/register-training?training_id=2388</link>
+       <description></description>
+    </item>
+    <item>
+       <pubDate>2012-08-06</pubDate>
+       <author>Jeremy Lipp</author>
+       <category>Training</category>
+       <title>Process Modeling (Fr)</title>
+       <link>http://www.bonitasoft.com/training/register-training?training_id=2392</link>
+       <description></description>
+    </item>
+	</channel>
+</rss>
+
+

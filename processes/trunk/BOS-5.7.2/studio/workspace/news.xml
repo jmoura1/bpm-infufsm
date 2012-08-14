@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" ?>
+<rss version="2.0">
+  <channel>
+    <pubDate>2011-02-01</pubDate>
+    <author>BonitaSoft</author>
+    <category>News</category>
+    <title>BonitaSoft News</title>
+    <link>http://www.bonitasoft.com/blog</link>
+    <description>News feed from BonitaSoft</description>
+    <item>
+       <pubDate>2012-07-24</pubDate>
+       <author>Jeremy Lipp</author>
+       <category>News</category>
+       <title>Bonita Open Solution 5.7.2 now available</title>
+       <link>http://www.bonitasoft.com/company/blog/bonita-open-solution-5.7.2-now-available</link>
+       <description></description>
+    </item>
+    <item>
+       <pubDate>2012-06-15</pubDate>
+       <author>Jeremy Lipp</author>
+       <category>News</category>
+       <title>Bonita Open Solution 5.7.1 now available</title>
+       <link>http://www.bonitasoft.com/company/blog/bonita-open-solution-5.7.1-now-available</link>
+       <description></description>
+    </item>
+    <item>
+       <pubDate>2012-05-22</pubDate>
+       <author>Jeremy Lipp</author>
+       <category>News</category>
+       <title>BonitaSoft CEO Selected to Speak at OSCON</title>
+       <link>http://www.bonitasoft.com/company/blog/bonitasoft-ceo-selected-speak-oreilly-open-source-convention</link>
+       <description></description>
+    </item>
+	
+    <item>
+       <pubDate>2012-03-21</pubDate>
+       <author>Jeremy Lipp</author>
+       <category>News</category>
+       <title>Ovum Recognizes BonitaSoft in BPM Report</title>
+       <link>http://www.bonitasoft.com/company/blog/ovum-recognizes-bonitasoft-business-process-management-report</link>
+       <description></description>
+    </item>
+	
+    <item>
+       <pubDate>2012-01-16</pubDate>
+       <author>Jeremy Lipp</author>
+       <category>News</category>
+       <title>BonitaSoft Announces 350% Revenue Growth</title>
+       <link>http://www.bonitasoft.com/company/blog/bonitasoft-announces-350-percent-revenue-growth</link>
+       <description></description>
+    </item>
+    <item>
+       <pubDate>2012-01-04</pubDate>
+       <author>Jeremy Lipp</author>
+       <category>News</category>
+       <title>BonitaSoft Launches “Pimp My Bonita” Open Source BPM Community Contest</title>
+       <link>http://www.bonitasoft.com/company/blog/bonitasoft-launches-pimp-my-bonita-open-source-bpm-community-contest</link>
+       <description></description>
+    </item>
+   </channel>
+</rss>
+
+

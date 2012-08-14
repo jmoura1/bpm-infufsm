@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <title>Bonita User's Guidance - Contexts</title>
+  <link href="css/template.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<h1>Define parameters</h1>
+
+<div id="category">
+(Category: Parameters)</div>
+
+<p style="margin-top:10px;"></p>
+
+<div id="separator">
+</div>
+
+<p>Parameters are used as placeholders for information in a process that is
+more appropriately defined outside the process. Parameter keys are defined
+inside a process, and values are defined outside the process. Those values are
+then assigned to their keys at runtime.</p>
+
+<p>Parameter key-value pairs are useful to handle different environments of a
+process.</p>
+
+<p>For example, by defining a local (test) environment and a production
+environment and associating the appropriate values to a key for each
+environment, there is no need to change values in actors, connectors, forms, or
+other places where values necessarily differ in different environments. For
+example, test and production may use different values for different specific
+users (beta testers vs end users) or for different server login and
+passwords.</p>
+
+<p>Before you can run or export a process for deployment, all process
+parameters must be keyed to values.</p>
+</body>
+</html>

@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" ?>
+<rss version="2.0">
+  <channel>
+    <pubDate>2011-10-07</pubDate>
+    <author>BonitaSoft</author>
+    <category>Resources</category>
+    <title>BonitaSoft Resources</title>
+    <link>http://www.bonitasoft.com/news/resources.php</link>
+    <description>Resource feed from BonitaSoft</description>
+	
+	
+     <item>
+       <pubDate>2012-07-20</pubDate>
+       <author>Jeremy Lipp</author>
+       <category>Resources</category>
+       <title>BPMS Buyer's Tool Kit</title>
+       <link>http://www.bonitasoft.com/resources/documentation-library/business-process-management-suite-buyers-tool-kit</link>
+       <description></description>
+    </item>
+     <item>
+       <pubDate>2012-06-31</pubDate>
+       <author>Jeremy Lipp</author>
+       <category>Resources</category>
+       <title>Webinar - First steps with Bonita</title>
+       <link>http://www.bonitasoft.com/resources/webinar/automate-your-business-processes-bonita-open-solution</link>
+       <description></description>
+    </item>
+    <item>
+       <pubDate>2011-08-11</pubDate>
+       <author>Jeremy Lipp</author>
+       <category>Resources</category>
+       <title>White paper - 10 Best Practices for BPM Implementation</title>
+       <link>http://www.bonitasoft.com/resources/documentation-library/white-paper-10-best-practices-bpm-implementation</link>
+       <description>Discover the new features available in Bonita Open Solution 5.5</description>
+    </item>
+    <item>
+       <pubDate>2011-01-15</pubDate>
+       <author>Jeremy Lipp</author>
+       <category>Resources</category>
+       <title>Webinar - Example: Arrival of a new employee</title>
+       <link>http://www.bonitasoft.com/news/page_form_resources.php?f=webinar-welcome-employee.mp4</link>
+       <description>A tutorial describing the Welcome of a new employee example available in Bonita Open Solution</description>
+    </item>
+  </channel>
+</rss>
+
+

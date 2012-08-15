@@ -37,7 +37,7 @@
             <widgets xmi:type="form:TextFormField" xmi:id="_wmUPoASqEeGCuqNF8Zs5jA" name="Campo_de_texto6" label="Campo de texto6" displayLabel="Carga Horária:" mandatory="true" useDefaultValidator="false">
               <script xmi:type="form:GroovyScript" xmi:id="_wpI6IASqEeGCuqNF8Zs5jA" inputScript="" setVarScript="cargaHoraria"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_wmYhEQSqEeGCuqNF8Zs5jA" line="5"/>
-              <validators xmi:type="form:Validator" xmi:id="_h_ws0TAWEeGIT5S2G1eNnA" validatorClass="org.bonitasoft.forms.server.validator.GroovyFieldValidator" label="Carga horária deve ser maior que 0." name="Campo_de_texto6Validador1" parameter="return (Integer.parseInt(field_Campo_de_texto6)>0)"/>
+              <validators xmi:type="form:Validator" xmi:id="_h_ws0TAWEeGIT5S2G1eNnA" validatorClass="org.bonitasoft.forms.server.validator.GroovyFieldValidator" label="Carga horária deve ser um número inteiro maior que 0." name="Campo_de_texto6Validador1" parameter="return (Integer.parseInt(field_Campo_de_texto6)>0)"/>
             </widgets>
             <widgets xmi:type="form:DateFormField" xmi:id="_y9U68BE6EeGCC6xucJPrrA" name="DataInicio" label="DataInicio" displayLabel="Data início:" mandatory="true">
               <script xmi:type="form:GroovyScript" xmi:id="_0YFBsBE6EeGCC6xucJPrrA" setVarScript="dataInicio"/>

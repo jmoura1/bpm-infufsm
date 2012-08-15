@@ -30,10 +30,11 @@
           <data xmi:type="process:Data" xmi:id="_O1JnIATqEeGCuqNF8Zs5jA" name="tiposdeACGS" label="tiposdeACGS" dataType="_OW92UATqEeGCuqNF8Zs5jA" defaultValue=""/>
           <data xmi:type="process:Data" xmi:id="_VSnZ0ATqEeGCuqNF8Zs5jA" name="tiposdeACgs" label="tiposdeACgs" dataType="_izORVP5WEeCQDYXrbWyssQ"/>
           <form xmi:type="form:Form" xmi:id="_T8nCYADHEeGZDf1yuNHNaA" name="Solicitacao_de_Atividade_Complementar_de_Graduacao__1_2_" label="Solicitação de Atividade Complementar de Graduação (1/2)" nLine="10" pageLabel="Solicitação de ACG">
-            <widgets xmi:type="form:TextFormField" xmi:id="_7K3xoADHEeGZDf1yuNHNaA" name="Campo_de_texto2" label="Campo de texto2" displayLabel="Matrícula:" mandatory="true">
+            <validators xmi:type="form:Validator" xmi:id="_Yl50wOchEeGUpPfxx_PqRA" validatorClass="org.bonitasoft.forms.server.validator.GroovyPageValidator" label="Data final deve ser maior ou igual à data inicial." name="Solicitacao_de_Atividade_Complementar_de_Graduacao__1_2_Validator1" parameter="return (field_DataFim.after(field_DataInicio) || field_DataFim.equals(field_DataInicio))"/>
+            <widgets xmi:type="form:TextFormField" xmi:id="_7K3xoADHEeGZDf1yuNHNaA" name="Campo_de_texto2" label="Campo de texto2" displayLabel="Matrícula:" mandatory="true" useDefaultValidator="false">
               <script xmi:type="form:GroovyScript" xmi:id="_849rIADHEeGZDf1yuNHNaA" inputScript="" setVarScript="numeroMatricula"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_7K3xpADHEeGZDf1yuNHNaA" line="3"/>
-              <validators xmi:type="form:Validator" xmi:id="_rXVUcecWEeGu8OwvFI0EVQ" validatorClass="org.bonitasoft.forms.server.validator.GroovyFieldValidator" label="Matrícula deve ser um número inteiro." name="Campo_de_texto2Validator1" parameter="return (Integer.parseInt(field_Campo_de_texto2))"/>
+              <validators xmi:type="form:Validator" xmi:id="_rXVUcecWEeGu8OwvFI0EVQ" validatorClass="org.bonitasoft.forms.server.validator.GroovyFieldValidator" label="Matrícula deve ser um número inteiro." name="Campo_de_texto2Validator1" parameter="return (Integer.parseInt(field_Campo_de_texto2))>0"/>
             </widgets>
             <widgets xmi:type="form:TextFormField" xmi:id="_wmUPoASqEeGCuqNF8Zs5jA" name="Campo_de_texto6" label="Campo de texto6" displayLabel="Carga Horária:" mandatory="true" useDefaultValidator="false">
               <script xmi:type="form:GroovyScript" xmi:id="_wpI6IASqEeGCuqNF8Zs5jA" inputScript="" setVarScript="cargaHoraria"/>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<theme author="bonitasoft" creationDate="1312979182074" description="The default theme" imagePreview="preview.jpg" name="default" provided="true" type="userXP" updateDate="1345061866670">
+<theme author="bonitasoft" creationDate="1312979182074" description="The default theme" imagePreview="preview.jpg" name="default" provided="true" type="userXP" updateDate="1345063829803">
   <bindings>
     <binding description="body: User's unified panels" name="body user view panels">
       <css-rule>.unified_panels</css-rule>

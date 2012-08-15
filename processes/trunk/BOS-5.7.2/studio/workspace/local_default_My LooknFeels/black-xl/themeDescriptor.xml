@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<theme author="bonitasoft" creationDate="1312979182074" description="The black-xl theme" imagePreview="preview.png" name="black-xl" provided="true" type="application" updateDate="1345063829692">
+<theme author="bonitasoft" creationDate="1312979182074" description="The black-xl theme" imagePreview="preview.png" name="black-xl" provided="true" type="application" updateDate="1345068258788">
   <bindings>
     <binding description="To display userXP icon" name="user-xp-icon">
       <css-rule>.bonita_user_xp_icon</css-rule>
@@ -49,12 +49,12 @@
       <css-rule>.bonita_username_label</css-rule>
       <css-file>application/application/css/bonita_form_default.css</css-file>
     </binding>
-    <binding description="bonita object area description" name="activity-description">
-      <css-rule>div#bonita-object-area-description</css-rule>
-      <css-file>application/application/css/bonita_form_default.css</css-file>
-    </binding>
     <binding description="To display logout labal" name="logout">
       <css-rule>.bonita_logout_label, .bonita_logout_label:visited, .bonita_logout_label:hover</css-rule>
+      <css-file>application/application/css/bonita_form_default.css</css-file>
+    </binding>
+    <binding description="bonita object area description" name="activity-description">
+      <css-rule>div#bonita-object-area-description</css-rule>
       <css-file>application/application/css/bonita_form_default.css</css-file>
     </binding>
     <binding description="The central area to display the application" name="principal-container-middle">

@@ -33,6 +33,7 @@
             <widgets xmi:type="form:TextFormField" xmi:id="_7K3xoADHEeGZDf1yuNHNaA" name="Campo_de_texto2" label="Campo de texto2" displayLabel="Matrícula:" mandatory="true">
               <script xmi:type="form:GroovyScript" xmi:id="_849rIADHEeGZDf1yuNHNaA" inputScript="" setVarScript="numeroMatricula"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_7K3xpADHEeGZDf1yuNHNaA" line="3"/>
+              <validators xmi:type="form:Validator" xmi:id="_rXVUcecWEeGu8OwvFI0EVQ" validatorClass="org.bonitasoft.forms.server.validator.GroovyFieldValidator" label="Matrícula deve ser um número inteiro." name="Campo_de_texto2Validator1" parameter="return (Integer.parseInt(field_Campo_de_texto2))"/>
             </widgets>
             <widgets xmi:type="form:TextFormField" xmi:id="_wmUPoASqEeGCuqNF8Zs5jA" name="Campo_de_texto6" label="Campo de texto6" displayLabel="Carga Horária:" mandatory="true" useDefaultValidator="false">
               <script xmi:type="form:GroovyScript" xmi:id="_wpI6IASqEeGCuqNF8Zs5jA" inputScript="" setVarScript="cargaHoraria"/>

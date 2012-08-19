@@ -16,12 +16,12 @@
 
  # Instalar uma cópia do studio (BOS-5.7.2) numa pasta 'test'. Essa cópia servirá apenas para testes e não será compartilhada com os outros desenvolvedores.
  # Instalar outra cópia do studio (BOS-5.7.2) em outra pasta. Essa cópia será versionada, ou seja, estará conectada ao servidor SVN, e servirá para atualizar o repositório. Os passos para isso são:
-  # Logo após a instalação, fazer checkout para inicializar a cópia de trabalho
+  # Logo após a instalação, fazer checkout para inicializar a cópia de trabalho (ver mais abaixo)
   # Após o checkout, a rotina de trabalho é:
    # Fazer update para atualizar a cópia de trabalho
    # Fazer alterações (que já devem ter sido testadas na instalação de testes)
    # Fazer commit para enviar as alterações ao repositório
-  # A rotina de trabalho deve ser repetida com frequência (pelo menos uma vez ao dia)
+ Obs.: A rotina de trabalho deve ser repetida com frequência (pelo menos uma vez ao dia).
 
 
 = Inicializando a cópia de trabalho =
@@ -43,7 +43,7 @@ cd ~/tools/BOS-5.7.2/studio
 svn up
 }}}
 
-Na operação de update é provável que ocorram conflitos.
+Obs.: Na operação de update é provável que ocorram conflitos.
 
 Fazer commit:
 {{{

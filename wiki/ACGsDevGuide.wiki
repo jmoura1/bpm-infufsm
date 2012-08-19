@@ -1,4 +1,4 @@
-#summary Guia para desenvolvedores do processo das ACGs
+#summary Guia para desenvolvedores do processo das ACGs.
 
 = Pré-requisitos =
 

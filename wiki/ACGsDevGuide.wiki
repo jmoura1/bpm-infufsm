@@ -1,0 +1,29 @@
+#summary Guia para desenvolvedores do processo das ACGs
+
+= Pré-requisitos =
+
+ * BOS-5.7.2, disponível em http://www.bonitasoft.com/products/BPM_downloads/all
+ * Cliente SVN (sudo apt-get install subversion)
+ * BOS-5.7.2 Tomcat Bundle (opcional, para teste em servidor local)
+
+= Sobre o repositório =
+
+ * A versão de desenvolvimento do processo está em https://bpm-infufsm.googlecode.com/svn/processes/trunk/BOS-5.7.2/studio/workspace/
+ * A lista de modificações está em http://code.google.com/p/bpm-infufsm/source/list
+ * A versão para download em http://code.google.com/p/bpm-infufsm/downloads/list é a última versão testada com usuários finais.
+
+= Organização do ambiente de desenvolvimento =
+
+ # Instalar uma cópia do studio (BOS-5.7.2) numa pasta 'test'. Essa cópia servirá apenas para testes e não será compartilhada com os outros desenvolvedores.
+ # Instalar outra cópia do studio (BOS-5.7.2) em outra pasta. Essa cópia será versionada, ou seja, estará conectada ao servidor SVN, e servirá para atualizar o repositório.
+  # Logo após a instalação, fazer checkout.
+  # Após o checkout, a rotina de trabalho é:
+   # Fazer update para atualizar a cópia de trabalho
+   # Fazer alterações (que já devem ter sido testadas na instalação de testes)
+   # Fazer commit para enviar as alterações ao repositório
+  # A rotina de trabalho deve ser repetida com frequência (pelo menos uma vez ao dia)
+
+
+= Ini uma cópia do repositório =
+
+ * Instalar uma

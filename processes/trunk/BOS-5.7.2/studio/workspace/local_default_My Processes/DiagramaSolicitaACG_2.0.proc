@@ -450,7 +450,7 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_lDtlFEB0EeGml9OxpNtx_Q"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_1rcMUEB0EeGml9OxpNtx_Q" name="Texto1" label="Texto1" displayLabel="Carga Horária:">
-              <script xmi:type="form:GroovyScript" xmi:id="_4kqcMEB0EeGml9OxpNtx_Q" inputScript="${cargaHorariaAlterada}"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_4kqcMEB0EeGml9OxpNtx_Q" inputScript="${cargaHoraria}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_1rcMVEB0EeGml9OxpNtx_Q" line="4"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_7wL9AEB0EeGml9OxpNtx_Q" name="Texto2" label="Texto2" displayLabel="Tipo de ACG:">
@@ -481,7 +481,7 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_MTmsAkB1EeGml9OxpNtx_Q" line="1"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_fjXNIGiQEeGdO8pxyh1WgQ" name="Campo_de_texto2" label="Campo de texto2" displayLabel="Matrícula:">
-              <script xmi:type="form:GroovyScript" xmi:id="_OfAMkUB1EeGml9OxpNtx_Q" inputScript="" setVarScript="numeroMatricula"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_OfAMkUB1EeGml9OxpNtx_Q" inputScript="${numeroMatricula}" setVarScript="numeroMatricula"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_OfAMkkB1EeGml9OxpNtx_Q" line="2"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_phIXUITrEeGk3tTJfzEOrQ" name="Campo_de_texto3" label="Campo_de_texto3" displayLabel="Data Inicio:">

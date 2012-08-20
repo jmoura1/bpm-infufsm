@@ -33,3 +33,4 @@ Password: bpm
 == References ==
 
  * http://www.bonitasoft.org/forum/viewtopic.php?id=2907
+ * Back-loading of User Account to bn_user: http://www.bonitasoft.org/forum/viewtopic.php?id=3338

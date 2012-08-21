@@ -155,15 +155,30 @@ public static String getPathGroupUUID(List<String> path) {
 }
 
 public static ArrayList usuariosDoGrupo(List<String> path){//recebe uma list de string com o caminho do grupo
-String caminho;
-Group g = AccessorUtil.getIdentityAPI().getGroupUsingPath(path);
-caminho=g.getUUID();
-List<User> users = AccessorUtil.getIdentityAPI().getAllUsersInGroup(caminho);
-List userName = new ArrayList();
-for(int i=0;i<users.size();i++){
-userName.add(users.get(i).username);
+	String caminho;
+	Group g = AccessorUtil.getIdentityAPI().getGroupUsingPath(path);
+	caminho=g.getUUID();
+	List<User> users = AccessorUtil.getIdentityAPI().getAllUsersInGroup(caminho);
+	List userName = new ArrayList();
+	for(int i=0;i<users.size();i++){
+		userName.add(users.get(i).username);
+	}
+	return userName;
 }
-return userName;
+
+//recebe uma list de string com o caminho do grupo e uma variavel com nome a excluir
+public static ArrayList usuariosDoGrupoExcludingOne(List<String> path, String exclude) {
+
+	String caminho;
+	Group g = AccessorUtil.getIdentityAPI().getGroupUsingPath(path);
+	caminho=g.getUUID();
+	List<User> users = AccessorUtil.getIdentityAPI().getAllUsersInGroup(caminho);
+	List userName = new ArrayList();
+	for (User u : users) {
+		userName.add(u.username);
+	}
+	userName.remove(exclude);
+	return userName;
 }
 
 public static int numMembros(List<String> path){
@@ -175,14 +190,24 @@ public static int numMembros(List<String> path){
 	return num;
 }
 
-
-public static String escolhido(){//, List<String> path){
-	List user = usuariosDoGrupo(["colegiado"]);
-if(ind==numMembros(["colegiado"])) ind=0;
+public static String escolhido(String exclude){//, List<String> path){
+	List user = usuariosDoGrupoExcludingOne(["colegiado"], exclude);
+	if(ind==(numMembros(["colegiado"])-1)) 
+		ind=0;
 	String escolhido = user.get(ind);
 	ind=ind+1;
 	return escolhido;
-	}
+}
+
+
+public static String escolhido(){//, List<String> path){
+	List user = usuariosDoGrupo(["colegiado"]);
+	if(ind==numMembros(["colegiado"])) 
+		ind=0;
+	String escolhido = user.get(ind);
+	ind=ind+1;
+	return escolhido;
+}
 
 public static boolean numMembros(List<String> path, int conta){
 	String caminho;

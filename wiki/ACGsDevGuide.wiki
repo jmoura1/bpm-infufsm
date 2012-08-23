@@ -51,5 +51,5 @@ cd ~/tools/BOS-5.7.2/studio
 svn ci -m "Descreva aqui suas alteracoes" 
 
 Ao fazer o primeiro commit, é solicitada uma senha do GoogleCode.com, a senha pode ser gerada em: https://code.google.com/hosting/settings 
-Quando necessário, insira o username escolhido (provavelmente o endereço do gmail) e a senha gerada. Pode-se escolher a opção de salvar a senha, então ela não erá solicitada nos próximos commits.
+Quando necessário, insira o username escolhido (provavelmente o endereço do gmail) e a senha gerada. Pode-se escolher a opção de salvar a senha, então ela não será solicitada nos próximos commits.
 }}}

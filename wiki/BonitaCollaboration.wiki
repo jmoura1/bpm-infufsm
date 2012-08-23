@@ -14,3 +14,4 @@
  * Subversion Best Practices: http://svn.apache.org/repos/asf/subversion/trunk/doc/user/svn-best-practices.html
  * [http://geekswithblogs.net/CodeBlog/archive/2009/09/30/intro-to-svn-trunk-tags-and-branches.aspx Intro to SVN: Trunk, Tags, and Branches]
  * http://stackoverflow.com/questions/5051221/what-happend-to-my-google-code-svn
+ * [http://aralbalkan.com/1381 How to revert (roll back) to a previous revision with Subversion]

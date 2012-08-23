@@ -16,6 +16,7 @@ import org.ow2.bonita.facade.identity.Group;
 import org.ow2.bonita.facade.APIAccessor;
 import org.ow2.bonita.facade.impl.StandardAPIAccessorImpl;
 import org.ow2.bonita.facade.exception.GroupAlreadyExistsException;
+import java.util.List;
  import org.ow2.bonita.facade.exception.GroupNotFoundException;
  import org.ow2.bonita.facade.exception.MembershipNotFoundException;
  import org.ow2.bonita.facade.exception.MetadataAlreadyExistsException;
@@ -35,12 +36,14 @@ import org.ow2.bonita.facade.exception.GroupAlreadyExistsException;
  import org.ow2.bonita.facade.QueryRuntimeAPI;
  import java.io.File;
  import java.io.FileOutputStream;
+ import java.util.List;
  import org.ow2.bonita.connector.core.ConnectorError;
  import org.ow2.bonita.connector.core.ProcessConnector;
  import org.ow2.bonita.facade.runtime.AttachmentInstance;
  import org.ow2.bonita.util.AccessorUtil;
  import java.io.File;
  import java.io.FileOutputStream;
+ import java.util.List;
  import org.ow2.bonita.facade.runtime.AttachmentInstance;
  import org.ow2.bonita.util.AccessorUtil;
  import org.ow2.bonita.facade.uuid.ActivityInstanceUUID;
@@ -155,30 +158,15 @@ public static String getPathGroupUUID(List<String> path) {
 }
 
 public static ArrayList usuariosDoGrupo(List<String> path){//recebe uma list de string com o caminho do grupo
-	String caminho;
-	Group g = AccessorUtil.getIdentityAPI().getGroupUsingPath(path);
-	caminho=g.getUUID();
-	List<User> users = AccessorUtil.getIdentityAPI().getAllUsersInGroup(caminho);
-	List userName = new ArrayList();
-	for(int i=0;i<users.size();i++){
-		userName.add(users.get(i).username);
-	}
-	return userName;
+String caminho;
+Group g = AccessorUtil.getIdentityAPI().getGroupUsingPath(path);
+caminho=g.getUUID();
+List<User> users = AccessorUtil.getIdentityAPI().getAllUsersInGroup(caminho);
+List userName = new ArrayList();
+for(int i=0;i<users.size();i++){
+userName.add(users.get(i).username);
 }
-
-//recebe uma list de string com o caminho do grupo e uma variavel com nome a excluir
-public static ArrayList usuariosDoGrupoExcludingOne(List<String> path, String exclude) {
-
-	String caminho;
-	Group g = AccessorUtil.getIdentityAPI().getGroupUsingPath(path);
-	caminho=g.getUUID();
-	List<User> users = AccessorUtil.getIdentityAPI().getAllUsersInGroup(caminho);
-	List userName = new ArrayList();
-	for (User u : users) {
-		userName.add(u.username);
-	}
-	userName.remove(exclude);
-	return userName;
+return userName;
 }
 
 public static int numMembros(List<String> path){
@@ -190,24 +178,14 @@ public static int numMembros(List<String> path){
 	return num;
 }
 
-public static String escolhido(String exclude){//, List<String> path){
-	List user = usuariosDoGrupoExcludingOne(["colegiado"], exclude);
-	if(ind==(numMembros(["colegiado"])-1)) 
-		ind=0;
-	String escolhido = user.get(ind);
-	ind=ind+1;
-	return escolhido;
-}
-
 
 public static String escolhido(){//, List<String> path){
 	List user = usuariosDoGrupo(["colegiado"]);
-	if(ind==numMembros(["colegiado"])) 
-		ind=0;
+if(ind==numMembros(["colegiado"])) ind=0;
 	String escolhido = user.get(ind);
 	ind=ind+1;
 	return escolhido;
-}
+	}
 
 public static boolean numMembros(List<String> path, int conta){
 	String caminho;

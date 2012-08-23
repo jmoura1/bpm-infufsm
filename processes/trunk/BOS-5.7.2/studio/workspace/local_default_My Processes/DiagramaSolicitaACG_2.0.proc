@@ -436,16 +436,21 @@
             <parameters xmi:type="process:Parameter" xmi:id="_jZS3SOgQEeGcaLKtkiDYiw" key="setPassword"/>
             <parameters xmi:type="process:Parameter" xmi:id="_jZS3SegQEeGcaLKtkiDYiw" key="setSubject" value="ACED000574003A4176616C6961C3A7C3A36F2064652041434720646F20637572736F20646520534920636F6D6F206D656D62726F20646F20636F6C65676961646F"/>
           </connectors>
+          <data xmi:type="process:Data" xmi:id="_PweF0O1bEeG4ZcliBqCRUA" name="respostaMembroColegiado" label="respostaMembroColegiado" dataType="_izORVP5WEeCQDYXrbWyssQ"/>
           <multiInstantiation xmi:type="process:MultiInstantiation" xmi:id="_A2z2kITnEeGk3tTJfzEOrQ" enabled="true">
             <instantiator xmi:type="process:Connector" xmi:id="_A2z2kYTnEeGk3tTJfzEOrQ" name="instanciador" label="instanciador" connectorId="VariableInstantiator">
               <parameters xmi:type="process:Parameter" xmi:id="_iOx9sOu6EeGlU-RfoR3Ubg" key="setValues" value="ACED0005740042247B47726F7570735574696C2E7573756172696F73446F477275706F4578636C7564696E674F6E65285B22636F6C65676961646F225D2C696452656C61746F72297D"/>
               <parameters xmi:type="process:Parameter" xmi:id="_iOx9seu6EeGlU-RfoR3Ubg" key="setActivityNumber" value="ACED000574000133"/>
               <parameters xmi:type="process:Parameter" xmi:id="_iOx9suu6EeGlU-RfoR3Ubg" key="setName" value="ACED000574000C696E7374616E636961646F72"/>
             </instantiator>
-            <joinChecker xmi:type="process:Connector" xmi:id="_A2z2koTnEeGk3tTJfzEOrQ" name="fim" label="fim" connectorId="PercentageJoinChecker">
-              <parameters xmi:type="process:Parameter" xmi:id="_-iDqcND9EeGWu5IogbVTGA" key="setActivityNumber" value="ACED000574000133"/>
-              <parameters xmi:type="process:Parameter" xmi:id="_-iDqcdD9EeGWu5IogbVTGA" key="setPercentage" value="ACED000574000131"/>
-              <parameters xmi:type="process:Parameter" xmi:id="_-iDqctD9EeGWu5IogbVTGA" key="setScript" value="ACED0005740012247B726573756C74203D3D202253696D227D"/>
+            <joinChecker xmi:type="process:Connector" xmi:id="_A2z2koTnEeGk3tTJfzEOrQ" name="colegiadoJoinChecker" label="colegiadoJoinChecker" connectorId="MajorityWithVetoJoinChecker">
+              <parameters xmi:type="process:Parameter" xmi:id="_bDcEUO1aEeG4ZcliBqCRUA" key="setOutputvalue" value="ACED00057400034E616F"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_bDcEUe1aEeG4ZcliBqCRUA" key="setActivityNumber" value="ACED000574000133"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_bDcEUu1aEeG4ZcliBqCRUA" key="setPercentage" value="ACED0005740003302E35"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_bDcEU-1aEeG4ZcliBqCRUA" key="setVariable" value="ACED0005740017726573706F7374614D656D62726F436F6C65676961646F"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_bDcEVO1aEeG4ZcliBqCRUA" key="setValue" value="ACED00057400034E616F"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_bDcEVe1aEeG4ZcliBqCRUA" key="setScript" value="ACED0005740012247B726573756C74203D3D202253696D227D"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_bDcEVu1aEeG4ZcliBqCRUA" key="setOutputvariable" value="ACED0005740011726573706F737461436F6C65676961646F"/>
             </joinChecker>
           </multiInstantiation>
           <form xmi:type="form:Form" xmi:id="_yHCt8UBzEeGml9OxpNtx_Q" name="Colegiado_avalia_ACG" label="Colegiado avalia ACG" nLine="16" pageLabel="Colegiado avalia ACG">
@@ -501,7 +506,7 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_nHXMsIfiEeG_x_HVNEJktg" line="11"/>
             </widgets>
             <widgets xmi:type="form:RadioFormField" xmi:id="_0tjHwNHfEeGXHb00Z3o4pg" name="Botoes_de_radio1" label="Botoes_de_radio1" displayLabel="Decisão:" enum="_9ZTjwEEgEeGuMbWTte0kVw">
-              <script xmi:type="form:GroovyScript" xmi:id="_01Dd8NHfEeGXHb00Z3o4pg" inputScript="${decisoes}"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_01Dd8NHfEeGXHb00Z3o4pg" inputScript="${decisoes}" setVarScript="respostaMembroColegiado"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_0tmyINHfEeGXHb00Z3o4pg" line="13"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_TtWbsNs_EeGygcjpMyYpHA" name="Text1" label="Text1" displayLabel="Normas:">
@@ -561,6 +566,7 @@
       <data xmi:type="process:Data" xmi:id="_jaRFkEB1EeGml9OxpNtx_Q" name="parecerRelator" label="parecerRelator" dataType="_izORVP5WEeCQDYXrbWyssQ"/>
       <data xmi:type="process:Data" xmi:id="_X1CqMDMUEeGwwNIol8NhBg" name="parecerTutor" label="parecerTutor" dataType="_izORVP5WEeCQDYXrbWyssQ"/>
       <data xmi:type="process:Data" xmi:id="_WKJEkEB7EeGml9OxpNtx_Q" name="possuiTutor" label="possuiTutor" dataType="_VhOqcEB7EeGml9OxpNtx_Q" defaultValue=""/>
+      <data xmi:type="process:Data" xmi:id="_XsBnIO1bEeG4ZcliBqCRUA" name="respostaColegiado" label="respostaColegiado" dataType="_izORVP5WEeCQDYXrbWyssQ"/>
       <data xmi:type="process:Data" xmi:id="_zP9WMIfiEeG_x_HVNEJktg" name="respostaRelator" label="respostaRelator" dataType="_izORVP5WEeCQDYXrbWyssQ"/>
       <data xmi:type="process:Data" xmi:id="_IGxr8ECFEeGml9OxpNtx_Q" name="respostaTutor" label="respostaTutor" dataType="_izORVP5WEeCQDYXrbWyssQ"/>
       <data xmi:type="process:Data" xmi:id="_yuBp4IdKEeGEOOptLiUVWg" name="result" label="result" dataType="_izORVP5WEeCQDYXrbWyssQ"/>
@@ -593,7 +599,7 @@
       <connections xmi:type="process:SequenceFlow" xmi:id="_d08ukBbCEeGBWvcRtPTwgg" source="_gqz44P6OEeCzCJWdWzPBsw" target="_qQf5YP6REeCzCJWdWzPBsw">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_d09VoBbCEeGBWvcRtPTwgg"/>
       </connections>
-      <connections xmi:type="process:SequenceFlow" xmi:id="_fcwZ4BbCEeGBWvcRtPTwgg" label="" source="_qQf5YP6REeCzCJWdWzPBsw" target="_mGragIfcEeG_x_HVNEJktg" condition="conta!=membros">
+      <connections xmi:type="process:SequenceFlow" xmi:id="_fcwZ4BbCEeGBWvcRtPTwgg" label="" source="_qQf5YP6REeCzCJWdWzPBsw" target="_mGragIfcEeG_x_HVNEJktg" condition="respostaColegiado != &quot;Nao&quot;">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_fcxA8BbCEeGBWvcRtPTwgg"/>
       </connections>
       <connections xmi:type="process:SequenceFlow" xmi:id="_2OMlAEB9EeGml9OxpNtx_Q" source="_5nLxUP5WEeCQDYXrbWyssQ" target="_gqz44P6OEeCzCJWdWzPBsw" condition="tipoACG!=&quot;II - Atuacao em nucleos tematicos;&quot; &amp;&amp; tipoACG!=&quot;III - Atividades de extensao&quot; &amp;&amp; tipoACG!=&quot;IV - Estagio extra-curricular&quot; &amp;&amp; tipoACG!=&quot;V - Atividade de iniciacao cientifica;&quot; &amp;&amp; tipoACG!=&quot;VIII - Monitoria;&quot;">
@@ -620,7 +626,7 @@
       <connections xmi:type="process:SequenceFlow" xmi:id="_qJsZYLcCEeGR3teuVCSByg" source="_n_ekkLcCEeGR3teuVCSByg" target="_dqycMP84EeC6SvMQmSieXQ">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_qKEM0LcCEeGR3teuVCSByg"/>
       </connections>
-      <connections xmi:type="process:SequenceFlow" xmi:id="_iEcesNEbEeGMsKjDtpvajg" source="_qQf5YP6REeCzCJWdWzPBsw" target="_orP-ENHgEeGXHb00Z3o4pg" condition="conta!=membros">
+      <connections xmi:type="process:SequenceFlow" xmi:id="_iEcesNEbEeGMsKjDtpvajg" source="_qQf5YP6REeCzCJWdWzPBsw" target="_orP-ENHgEeGXHb00Z3o4pg" condition="respostaColegiado == &quot;Nao&quot;">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_iEe68NEbEeGMsKjDtpvajg"/>
       </connections>
       <connections xmi:type="process:SequenceFlow" xmi:id="_rGIFENHgEeGXHb00Z3o4pg" source="_orP-ENHgEeGXHb00Z3o4pg" target="_ePv7sP8-EeC6SvMQmSieXQ">
@@ -817,6 +823,7 @@
     <includedEntries>microsoft/sharepoint/lib/mail</includedEntries>
     <includedEntries>microsoft/sharepoint/lib/jackrabbit-jcr-commons</includedEntries>
     <includedEntries>alfresco/lib/jaxen</includedEntries>
+    <includedEntries>MajorityWithVetoJoinChecker</includedEntries>
   </process:MainProcess>
   <notation:Diagram xmi:id="_i34H0P5WEeCQDYXrbWyssQ" type="Process" element="_izNDMf5WEeCQDYXrbWyssQ" name="DiagramaSolicitaACG_2.0.proc" measurementUnit="Pixel">
     <children xmi:type="notation:Node" xmi:id="_lVOUAP5WEeCQDYXrbWyssQ" type="2007" element="_lNIvAP5WEeCQDYXrbWyssQ">

@@ -1,0 +1,91 @@
+<connector>
+  <connectorId>MajorityWithVetoJoinChecker</connectorId>
+  <version>5.0</version>
+  <icon>bonita.png</icon>
+  <categories>
+    <category>
+      <name>Other</name>
+    </category>
+  </categories>
+  <inputs>
+    <setter>
+      <setterName>setPercentage</setterName>
+      <required />
+      <parameters>
+        <double>0.5</double>
+      </parameters>
+    </setter>
+    <setter>
+      <setterName>setVariable</setterName>
+      <parameters>
+        <string></string>
+      </parameters>
+    </setter>
+    <setter>
+      <setterName>setValue</setterName>
+      <parameters>
+        <string></string>
+      </parameters>
+    </setter>
+    <setter>
+      <setterName>setOutputvariable</setterName>
+      <parameters>
+        <string></string>
+      </parameters>
+    </setter>
+    <setter>
+      <setterName>setOutputvalue</setterName>
+      <parameters>
+        <string></string>
+      </parameters>
+    </setter>
+  </inputs>
+  <outputs/>
+  <pages>
+   <page>
+      <pageId>activity</pageId>
+      <widgets>
+        <text>
+          <size>20</size>
+          <maxChar>40</maxChar>
+          <setter reference="/connector/inputs/setter"/>
+          <labelId>percentage</labelId>
+        </text>
+      </widgets>
+    </page>
+    <page>
+      <pageId>Veto</pageId>
+      <widgets>
+        <text>
+          <size>20</size>
+          <maxChar>40</maxChar>
+          <setter reference="/connector/inputs/setter[2]"/>
+          <labelId>variable</labelId>
+        </text>
+        <text>
+          <size>20</size>
+          <maxChar>40</maxChar>
+          <setter reference="/connector/inputs/setter[3]"/>
+          <labelId>value</labelId>
+        </text>
+      </widgets>
+    </page>
+    <page>
+      <pageId>output</pageId>
+      <widgets>
+        <text>
+          <size>20</size>
+          <maxChar>40</maxChar>
+          <setter reference="/connector/inputs/setter[4]"/>
+          <labelId>outputvariable</labelId>
+        </text>
+        <text>
+          <size>20</size>
+          <maxChar>40</maxChar>
+          <setter reference="/connector/inputs/setter[5]"/>
+          <labelId>outputvalue</labelId>
+        </text>
+      </widgets>
+    </page>
+  </pages>
+</connector>

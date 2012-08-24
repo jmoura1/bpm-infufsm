@@ -166,6 +166,21 @@ public static ArrayList usuariosDoGrupo(List<String> path){//recebe uma list de 
 	return userName;
 }
 
+//recebe uma list de string com o caminho do grupo e uma variavel com nome a incluir
+public static ArrayList usuariosDoGrupoIncludingOne(List<String> path, String include) {
+
+	String caminho;
+	Group g = AccessorUtil.getIdentityAPI().getGroupUsingPath(path);
+	caminho=g.getUUID();
+	List<User> users = AccessorUtil.getIdentityAPI().getAllUsersInGroup(caminho);
+	List userName = new ArrayList();
+	for (User u : users) {
+		userName.add(u.username);
+	}
+	userName.add(include);
+	return userName;
+}
+
 //recebe uma list de string com o caminho do grupo e uma variavel com nome a excluir
 public static ArrayList usuariosDoGrupoExcludingOne(List<String> path, String exclude) {
 

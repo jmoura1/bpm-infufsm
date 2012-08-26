@@ -109,7 +109,7 @@
           </form>
           <transientData xmi:type="process:JavaObjectData" xmi:id="_n3QUBe4pEeGKhq6eruyG6w" name="listOfAllGroups" label="listOfAllGroups" dataType="_n3Xo0O4pEeGKhq6eruyG6w" defaultValue="" className="java.util.List"/>
         </elements>
-        <elements xmi:type="process:Task" xmi:id="_n3RiI-4pEeGKhq6eruyG6w" name="Avisa_ao_aluno___pedido_aceito" label="Avisa ao aluno - pedido aceito" outgoing="_n3XBse4pEeGKhq6eruyG6w" incoming="_n3XBt-4pEeGKhq6eruyG6w" user="" groups="_n3XBze4pEeGKhq6eruyG6w" overrideGroupsOfTheLane="true">
+        <elements xmi:type="process:Task" xmi:id="_n3RiI-4pEeGKhq6eruyG6w" name="Avisa_ao_aluno__aprovado_" label="Avisa ao aluno (aprovado)" outgoing="_n3XBse4pEeGKhq6eruyG6w" incoming="_n3XBt-4pEeGKhq6eruyG6w" user="" groups="_n3XBze4pEeGKhq6eruyG6w" overrideGroupsOfTheLane="true">
           <viewForm xmi:type="form:ViewForm" xmi:id="_n3RiJO4pEeGKhq6eruyG6w" name="Avisa_ao_aluno___pedido_aceito" label="Avisa ao aluno - pedido aceito" nLine="3" pageLabel="Avisa ao aluno - pedido aceito">
             <widgets xmi:type="form:MessageInfo" xmi:id="_n3RiJe4pEeGKhq6eruyG6w" name="Mensagem1" label="Mensagem1">
               <script xmi:type="form:GroovyScript" xmi:id="_n3RiJu4pEeGKhq6eruyG6w" inputScript="Sua solicitação foi aceita!"/>
@@ -181,9 +181,6 @@
             <parameters xmi:type="process:Parameter" xmi:id="_x-05yO5REeGo0f37u06zsQ" key="setPassword"/>
             <parameters xmi:type="process:Parameter" xmi:id="_x-05ye5REeGo0f37u06zsQ" key="setSubject" value="ACED000574002C4176616C6961C3A7C3A36F2064652041434720646F20637572736F20646520534920636F6D6F207475746F72"/>
           </connectors>
-          <data xmi:type="process:Data" xmi:id="_n3RiMO4pEeGKhq6eruyG6w" name="avalia" label="avalia" dataType="_n3Xo1u4pEeGKhq6eruyG6w" defaultValue=""/>
-          <data xmi:type="process:Data" xmi:id="_n3RiMe4pEeGKhq6eruyG6w" name="avaliacao" label="avaliação" dataType="_n3Xo3e4pEeGKhq6eruyG6w" defaultValue=""/>
-          <data xmi:type="process:Data" xmi:id="_n3RiMu4pEeGKhq6eruyG6w" name="tutorAvalia" label="tutorAvalia" dataType="_n3Xo4O4pEeGKhq6eruyG6w" defaultValue=""/>
           <form xmi:type="form:Form" xmi:id="_n3RiM-4pEeGKhq6eruyG6w" name="Tutor_avalia_ACG" label="Tutor avalia ACG" nLine="15" pageLabel="Tutor avalia ACG">
             <widgets xmi:type="form:TextInfo" xmi:id="_n3RiNO4pEeGKhq6eruyG6w" name="tipoACG" label="tipoACG" displayLabel="Tipo de ACG:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3RiNe4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.concat(tipoACG,subtipoACG)}" setVarScript="tipoACG"/>
@@ -236,8 +233,8 @@
               <script xmi:type="form:GroovyScript" xmi:id="_n3TXXu4pEeGKhq6eruyG6w" inputScript="${descricao}" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3TXX-4pEeGKhq6eruyG6w" line="4"/>
             </widgets>
-            <widgets xmi:type="form:RadioFormField" xmi:id="_HuOmMO7mEeG1cZ5cXPleEg" name="Radio_buttons1" label="Radio_buttons1" displayLabel="Decisão" enum="_n3WaqO4pEeGKhq6eruyG6w">
-              <script xmi:type="form:GroovyScript" xmi:id="_HwPYYO7mEeG1cZ5cXPleEg" inputScript="${decisoes}" setVarScript="respostaTutor"/>
+            <widgets xmi:type="form:RadioFormField" xmi:id="_HuOmMO7mEeG1cZ5cXPleEg" name="Radio_buttons1" label="Radio_buttons1" displayLabel="Decisão">
+              <script xmi:type="form:GroovyScript" xmi:id="_HwPYYO7mEeG1cZ5cXPleEg" inputScript="${def decisaoChoices = [decisaoAprovado,decisaoIndeferido]}" setVarScript="respostaTutor"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_HujWUO7mEeG1cZ5cXPleEg" line="13"/>
             </widgets>
             <widgets xmi:type="form:HtmlWidget" xmi:id="_khO64O8PEeG1cZ5cXPleEg" name="HTML_widget1" label="HTML_widget1">
@@ -334,8 +331,8 @@
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ulie4pEeGKhq6eruyG6w" inputScript="&lt;a href=&quot;http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf&quot;>Normas para ACG do Curso de SI&lt;/a>" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Uliu4pEeGKhq6eruyG6w" line="12"/>
             </widgets>
-            <widgets xmi:type="form:RadioFormField" xmi:id="_n3Uli-4pEeGKhq6eruyG6w" name="Botoes_de_radio1" label="Botoes_de_radio1" displayLabel="Decisão" enum="_n3WaqO4pEeGKhq6eruyG6w">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3UljO4pEeGKhq6eruyG6w" inputScript="${decisoes}" setVarScript="respostaRelator"/>
+            <widgets xmi:type="form:RadioFormField" xmi:id="_n3Uli-4pEeGKhq6eruyG6w" name="Botoes_de_radio1" label="Botoes_de_radio1" displayLabel="Decisão">
+              <script xmi:type="form:GroovyScript" xmi:id="_n3UljO4pEeGKhq6eruyG6w" inputScript="${def decisaoChoices = [decisaoAprovado,decisaoIndeferido]}" setVarScript="respostaRelator"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ulje4pEeGKhq6eruyG6w" line="18"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3Ulju4pEeGKhq6eruyG6w" name="Texto3" label="Texto3" displayLabel="Descrição da atividade:">
@@ -396,13 +393,13 @@
               <parameters xmi:type="process:Parameter" xmi:id="_n3VMjO4pEeGKhq6eruyG6w" key="setName" value="ACED000574000C696E7374616E636961646F72"/>
             </instantiator>
             <joinChecker xmi:type="process:Connector" xmi:id="_n3VMje4pEeGKhq6eruyG6w" name="colegiadoJoinChecker" label="colegiadoJoinChecker" connectorId="MajorityWithVetoJoinChecker">
-              <parameters xmi:type="process:Parameter" xmi:id="_n3VMju4pEeGKhq6eruyG6w" key="setOutputvalue" value="ACED00057400034E616F"/>
-              <parameters xmi:type="process:Parameter" xmi:id="_n3VMj-4pEeGKhq6eruyG6w" key="setActivityNumber" value="ACED000574000133"/>
-              <parameters xmi:type="process:Parameter" xmi:id="_n3VMkO4pEeGKhq6eruyG6w" key="setPercentage" value="ACED0005740003302E35"/>
-              <parameters xmi:type="process:Parameter" xmi:id="_n3VMke4pEeGKhq6eruyG6w" key="setVariable" value="ACED0005740017726573706F7374614D656D62726F436F6C65676961646F"/>
-              <parameters xmi:type="process:Parameter" xmi:id="_n3VMku4pEeGKhq6eruyG6w" key="setValue" value="ACED00057400034E616F"/>
-              <parameters xmi:type="process:Parameter" xmi:id="_n3VMk-4pEeGKhq6eruyG6w" key="setScript" value="ACED0005740012247B726573756C74203D3D202253696D227D"/>
-              <parameters xmi:type="process:Parameter" xmi:id="_n3VMlO4pEeGKhq6eruyG6w" key="setOutputvariable" value="ACED0005740011726573706F737461436F6C65676961646F"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_iXBf8O95EeGdDd8nrBFK1A" key="setOutputvalue" value="ACED0005740014247B6465636973616F496E646566657269646F7D"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_iXBf8e95EeGdDd8nrBFK1A" key="setActivityNumber" value="ACED000574000133"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_iXBf8u95EeGdDd8nrBFK1A" key="setPercentage" value="ACED0005740003302E35"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_iXBf8-95EeGdDd8nrBFK1A" key="setVariable" value="ACED0005740017726573706F7374614D656D62726F436F6C65676961646F"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_iXBf9O95EeGdDd8nrBFK1A" key="setValue" value="ACED0005740014247B6465636973616F496E646566657269646F7D"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_iXBf9e95EeGdDd8nrBFK1A" key="setScript" value="ACED0005740012247B726573756C74203D3D202253696D227D"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_iXBf9u95EeGdDd8nrBFK1A" key="setOutputvariable" value="ACED0005740011726573706F737461436F6C65676961646F"/>
             </joinChecker>
           </multiInstantiation>
           <form xmi:type="form:Form" xmi:id="_n3VMle4pEeGKhq6eruyG6w" name="Colegiado_avalia_ACG" label="Colegiado avalia ACG" nLine="17" pageLabel="Colegiado avalia ACG">
@@ -457,8 +454,8 @@
               <script xmi:type="form:GroovyScript" xmi:id="_n3Vzne4pEeGKhq6eruyG6w" inputScript="${respostaRelator}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Vznu4pEeGKhq6eruyG6w" line="12"/>
             </widgets>
-            <widgets xmi:type="form:RadioFormField" xmi:id="_n3Vzn-4pEeGKhq6eruyG6w" name="Botoes_de_radio1" label="Botoes_de_radio1" displayLabel="Decisão:" enum="_n3WaqO4pEeGKhq6eruyG6w">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3VzoO4pEeGKhq6eruyG6w" inputScript="${decisoes}" setVarScript="respostaMembroColegiado"/>
+            <widgets xmi:type="form:RadioFormField" xmi:id="_n3Vzn-4pEeGKhq6eruyG6w" name="Botoes_de_radio1" label="Botoes_de_radio1" displayLabel="Decisão:">
+              <script xmi:type="form:GroovyScript" xmi:id="_n3VzoO4pEeGKhq6eruyG6w" inputScript="${def decisaoChoices = [decisaoAprovado,decisaoIndeferido]}" setVarScript="respostaMembroColegiado"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Vzoe4pEeGKhq6eruyG6w" line="14"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3Vzou4pEeGKhq6eruyG6w" name="Text1" label="Text1" displayLabel="Normas:">
@@ -477,9 +474,9 @@
           </filters>
         </elements>
       </elements>
-      <elements xmi:type="process:Lane" xmi:id="_n3VzrO4pEeGKhq6eruyG6w" name="Coordenacao" label="Coordenação">
+      <elements xmi:type="process:Lane" xmi:id="_n3VzrO4pEeGKhq6eruyG6w" name="Coordenacao" label="Coordenação" user="">
         <elements xmi:type="process:EndEvent" xmi:id="_n3Vzre4pEeGKhq6eruyG6w" name="Fim2" label="Fim2" incoming="_n3XBse4pEeGKhq6eruyG6w _n3XBy-4pEeGKhq6eruyG6w"/>
-        <elements xmi:type="process:Task" xmi:id="_n3Vzru4pEeGKhq6eruyG6w" name="Etapa7" label="Etapa7" outgoing="_n3XBy-4pEeGKhq6eruyG6w" incoming="_n3XBye4pEeGKhq6eruyG6w" user="" groups="_n3XBze4pEeGKhq6eruyG6w" overrideGroupsOfTheLane="true">
+        <elements xmi:type="process:Task" xmi:id="_n3Vzru4pEeGKhq6eruyG6w" name="Avisa_ao_aluno__indeferido_" label="Avisa ao aluno (indeferido)" outgoing="_n3XBy-4pEeGKhq6eruyG6w" incoming="_n3XBye4pEeGKhq6eruyG6w" user="" groups="_n3XBze4pEeGKhq6eruyG6w" overrideGroupsOfTheLane="true">
           <form xmi:type="form:Form" xmi:id="_n3Vzr-4pEeGKhq6eruyG6w" name="Etapa7" label="Etapa7" nLine="3" pageLabel="Etapa7">
             <widgets xmi:type="form:SubmitFormButton" xmi:id="_n3VzsO4pEeGKhq6eruyG6w" name="Enviar1" label="Enviar1" displayLabel="Enviar">
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Vzse4pEeGKhq6eruyG6w" line="2"/>
@@ -510,6 +507,8 @@
       <data xmi:type="process:Data" xmi:id="_n3Wape4pEeGKhq6eruyG6w" name="conta" label="conta" dataType="_n3XozO4pEeGKhq6eruyG6w" defaultValue="0"/>
       <data xmi:type="process:Data" xmi:id="_n3Wapu4pEeGKhq6eruyG6w" name="dataFim" label="dataFim" dataType="_n3Xoy-4pEeGKhq6eruyG6w" defaultValue=""/>
       <data xmi:type="process:Data" xmi:id="_n3Wap-4pEeGKhq6eruyG6w" name="dataInicio" label="dataInicio" dataType="_n3Xoy-4pEeGKhq6eruyG6w" defaultValue=""/>
+      <data xmi:type="process:Data" xmi:id="_PWDNke9yEeGdDd8nrBFK1A" name="decisaoAprovado" label="decisaoAprovado" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="Aprovado"/>
+      <data xmi:type="process:Data" xmi:id="_RNw9IO9yEeGdDd8nrBFK1A" name="decisaoIndeferido" label="decisaoIndeferido" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="Indeferido"/>
       <data xmi:type="process:Data" xmi:id="_n3WaqO4pEeGKhq6eruyG6w" name="decisoes" label="decisoes" dataType="_n3Xo5u4pEeGKhq6eruyG6w" defaultValue=""/>
       <data xmi:type="process:Data" xmi:id="_n3Waqe4pEeGKhq6eruyG6w" name="descricao" label="descricao" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
       <data xmi:type="process:AttachmentData" xmi:id="_n3Waqu4pEeGKhq6eruyG6w" name="file" label="file" dataType="_n3Xoz-4pEeGKhq6eruyG6w" defaultValue=""/>
@@ -558,22 +557,22 @@
       <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBse4pEeGKhq6eruyG6w" source="_n3RiI-4pEeGKhq6eruyG6w" target="_n3Vzre4pEeGKhq6eruyG6w">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3XBsu4pEeGKhq6eruyG6w"/>
       </connections>
-      <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBs-4pEeGKhq6eruyG6w" name="aprovado" label="aprovado" source="_n3RiL-4pEeGKhq6eruyG6w" target="_n3T-bO4pEeGKhq6eruyG6w" condition="respostaTutor == &quot;Sim&quot;">
+      <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBs-4pEeGKhq6eruyG6w" name="aprovado" label="aprovado" source="_n3RiL-4pEeGKhq6eruyG6w" target="_n3T-bO4pEeGKhq6eruyG6w" condition="respostaTutor == decisaoAprovado">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3XBtO4pEeGKhq6eruyG6w"/>
       </connections>
       <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBte4pEeGKhq6eruyG6w" source="_n3T-bO4pEeGKhq6eruyG6w" target="_n3UllO4pEeGKhq6eruyG6w">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3XBtu4pEeGKhq6eruyG6w"/>
       </connections>
-      <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBt-4pEeGKhq6eruyG6w" label="" source="_n3UllO4pEeGKhq6eruyG6w" target="_n3RiI-4pEeGKhq6eruyG6w" condition="respostaColegiado != &quot;Nao&quot;">
+      <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBt-4pEeGKhq6eruyG6w" label="" source="_n3UllO4pEeGKhq6eruyG6w" target="_n3RiI-4pEeGKhq6eruyG6w" condition="respostaColegiado != decisaoIndeferido">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3XBuO4pEeGKhq6eruyG6w"/>
       </connections>
       <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBue4pEeGKhq6eruyG6w" name="nao_necessita_tutor" label="nao necessita tutor" source="_n3PF4u4pEeGKhq6eruyG6w" target="_n3T-bO4pEeGKhq6eruyG6w" condition="tipoACG!=&quot;II - Atuacao em nucleos tematicos;&quot; &amp;&amp; tipoACG!=&quot;III - Atividades de extensao&quot; &amp;&amp; tipoACG!=&quot;IV - Estagio extra-curricular&quot; &amp;&amp; tipoACG!=&quot;V - Atividade de iniciacao cientifica;&quot; &amp;&amp; tipoACG!=&quot;VIII - Monitoria;&quot;">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3XBuu4pEeGKhq6eruyG6w"/>
       </connections>
-      <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBu-4pEeGKhq6eruyG6w" name="indeferido" label="indeferido" source="_n3RiL-4pEeGKhq6eruyG6w" target="_XhNxgO5cEeGo0f37u06zsQ" condition="respostaTutor == &quot;Nao&quot;">
+      <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBu-4pEeGKhq6eruyG6w" name="indeferido" label="indeferido" source="_n3RiL-4pEeGKhq6eruyG6w" target="_XhNxgO5cEeGo0f37u06zsQ" condition="respostaTutor == decisaoIndeferido">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3XBvO4pEeGKhq6eruyG6w"/>
       </connections>
-      <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBye4pEeGKhq6eruyG6w" source="_n3UllO4pEeGKhq6eruyG6w" target="_n3Vzru4pEeGKhq6eruyG6w" condition="respostaColegiado == &quot;Nao&quot;">
+      <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBye4pEeGKhq6eruyG6w" source="_n3UllO4pEeGKhq6eruyG6w" target="_n3Vzru4pEeGKhq6eruyG6w" condition="respostaColegiado == decisaoIndeferido">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3XByu4pEeGKhq6eruyG6w"/>
       </connections>
       <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBy-4pEeGKhq6eruyG6w" source="_n3Vzru4pEeGKhq6eruyG6w" target="_n3Vzre4pEeGKhq6eruyG6w">
@@ -738,6 +737,10 @@
       <literals>Maria</literals>
       <literals>Pedro</literals>
     </datatypes>
+    <datatypes xmi:type="process:EnumType" xmi:id="_fe3EMO9yEeGdDd8nrBFK1A" name="DecisaoChoices" label="DecisaoChoices">
+      <literals>${decisaoAprovado}</literals>
+      <literals>${decisaoIndeferido}</literals>
+    </datatypes>
     <includedEntries>GroupsUtil.groovy</includedEntries>
     <includedEntries>GetAttachFile</includedEntries>
     <includedEntries>GroovyFilter</includedEntries>
@@ -876,7 +879,7 @@
             </children>
             <children xmi:type="notation:Shape" xmi:id="_n3Y2--4pEeGKhq6eruyG6w" type="3005" element="_n3Vzru4pEeGKhq6eruyG6w" fontName="Ubuntu" fillColor="14334392" lineColor="10710316">
               <children xmi:type="notation:DecorationNode" xmi:id="_n3Y2_O4pEeGKhq6eruyG6w" type="5005"/>
-              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3Y2_e4pEeGKhq6eruyG6w" x="808" y="98"/>
+              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3Y2_e4pEeGKhq6eruyG6w" x="808" y="98" width="120" height="60"/>
             </children>
           </children>
           <styles xmi:type="notation:DescriptionStyle" xmi:id="_n3Y2_u4pEeGKhq6eruyG6w"/>

@@ -36,7 +36,7 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PF_u4pEeGKhq6eruyG6w" line="3"/>
               <validators xmi:type="form:Validator" xmi:id="_n3PF_-4pEeGKhq6eruyG6w" validatorClass="org.bonitasoft.forms.server.validator.GroovyFieldValidator" label="Matrícula deve ser um número inteiro!" name="Campo_de_texto2Validator1" parameter="return (Integer.parseInt(field_Campo_de_texto2))>0"/>
             </widgets>
-            <widgets xmi:type="form:TextFormField" xmi:id="_n3PGAO4pEeGKhq6eruyG6w" name="Campo_de_texto6" label="Campo de texto6" displayLabel="Carga Horária" mandatory="true" useDefaultValidator="false">
+            <widgets xmi:type="form:TextFormField" xmi:id="_n3PGAO4pEeGKhq6eruyG6w" name="Campo_de_texto6" label="Campo de texto6" displayLabel="Carga horária" mandatory="true" useDefaultValidator="false">
               <script xmi:type="form:GroovyScript" xmi:id="_n3PGAe4pEeGKhq6eruyG6w" inputScript="" setVarScript="cargaHoraria"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PGAu4pEeGKhq6eruyG6w" line="6"/>
               <validators xmi:type="form:Validator" xmi:id="_n3PGA-4pEeGKhq6eruyG6w" validatorClass="org.bonitasoft.forms.server.validator.GroovyFieldValidator" label="Carga horária deve ser um número inteiro maior que 0." name="Campo_de_texto6Validador1" parameter="return (Integer.parseInt(field_Campo_de_texto6)>0)"/>
@@ -49,13 +49,9 @@
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ps8e4pEeGKhq6eruyG6w" setVarScript="dataFim"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ps8u4pEeGKhq6eruyG6w" line="8"/>
             </widgets>
-            <widgets xmi:type="form:TextFormField" xmi:id="_n3Ps8-4pEeGKhq6eruyG6w" name="Campo_de_texto7" label="Campo de texto7" displayLabel="Login:" mandatory="true">
+            <widgets xmi:type="form:TextFormField" xmi:id="_n3Ps8-4pEeGKhq6eruyG6w" name="Campo_de_texto7" label="Campo de texto7" displayLabel="Login:" readOnly="true">
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ps9O4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.nameOfLoggedUser()}" setVarScript="login"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ps9e4pEeGKhq6eruyG6w" line="1"/>
-            </widgets>
-            <widgets xmi:type="form:TextInfo" xmi:id="_n3Ps9u4pEeGKhq6eruyG6w" name="dataSolAluno" label="dataSolAluno" displayLabel="Data da solicitação:">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3Ps9-4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.getCurrentDate()}"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ps-O4pEeGKhq6eruyG6w"/>
             </widgets>
             <widgets xmi:type="form:SelectFormField" xmi:id="_n3Ps-e4pEeGKhq6eruyG6w" name="Copia_de_TipoDeACG" label="Cópia de TipoDeACG" tooltip="" displayLabel="Tipo de ACG" mandatory="true" injectWidgetScript="${tacgs}" defaultValue="VIII - Monitoria;" enum="_n3PF9u4pEeGKhq6eruyG6w">
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ps-u4pEeGKhq6eruyG6w" inputScript="${tacgs}" setVarScript="tipoACG"/>
@@ -75,6 +71,10 @@
             <widgets xmi:type="form:TextFormField" xmi:id="_n3PtBO4pEeGKhq6eruyG6w" name="Campo_de_texto10" label="Campo_de_texto10" displayLabel="Descrição da atividade" mandatory="true">
               <script xmi:type="form:GroovyScript" xmi:id="_n3PtBe4pEeGKhq6eruyG6w" setVarScript="descricao"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtBu4pEeGKhq6eruyG6w" line="4"/>
+            </widgets>
+            <widgets xmi:type="form:TextFormField" xmi:id="_6pPwUO8OEeG1cZ5cXPleEg" name="Text_field1" label="Text_field1" displayLabel="Data da solicitação" readOnly="true">
+              <script xmi:type="form:GroovyScript" xmi:id="_6yi2QO8OEeG1cZ5cXPleEg" inputScript="${GroupsUtil.getCurrentDate()}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_6pSMke8OEeG1cZ5cXPleEg"/>
             </widgets>
             <scripts xmi:type="form:GroovyScript" xmi:id="_n3PtB-4pEeGKhq6eruyG6w"/>
           </form>
@@ -102,9 +102,9 @@
               <script xmi:type="form:GroovyScript" xmi:id="_n3QUA-4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.usuariosDoGrupoIncludingOne([grupoTutores],tutorNaoCadastrado)}" setVarScript="nomeTutor"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3QUBO4pEeGKhq6eruyG6w" line="2"/>
             </widgets>
-            <widgets xmi:type="form:TextInfo" xmi:id="_8uqD4O4tEeGib_PvtXCvog" name="Text1" label="Text1" displayLabel="Tipo de ACG">
-              <script xmi:type="form:GroovyScript" xmi:id="_9wAzMO4tEeGib_PvtXCvog" inputScript="${field_Copia_de_TipoDeACG}"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_8uu8Ye4tEeGib_PvtXCvog"/>
+            <widgets xmi:type="form:TextFormField" xmi:id="_uzf04O8PEeG1cZ5cXPleEg" name="Text_field2" label="Text_field2" displayLabel="Tipo de ACG" readOnly="true">
+              <script xmi:type="form:GroovyScript" xmi:id="_xlNHgO8PEeG1cZ5cXPleEg" inputScript="${field_Copia_de_TipoDeACG}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_uzjfQO8PEeG1cZ5cXPleEg"/>
             </widgets>
           </form>
           <transientData xmi:type="process:JavaObjectData" xmi:id="_n3QUBe4pEeGKhq6eruyG6w" name="listOfAllGroups" label="listOfAllGroups" dataType="_n3Xo0O4pEeGKhq6eruyG6w" defaultValue="" className="java.util.List"/>
@@ -184,10 +184,10 @@
           <data xmi:type="process:Data" xmi:id="_n3RiMO4pEeGKhq6eruyG6w" name="avalia" label="avalia" dataType="_n3Xo1u4pEeGKhq6eruyG6w" defaultValue=""/>
           <data xmi:type="process:Data" xmi:id="_n3RiMe4pEeGKhq6eruyG6w" name="avaliacao" label="avaliação" dataType="_n3Xo3e4pEeGKhq6eruyG6w" defaultValue=""/>
           <data xmi:type="process:Data" xmi:id="_n3RiMu4pEeGKhq6eruyG6w" name="tutorAvalia" label="tutorAvalia" dataType="_n3Xo4O4pEeGKhq6eruyG6w" defaultValue=""/>
-          <form xmi:type="form:Form" xmi:id="_n3RiM-4pEeGKhq6eruyG6w" name="Tutor_avalia_ACG" label="Tutor avalia ACG" nLine="16" pageLabel="Tutor avalia ACG">
+          <form xmi:type="form:Form" xmi:id="_n3RiM-4pEeGKhq6eruyG6w" name="Tutor_avalia_ACG" label="Tutor avalia ACG" nLine="15" pageLabel="Tutor avalia ACG">
             <widgets xmi:type="form:TextInfo" xmi:id="_n3RiNO4pEeGKhq6eruyG6w" name="tipoACG" label="tipoACG" displayLabel="Tipo de ACG:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3RiNe4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.concat(tipoACG,subtipoACG)}" setVarScript="tipoACG"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3RiNu4pEeGKhq6eruyG6w" line="9"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3RiNu4pEeGKhq6eruyG6w" line="8"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3RiN-4pEeGKhq6eruyG6w" name="NomeDoAluno" label="NomeDoAluno" displayLabel="Nome do aluno:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3RiOO4pEeGKhq6eruyG6w" inputScript="${name}" setVarScript="name"/>
@@ -199,54 +199,50 @@
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3RiPe4pEeGKhq6eruyG6w" name="Lins" label="Lins" displayLabel="Link para a documentação:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3SJMO4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.createLink(GroupsUtil.concat(numeroMatricula,file.getFileName()), link)}" allowHTMLInValues="true"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3SJMe4pEeGKhq6eruyG6w" line="11"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3SJMe4pEeGKhq6eruyG6w" line="9"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3SJMu4pEeGKhq6eruyG6w" name="Campo_de_texto1" label="Campo de texto1" displayLabel="Data da avaliação:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3SJM-4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.getCurrentDate()}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3SJNO4pEeGKhq6eruyG6w"/>
             </widgets>
-            <widgets xmi:type="form:CheckBoxSingleFormField" xmi:id="_n3SJNe4pEeGKhq6eruyG6w" name="Caixa_de_marcar1" label="Caixa de marcar1" displayLabel="Selecione se desejar alterar o tipo de ACG:">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3SJNu4pEeGKhq6eruyG6w" setVarScript="mudaACG"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3SJN-4pEeGKhq6eruyG6w" line="10"/>
-            </widgets>
-            <widgets xmi:type="form:CheckBoxSingleFormField" xmi:id="_n3SJOO4pEeGKhq6eruyG6w" name="Caixa_de_marcar2" label="Caixa de marcar2" displayLabel="Selecione se desejar alterar a carga horária:">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3SJOe4pEeGKhq6eruyG6w" setVarScript="mudaCarga"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3SJOu4pEeGKhq6eruyG6w" line="8"/>
-            </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3SJO-4pEeGKhq6eruyG6w" name="Texto1" label="Texto1" displayLabel="Local da atividade:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3SJPO4pEeGKhq6eruyG6w" inputScript="${local}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3SJPe4pEeGKhq6eruyG6w" line="3"/>
             </widgets>
-            <widgets xmi:type="form:TextInfo" xmi:id="_n3SJPu4pEeGKhq6eruyG6w" name="cargaHoraria" label="cargaHoraria" displayLabel="Carga Horária:">
+            <widgets xmi:type="form:TextInfo" xmi:id="_n3SJPu4pEeGKhq6eruyG6w" name="cargaHoraria" label="cargaHoraria" displayLabel="Carga horária:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3SJP-4pEeGKhq6eruyG6w" inputScript="${cargaHoraria}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3SJQO4pEeGKhq6eruyG6w" line="7"/>
             </widgets>
-            <widgets xmi:type="form:TextInfo" xmi:id="_n3SJQe4pEeGKhq6eruyG6w" name="Campo_de_texto3" label="Campo_de_texto3" displayLabel="Data Inicio:">
+            <widgets xmi:type="form:TextInfo" xmi:id="_n3SJQe4pEeGKhq6eruyG6w" name="Campo_de_texto3" label="Campo_de_texto3" displayLabel="Data inicial:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3SJQu4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.formataData(dataInicio)}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3SJQ-4pEeGKhq6eruyG6w" line="5"/>
             </widgets>
-            <widgets xmi:type="form:TextInfo" xmi:id="_n3SJRO4pEeGKhq6eruyG6w" name="Campo_de_texto4" label="Campo_de_texto4" displayLabel="Data Fim:">
+            <widgets xmi:type="form:TextInfo" xmi:id="_n3SJRO4pEeGKhq6eruyG6w" name="Campo_de_texto4" label="Campo_de_texto4" displayLabel="Data final:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3TXUO4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.formataData(dataFim)}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3TXUe4pEeGKhq6eruyG6w" line="6"/>
             </widgets>
-            <widgets xmi:type="form:TextAreaFormField" xmi:id="_n3TXUu4pEeGKhq6eruyG6w" name="Area_de_texto1" label="Área de texto1" displayLabel="Parecer">
+            <widgets xmi:type="form:TextAreaFormField" xmi:id="_n3TXUu4pEeGKhq6eruyG6w" name="Area_de_texto1" label="Área de texto1" displayLabel="Parecer/Comentário">
               <script xmi:type="form:GroovyScript" xmi:id="_n3TXU-4pEeGKhq6eruyG6w" setVarScript="parecerTutor"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3TXVO4pEeGKhq6eruyG6w" line="13"/>
-            </widgets>
-            <widgets xmi:type="form:SelectFormField" xmi:id="_n3TXVe4pEeGKhq6eruyG6w" name="Selecao1" label="Seleção1" displayLabel="Decisão:" enum="_n3WaqO4pEeGKhq6eruyG6w">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3TXVu4pEeGKhq6eruyG6w" inputScript="${decisoes}" setVarScript="respostaTutor"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3TXV-4pEeGKhq6eruyG6w" line="14"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3TXVO4pEeGKhq6eruyG6w" line="12"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3TXWO4pEeGKhq6eruyG6w" name="Texto2" label="Texto2" displayLabel="Normas:" realHtmlAttributes="">
               <script xmi:type="form:GroovyScript" xmi:id="_n3TXWe4pEeGKhq6eruyG6w" inputScript="&lt;a href=&quot;http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf&quot;>Normas para ACG do Curso de SI&lt;/a>&#xA;&#xA;" allowHTMLInValues="true"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3TXWu4pEeGKhq6eruyG6w" line="12"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3TXWu4pEeGKhq6eruyG6w" line="10"/>
             </widgets>
             <widgets xmi:type="form:SubmitFormButton" xmi:id="_n3TXW-4pEeGKhq6eruyG6w" name="Enviar2" label="Enviar2" displayLabel="Enviar">
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3TXXO4pEeGKhq6eruyG6w" line="15"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3TXXO4pEeGKhq6eruyG6w" line="14"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3TXXe4pEeGKhq6eruyG6w" name="Texto3" label="Texto3" displayLabel="Descrição da atividade:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3TXXu4pEeGKhq6eruyG6w" inputScript="${descricao}" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3TXX-4pEeGKhq6eruyG6w" line="4"/>
+            </widgets>
+            <widgets xmi:type="form:RadioFormField" xmi:id="_HuOmMO7mEeG1cZ5cXPleEg" name="Radio_buttons1" label="Radio_buttons1" displayLabel="Decisão" enum="_n3WaqO4pEeGKhq6eruyG6w">
+              <script xmi:type="form:GroovyScript" xmi:id="_HwPYYO7mEeG1cZ5cXPleEg" inputScript="${decisoes}" setVarScript="respostaTutor"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_HujWUO7mEeG1cZ5cXPleEg" line="13"/>
+            </widgets>
+            <widgets xmi:type="form:HtmlWidget" xmi:id="_khO64O8PEeG1cZ5cXPleEg" name="HTML_widget1" label="HTML_widget1">
+              <script xmi:type="form:GroovyScript" xmi:id="_k_lq0O8PEeG1cZ5cXPleEg" inputScript="&lt;hr>&lt;/hr>"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_khTzYO8PEeG1cZ5cXPleEg" line="11"/>
             </widgets>
           </form>
         </elements>
@@ -285,9 +281,10 @@
             <parameters xmi:type="process:Parameter" xmi:id="_n3T-gO4pEeGKhq6eruyG6w" key="setVariableName" value="ACED0005740009696452656C61746F72"/>
             <parameters xmi:type="process:Parameter" xmi:id="_n3T-ge4pEeGKhq6eruyG6w" key="setValue" value="ACED0005740021247B6163746976697479496E7374616E63652E6765745461736B5573657228297D"/>
           </connectors>
-          <form xmi:type="form:Form" xmi:id="_n3T-gu4pEeGKhq6eruyG6w" name="Relator_avalia_ACG" label="Relator avalia ACG" nLine="15" pageLabel="Relator avalia ACG">
+          <data xmi:type="process:Data" xmi:id="_atq2cO8MEeG1cZ5cXPleEg" name="tacgs" label="tacgs" dataType="_n3Xo5O4pEeGKhq6eruyG6w" defaultValue=""/>
+          <form xmi:type="form:Form" xmi:id="_n3T-gu4pEeGKhq6eruyG6w" name="Relator_avalia_ACG" label="Relator avalia ACG" nLine="20" pageLabel="Relator avalia ACG">
             <widgets xmi:type="form:SubmitFormButton" xmi:id="_n3T-g-4pEeGKhq6eruyG6w" name="Enviar1" label="Enviar1" displayLabel="Enviar">
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3T-hO4pEeGKhq6eruyG6w" line="14"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3T-hO4pEeGKhq6eruyG6w" line="19"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3T-he4pEeGKhq6eruyG6w" name="Texto1" label="Texto1" displayLabel="Data da avaliação:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3T-hu4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.getCurrentDate()}"/>
@@ -301,7 +298,7 @@
               <script xmi:type="form:GroovyScript" xmi:id="_n3T-jO4pEeGKhq6eruyG6w" inputScript="${numeroMatricula}" setVarScript="matricula"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3T-je4pEeGKhq6eruyG6w" line="2"/>
             </widgets>
-            <widgets xmi:type="form:TextInfo" xmi:id="_n3UlcO4pEeGKhq6eruyG6w" name="cargaHoraria" label="cargaHoraria" displayLabel="Carga Horária:">
+            <widgets xmi:type="form:TextInfo" xmi:id="_n3UlcO4pEeGKhq6eruyG6w" name="cargaHoraria" label="cargaHoraria" displayLabel="Carga horária:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ulce4pEeGKhq6eruyG6w" inputScript="${cargaHoraria}" setVarScript="cargaHoraria"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ulcu4pEeGKhq6eruyG6w" line="5"/>
             </widgets>
@@ -313,37 +310,57 @@
               <script xmi:type="form:GroovyScript" xmi:id="_n3Uld-4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.createLink(GroupsUtil.concat(numeroMatricula,file.getFileName()), link)}" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3UleO4pEeGKhq6eruyG6w" line="9"/>
             </widgets>
-            <widgets xmi:type="form:TextInfo" xmi:id="_n3Ulee4pEeGKhq6eruyG6w" name="Texto2" label="Texto2" displayLabel="Parecer do professor responsável:" injectWidgetCondition="true" injectWidgetScript="boolTutor == true">
+            <widgets xmi:type="form:TextInfo" xmi:id="_n3Ulee4pEeGKhq6eruyG6w" name="textParecerTutor" label="textParecerTutor" displayLabel="Parecer do responsável:" injectWidgetScript="boolTutor == true">
               <script xmi:type="form:GroovyScript" xmi:id="_n3Uleu4pEeGKhq6eruyG6w" inputScript="${parecerTutor}"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ule-4pEeGKhq6eruyG6w" line="10"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ule-4pEeGKhq6eruyG6w" line="11"/>
             </widgets>
-            <widgets xmi:type="form:TextAreaFormField" xmi:id="_n3UlfO4pEeGKhq6eruyG6w" name="Area_de_texto1" label="Área de texto1" displayLabel="Parecer:">
+            <widgets xmi:type="form:TextAreaFormField" xmi:id="_n3UlfO4pEeGKhq6eruyG6w" name="Area_de_texto1" label="Área de texto1" displayLabel="Parecer">
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ulfe4pEeGKhq6eruyG6w" setVarScript="parecerRelator"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ulfu4pEeGKhq6eruyG6w" line="12"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ulfu4pEeGKhq6eruyG6w" line="17"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3Ulf-4pEeGKhq6eruyG6w" name="Copia_de_Texto1" label="Cópia de Texto1" displayLabel="Local da atividade:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3UlgO4pEeGKhq6eruyG6w" inputScript="${local}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ulge4pEeGKhq6eruyG6w" line="3"/>
             </widgets>
-            <widgets xmi:type="form:TextInfo" xmi:id="_n3Ulgu4pEeGKhq6eruyG6w" name="Campo_de_texto3" label="Campo_de_texto3" displayLabel="Data Início:">
+            <widgets xmi:type="form:TextInfo" xmi:id="_n3Ulgu4pEeGKhq6eruyG6w" name="Campo_de_texto3" label="Campo_de_texto3" displayLabel="Data inicial:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ulg-4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.formataData(dataInicio)}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3UlhO4pEeGKhq6eruyG6w" line="6"/>
             </widgets>
-            <widgets xmi:type="form:TextInfo" xmi:id="_n3Ulhe4pEeGKhq6eruyG6w" name="Campo_de_texto4" label="Campo_de_texto4" displayLabel="Data Fim:">
+            <widgets xmi:type="form:TextInfo" xmi:id="_n3Ulhe4pEeGKhq6eruyG6w" name="Campo_de_texto4" label="Campo_de_texto4" displayLabel="Data final:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ulhu4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.formataData(dataFim)}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ulh-4pEeGKhq6eruyG6w" line="7"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3UliO4pEeGKhq6eruyG6w" name="Copia_de_Texto2" label="Cópia de Texto2" displayLabel="Normas:" realHtmlAttributes="">
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ulie4pEeGKhq6eruyG6w" inputScript="&lt;a href=&quot;http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf&quot;>Normas para ACG do Curso de SI&lt;/a>" allowHTMLInValues="true"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Uliu4pEeGKhq6eruyG6w" line="11"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Uliu4pEeGKhq6eruyG6w" line="12"/>
             </widgets>
-            <widgets xmi:type="form:RadioFormField" xmi:id="_n3Uli-4pEeGKhq6eruyG6w" name="Botoes_de_radio1" label="Botoes_de_radio1" displayLabel="Decisão:" enum="_n3WaqO4pEeGKhq6eruyG6w">
+            <widgets xmi:type="form:RadioFormField" xmi:id="_n3Uli-4pEeGKhq6eruyG6w" name="Botoes_de_radio1" label="Botoes_de_radio1" displayLabel="Decisão" enum="_n3WaqO4pEeGKhq6eruyG6w">
               <script xmi:type="form:GroovyScript" xmi:id="_n3UljO4pEeGKhq6eruyG6w" inputScript="${decisoes}" setVarScript="respostaRelator"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ulje4pEeGKhq6eruyG6w" line="13"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ulje4pEeGKhq6eruyG6w" line="18"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3Ulju4pEeGKhq6eruyG6w" name="Texto3" label="Texto3" displayLabel="Descrição da atividade:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ulj-4pEeGKhq6eruyG6w" inputScript="${descricao}" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3UlkO4pEeGKhq6eruyG6w" line="4"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_nmjpsO7mEeG1cZ5cXPleEg" name="Text1" label="Text1" displayLabel="Tutor/responsável:">
+              <script xmi:type="form:GroovyScript" xmi:id="_pZmUoO7mEeG1cZ5cXPleEg" inputScript="${nomeTutor}&#xD;"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_nmmtAe7mEeG1cZ5cXPleEg" line="10"/>
+            </widgets>
+            <widgets xmi:type="form:HtmlWidget" xmi:id="_AIl1EO7nEeG1cZ5cXPleEg" name="HTML_widget1" label="HTML_widget1">
+              <script xmi:type="form:GroovyScript" xmi:id="_FC_SgO7nEeG1cZ5cXPleEg" inputScript="&lt;hr>&lt;/hr>"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_AIqtkO7nEeG1cZ5cXPleEg" line="13"/>
+            </widgets>
+            <widgets xmi:type="form:MessageInfo" xmi:id="_T5KckO7nEeG1cZ5cXPleEg" name="Message1" label="Message1">
+              <script xmi:type="form:GroovyScript" xmi:id="_UW0o8O7nEeG1cZ5cXPleEg" inputScript="Como relator, você pode recomendar alterações na carga horária e/ou classificação da atividade:"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_T5MRwO7nEeG1cZ5cXPleEg" line="14"/>
+            </widgets>
+            <widgets xmi:type="form:TextFormField" xmi:id="_ZL6voO7nEeG1cZ5cXPleEg" name="Text_field1" label="Text_field1" displayLabel="Carga horária">
+              <script xmi:type="form:GroovyScript" xmi:id="_ZN0NEO7nEeG1cZ5cXPleEg" inputScript="${cargaHoraria}" setVarScript="cargaHorariaAlterada"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_ZMAPMO7nEeG1cZ5cXPleEg" line="15"/>
+            </widgets>
+            <widgets xmi:type="form:SelectFormField" xmi:id="_cb4rkO7nEeG1cZ5cXPleEg" name="Select1" label="Select1" displayLabel="Tipo de ACG" defaultValue="${tipoACG}" enum="_atq2cO8MEeG1cZ5cXPleEg">
+              <script xmi:type="form:GroovyScript" xmi:id="_cdlUsO7nEeG1cZ5cXPleEg" inputScript="${tacgs}" setVarScript="tipoACG"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_cb7H0O7nEeG1cZ5cXPleEg" line="16"/>
             </widgets>
           </form>
           <filters xmi:type="process:Connector" xmi:id="_n3Ulke4pEeGKhq6eruyG6w" name="filtro" label="filtro" connectorId="UniqueRandom"/>
@@ -1052,10 +1069,6 @@
       <children xmi:type="notation:DecorationNode" xmi:id="_n3b6Pe4pEeGKhq6eruyG6w" type="5108"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3b6Pu4pEeGKhq6eruyG6w"/>
     </children>
-    <children xmi:type="notation:Shape" xmi:id="_n3b6P-4pEeGKhq6eruyG6w" type="2132" element="_n3Ps9u4pEeGKhq6eruyG6w" fontName="Segoe UI">
-      <children xmi:type="notation:DecorationNode" xmi:id="_n3b6QO4pEeGKhq6eruyG6w" type="5136"/>
-      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3b6Qe4pEeGKhq6eruyG6w"/>
-    </children>
     <children xmi:type="notation:Shape" xmi:id="_n3b6Qu4pEeGKhq6eruyG6w" type="2119" element="_n3Ps-e4pEeGKhq6eruyG6w" fontName="Segoe UI">
       <children xmi:type="notation:DecorationNode" xmi:id="_n3b6Q-4pEeGKhq6eruyG6w" type="5107"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3b6RO4pEeGKhq6eruyG6w"/>
@@ -1078,6 +1091,10 @@
     <children xmi:type="notation:Shape" xmi:id="_n3b6Ue4pEeGKhq6eruyG6w" type="2120" element="_n3PtBO4pEeGKhq6eruyG6w" fontName="Ubuntu">
       <children xmi:type="notation:DecorationNode" xmi:id="_n3b6Uu4pEeGKhq6eruyG6w" type="5108"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3b6U-4pEeGKhq6eruyG6w"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_6pQ-cO8OEeG1cZ5cXPleEg" type="2120" element="_6pPwUO8OEeG1cZ5cXPleEg" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_6pSMkO8OEeG1cZ5cXPleEg" type="5108"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_6pQ-ce8OEeG1cZ5cXPleEg"/>
     </children>
     <styles xmi:type="notation:DiagramStyle" xmi:id="_n3b6VO4pEeGKhq6eruyG6w"/>
   </notation:Diagram>
@@ -1141,6 +1158,30 @@
       <children xmi:type="notation:DecorationNode" xmi:id="_n3chZO4pEeGKhq6eruyG6w" type="5106"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3chZe4pEeGKhq6eruyG6w"/>
     </children>
+    <children xmi:type="notation:Shape" xmi:id="_ZKzcsO7kEeG1cZ5cXPleEg" type="2132" element="_n3Ulju4pEeGKhq6eruyG6w" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_ZKzcsu7kEeG1cZ5cXPleEg" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_ZKzcse7kEeG1cZ5cXPleEg"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_nmmF8O7mEeG1cZ5cXPleEg" type="2132" element="_nmjpsO7mEeG1cZ5cXPleEg" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_nmmtAO7mEeG1cZ5cXPleEg" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_nmmF8e7mEeG1cZ5cXPleEg"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_AIpfcO7nEeG1cZ5cXPleEg" type="2143" element="_AIl1EO7nEeG1cZ5cXPleEg" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_AIqGgO7nEeG1cZ5cXPleEg" type="5159"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_AIpfce7nEeG1cZ5cXPleEg"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_T5LqsO7nEeG1cZ5cXPleEg" type="2131" element="_T5KckO7nEeG1cZ5cXPleEg" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_T5Lqsu7nEeG1cZ5cXPleEg" type="5135"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_T5Lqse7nEeG1cZ5cXPleEg"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_ZL_BEO7nEeG1cZ5cXPleEg" type="2120" element="_ZL6voO7nEeG1cZ5cXPleEg" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_ZL_oIO7nEeG1cZ5cXPleEg" type="5108"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_ZL_BEe7nEeG1cZ5cXPleEg"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_cb6gwO7nEeG1cZ5cXPleEg" type="2119" element="_cb4rkO7nEeG1cZ5cXPleEg" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_cb6gwu7nEeG1cZ5cXPleEg" type="5107"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_cb6gwe7nEeG1cZ5cXPleEg"/>
+    </children>
     <styles xmi:type="notation:DiagramStyle" xmi:id="_n3chZu4pEeGKhq6eruyG6w"/>
   </notation:Diagram>
   <notation:Diagram xmi:id="_n3chZ-4pEeGKhq6eruyG6w" type="Form" element="_n3RiM-4pEeGKhq6eruyG6w" measurementUnit="Pixel">
@@ -1164,14 +1205,6 @@
       <children xmi:type="notation:DecorationNode" xmi:id="_n3dIWe4pEeGKhq6eruyG6w" type="5136"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3dIWu4pEeGKhq6eruyG6w"/>
     </children>
-    <children xmi:type="notation:Shape" xmi:id="_n3dIW-4pEeGKhq6eruyG6w" type="2130" element="_n3SJNe4pEeGKhq6eruyG6w" fontName="Segoe UI">
-      <children xmi:type="notation:DecorationNode" xmi:id="_n3dIXO4pEeGKhq6eruyG6w" type="5133"/>
-      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3dIXe4pEeGKhq6eruyG6w"/>
-    </children>
-    <children xmi:type="notation:Shape" xmi:id="_n3dIXu4pEeGKhq6eruyG6w" type="2130" element="_n3SJOO4pEeGKhq6eruyG6w" fontName="Segoe UI">
-      <children xmi:type="notation:DecorationNode" xmi:id="_n3dIX-4pEeGKhq6eruyG6w" type="5133"/>
-      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3dIYO4pEeGKhq6eruyG6w"/>
-    </children>
     <children xmi:type="notation:Shape" xmi:id="_n3dIYe4pEeGKhq6eruyG6w" type="2132" element="_n3SJO-4pEeGKhq6eruyG6w" fontName="Segoe UI">
       <children xmi:type="notation:DecorationNode" xmi:id="_n3dIYu4pEeGKhq6eruyG6w" type="5136"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3dIY-4pEeGKhq6eruyG6w"/>
@@ -1192,10 +1225,6 @@
       <children xmi:type="notation:DecorationNode" xmi:id="_n3dIbu4pEeGKhq6eruyG6w" type="5109"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3dIb-4pEeGKhq6eruyG6w"/>
     </children>
-    <children xmi:type="notation:Shape" xmi:id="_n3dIcO4pEeGKhq6eruyG6w" type="2119" element="_n3TXVe4pEeGKhq6eruyG6w" fontName="Ubuntu">
-      <children xmi:type="notation:DecorationNode" xmi:id="_n3dIce4pEeGKhq6eruyG6w" type="5107"/>
-      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3dIcu4pEeGKhq6eruyG6w"/>
-    </children>
     <children xmi:type="notation:Shape" xmi:id="_n3dIc-4pEeGKhq6eruyG6w" type="2132" element="_n3TXWO4pEeGKhq6eruyG6w" fontName="Ubuntu">
       <children xmi:type="notation:DecorationNode" xmi:id="_n3dIdO4pEeGKhq6eruyG6w" type="5136"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3dIde4pEeGKhq6eruyG6w"/>
@@ -1210,6 +1239,14 @@
     <children xmi:type="notation:Shape" xmi:id="_n3dIfO4pEeGKhq6eruyG6w" type="2132" element="_n3TXXe4pEeGKhq6eruyG6w" fontName="Ubuntu">
       <children xmi:type="notation:DecorationNode" xmi:id="_n3dvYO4pEeGKhq6eruyG6w" type="5136"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3dvYe4pEeGKhq6eruyG6w"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_HuhhIO7mEeG1cZ5cXPleEg" type="2118" element="_HuOmMO7mEeG1cZ5cXPleEg" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_HuivQO7mEeG1cZ5cXPleEg" type="5106"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_HuiIMO7mEeG1cZ5cXPleEg"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_khR-MO8PEeG1cZ5cXPleEg" type="2143" element="_khO64O8PEeG1cZ5cXPleEg" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_khTMUO8PEeG1cZ5cXPleEg" type="5159"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_khR-Me8PEeG1cZ5cXPleEg"/>
     </children>
     <styles xmi:type="notation:DiagramStyle" xmi:id="_n3dvYu4pEeGKhq6eruyG6w"/>
   </notation:Diagram>
@@ -1244,9 +1281,9 @@
       <children xmi:type="notation:DecorationNode" xmi:id="_n3dveu4pEeGKhq6eruyG6w" type="5107"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3dve-4pEeGKhq6eruyG6w"/>
     </children>
-    <children xmi:type="notation:Shape" xmi:id="_8utuQO4tEeGib_PvtXCvog" type="2132" element="_8uqD4O4tEeGib_PvtXCvog" fontName="Cantarell">
-      <children xmi:type="notation:DecorationNode" xmi:id="_8uu8YO4tEeGib_PvtXCvog" type="5136"/>
-      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_8utuQe4tEeGib_PvtXCvog"/>
+    <children xmi:type="notation:Shape" xmi:id="_uziRIO8PEeG1cZ5cXPleEg" type="2120" element="_uzf04O8PEeG1cZ5cXPleEg" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_uzi4MO8PEeG1cZ5cXPleEg" type="5108"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_uziRIe8PEeG1cZ5cXPleEg"/>
     </children>
     <styles xmi:type="notation:DiagramStyle" xmi:id="_n3dvfO4pEeGKhq6eruyG6w"/>
   </notation:Diagram>

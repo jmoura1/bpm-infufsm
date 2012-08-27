@@ -95,7 +95,7 @@ public class GroupsUtil {
 tipoACG!="II - Atuacao em nucleos tematicos;" && tipoACG!="III - Atividades de extensao" && tipoACG!="IV - Estagio extra-curricular" && tipoACG!="V - Atividade de iniciacao cientifica;" && tipoACG!="VIII - Monitoria;"
 */
 
-static int ind=0;
+static int ind = 0;
 
 static String[] tipoACG = ["I - Participacao em eventos;",
 	"II - Atuacao em nucleos tematicos;",
@@ -117,6 +117,11 @@ public static boolean requerTutor(String tipo) {
 		tipo.equals(tipoACG[3]) ||
 		tipo.equals(tipoACG[4]) ||
 		tipo.equals(tipoACG[7]);
+}
+
+// Participacao em eventos tem tramite curto
+public static boolean tramiteCurto(String tipo) {
+	return tipo.equals(tipoACG[0]);
 }
 
 public static String buildPath(Group g) {

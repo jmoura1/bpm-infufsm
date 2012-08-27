@@ -783,7 +783,7 @@
       <connections xmi:type="process:SequenceFlow" xmi:id="_3JiEEO5REeGo0f37u06zsQ" name="necessita_tutor____tutor_nao_cadastrado" label="necessita tutor &amp;&amp; tutor nao cadastrado" source="_n3PF4u4pEeGKhq6eruyG6w" target="_imuk0O5FEeGo0f37u06zsQ" condition="GroupsUtil.requerTutor(tipoACG)&amp;&amp;nomeTutor==tutorNaoCadastrado">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_3JirIO5REeGo0f37u06zsQ"/>
       </connections>
-      <connections xmi:type="process:SequenceFlow" xmi:id="_KSYyAO5XEeGo0f37u06zsQ" name="necessita_tutor____tutor_cadastrado" label="necessita tutor &amp;&amp; tutor cadastrado" source="_n3PF4u4pEeGKhq6eruyG6w" target="_n3RiL-4pEeGKhq6eruyG6w" condition="(tipoACG==&quot;II - Atuacao em nucleos tematicos;&quot; || tipoACG==&quot;III - Atividades de extensao&quot; || tipoACG==&quot;IV - Estagio extra-curricular&quot; || tipoACG==&quot;V - Atividade de iniciacao cientifica;&quot; || tipoACG==&quot;VIII - Monitoria;&quot;) &amp;&amp; (nomeTutor!=tutorNaoCadastrado)">
+      <connections xmi:type="process:SequenceFlow" xmi:id="_KSYyAO5XEeGo0f37u06zsQ" name="necessita_tutor____tutor_cadastrado" label="necessita tutor &amp;&amp; tutor cadastrado" source="_n3PF4u4pEeGKhq6eruyG6w" target="_n3RiL-4pEeGKhq6eruyG6w" condition="GroupsUtil.requerTutor(tipoACG)&amp;&amp; (nomeTutor!=tutorNaoCadastrado)">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_KSZZEO5XEeGo0f37u06zsQ"/>
       </connections>
       <connections xmi:type="process:SequenceFlow" xmi:id="_bQ2xsO99EeGDf8wCPuoYjQ" name="indeferido" label="indeferido" source="_n3T-bO4pEeGKhq6eruyG6w" target="_Jizbke99EeGDf8wCPuoYjQ" condition="respostaRelator == decisaoIndeferido">

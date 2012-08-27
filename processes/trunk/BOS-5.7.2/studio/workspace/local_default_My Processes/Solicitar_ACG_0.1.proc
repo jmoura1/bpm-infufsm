@@ -98,7 +98,7 @@
             <widgets xmi:type="form:SubmitFormButton" xmi:id="_n3QUAO4pEeGKhq6eruyG6w" name="Enviar1" label="Enviar1" displayLabel="Enviar">
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3QUAe4pEeGKhq6eruyG6w" line="7"/>
             </widgets>
-            <widgets xmi:type="form:SelectFormField" xmi:id="_n3QUAu4pEeGKhq6eruyG6w" name="Selecao3" label="Seleção3" tooltip="" displayLabel="Tutor" injectWidgetCondition="true" injectWidgetScript="${field_Copia_de_TipoDeACG==&quot;II - Atuacao em nucleos tematicos;&quot; || field_Copia_de_TipoDeACG==&quot;III - Atividades de extensao&quot; || field_Copia_de_TipoDeACG==&quot;IV - Estagio extra-curricular&quot; || field_Copia_de_TipoDeACG==&quot;V - Atividade de iniciacao cientifica;&quot; || field_Copia_de_TipoDeACG==&quot;VIII - Monitoria;&quot;}">
+            <widgets xmi:type="form:SelectFormField" xmi:id="_n3QUAu4pEeGKhq6eruyG6w" name="Selecao3" label="Seleção3" tooltip="" displayLabel="Tutor" injectWidgetCondition="true" injectWidgetScript="${GroupsUtil.requerTutor(field_Copia_de_TipoDeACG)}">
               <script xmi:type="form:GroovyScript" xmi:id="_n3QUA-4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.usuariosDoGrupoIncludingOne([grupoTutores],tutorNaoCadastrado)}" setVarScript="nomeTutor"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3QUBO4pEeGKhq6eruyG6w" line="2"/>
             </widgets>

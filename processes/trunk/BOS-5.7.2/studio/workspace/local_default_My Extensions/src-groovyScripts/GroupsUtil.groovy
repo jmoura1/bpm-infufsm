@@ -1,4 +1,5 @@
-/*METADATAHashMap<String,String> buildChildrenGroupsPathMAP(List<Group> groupsToFilter, String parentGroupUUID)=No Documentation
+/*METADATAList<String> getAllTipoACG()=No Documentation
+HashMap<String,String> buildChildrenGroupsPathMAP(List<Group> groupsToFilter, String parentGroupUUID)=No Documentation
 ArrayList usuariosDoGrupo(List<String> path)=No Documentation
 HashMap<String,String> buildGroupsMAP(List<Group> groups)=No Documentation
 HashMap<String,String> getPathOfChildren(String parentGroupUUID)=No Documentation
@@ -292,13 +293,9 @@ public static String nameOfLoggedUser() {
 public static String getCurrentDate(){
 def cal = Calendar.instance;
 String data;
-data= (''
-	+ cal.get(Calendar.HOUR_OF_DAY) + ':'
-	+ cal.get(Calendar.MINUTE) + ':'
-	+ cal.get(Calendar.SECOND) + ' - '
-	+ cal.get(Calendar.DATE) + '/'
-	+ (cal.get(Calendar.MONTH) + 1) + '/'
-	+ cal.get(Calendar.YEAR))
+data= (cal.get(Calendar.YEAR)) + '-'
+    + (cal.get(Calendar.MONTH) + '-'
+	+ cal.get(Calendar.DATE));
 return data;
 }
 

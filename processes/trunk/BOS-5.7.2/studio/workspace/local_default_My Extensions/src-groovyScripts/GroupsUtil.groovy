@@ -1,4 +1,5 @@
 /*METADATAList<String> getAllTipoACG()=No Documentation
+boolean requerTutor(String tipo)=No Documentation
 HashMap<String,String> buildChildrenGroupsPathMAP(List<Group> groupsToFilter, String parentGroupUUID)=No Documentation
 ArrayList usuariosDoGrupo(List<String> path)=No Documentation
 HashMap<String,String> buildGroupsMAP(List<Group> groups)=No Documentation
@@ -344,9 +345,9 @@ public static String getTime() {
 }
 
 
-public static String concat3(String a, String b) {
+public static String concat3(String time, String a, String b) {
 	String nome;
-	nome = a + "-" + getTime() + b;
+	nome = a + "-" + time + b;
 	return nome;
 }
 

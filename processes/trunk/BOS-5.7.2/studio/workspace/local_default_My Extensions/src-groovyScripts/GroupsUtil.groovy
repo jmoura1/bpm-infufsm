@@ -294,9 +294,10 @@ public static String nameOfLoggedUser() {
 public static String getCurrentDate(){
 def cal = Calendar.instance;
 String data;
-data= (cal.get(Calendar.YEAR)) + '-'
-    + (cal.get(Calendar.MONTH) + '-'
-	+ cal.get(Calendar.DATE));
+data= (''
+    + cal.get(Calendar.YEAR) + '-'
+    + cal.get(Calendar.MONTH) + '-'
+    + cal.get(Calendar.DATE));
 return data;
 }
 

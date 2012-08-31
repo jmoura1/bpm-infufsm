@@ -54,11 +54,11 @@
               <validators xmi:type="form:Validator" xmi:id="_n3PGA-4pEeGKhq6eruyG6w" validatorClass="org.bonitasoft.forms.server.validator.GroovyFieldValidator" label="Carga horária deve ser um número inteiro maior que 0." name="Campo_de_texto6Validador1" parameter="return (Integer.parseInt(field_Campo_de_texto6)>0)"/>
             </widgets>
             <widgets xmi:type="form:DateFormField" xmi:id="_n3PGBO4pEeGKhq6eruyG6w" name="DataInicio" label="DataInicio" displayLabel="Data inicial" mandatory="true" displayFormat="yyyy/MM/dd HH:mm:ss">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3PGBe4pEeGKhq6eruyG6w" inputScript="2012/08/28 23:23:19" setVarScript="dataInicio"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3PGBe4pEeGKhq6eruyG6w" inputScript="" setVarScript="dataInicio"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PGBu4pEeGKhq6eruyG6w" line="8"/>
             </widgets>
             <widgets xmi:type="form:DateFormField" xmi:id="_n3Ps8O4pEeGKhq6eruyG6w" name="DataFim" label="DataFim" displayLabel="Data final" mandatory="true" useDefaultValidator="false" displayFormat="dd-MM-yyyy">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3Ps8e4pEeGKhq6eruyG6w" inputScript="2012/08/28 23:23:05" setVarScript="dataFim"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3Ps8e4pEeGKhq6eruyG6w" inputScript="" setVarScript="dataFim"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ps8u4pEeGKhq6eruyG6w" line="9"/>
             </widgets>
             <widgets xmi:type="form:SelectFormField" xmi:id="_n3Ps-e4pEeGKhq6eruyG6w" name="Copia_de_TipoDeACG" label="Cópia de TipoDeACG" tooltip="" displayLabel="Tipo de ACG" mandatory="true" injectWidgetScript="${tacgs}" defaultValue="VIII - Monitoria;">
@@ -1219,7 +1219,7 @@
             </children>
             <children xmi:type="notation:Shape" xmi:id="_XhPmsO5cEeGo0f37u06zsQ" type="3006" element="_XhNxgO5cEeGo0f37u06zsQ" fontName="Cantarell" fillColor="14334392" lineColor="10710316">
               <children xmi:type="notation:DecorationNode" xmi:id="_XhPmsu5cEeGo0f37u06zsQ" type="5006"/>
-              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XhPmse5cEeGo0f37u06zsQ" x="828" y="28" width="140" height="70"/>
+              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XhPmse5cEeGo0f37u06zsQ" x="828" y="26" width="140" height="70"/>
             </children>
           </children>
           <styles xmi:type="notation:DescriptionStyle" xmi:id="_n3YP-e4pEeGKhq6eruyG6w"/>

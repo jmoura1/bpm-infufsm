@@ -18,16 +18,16 @@
             <outputs xmi:type="process:OutputParameterMapping" xmi:id="_1-g1afIVEeGCZs4Ps_Re8w" valueExpression="import org.apache.abdera.model.Entry;&#xA;import org.apache.abdera.model.Document;&#xA;import org.apache.abdera.model.Element;&#xA;Document&lt;Element> doc = (Document&lt;Element>)responseDocument;&#xA;Entry entry = (Entry)doc.getRoot();&#xA;return entry.getId().toString();" targetData="_n3Waru4pEeGKhq6eruyG6w"/>
           </connectors>
           <connectors xmi:type="process:Connector" xmi:id="_OOK4kPFsEeGg2roXhIzz6Q" name="h2_solicitar" label="h2-solicitar" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_OOK4kfFsEeGg2roXhIzz6Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_OOK4kvFsEeGg2roXhIzz6Q" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_OOK4k_FsEeGg2roXhIzz6Q" key="setPort" value="ACED0005740009247B6462506F72747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_OOK4lPFsEeGg2roXhIzz6Q" key="setDatabase" value="ACED000574000A247B64624C6F63616C7D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_OOK4lfFsEeGg2roXhIzz6Q" key="setLocal" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_OOK4lvFsEeGg2roXhIzz6Q" key="setQuery" value="ACED000574012D494E5345525420494E544F204143472056414C55455328247B74696D655374616D707D2C247B6C6F67696E7D2C247B6E756D65726F4D6174726963756C617D2C247B6E616D657D2C247B7375627469706F4143477D2C247B7469706F4143477D2C247B64657363726963616F7D2C247B6E6F6D655475746F727D2C247B64617461496E6963696F7D2C247B6461746146696D7D2C247B6361726761486F72617269617D2C247B47726F7570735574696C2E6372656174654C696E6B2847726F7570735574696C2E636F6E636174332874696D655374616D702C6E756D65726F4D6174726963756C612C66696C652E67657446696C654E616D652829292C6C696E6B297D2C27536F6C696369746164612D50656E64656E7465272C302C27456D20616E64616D656E746F27293B0A"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_OOK4l_FsEeGg2roXhIzz6Q" key="setSsl" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_OOK4mPFsEeGg2roXhIzz6Q" key="setUsername" value="ACED0005740009247B6462557365727D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_OOK4mfFsEeGg2roXhIzz6Q" key="setPassword"/>
-            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_OOK4mvFsEeGg2roXhIzz6Q" valueExpression="rowSet"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_6LfqkPUzEeG3_bHE28u7RA" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_6LfqkfUzEeG3_bHE28u7RA" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_6LfqkvUzEeG3_bHE28u7RA" key="setPort" value="ACED0005740009247B6462506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_6Lfqk_UzEeG3_bHE28u7RA" key="setDatabase" value="ACED000574000A247B64624C6F63616C7D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_6LfqlPUzEeG3_bHE28u7RA" key="setLocal" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_6LfqlfUzEeG3_bHE28u7RA" key="setQuery" value="ACED0005740120494E5345525420494E544F204143472056414C55455328247B74696D655374616D707D2C247B6C6F67696E7D2C247B6E756D65726F4D6174726963756C617D2C247B6E616D657D2C247B7375627469706F4143477D2C247B7469706F4143477D2C247B64657363726963616F7D2C247B64617461496E6963696F7D2C247B6461746146696D7D2C247B6361726761486F72617269617D2C247B47726F7570735574696C2E6372656174654C696E6B2847726F7570735574696C2E636F6E636174332874696D655374616D702C6E756D65726F4D6174726963756C612C66696C652E67657446696C654E616D652829292C6C696E6B297D2C27536F6C696369746164612D50656E64656E7465272C302C27456D20616E64616D656E746F27293B0A"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_6LfqlvUzEeG3_bHE28u7RA" key="setSsl" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_6Lfql_UzEeG3_bHE28u7RA" key="setUsername" value="ACED0005740009247B6462557365727D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_6LfqmPUzEeG3_bHE28u7RA" key="setPassword"/>
+            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_6LfqmfUzEeG3_bHE28u7RA" valueExpression="rowSet"/>
           </connectors>
           <data xmi:type="process:Data" xmi:id="_n3PF7u4pEeGKhq6eruyG6w" name="acgs" label="acgs" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
           <data xmi:type="process:JavaObjectData" xmi:id="_n3PF7-4pEeGKhq6eruyG6w" name="listOfAlGroups" label="listOfAlGroups" dataType="_n3Xo0O4pEeGKhq6eruyG6w" defaultValue="" className="java.util.ArrayList"/>
@@ -41,48 +41,48 @@
           <data xmi:type="process:Data" xmi:id="_n3PF9-4pEeGKhq6eruyG6w" name="tipodeACGS" label="TipodeACGS" dataType="_n3Xo5O4pEeGKhq6eruyG6w" defaultValue=""/>
           <data xmi:type="process:Data" xmi:id="_n3PF-O4pEeGKhq6eruyG6w" name="tiposdeACGS" label="tiposdeACGS" dataType="_n3Xo3u4pEeGKhq6eruyG6w" defaultValue=""/>
           <data xmi:type="process:Data" xmi:id="_n3PF-e4pEeGKhq6eruyG6w" name="tiposdeACgs" label="tiposdeACgs" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
-          <form xmi:type="form:Form" xmi:id="_n3PF-u4pEeGKhq6eruyG6w" name="Solicitacao_de_Atividade_Complementar_de_Graduacao__1_2_" label="Solicitação de Atividade Complementar de Graduação (1/2)" nLine="11" pageLabel="Solicitação de ACG">
+          <form xmi:type="form:Form" xmi:id="_n3PF-u4pEeGKhq6eruyG6w" name="Solicitacao_de_Atividade_Complementar_de_Graduacao__1_2_" label="Solicitação de Atividade Complementar de Graduação (1/2)" nLine="12" pageLabel="Solicitação de ACG">
             <validators xmi:type="form:Validator" xmi:id="_n3PF--4pEeGKhq6eruyG6w" validatorClass="org.bonitasoft.forms.server.validator.GroovyPageValidator" label="Data final deve ser maior ou igual à data inicial." name="Solicitacao_de_Atividade_Complementar_de_Graduacao__1_2_Validator1" parameter="return (field_DataFim.after(field_DataInicio) || field_DataFim.equals(field_DataInicio))"/>
             <widgets xmi:type="form:TextFormField" xmi:id="_n3PF_O4pEeGKhq6eruyG6w" name="Campo_de_texto2" label="Campo de texto2" displayLabel="Matrícula" mandatory="true" useDefaultValidator="false">
               <script xmi:type="form:GroovyScript" xmi:id="_n3PF_e4pEeGKhq6eruyG6w" inputScript="" setVarScript="numeroMatricula"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PF_u4pEeGKhq6eruyG6w" line="3"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PF_u4pEeGKhq6eruyG6w" line="4"/>
               <validators xmi:type="form:Validator" xmi:id="_n3PF_-4pEeGKhq6eruyG6w" validatorClass="org.bonitasoft.forms.server.validator.GroovyFieldValidator" label="Matrícula deve ser um número inteiro!" name="Campo_de_texto2Validator1" parameter="return (Integer.parseInt(field_Campo_de_texto2))>0"/>
             </widgets>
             <widgets xmi:type="form:TextFormField" xmi:id="_n3PGAO4pEeGKhq6eruyG6w" name="Campo_de_texto6" label="Campo de texto6" displayLabel="Carga horária" mandatory="true" useDefaultValidator="false">
               <script xmi:type="form:GroovyScript" xmi:id="_n3PGAe4pEeGKhq6eruyG6w" inputScript="" setVarScript="cargaHoraria"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PGAu4pEeGKhq6eruyG6w" line="6"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PGAu4pEeGKhq6eruyG6w" line="7"/>
               <validators xmi:type="form:Validator" xmi:id="_n3PGA-4pEeGKhq6eruyG6w" validatorClass="org.bonitasoft.forms.server.validator.GroovyFieldValidator" label="Carga horária deve ser um número inteiro maior que 0." name="Campo_de_texto6Validador1" parameter="return (Integer.parseInt(field_Campo_de_texto6)>0)"/>
             </widgets>
             <widgets xmi:type="form:DateFormField" xmi:id="_n3PGBO4pEeGKhq6eruyG6w" name="DataInicio" label="DataInicio" displayLabel="Data inicial" mandatory="true" displayFormat="yyyy-MM-dd">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3PGBe4pEeGKhq6eruyG6w" inputScript="" setVarScript="dataInicio"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PGBu4pEeGKhq6eruyG6w" line="7"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3PGBe4pEeGKhq6eruyG6w" exprScript="${int year=field_DataInicio.getYear();&#xD;int month=field_DataInicio.getMonth();&#xD;int day=field_DataInicio.getDate();&#xD;Date DateIss=new Date(year,month,day);&#xD;date_issued=DateIss.format(&quot;yyyy-MM-dd&quot;)}" inputScript="" setVarScript="dataInicio"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PGBu4pEeGKhq6eruyG6w" line="8"/>
             </widgets>
             <widgets xmi:type="form:DateFormField" xmi:id="_n3Ps8O4pEeGKhq6eruyG6w" name="DataFim" label="DataFim" displayLabel="Data final" mandatory="true" useDefaultValidator="false" displayFormat="yyyy-MM-dd">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3Ps8e4pEeGKhq6eruyG6w" inputScript="" setVarScript="dataFim"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ps8u4pEeGKhq6eruyG6w" line="8"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3Ps8e4pEeGKhq6eruyG6w" exprScript="${int year=field_DataFim.getYear();&#xD;int month=field_DataFim.getMonth();&#xD;int day=field_DataFim.getDate();&#xD;Date DateIss=new Date(year,month,day);&#xD;date_issued=DateIss.format(&quot;yyyy-MM-dd&quot;)}" inputScript="" setVarScript="dataFim"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ps8u4pEeGKhq6eruyG6w" line="9"/>
             </widgets>
             <widgets xmi:type="form:SelectFormField" xmi:id="_n3Ps-e4pEeGKhq6eruyG6w" name="Copia_de_TipoDeACG" label="Cópia de TipoDeACG" tooltip="" displayLabel="Tipo de ACG" mandatory="true" injectWidgetScript="${tacgs}" defaultValue="VIII - Monitoria;">
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ps-u4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.getAllTipoACG()}" setVarScript="tipoACG"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ps--4pEeGKhq6eruyG6w" line="9"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ps--4pEeGKhq6eruyG6w" line="10"/>
             </widgets>
             <widgets xmi:type="form:NextFormButton" xmi:id="_n3Ps_O4pEeGKhq6eruyG6w" name="Proximo1" label="Próximo1" displayLabel="Próximo">
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ps_e4pEeGKhq6eruyG6w" line="10"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ps_e4pEeGKhq6eruyG6w" line="11"/>
             </widgets>
             <widgets xmi:type="form:TextFormField" xmi:id="_n3Ps_u4pEeGKhq6eruyG6w" name="Campo_de_texto8" label="Campo_de_texto8" displayLabel="Local da atividade">
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ps_-4pEeGKhq6eruyG6w" setVarScript="local"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtAO4pEeGKhq6eruyG6w" line="5"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtAO4pEeGKhq6eruyG6w" line="6"/>
             </widgets>
             <widgets xmi:type="form:TextFormField" xmi:id="_n3PtAe4pEeGKhq6eruyG6w" name="Campo_de_texto9" label="Campo_de_texto9" displayLabel="Nome" mandatory="true">
               <script xmi:type="form:GroovyScript" xmi:id="_n3PtAu4pEeGKhq6eruyG6w" setVarScript="name"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtA-4pEeGKhq6eruyG6w" line="2"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtA-4pEeGKhq6eruyG6w" line="3"/>
             </widgets>
             <widgets xmi:type="form:TextFormField" xmi:id="_n3PtBO4pEeGKhq6eruyG6w" name="Campo_de_texto10" label="Campo_de_texto10" displayLabel="Descrição da atividade" mandatory="true">
               <script xmi:type="form:GroovyScript" xmi:id="_n3PtBe4pEeGKhq6eruyG6w" setVarScript="descricao"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtBu4pEeGKhq6eruyG6w" line="4"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtBu4pEeGKhq6eruyG6w" line="5"/>
             </widgets>
             <widgets xmi:type="form:TextFormField" xmi:id="_yMEL0PGDEeGYL4Lj_tSn2A" name="Texto1" label="Texto1" displayLabel="Login" readOnly="true">
               <script xmi:type="form:GroovyScript" xmi:id="_niQJ8PGCEeGYL4Lj_tSn2A" inputScript="${GroupsUtil.nameOfLoggedUser()}" setVarScript="login"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_nYaRcPGCEeGYL4Lj_tSn2A" line="1"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_nYaRcPGCEeGYL4Lj_tSn2A" line="2"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_LMnKoPRiEeGSJqk3RJncjw" name="Text1" label="Text1" displayLabel="Data da solicitação:">
               <script xmi:type="form:GroovyScript" xmi:id="_MVv88PRiEeGSJqk3RJncjw" inputScript="${GroupsUtil.getCurrentDate()}"/>
@@ -838,8 +838,8 @@
       <data xmi:type="process:Data" xmi:id="_n3WapO4pEeGKhq6eruyG6w" name="cargaHorariaAlterada" label="cargaHorariaAlterada" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
       <data xmi:type="process:Data" xmi:id="_LAEjkPBpEeGgZqChN-hpWQ" name="cargaHorariaAprovada" label="cargaHorariaAprovada" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
       <data xmi:type="process:Data" xmi:id="_n3Wape4pEeGKhq6eruyG6w" name="conta" label="conta" dataType="_n3XozO4pEeGKhq6eruyG6w" defaultValue="0"/>
-      <data xmi:type="process:Data" xmi:id="_n3Wapu4pEeGKhq6eruyG6w" name="dataFim" label="dataFim" dataType="_n3Xoy-4pEeGKhq6eruyG6w" defaultValue=""/>
-      <data xmi:type="process:Data" xmi:id="_n3Wap-4pEeGKhq6eruyG6w" name="dataInicio" label="dataInicio" dataType="_n3Xoy-4pEeGKhq6eruyG6w" defaultValue=""/>
+      <data xmi:type="process:Data" xmi:id="_n3Wapu4pEeGKhq6eruyG6w" name="dataFim" label="dataFim" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="2012-03-03"/>
+      <data xmi:type="process:Data" xmi:id="_n3Wap-4pEeGKhq6eruyG6w" name="dataInicio" label="dataInicio" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="2011-03-03"/>
       <data xmi:type="process:Data" xmi:id="_TVRO4PFkEeGfefz74zRb1Q" name="data_aval_col" label="data_aval_col" dataType="_n3Xoy-4pEeGKhq6eruyG6w" defaultValue=""/>
       <data xmi:type="process:Data" xmi:id="_VRoN4PFkEeGfefz74zRb1Q" name="data_aval_col2" label="data_aval_col2" dataType="_n3Xoy-4pEeGKhq6eruyG6w" defaultValue=""/>
       <data xmi:type="process:Data" xmi:id="_hcCsEPKzEeGJtsQHnHlI9Q" name="data_aval_coord" label="data_aval_coord" dataType="_n3Xoy-4pEeGKhq6eruyG6w" defaultValue=""/>
@@ -861,7 +861,7 @@
       <data xmi:type="process:Data" xmi:id="_n3Ware4pEeGKhq6eruyG6w" name="ind2" label="ind2" dataType="_n3XozO4pEeGKhq6eruyG6w" defaultValue="0"/>
       <data xmi:type="process:Data" xmi:id="_n3Waru4pEeGKhq6eruyG6w" name="link" label="link" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
       <data xmi:type="process:Data" xmi:id="_n3War-4pEeGKhq6eruyG6w" name="local" label="local" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
-      <data xmi:type="process:Data" xmi:id="_n3WasO4pEeGKhq6eruyG6w" name="login" label="login" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
+      <data xmi:type="process:Data" xmi:id="_n3WasO4pEeGKhq6eruyG6w" name="login" label="login" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="login"/>
       <data xmi:type="process:Data" xmi:id="_EfhqQO5REeGo0f37u06zsQ" name="mailerHost" label="mailerHost" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="mail-relay.inf.ufsm.br"/>
       <data xmi:type="process:Data" xmi:id="_HOZrUO5REeGo0f37u06zsQ" name="mailerPort" label="mailerPort" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="25"/>
       <data xmi:type="process:Data" xmi:id="_n3Wase4pEeGKhq6eruyG6w" name="matricula" label="matricula" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue=""/>

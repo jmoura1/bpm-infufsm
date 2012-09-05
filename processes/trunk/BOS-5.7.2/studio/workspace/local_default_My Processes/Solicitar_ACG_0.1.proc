@@ -123,16 +123,16 @@
         </elements>
         <elements xmi:type="process:Task" xmi:id="_imuk0O5FEeGo0f37u06zsQ" name="Step1" label="Anexar parecer tutor" outgoing="_UvIh4O5QEeGo0f37u06zsQ" incoming="_3JiEEO5REeGo0f37u06zsQ">
           <connectors xmi:type="process:Connector" xmi:id="_hyHFcO5PEeGo0f37u06zsQ" name="uploadParecerTutor" label="uploadParecerTutor" connectorId="AlfrescoUploadFileByPath" event="taskOnFinish" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_d2UAcO5eEeGo0f37u06zsQ" key="setMimeType" value="ACED0005740070247B696D706F7274206A617661782E61637469766174696F6E2E4D696D65747970657346696C65547970654D61703B0D0D6E6577204D696D65747970657346696C65547970654D617028292E676574436F6E74656E74547970652866696C652E67657446696C654E616D652829293B7D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_d2UAce5eEeGo0f37u06zsQ" key="setPort" value="ACED000574000F247B616C66726573636F506F72747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_d2UAcu5eEeGo0f37u06zsQ" key="setDescription"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_d2UAc-5eEeGo0f37u06zsQ" key="setFileName" value="ACED0005740038247B47726F7570735574696C2E636F6E636174286E756D65726F4D6174726963756C612C66696C652E67657446696C654E616D652829297D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_d2UAdO5eEeGo0f37u06zsQ" key="setUsername" value="ACED0005740013247B616C66726573636F557365726E616D657D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_d2UAde5eEeGo0f37u06zsQ" key="setDestinationFolder" value="ACED000574001C247B616C66726573636F44657374696E6174696F6E466F6C6465727D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_d2UAdu5eEeGo0f37u06zsQ" key="setPassword" value="ACED0005740013247B616C66726573636F50617373776F72647D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_d2UAd-5eEeGo0f37u06zsQ" key="setFileObject" value="ACED0005740012247B617271506172656365725475746F727D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_d2UAeO5eEeGo0f37u06zsQ" key="setHost" value="ACED000574000F247B616C66726573636F486F73747D"/>
-            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_d2UAee5eEeGo0f37u06zsQ" valueExpression="import org.apache.abdera.model.Entry;&#xA;import org.apache.abdera.model.Document;&#xA;import org.apache.abdera.model.Element;&#xA;Document&lt;Element> doc = (Document&lt;Element>)responseDocument;&#xA;Entry entry = (Entry)doc.getRoot();&#xA;return entry.getId().toString();" targetData="_qpLz0O5PEeGo0f37u06zsQ"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kLnqAfeQEeG5LKSCvJz43A" key="setMimeType" value="ACED000574007B247B696D706F7274206A617661782E61637469766174696F6E2E4D696D65747970657346696C65547970654D61703B0D0D6E6577204D696D65747970657346696C65547970654D617028292E676574436F6E74656E745479706528617271506172656365725475746F722E67657446696C654E616D652829293B7D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kLnqAveQEeG5LKSCvJz43A" key="setPort" value="ACED000574000F247B616C66726573636F506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kLnqA_eQEeG5LKSCvJz43A" key="setDescription"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kLnqBPeQEeG5LKSCvJz43A" key="setFileName" value="ACED0005740043247B47726F7570735574696C2E636F6E636174286E756D65726F4D6174726963756C612C617271506172656365725475746F722E67657446696C654E616D652829297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kLnqBfeQEeG5LKSCvJz43A" key="setUsername" value="ACED0005740013247B616C66726573636F557365726E616D657D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kLnqBveQEeG5LKSCvJz43A" key="setDestinationFolder" value="ACED000574001C247B616C66726573636F44657374696E6174696F6E466F6C6465727D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kLnqB_eQEeG5LKSCvJz43A" key="setPassword" value="ACED0005740013247B616C66726573636F50617373776F72647D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kLnqCPeQEeG5LKSCvJz43A" key="setFileObject" value="ACED0005740012247B617271506172656365725475746F727D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kLnqCfeQEeG5LKSCvJz43A" key="setHost" value="ACED000574000F247B616C66726573636F486F73747D"/>
+            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_kLoREPeQEeG5LKSCvJz43A" valueExpression="import org.apache.abdera.model.Entry;&#xA;import org.apache.abdera.model.Document;&#xA;import org.apache.abdera.model.Element;&#xA;Document&lt;Element> doc = (Document&lt;Element>)responseDocument;&#xA;Entry entry = (Entry)doc.getRoot();&#xA;return entry.getId().toString();" targetData="_qpLz0O5PEeGo0f37u06zsQ"/>
           </connectors>
           <data xmi:type="process:Data" xmi:id="_UVNYQO5LEeGo0f37u06zsQ" name="urlFormParecerTutor" label="urlFormParecerTutor" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="http://www.inf.ufsm.br/index/graduacao/si/Formulario%20ACG.doc"/>
           <form xmi:type="form:Form" xmi:id="_1ypN0O5KEeGo0f37u06zsQ" name="Anexar_parecer_do_tutor" label="Anexar parecer do tutor" pageLabel="Anexar parecer do tutor">

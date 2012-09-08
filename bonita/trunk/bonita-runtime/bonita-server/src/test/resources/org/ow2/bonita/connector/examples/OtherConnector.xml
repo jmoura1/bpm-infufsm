@@ -1,8 +1,0 @@
-<connector>
-  <connectorId>OtherConenctor</connectorId>
-  <categories>
-    <category>
-      <name>Other</name>
-    </category>
-  </categories>
-</connector>

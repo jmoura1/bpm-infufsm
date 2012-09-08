@@ -1,3 +1,0 @@
-<module>
-    <servlet path="/login" class="org.bonitasoft.console.server.login.ConsoleLoginServlet"/>
-</module>

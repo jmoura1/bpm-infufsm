@@ -19,8 +19,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,11 +43,12 @@ import org.w3c.dom.Element;
 public class ActivityBinding extends MajorElementBinding {
 
   private static final Logger LOG = Logger.getLogger(ActivityBinding.class.getName());
-  
+
   public ActivityBinding() {
     super("Activity");
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Object parse(final Element activityElement, final Parse parse, final Parser parser) {
     if (ActivityBinding.LOG.isLoggable(Level.FINE)) {
@@ -55,19 +56,19 @@ public class ActivityBinding extends MajorElementBinding {
     }
     final String id = this.getId(activityElement);
 
-    ProcessBuilder processBuilder = parse.findObject(ProcessBuilder.class);
-    Collection<Element> activityDatafields = parse.findObject(Collection.class);
+    final ProcessBuilder processBuilder = parse.findObject(ProcessBuilder.class);
+    final Collection<Element> activityDatafields = parse.findObject(Collection.class);
 
     final String limit = this.getChildTextContent(activityElement, "Limit");
     if (limit != null) {
-      parse.addProblem("'Limit' element not yet supported on activity definition."
-          + "Please remove it from activity: " + id);
+      parse.addProblem("'Limit' element not yet supported on activity definition." + "Please remove it from activity: "
+          + id);
       if ("".equals(limit.trim())) {
         parse.addProblem("Limit definition incorrect: no value specified in element 'Limit' for activity: " + id);
       }
     }
 
-    Element subFlowElement = null; 
+    Element subFlowElement = null;
     boolean noImplementation = false;
     final Element implementationElement = XmlUtil.element(activityElement, "Implementation");
     if (implementationElement != null) {
@@ -87,49 +88,45 @@ public class ActivityBinding extends MajorElementBinding {
       final Element finishModeFirstChildElement = XmlUtil.element(finishModeElement);
       finishMode = finishModeFirstChildElement.getLocalName();
     } else {
-      if (startMode.equals("Automatic")) {
+      if ("Automatic".equals(startMode)) {
         finishMode = "Automatic";
       } else {
         finishMode = "Manual";
       }
     }
     final String performer = this.getChildTextContent(activityElement, "Performer");
-    this.checkStartAndFinishMode(startMode, finishMode, performer, id, noImplementation,parse);
+    this.checkStartAndFinishMode(startMode, finishMode, performer, id, noImplementation, parse);
     final String priority = this.getChildTextContent(activityElement, "Priority");
     if (priority != null) {
-      parse.addProblem("'Priority' element not yet supported on activity definition. Please remove it from activity: " + id);
+      parse.addProblem("'Priority' element not yet supported on activity definition. Please remove it from activity: "
+          + id);
     }
 
     final boolean route = XmlUtil.element(activityElement, "Route") != null;
 
     if (route) {
-      processBuilder.addDecisionNode(id);  
+      processBuilder.addDecisionNode(id);
     } else if (subFlowElement != null) {
-      //List<String> actualParameters = null;
+      // List<String> actualParameters = null;
       final Element actualparametersElement = XmlUtil.element(subFlowElement, "ActualParameters");
       if (actualparametersElement != null) {
         parse.addWarning("Subflow ActualParameters not yet supported.");
         /*
-        final List<Element> actualparameterElements = XmlUtil.elements(actualparametersElement, "ActualParameter");
-        if (actualparameterElements != null) {
-          actualParameters = new ArrayList<String>();
-          for (final Element actualparameterElement : actualparameterElements) {
-            actualParameters.add(actualparameterElement.getTextContent());
-          }
-        }
-        */
+         * final List<Element> actualparameterElements = XmlUtil.elements(actualparametersElement, "ActualParameter");
+         * if (actualparameterElements != null) { actualParameters = new ArrayList<String>(); for (final Element
+         * actualparameterElement : actualparameterElements) {
+         * actualParameters.add(actualparameterElement.getTextContent()); } }
+         */
       }
 
       final String subFlowId = XmlUtil.attribute(subFlowElement, "Id");
       final String execution = XmlUtil.attribute(subFlowElement, "Execution");
-      if (execution != null) {
-        if ("Asyncr".equals(execution)) {
-          parse.addProblem("Asyncr SubFlow is not supported");
-        }
+      if (execution != null && "Asyncr".equals(execution)) {
+        parse.addProblem("Asyncr SubFlow is not supported");
       }
       processBuilder.addSubProcess(id, subFlowId);
-    } else if (startMode.equals("Manual")) {
-      processBuilder.addHumanTask(id, performer);  
+    } else if ("Manual".equals(startMode)) {
+      processBuilder.addHumanTask(id, performer);
     } else {
       processBuilder.addSystemTask(id);
     }
@@ -150,11 +147,11 @@ public class ActivityBinding extends MajorElementBinding {
     parseDeadlines(activityElement, parse, processBuilder);
 
     SplitType splitType = null;
-    JoinType joinType = JoinType.AND;;
+    JoinType joinType = JoinType.AND;
     final Element transitionRestrictionsElement = XmlUtil.element(activityElement, "TransitionRestrictions");
     if (transitionRestrictionsElement != null) {
-      final List<Element> transitionRestrictionElements =
-        XmlUtil.elements(transitionRestrictionsElement, "TransitionRestriction");
+      final List<Element> transitionRestrictionElements = XmlUtil.elements(transitionRestrictionsElement,
+          "TransitionRestriction");
       if (transitionRestrictionElements != null) {
         for (final Element transitionrestrictionElement : transitionRestrictionElements) {
           final Element joinElement = XmlUtil.element(transitionrestrictionElement, "Join");
@@ -178,7 +175,7 @@ public class ActivityBinding extends MajorElementBinding {
     }
     processBuilder.addJoinType(joinType);
     // parse hooks
-    final boolean isAutomaticActivity = startMode.equals("Automatic");
+    final boolean isAutomaticActivity = "Automatic".equals(startMode);
     parseHooks(activityElement, parse, isAutomaticActivity, processBuilder);
     // parse performer asign
     parsePerformerAssign(activityElement, parse, processBuilder);
@@ -191,11 +188,13 @@ public class ActivityBinding extends MajorElementBinding {
 
   /**
    * Parse multi instantiation info from the activity element.
+   * 
    * @param activityElement
    * @param parse
    * @return
    */
-  private void parseMultiInstantiationDefinition(final Element activityElement, final Parse parse, final boolean isRoute, final ProcessBuilder processuilder) {
+  private void parseMultiInstantiationDefinition(final Element activityElement, final Parse parse,
+      final boolean isRoute, final ProcessBuilder processuilder) {
     final Element activityInstantiatorElement = this.getExtendedAttribute(activityElement, "MultiInstantiation");
     if (activityInstantiatorElement != null) {
       final String className = this.getChildTextContent(activityInstantiatorElement, "MultiInstantiator");
@@ -205,21 +204,21 @@ public class ActivityBinding extends MajorElementBinding {
       }
       final String variableId = this.getChildTextContent(activityInstantiatorElement, "Variable");
       if (variableId == null) {
-        parse.addProblem("MultiInstantiation needs to specify a variable id "
-            + "(in a nested Variable element)");
+        parse.addProblem("MultiInstantiation needs to specify a variable id " + "(in a nested Variable element)");
       }
       if (className != null && variableId != null) {
-        if (isRoute ) {
+        if (isRoute) {
           parse.addProblem("Multi Instantiation cannot be defined on a Route activity");
         } else {
           processuilder.addMultiInstanciation(variableId, className);
-          //parameters always null ?
+          // parameters always null ?
         }
       }
     }
   }
 
-  protected void parsePerformerAssign(final Element activityElement, final Parse parse, final ProcessBuilder processBuilder) {
+  protected void parsePerformerAssign(final Element activityElement, final Parse parse,
+      final ProcessBuilder processBuilder) {
     final Element performerAssignElement = this.getExtendedAttribute(activityElement, "PerformerAssign");
     if (performerAssignElement != null) {
       final String value = XmlUtil.attribute(performerAssignElement, "Value");
@@ -234,15 +233,15 @@ public class ActivityBinding extends MajorElementBinding {
       } else if ("Variable".equals(value)) {
         final Element propertyElement = XmlUtil.element(performerAssignElement, "Variable");
         parameters = new HashMap<String, Object[]>();
-        parameters.put("variableId", new Object[]{propertyElement.getTextContent()});
+        parameters.put("variableId", new Object[] { propertyElement.getTextContent() });
         className = VariablePerformerAssign.class.getName();
       } else {
         parse.addProblem("Unsupported value on extendedAttribute PerformerAssign: " + value);
       }
       processBuilder.addFilter(className);
       if (parameters != null) {
-        for (Entry<String, Object[]> parameter : parameters.entrySet()) {
-          String key = parameter.getKey();
+        for (final Entry<String, Object[]> parameter : parameters.entrySet()) {
+          final String key = parameter.getKey();
           if (GroovyExpression.isGroovyExpression(key)) {
             processBuilder.addOutputParameter(key, (String) parameter.getValue()[0]);
           } else {
@@ -253,22 +252,18 @@ public class ActivityBinding extends MajorElementBinding {
     }
   }
 
-  private void checkStartAndFinishMode(final String startMode,
-      final String finishMode, final String performer,
+  private void checkStartAndFinishMode(final String startMode, final String finishMode, final String performer,
       final String activityId, final boolean isNoImpl, final Parse parse) {
-    if (
-        ("Manual".equals(finishMode) && "Automatic".equals(startMode))
-        ||
-        ("Automatic".equals(finishMode) && "Manual".equals(startMode))
-    ) {
+    if ("Manual".equals(finishMode) && "Automatic".equals(startMode) || "Automatic".equals(finishMode)
+        && "Manual".equals(startMode)) {
       parse.addProblem("StartMode and FinishMode have different values: this feature is not yet supported.");
     }
-    final boolean hasManualMode =
-      "Manual".equals(startMode) || "Manual".equals(finishMode);
+    final boolean hasManualMode = "Manual".equals(startMode) || "Manual".equals(finishMode);
     if (hasManualMode) {
       if (performer == null) {
-        parse.addProblem("StartMode or FinishMode is Manual and no performer is specified on activity processDefinitionUUID = "
-            + activityId + "! Please specify one.");
+        parse
+            .addProblem("StartMode or FinishMode is Manual and no performer is specified on activity processDefinitionUUID = "
+                + activityId + "! Please specify one.");
       }
       if (!isNoImpl) {
         parse.addProblem("StartMode or FinishMode is Manual and activity implementation is not No:"
@@ -277,7 +272,8 @@ public class ActivityBinding extends MajorElementBinding {
     }
   }
 
-  protected void parseDataFields(final Element activityElement, final Parse parse, final ProcessBuilder processBuilder, final Collection<Element> activityDatafields, final Parser parser) {
+  protected void parseDataFields(final Element activityElement, final Parse parse, final ProcessBuilder processBuilder,
+      final Collection<Element> activityDatafields, final Parser parser) {
     final Set<Element> propertyElements = this.getExtendedAttributes(activityElement, "property");
     if (propertyElements != null && !propertyElements.isEmpty()) {
       if (activityDatafields == null) {
@@ -299,9 +295,9 @@ public class ActivityBinding extends MajorElementBinding {
                 + " in enclosing process but unable to find it.");
           }
           final String propagatedValue = this.getChildTextContent(propertyElement, "Propagated");
-          if (propagatedValue != null && !("no".equalsIgnoreCase(propagatedValue) || "false".equalsIgnoreCase(propagatedValue))) {
-            parse.addProblem("Propagated value not supported: " + propagatedValue
-                + ". Use instance variables instead."
+          if (propagatedValue != null
+              && !("no".equalsIgnoreCase(propagatedValue) || "false".equalsIgnoreCase(propagatedValue))) {
+            parse.addProblem("Propagated value not supported: " + propagatedValue + ". Use instance variables instead."
                 + "(Only 'no' or 'false' are supported for backward compatibility.)");
           }
         }
@@ -309,13 +305,14 @@ public class ActivityBinding extends MajorElementBinding {
     }
   }
 
-  protected void parseHooks(final Element activityElement, final Parse parse, final boolean isAutomatic, final ProcessBuilder processBuilder) {
+  protected void parseHooks(final Element activityElement, final Parse parse, final boolean isAutomatic,
+      final ProcessBuilder processBuilder) {
     final Set<Element> hookElements = this.getExtendedAttributes(activityElement, "hook");
     if (hookElements != null) {
       for (final Element hookElement : hookElements) {
         final String className = XmlUtil.attribute(hookElement, "Value");
         final String hookEventName = this.getChildTextContent(hookElement, "HookEventName");
-        Map<String, Object[]> parameters = getHookParameters(hookElement, parse, className);
+        final Map<String, Object[]> parameters = getHookParameters(hookElement, parse, className);
         if (hookEventName == null) {
           parse.addProblem("hook ExtendedAttribute needs an element child called HookEventName");
           return;
@@ -341,8 +338,8 @@ public class ActivityBinding extends MajorElementBinding {
         if (event != null) {
           processBuilder.addConnector(event, className, throwingException);
           if (parameters != null) {
-            for (Entry<String, Object[]> parameter : parameters.entrySet()) {
-              String key = parameter.getKey();
+            for (final Entry<String, Object[]> parameter : parameters.entrySet()) {
+              final String key = parameter.getKey();
               if (GroovyExpression.isGroovyExpression(key)) {
                 processBuilder.addOutputParameter(key, (String) parameter.getValue()[0]);
               } else {
@@ -355,71 +352,69 @@ public class ActivityBinding extends MajorElementBinding {
     }
   }
 
-  private HookDefinition.Event getEventFromString(String hookEventName) {
-    if (hookEventName.equals("task:onReady")) {
+  private HookDefinition.Event getEventFromString(final String hookEventName) {
+    if ("task:onReady".equals(hookEventName)) {
       return Event.taskOnReady;
-    } else if (hookEventName.equals("task:onStart")) {
+    } else if ("task:onStart".equals(hookEventName)) {
       return Event.taskOnStart;
-    } else if (hookEventName.equals("task:onFinish")) {
+    } else if ("task:onFinish".equals(hookEventName)) {
       return Event.taskOnFinish;
-    } else if (hookEventName.equals("task:onSuspend")) {
+    } else if ("task:onSuspend".equals(hookEventName)) {
       return Event.taskOnSuspend;
-    } else if (hookEventName.equals("task:onResume")) {
+    } else if ("task:onResume".equals(hookEventName)) {
       return Event.taskOnResume;
-    } else if (hookEventName.equals("task:onCancel")) {
+    } else if ("task:onCancel".equals(hookEventName)) {
       return Event.taskOnCancel;
-    } else if (hookEventName.equals("automatic:onEnter")) {
+    } else if ("automatic:onEnter".equals(hookEventName)) {
       return Event.automaticOnEnter;
     } else {
-      String message = ExceptionManager.getInstance().getFullMessage("buc_M_11", HookDefinition.Event.class.getName(), hookEventName);
+      final String message = ExceptionManager.getInstance().getFullMessage("buc_M_11",
+          HookDefinition.Event.class.getName(), hookEventName);
       throw new IllegalArgumentException(message);
     }
   }
 
-  private Map<String, Object[]> getHookParameters(final Element hookElement,
-      final Parse parse, final String className) {
-    Map<String, Object[]> hookParameters = new HashMap<String, Object[]>();
-    final Element hookParametersElement =
-      XmlUtil.element(hookElement, "Parameters");
+  private Map<String, Object[]> getHookParameters(final Element hookElement, final Parse parse, final String className) {
+    final Map<String, Object[]> hookParameters = new HashMap<String, Object[]>();
+    final Element hookParametersElement = XmlUtil.element(hookElement, "Parameters");
     if (hookParametersElement != null) {
-      List<Element> parameters = XmlUtil.elements(hookParametersElement);
-      for (Element param : parameters) {
-        String paramType = param.getLocalName();
-        String variable = param.getAttribute("Var");
+      final List<Element> parameters = XmlUtil.elements(hookParametersElement);
+      for (final Element param : parameters) {
+        final String paramType = param.getLocalName();
+        final String variable = param.getAttribute("Var");
         String method;
-        if (paramType.equals("InParameter")) {
+        if ("InParameter".equals(paramType)) {
           if (param.hasAttribute("Setter")) {
             method = param.getAttribute("Setter");
             if (method.length() != 0) {
-              hookParameters.put(method, new Object[]{variable});
+              hookParameters.put(method, new Object[] { variable });
             } else {
               parse.addProblem("The Setter attribute should not be empty!");
             }
           } else {
             parse.addProblem("InParameter need the Setter attribute");
           }
-        } else if (paramType.equals("OutParameter")) {
+        } else if ("OutParameter".equals(paramType)) {
           if (param.hasAttribute("Getter")) {
             method = param.getAttribute("Getter");
             if (method.length() != 0) {
-              hookParameters.put(method, new Object[]{variable});
+              hookParameters.put(method, new Object[] { variable });
             } else {
               parse.addProblem("The Getter attribute should not be empty!");
             }
           } else {
             parse.addProblem("OutParameter need the Getter attribute");
           }
-        } else if (paramType.equals("Properties")) {
+        } else if ("Properties".equals(paramType)) {
           if (variable.startsWith("file:")) {
-            hookParameters.put("file:",new Object[]{variable.substring(5)});
+            hookParameters.put("file:", new Object[] { variable.substring(5) });
           } else if (variable.startsWith("bar:")) {
-            hookParameters.put("bar:",new Object[]{variable.substring(4)});
+            hookParameters.put("bar:", new Object[] { variable.substring(4) });
           } else if (variable.startsWith("resource:")) {
-            hookParameters.put("resource:",new Object[]{variable.substring(9)});
+            hookParameters.put("resource:", new Object[] { variable.substring(9) });
           } else {
             parse.addProblem("The value of Var attribute can only be either "
-                + "file:<absolute_file_path> or bar:<file_path_in_bar_file> or"
-                +	"resource:<resource_path>");
+                + "file:<absolute_file_path> or bar:<file_path_in_bar_file> or" + "resource:<resource_path>");
           }
         } // ignores all other tags
       }
@@ -441,7 +436,7 @@ public class ActivityBinding extends MajorElementBinding {
         if (deadlineCondition == null || "".equals(deadlineCondition)) {
           parse.addProblem("DeadlineCondition element is not specified on deadline element");
         }
-        final String exceptionName =  this.getChildTextContent(deadlineElement, "ExceptionName");
+        final String exceptionName = this.getChildTextContent(deadlineElement, "ExceptionName");
         if (exceptionName == null) {
           parse.addProblem("ExceptionName element is not specified on deadline element");
         }
@@ -449,4 +444,5 @@ public class ActivityBinding extends MajorElementBinding {
       }
     }
   }
+
 }

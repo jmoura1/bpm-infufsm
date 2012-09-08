@@ -63,34 +63,33 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
   PropertiesDescriptor propertiesDescriptor;
   private Operation schemaOperation;
 
-  public Object construct(WireContext wireContext) {
+  @Override
+  public Object construct(final WireContext wireContext) {
     // instantiation of the configuration
     Configuration configuration = null;
     if (className != null) {
-      ClassLoader classLoader = wireContext.getClassLoader();
+      final ClassLoader classLoader = wireContext.getClassLoader();
       if (LOG.isLoggable(Level.FINE)) {
         LOG.fine("instantiating hibernate configation class " + className);
       }
-      Class<?> configurationClass = ReflectUtil.loadClass(classLoader,
-          className);
-      configuration = (Configuration) ReflectUtil
-          .newInstance(configurationClass);
+      final Class<?> configurationClass = ReflectUtil.loadClass(classLoader, className);
+      configuration = (Configuration) ReflectUtil.newInstance(configurationClass);
     } else {
-    	if (LOG.isLoggable(Level.FINE)) {
+      if (LOG.isLoggable(Level.FINE)) {
         LOG.fine("instantiating default hibernate configation");
-    	}
+      }
       configuration = new Configuration();
     }
     return configuration;
   }
 
-  public void initialize(Object object, WireContext wireContext) {
-    Configuration configuration = (Configuration) object;
+  @Override
+  public void initialize(final Object object, final WireContext wireContext) {
+    final Configuration configuration = (Configuration) object;
     apply(mappingOperations, configuration, wireContext);
     apply(cacheOperations, configuration, wireContext);
     if (propertiesDescriptor != null) {
-      Properties properties = (Properties) wireContext.create(
-          propertiesDescriptor, false);
+      final Properties properties = (Properties) wireContext.create(propertiesDescriptor, false);
       if (LOG.isLoggable(Level.FINE)) {
         LOG.fine("adding properties to hibernate configuration: " + properties);
       }
@@ -101,40 +100,38 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
     }
   }
 
-  private void apply(List<Operation> operations, Configuration configuration,
-      WireContext wireContext) {
+  private void apply(final List<Operation> operations, final Configuration configuration, final WireContext wireContext) {
     if (operations != null) {
-      for (Operation operation : operations) {
-      	if (LOG.isLoggable(Level.FINE)) {
+      for (final Operation operation : operations) {
+        if (LOG.isLoggable(Level.FINE)) {
           LOG.fine(operation.toString());
-      	}
+        }
         operation.apply(configuration, wireContext);
       }
     }
   }
 
-  public Class<?> getType(WireDefinition wireDefinition) {
+  @Override
+  public Class<?> getType(final WireDefinition wireDefinition) {
     if (className != null) {
       try {
-        return ReflectUtil
-            .loadClass(wireDefinition.getClassLoader(), className);
-      } catch (BonitaRuntimeException e) {
-      	String message = ExceptionManager.getInstance().getFullMessage(
-      			"bp_HCD_1", className, e.getMessage());
+        return ReflectUtil.loadClass(wireDefinition.getClassLoader(), className);
+      } catch (final BonitaRuntimeException e) {
+        final String message = ExceptionManager.getInstance().getFullMessage("bp_HCD_1", className, e.getMessage());
         throw new WireException(message, e.getCause());
       }
     }
     return Configuration.class;
   }
 
-  public void addMappingOperation(Operation operation) {
+  public void addMappingOperation(final Operation operation) {
     if (mappingOperations == null) {
       mappingOperations = new ArrayList<Operation>();
     }
     mappingOperations.add(operation);
   }
 
-  public void addCacheOperation(Operation operation) {
+  public void addCacheOperation(final Operation operation) {
     if (cacheOperations == null) {
       cacheOperations = new ArrayList<Operation>();
     }
@@ -147,18 +144,19 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
     private static final long serialVersionUID = 1L;
     String resource;
 
-    public AddResource(String resource) {
+    public AddResource(final String resource) {
       this.resource = resource;
     }
 
-    public void apply(Object target, WireContext wireContext) {
-      Configuration configuration = (Configuration) target;
+    @Override
+    public void apply(final Object target, final WireContext wireContext) {
+      final Configuration configuration = (Configuration) target;
       configuration.addResource(resource, wireContext.getClassLoader());
     }
 
+    @Override
     public String toString() {
-      return "adding mapping resource " + resource
-          + " to hibernate configuration";
+      return "adding mapping resource " + resource + " to hibernate configuration";
     }
   }
 
@@ -166,15 +164,17 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
     private static final long serialVersionUID = 1L;
     String fileName;
 
-    public AddFile(String fileName) {
+    public AddFile(final String fileName) {
       this.fileName = fileName;
     }
 
-    public void apply(Object target, WireContext wireContext) {
-      Configuration configuration = (Configuration) target;
+    @Override
+    public void apply(final Object target, final WireContext wireContext) {
+      final Configuration configuration = (Configuration) target;
       configuration.addFile(fileName);
     }
 
+    @Override
     public String toString() {
       return "adding hibernate mapping file " + fileName + " to configuration";
     }
@@ -184,25 +184,25 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
     private static final long serialVersionUID = 1L;
     String className;
 
-    public AddClass(String className) {
+    public AddClass(final String className) {
       this.className = className;
     }
 
-    public void apply(Object target, WireContext wireContext) {
-      Configuration configuration = (Configuration) target;
+    @Override
+    public void apply(final Object target, final WireContext wireContext) {
+      final Configuration configuration = (Configuration) target;
       try {
-        Class<?> persistentClass = wireContext.getClassLoader().loadClass(
-            className);
+        final Class<?> persistentClass = wireContext.getClassLoader().loadClass(className);
         configuration.addClass(persistentClass);
-      } catch (Exception e) {
-      	String message = ExceptionManager.getInstance().getFullMessage("bp_HCD_2", className);
+      } catch (final Exception e) {
+        final String message = ExceptionManager.getInstance().getFullMessage("bp_HCD_2", className);
         throw new BonitaRuntimeException(message, e);
       }
     }
 
+    @Override
     public String toString() {
-      return "adding persistent class " + className
-          + " to hibernate configuration";
+      return "adding persistent class " + className + " to hibernate configuration";
     }
   }
 
@@ -210,16 +210,17 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
     private static final long serialVersionUID = 1L;
     String url;
 
-    public AddUrl(String url) {
+    public AddUrl(final String url) {
       this.url = url;
     }
 
-    public void apply(Object target, WireContext wireContext) {
-      Configuration configuration = (Configuration) target;
+    @Override
+    public void apply(final Object target, final WireContext wireContext) {
+      final Configuration configuration = (Configuration) target;
       try {
         configuration.addURL(new URL(url));
-      } catch (Exception e) {
-      	String message = ExceptionManager.getInstance().getFullMessage("bp_HCD_3", url);
+      } catch (final Exception e) {
+        final String message = ExceptionManager.getInstance().getFullMessage("bp_HCD_3", url);
         throw new BonitaRuntimeException(message, e);
       }
     }
@@ -230,48 +231,48 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
     String className;
     String concurrencyStrategy;
 
-    public SetCacheConcurrencyStrategy(String className,
-        String concurrencyStrategy) {
+    public SetCacheConcurrencyStrategy(final String className, final String concurrencyStrategy) {
       this.className = className;
       this.concurrencyStrategy = concurrencyStrategy;
     }
 
-    public void apply(Object target, WireContext wireContext) {
-      Configuration configuration = (Configuration) target;
+    @Override
+    public void apply(final Object target, final WireContext wireContext) {
+      final Configuration configuration = (Configuration) target;
       configuration.setCacheConcurrencyStrategy(className, concurrencyStrategy);
     }
 
+    @Override
     public String toString() {
-      return "setting cache concurrency strategy on class " + className
-          + " to " + concurrencyStrategy + " on hibernate configuration";
+      return "setting cache concurrency strategy on class " + className + " to " + concurrencyStrategy
+          + " on hibernate configuration";
     }
   }
 
-  public static class SetCollectionCacheConcurrencyStrategy implements
-      Operation {
+  public static class SetCollectionCacheConcurrencyStrategy implements Operation {
     private static final long serialVersionUID = 1L;
     String collection;
     String concurrencyStrategy;
 
-    public SetCollectionCacheConcurrencyStrategy(String collection,
-        String concurrencyStrategy) {
+    public SetCollectionCacheConcurrencyStrategy(final String collection, final String concurrencyStrategy) {
       this.collection = collection;
       this.concurrencyStrategy = concurrencyStrategy;
     }
 
-    public void apply(Object target, WireContext wireContext) {
-      Configuration configuration = (Configuration) target;
-      configuration.setCollectionCacheConcurrencyStrategy(collection,
-          concurrencyStrategy);
+    @Override
+    public void apply(final Object target, final WireContext wireContext) {
+      final Configuration configuration = (Configuration) target;
+      configuration.setCollectionCacheConcurrencyStrategy(collection, concurrencyStrategy);
     }
 
+    @Override
     public String toString() {
-      return "setting cache concurrency strategy on collection " + collection
-          + " to " + concurrencyStrategy + " on hibernate configuration";
+      return "setting cache concurrency strategy on collection " + collection + " to " + concurrencyStrategy
+          + " on hibernate configuration";
     }
   }
 
-  public static class CreateSchema implements Operation {
+  public static final class CreateSchema implements Operation {
 
     private static final long serialVersionUID = 1L;
 
@@ -282,31 +283,30 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
       // suppress default constructor, ensuring non-instantiability
     }
 
-    public void apply(Object target, WireContext wireContext) {
-      Configuration configuration = (Configuration) target;
-      Properties cfgProperties = configuration.getProperties();
-      Dialect dialect = Dialect.getDialect(cfgProperties);
-      ConnectionProvider connectionProvider = ConnectionProviderFactory
-          .newConnectionProvider(cfgProperties);
+    @Override
+    public void apply(final Object target, final WireContext wireContext) {
+      final Configuration configuration = (Configuration) target;
+      final Properties cfgProperties = configuration.getProperties();
+      final Dialect dialect = Dialect.getDialect(cfgProperties);
+      final ConnectionProvider connectionProvider = ConnectionProviderFactory.newConnectionProvider(cfgProperties);
       try {
-        Connection connection = connectionProvider.getConnection();
+        final Connection connection = connectionProvider.getConnection();
         try {
-        	if (LOG.isLoggable(Level.FINE)) {
+          if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("dropping db schema");
-        	}
-          String[] dropScript = configuration.generateDropSchemaScript(dialect);
+          }
+          final String[] dropScript = configuration.generateDropSchemaScript(dialect);
           executeScript(connection, dropScript);
           if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("creating db schema");
           }
-          String[] createScript = configuration
-              .generateSchemaCreationScript(dialect);
+          final String[] createScript = configuration.generateSchemaCreationScript(dialect);
           executeScript(connection, createScript);
         } finally {
           connectionProvider.closeConnection(connection);
         }
-      } catch (SQLException e) {
-      	String message = ExceptionManager.getInstance().getFullMessage("bp_HCD_4");
+      } catch (final SQLException e) {
+        final String message = ExceptionManager.getInstance().getFullMessage("bp_HCD_4");
         throw new JDBCException(message, e);
       } finally {
         connectionProvider.close();
@@ -319,7 +319,7 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
     }
   }
 
-  public static class UpdateSchema implements Operation {
+  public static final class UpdateSchema implements Operation {
 
     private static final long serialVersionUID = 1L;
 
@@ -329,18 +329,17 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
       // suppress default constructor, ensuring non-instantiability
     }
 
-    public void apply(Object target, WireContext wireContext) {
-      Configuration configuration = (Configuration) target;
-      Properties cfgProperties = configuration.getProperties();
-      Dialect dialect = Dialect.getDialect(cfgProperties);
-      ConnectionProvider connectionProvider = ConnectionProviderFactory
-          .newConnectionProvider(cfgProperties);
+    @Override
+    public void apply(final Object target, final WireContext wireContext) {
+      final Configuration configuration = (Configuration) target;
+      final Properties cfgProperties = configuration.getProperties();
+      final Dialect dialect = Dialect.getDialect(cfgProperties);
+      final ConnectionProvider connectionProvider = ConnectionProviderFactory.newConnectionProvider(cfgProperties);
       try {
-        Connection connection = connectionProvider.getConnection();
+        final Connection connection = connectionProvider.getConnection();
         try {
-          DatabaseMetadata metadata = new DatabaseMetadata(connection, dialect);
-          String[] updateScript = configuration.generateSchemaUpdateScript(
-              dialect, metadata);
+          final DatabaseMetadata metadata = new DatabaseMetadata(connection, dialect);
+          final String[] updateScript = configuration.generateSchemaUpdateScript(dialect, metadata);
           if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("updating db schema");
           }
@@ -348,8 +347,8 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
         } finally {
           connectionProvider.closeConnection(connection);
         }
-      } catch (SQLException e) {
-      	String message = ExceptionManager.getInstance().getFullMessage("bp_HCD_5");
+      } catch (final SQLException e) {
+        final String message = ExceptionManager.getInstance().getFullMessage("bp_HCD_5");
         throw new JDBCException(message, e);
       } finally {
         connectionProvider.close();
@@ -361,21 +360,21 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
     }
   }
 
-  private static List<SQLException> executeScript(Connection connection,
-      String[] script) throws SQLException {
+  private static List<SQLException> executeScript(final Connection connection, final String[] script)
+      throws SQLException {
     List<SQLException> exceptions = Collections.emptyList();
-    Statement statement = connection.createStatement();
+    final Statement statement = connection.createStatement();
     try {
-      for (String line : script) {
-      	if (LOG.isLoggable(Level.FINE)) {
+      for (final String line : script) {
+        if (LOG.isLoggable(Level.FINE)) {
           LOG.fine(line);
-      	}
+        }
         try {
           statement.executeUpdate(line);
           if (statement.getWarnings() != null) {
             JDBCExceptionReporter.logAndClearWarnings(connection);
           }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
           if (exceptions.isEmpty()) {
             exceptions = new ArrayList<SQLException>();
           }
@@ -394,7 +393,7 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
     return className;
   }
 
-  public void setClassName(String className) {
+  public void setClassName(final String className) {
     this.className = className;
   }
 
@@ -402,7 +401,7 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
     return propertiesDescriptor;
   }
 
-  public void setPropertiesDescriptor(PropertiesDescriptor propertiesDescriptor) {
+  public void setPropertiesDescriptor(final PropertiesDescriptor propertiesDescriptor) {
     this.propertiesDescriptor = propertiesDescriptor;
   }
 
@@ -410,7 +409,7 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
     return namingStrategyClassName;
   }
 
-  public void setNamingStrategyClassName(String namingStrategyClassName) {
+  public void setNamingStrategyClassName(final String namingStrategyClassName) {
     this.namingStrategyClassName = namingStrategyClassName;
   }
 
@@ -418,7 +417,7 @@ public class HibernateConfigurationDescriptor extends AbstractDescriptor {
     return schemaOperation;
   }
 
-  public void setSchemaOperation(Operation schemaOperation) {
+  public void setSchemaOperation(final Operation schemaOperation) {
     this.schemaOperation = schemaOperation;
   }
 }

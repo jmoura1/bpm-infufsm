@@ -58,13 +58,13 @@ import org.ow2.bonita.util.Misc;
 import org.ow2.bonita.util.ProcessUtil;
 
 /**
- * Takes {@link BusinessArchiveImpl}s as input, parses the contents into a
- * {@link ProcessDefinition}, stores the {@link ProcessDefinition} into the
- *
+ * Takes {@link BusinessArchiveImpl}s as input, parses the contents into a {@link ProcessDefinition}, stores the
+ * {@link ProcessDefinition} into the
+ * 
  * <p>
  * This class is thread safe and can be shared between multiple threads.
  * </p>
- *
+ * 
  * @author Marc Blachon, Guillaume Porcher, Charles Souillard, Miguel Valdes, Pierre Vigneras
  */
 public final class Deployer {
@@ -73,7 +73,8 @@ public final class Deployer {
 
   public static final String START_INSTANCE_SIGNAL = "start_event";
 
-  private Deployer() { }
+  private Deployer() {
+  }
 
   public static ProcessDefinition deploy(final BusinessArchive businessArchive) throws DeploymentException {
     final Recorder recorder = EnvTool.getRecorder();
@@ -82,17 +83,17 @@ public final class Deployer {
       throw new DeploymentException("The given businessArchive does not contain any process.");
     }
     final LargeDataRepository ldr = EnvTool.getLargeDataRepository();
-    for (Map.Entry<String, byte[]> resource : businessArchive.getResources().entrySet()) {
+    for (final Map.Entry<String, byte[]> resource : businessArchive.getResources().entrySet()) {
       ldr.storeData(Misc.getBusinessArchiveCategories(processUUID), resource.getKey(), resource.getValue(), true);
     }
     boolean removeDeps = true;
     try {
       ProcessDefinition process = null;
-      ClassLoader current = Thread.currentThread().getContextClassLoader();
+      final ClassLoader current = Thread.currentThread().getContextClassLoader();
       try {
-        ClassLoader processClassloader = EnvTool.getClassDataLoader().getProcessClassLoader(processUUID);
+        final ClassLoader processClassloader = EnvTool.getClassDataLoader().getProcessClassLoader(processUUID);
         Thread.currentThread().setContextClassLoader(processClassloader);
-        process = (ProcessDefinition) businessArchive.getProcessDefinition();
+        process = businessArchive.getProcessDefinition();
       } finally {
         Thread.currentThread().setContextClassLoader(current);
       }
@@ -100,13 +101,17 @@ public final class Deployer {
         throw new DeploymentRuntimeException("The given bar archive does not contain any process file");
       }
       final String lastProcessVersion = EnvTool.getAllQueriers().getLastProcessVersion(process.getName());
-      if (lastProcessVersion != null && lastProcessVersion.compareTo(process.getVersion()) >= 0) {
-        if (lastProcessVersion.equals(process.getVersion())) {
-          removeDeps = false;
+      if (lastProcessVersion != null) {
+        final BARVersion barVersion = new BARVersion(process.getVersion());
+        final int versionComparison = barVersion.compareTo(lastProcessVersion);
+        if (versionComparison <= 0) {
+          if (versionComparison == 0) {
+            removeDeps = false;
+          }
+          final String message = ExceptionManager.getInstance().getFullMessage("bd_D_3", process.getName(),
+              lastProcessVersion, process.getVersion(), lastProcessVersion);
+          throw new DeploymentRuntimeException(message);
         }
-        String message = ExceptionManager.getInstance().getFullMessage(
-            "bd_D_3", process.getName(), lastProcessVersion, process.getVersion(), lastProcessVersion);
-        throw new DeploymentRuntimeException(message);
       }
 
       if (process.getClassDependencies() != null) {
@@ -114,27 +119,28 @@ public final class Deployer {
           try {
             EnvTool.getClassDataLoader().getClass(process.getUUID(), className);
           } catch (final ClassNotFoundException e) {
-            String message = ExceptionManager.getInstance().getFullMessage(
-                "bd_D_7", process.getName(), className);
+            final String message = ExceptionManager.getInstance()
+                .getFullMessage("bd_D_7", process.getName(), className);
             throw new DeploymentRuntimeException(message);
           }
         }
       }
 
       final DocumentationManager manager = EnvTool.getDocumentationManager();
-      //at the end, stores data
-      for (AttachmentDefinition attachment : process.getAttachments().values()) {
+      // at the end, stores data
+      for (final AttachmentDefinition attachment : process.getAttachments().values()) {
         if (attachment.getFilePath() != null) {
-          byte[] content = businessArchive.getResource(attachment.getFilePath());
+          final byte[] content = businessArchive.getResource(attachment.getFilePath());
           try {
-            manager.createDocument(attachment.getName(), attachment.getProcessDefinitionUUID(), attachment.getFileName(), DocumentService.DEFAULT_MIME_TYPE, content);
-          } catch (Exception e) {
+            manager.createDocument(attachment.getName(), attachment.getProcessDefinitionUUID(),
+                attachment.getFileName(), DocumentService.DEFAULT_MIME_TYPE, content);
+          } catch (final Exception e) {
             throw new BonitaRuntimeException(e);
           }
         } else {
           try {
             manager.createDocument(attachment.getName(), attachment.getProcessDefinitionUUID());
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new BonitaRuntimeException(e);
           }
         }
@@ -144,16 +150,16 @@ public final class Deployer {
         Thread.currentThread().setContextClassLoader(EnvTool.getClassDataLoader().getProcessClassLoader(processUUID));
         internalProcess = new InternalProcessDefinition(process);
 
-        if (internalProcess.getCategoryNames()!=null && !internalProcess.getCategoryNames().isEmpty()) {
-          Collection<String> categoryNamesToBind = new ArrayList<String>(internalProcess.getCategoryNames());
-          Set<Category> persistedCategories = EnvTool.getJournalQueriers().getCategories(categoryNamesToBind);
-          if (persistedCategories.size()<categoryNamesToBind.size()) {
+        if (internalProcess.getCategoryNames() != null && !internalProcess.getCategoryNames().isEmpty()) {
+          final Collection<String> categoryNamesToBind = new ArrayList<String>(internalProcess.getCategoryNames());
+          final Set<Category> persistedCategories = EnvTool.getJournalQueriers().getCategories(categoryNamesToBind);
+          if (persistedCategories.size() < categoryNamesToBind.size()) {
             // some categories do not yet exist
-            for (Category category : persistedCategories) {
+            for (final Category category : persistedCategories) {
               categoryNamesToBind.remove(category.getName());
             }
             // create missing categories
-            for (String name : categoryNamesToBind) {
+            for (final String name : categoryNamesToBind) {
               recorder.recordNewCategory(new CategoryImpl(name));
             }
           }
@@ -167,13 +173,11 @@ public final class Deployer {
         Thread.currentThread().setContextClassLoader(current);
       }
       return new ProcessDefinitionImpl(internalProcess);
-    } catch (RuntimeException re) {
-      if (processUUID != null) {
-        EnvTool.getClassDataLoader().removeProcessClassLoader(processUUID);
-        if (removeDeps) {
-          ldr.deleteData(Misc.getBusinessArchiveCategories(processUUID));
-          ldr.deleteData(Misc.getAttachmentCategories(processUUID));
-        }
+    } catch (final RuntimeException re) {
+      EnvTool.getClassDataLoader().removeProcessClassLoader(processUUID);
+      if (removeDeps) {
+        ldr.deleteData(Misc.getBusinessArchiveCategories(processUUID));
+        ldr.deleteData(Misc.getAttachmentCategories(processUUID));
       }
       throw re;
     }
@@ -181,10 +185,10 @@ public final class Deployer {
 
   public static boolean enableProcess(final ProcessDefinitionUUID processUUID) {
     Misc.badStateIfNull(processUUID, "Impossible to enable a processUUID from a null uuid");
-    final Querier journal  = EnvTool.getJournalQueriers();
+    final Querier journal = EnvTool.getJournalQueriers();
     final InternalProcessDefinition processDef = journal.getProcess(processUUID);
     if (processDef == null) {
-      String message = ExceptionManager.getInstance().getFullMessage("bd_D_8", processUUID);
+      final String message = ExceptionManager.getInstance().getFullMessage("bd_D_8", processUUID);
       throw new DeploymentRuntimeException(message);
     }
     if (!processDef.getState().equals(ProcessState.DISABLED)) {
@@ -195,11 +199,8 @@ public final class Deployer {
       addStartEvents(processDef);
       if (LOG.isLoggable(Level.INFO)) {
         final StringBuilder logMsg = new StringBuilder();
-        logMsg.append("Process ")
-        .append(processDef.getName())
-        .append(" enable (UUID: ")
-        .append(processDef.getUUID())
-        .append(").");
+        logMsg.append("Process ").append(processDef.getName()).append(" enable (UUID: ").append(processDef.getUUID())
+            .append(").");
         LOG.info(logMsg.toString());
       }
       return true;
@@ -208,10 +209,10 @@ public final class Deployer {
 
   public static boolean disableProcess(final ProcessDefinitionUUID processUUID) {
     Misc.badStateIfNull(processUUID, "Impossible to disable a processUUID from a null uuid");
-    final Querier journal  = EnvTool.getJournalQueriers();
+    final Querier journal = EnvTool.getJournalQueriers();
     final InternalProcessDefinition processDef = journal.getProcess(processUUID);
     if (processDef == null) {
-      String message = ExceptionManager.getInstance().getFullMessage("bd_D_8", processUUID);
+      final String message = ExceptionManager.getInstance().getFullMessage("bd_D_8", processUUID);
       throw new DeploymentRuntimeException(message);
     }
     if (!processDef.getState().equals(ProcessState.ENABLED)) {
@@ -223,11 +224,8 @@ public final class Deployer {
       recorder.recordProcessDisable(processDef);
       if (LOG.isLoggable(Level.INFO)) {
         final StringBuilder logMsg = new StringBuilder();
-        logMsg.append("Process ")
-        .append(processDef.getName())
-        .append(" disable (UUID: ")
-        .append(processDef.getUUID())
-        .append(").");
+        logMsg.append("Process ").append(processDef.getName()).append(" disable (UUID: ").append(processDef.getUUID())
+            .append(").");
         LOG.info(logMsg.toString());
       }
       return true;
@@ -236,20 +234,21 @@ public final class Deployer {
 
   public static boolean archiveProcess(final ProcessDefinitionUUID processUUID, final String userId) {
     Misc.badStateIfNull(processUUID, "Impossible to archive a processUUID from a null uuid");
-    final Querier journal  = EnvTool.getJournalQueriers();
+    final Querier journal = EnvTool.getJournalQueriers();
     final InternalProcessDefinition processDef = journal.getProcess(processUUID);
     if (processDef == null) {
-      String message = ExceptionManager.getInstance().getFullMessage("bd_D_8", processUUID);
+      final String message = ExceptionManager.getInstance().getFullMessage("bd_D_8", processUUID);
       throw new DeploymentRuntimeException(message);
     }
     if (!processDef.getState().equals(ProcessState.DISABLED)) {
       throw new DeploymentRuntimeException("Impossible to archive a process which its state is not disable");
     } else {
-      Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
+      final Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
       definitionUUIDs.add(processUUID);
-      int numberOfProcessInstances = journal.getNumberOfProcessInstances(definitionUUIDs);
+      final int numberOfProcessInstances = journal.getNumberOfProcessInstances(definitionUUIDs);
       if (numberOfProcessInstances != 0) {
-        throw new DeploymentRuntimeException("Impossible to archive a process with " + numberOfProcessInstances + " running instance(s)");
+        throw new DeploymentRuntimeException("Impossible to archive a process with " + numberOfProcessInstances
+            + " running instance(s)");
       } else {
         removeStartEvents(processDef);
         final Recorder recorder = EnvTool.getRecorder();
@@ -257,11 +256,8 @@ public final class Deployer {
         ArchiveTool.atomicArchive(processDef);
         if (LOG.isLoggable(Level.INFO)) {
           final StringBuilder logMsg = new StringBuilder();
-          logMsg.append("Process ")
-          .append(processDef.getName())
-          .append(" archive (UUID: ")
-          .append(processDef.getUUID())
-          .append(").");
+          logMsg.append("Process ").append(processDef.getName()).append(" archive (UUID: ")
+              .append(processDef.getUUID()).append(").");
           LOG.info(logMsg.toString());
         }
         EnvTool.getClassDataLoader().removeProcessClassLoader(processDef.getUUID());
@@ -272,16 +268,18 @@ public final class Deployer {
   }
 
   private static void addStartEvents(final ProcessDefinition processDef) throws DeploymentRuntimeException {
-    //install "start events" if necessary
+    // install "start events" if necessary
     if (ProcessType.PROCESS.equals(processDef.getType())) {
-      for (ActivityDefinition activity : processDef.getActivities()) {
+      for (final ActivityDefinition activity : processDef.getActivities()) {
         if (activity.getIncomingTransitions().isEmpty()) {
-          Type activityType = activity.getType();
+          final Type activityType = activity.getType();
           if (activityType.equals(Type.ReceiveEvent)) {
             final IncomingEventDefinition event = activity.getIncomingEvent();
             if (event != null) {
               final EventService eventService = EnvTool.getEventService();
-              IncomingEventInstance incomingEventInstance = new IncomingEventInstance(event.getName(), event.getExpression(), null, activity.getUUID(), null, processDef.getName(), activity.getName(), null, START_INSTANCE_SIGNAL, System.currentTimeMillis(), false);
+              final IncomingEventInstance incomingEventInstance = new IncomingEventInstance(event.getName(),
+                  event.getExpression(), null, activity.getUUID(), null, processDef.getName(), activity.getName(),
+                  null, START_INSTANCE_SIGNAL, System.currentTimeMillis(), false);
               incomingEventInstance.setPermanent(true);
               eventService.subscribe(incomingEventInstance);
             }
@@ -291,18 +289,23 @@ public final class Deployer {
             final ProcessDefinitionUUID definitionUUID = activity.getProcessDefinitionUUID();
             final String condition = activity.getTimerCondition();
             try {
-              final OutgoingEventInstance outgoing = new OutgoingEventInstance(eventName, null, null, null, null, null, -1);
+              final OutgoingEventInstance outgoing = new OutgoingEventInstance(eventName, null, null, null, null, null,
+                  -1);
               eventService.fire(outgoing);
-              final Date date = (Date) ProcessUtil.getTimerDate(condition, definitionUUID, System.currentTimeMillis());
-              IncomingEventInstance timerEventInstance = new IncomingEventInstance(eventName, condition, null, activity.getUUID(), null, processDef.getName(), activity.getName(), null, EventConstants.TIMER_START_EVENT, date.getTime(), false);
+              final Date date = ProcessUtil.getTimerDate(condition, definitionUUID, System.currentTimeMillis());
+              final IncomingEventInstance timerEventInstance = new IncomingEventInstance(eventName, condition, null,
+                  activity.getUUID(), null, processDef.getName(), activity.getName(), null,
+                  EventConstants.TIMER_START_EVENT, date.getTime(), false);
               timerEventInstance.setPermanent(true);
               eventService.subscribe(timerEventInstance);
-            } catch (GroovyException e) {
+            } catch (final GroovyException e) {
               throw new DeploymentRuntimeException(e.getMessage(), e.getCause());
             }
           } else if (activityType.equals(Type.SignalEvent)) {
             final String eventName = activity.getTimerCondition();
-            IncomingEventInstance signalEventInstance = new IncomingEventInstance(eventName, null, null, activity.getUUID(), null, processDef.getName(), activity.getName(), null, EventConstants.SIGNAL_START_EVENT, -1, false);
+            final IncomingEventInstance signalEventInstance = new IncomingEventInstance(eventName, null, null,
+                activity.getUUID(), null, processDef.getName(), activity.getName(), null,
+                EventConstants.SIGNAL_START_EVENT, -1, false);
             signalEventInstance.setPermanent(true);
             final EventService eventService = EnvTool.getEventService();
             eventService.subscribe(signalEventInstance);
@@ -313,10 +316,10 @@ public final class Deployer {
   }
 
   public static void removeStartEvents(final ProcessDefinition processDef) {
-    //remove "start events" if necessary
-    for (ActivityDefinition activity : processDef.getActivities()) {
+    // remove "start events" if necessary
+    for (final ActivityDefinition activity : processDef.getActivities()) {
       if (activity.getIncomingTransitions().isEmpty()) {
-        Type activityType = activity.getType();
+        final Type activityType = activity.getType();
         final IncomingEventDefinition event = activity.getIncomingEvent();
         if (event != null) {
           final EventService eventService = EnvTool.getEventService();
@@ -325,7 +328,8 @@ public final class Deployer {
           final EventService eventService = EnvTool.getEventService();
           final String eventName = BonitaConstants.TIMER_EVENT_PREFIX + activity.getUUID();
           eventService.removeSubscriptions(activity.getUUID());
-          Set<OutgoingEventInstance> outgoingTimerEvents = eventService.getOutgoingEvents(eventName, null, null, null);
+          final Set<OutgoingEventInstance> outgoingTimerEvents = eventService.getOutgoingEvents(eventName, null, null,
+              null);
           if (!outgoingTimerEvents.isEmpty()) {
             eventService.removeEvent(outgoingTimerEvents.iterator().next());
           }

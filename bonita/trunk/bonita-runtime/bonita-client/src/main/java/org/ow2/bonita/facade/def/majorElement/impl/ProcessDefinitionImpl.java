@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.ow2.bonita.facade.def.element.AttachmentDefinition;
 import org.ow2.bonita.facade.def.element.ConnectorDefinition;
@@ -57,7 +57,8 @@ public class ProcessDefinitionImpl extends LightProcessDefinitionImpl implements
   protected List<HookDefinition> connectors;
   protected Set<IterationDescriptor> iterationDescriptors;
 
-  protected ProcessDefinitionImpl() { }
+  protected ProcessDefinitionImpl() {
+  }
 
   public ProcessDefinitionImpl(final String name, final String version) {
     super(name, version);
@@ -66,63 +67,63 @@ public class ProcessDefinitionImpl extends LightProcessDefinitionImpl implements
   public ProcessDefinitionImpl(final ProcessDefinition src) {
     super(src);
 
-    ClassLoader current = Thread.currentThread().getContextClassLoader();
+    final ClassLoader current = Thread.currentThread().getContextClassLoader();
     try {
-      ProcessDefinitionImpl srcImpl = (ProcessDefinitionImpl) src;
+      final ProcessDefinitionImpl srcImpl = (ProcessDefinitionImpl) src;
       Thread.currentThread().setContextClassLoader(srcImpl.getClassLoader(src.getUUID()));
 
-      Set<DataFieldDefinition> dataFields = src.getDataFields();
+      final Set<DataFieldDefinition> dataFields = src.getDataFields();
       if (dataFields != null) {
         this.dataFields = new HashSet<DataFieldDefinition>();
-        for (DataFieldDefinition d : dataFields) {
+        for (final DataFieldDefinition d : dataFields) {
           this.dataFields.add(new DataFieldDefinitionImpl(d));
         }
       }
-      List<HookDefinition> connectors = src.getConnectors();
+      final List<HookDefinition> connectors = src.getConnectors();
       if (connectors != null) {
         this.connectors = new ArrayList<HookDefinition>();
-        for (HookDefinition d : connectors) {
+        for (final HookDefinition d : connectors) {
           this.connectors.add(new ConnectorDefinitionImpl(d));
         }
       }
-      Set<ParticipantDefinition> participants = src.getParticipants();
+      final Set<ParticipantDefinition> participants = src.getParticipants();
       if (participants != null) {
         this.participants = new HashSet<ParticipantDefinition>();
-        for (ParticipantDefinition d : participants) {
+        for (final ParticipantDefinition d : participants) {
           this.participants.add(new ParticipantDefinitionImpl(d));
         }
       }
-      Set<ActivityDefinition> activities = src.getActivities();
+      final Set<ActivityDefinition> activities = src.getActivities();
       if (activities != null) {
         this.activities = new HashSet<ActivityDefinition>();
-        for (ActivityDefinition d : activities) {
+        for (final ActivityDefinition d : activities) {
           this.activities.add(new ActivityDefinitionImpl(d));
         }
       }
 
       this.metadata = new HashMap<String, String>();
       final Map<String, String> meta = src.getMetaData();
-      for (Entry<String, String> entry : meta.entrySet()) {
+      for (final Entry<String, String> entry : meta.entrySet()) {
         this.metadata.put(entry.getKey(), entry.getValue());
       }
 
       final Map<String, AttachmentDefinition> other = src.getAttachments();
       if (!other.isEmpty()) {
         this.attachments = new HashSet<AttachmentDefinition>();
-        for (AttachmentDefinition attach : other.values()) {
+        for (final AttachmentDefinition attach : other.values()) {
           this.attachments.add(new AttachmentDefinitionImpl(attach));
         }
       }
       if (src.getIterationDescriptors() != null) {
         this.iterationDescriptors = new HashSet<IterationDescriptor>();
-        for (IterationDescriptor id : src.getIterationDescriptors()) {
+        for (final IterationDescriptor id : src.getIterationDescriptors()) {
           this.iterationDescriptors.add(new IterationDescriptor(id));
         }
       }
 
-      List<EventProcessDefinition> eventSubProcesses = src.getEventSubProcesses();
+      final List<EventProcessDefinition> eventSubProcesses = src.getEventSubProcesses();
       this.eventSubProcesses = new ArrayList<EventProcessDefinition>();
-      for (EventProcessDefinition d : eventSubProcesses) {
+      for (final EventProcessDefinition d : eventSubProcesses) {
         this.eventSubProcesses.add(new EventProcessDefinitionImpl(d));
       }
 
@@ -132,42 +133,40 @@ public class ProcessDefinitionImpl extends LightProcessDefinitionImpl implements
     }
   }
 
-  protected ClassLoader getClassLoader(ProcessDefinitionUUID processUUID) {
-    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    return cl;
+  protected ClassLoader getClassLoader(final ProcessDefinitionUUID processUUID) {
+    return Thread.currentThread().getContextClassLoader();
   }
 
   @Override
   public String toString() {
-    String st = this.getClass().getName()
-    + "[uuid: " + getUUID()
-    + ", name:" + getName()
-    + ", description:" + getDescription()
-    + ", version:" + getVersion();
-    st +=  "]";
+    String st = this.getClass().getName() + "[uuid: " + getUUID() + ", name:" + getName() + ", description:"
+        + getDescription() + ", version:" + getVersion();
+    st += "]";
     return st;
   }
 
+  @Override
   public Set<String> getClassDependencies() {
-    Set<String> classDependencies = new HashSet<String>();
-    for (ParticipantDefinition participant : getParticipants()) {
+    final Set<String> classDependencies = new HashSet<String>();
+    for (final ParticipantDefinition participant : getParticipants()) {
       if (participant.getRoleMapper() != null) {
         classDependencies.add(participant.getRoleMapper().getClassName());
       }
     }
-    for (ConnectorDefinition connector : getConnectors()) {
+    for (final ConnectorDefinition connector : getConnectors()) {
       classDependencies.add(connector.getClassName());
     }
-    for (ActivityDefinition activity : getActivities()) {
+    for (final ActivityDefinition activity : getActivities()) {
       classDependencies.addAll(activity.getClassDependencies());
     }
-    
+
     return classDependencies;
   }
 
+  @Override
   public Set<String> getProcessDependencies() {
-    Set<String> processDependencies = new HashSet<String>();
-    for (ActivityDefinition activity : getActivities()) {
+    final Set<String> processDependencies = new HashSet<String>();
+    for (final ActivityDefinition activity : getActivities()) {
       if (activity.getSubflowProcessName() != null) {
         processDependencies.add(activity.getSubflowProcessName());
       }
@@ -175,24 +174,27 @@ public class ProcessDefinitionImpl extends LightProcessDefinitionImpl implements
     return processDependencies;
   }
 
+  @Override
   public Set<DataFieldDefinition> getDataFields() {
     if (dataFields == null) {
       return Collections.emptySet();
     }
     return dataFields;
   }
-  
+
+  @Override
   public Set<String> getSubProcesses() {
     if (this.subProcesses == null) {
       return Collections.emptySet();
     }
     return this.subProcesses;
   }
-  
-  public void setSubProcesses(Set<String> subProcesses) {
+
+  public void setSubProcesses(final Set<String> subProcesses) {
     this.subProcesses = subProcesses;
   }
 
+  @Override
   public Set<ParticipantDefinition> getParticipants() {
     if (participants == null) {
       return Collections.emptySet();
@@ -200,6 +202,7 @@ public class ProcessDefinitionImpl extends LightProcessDefinitionImpl implements
     return participants;
   }
 
+  @Override
   public Set<ActivityDefinition> getActivities() {
     if (activities == null) {
       return Collections.emptySet();
@@ -207,20 +210,22 @@ public class ProcessDefinitionImpl extends LightProcessDefinitionImpl implements
     return activities;
   }
 
+  @Override
   public Set<TransitionDefinition> getTransitions() {
     if (activities == null) {
       return Collections.emptySet();
     }
-    Set<TransitionDefinition> transitions = new HashSet<TransitionDefinition>();
-    for (ActivityDefinition activity : getActivities()) {
-      Set<TransitionDefinition> activityTransitions = activity.getOutgoingTransitions();
-      for (TransitionDefinition transition : activityTransitions) {
+    final Set<TransitionDefinition> transitions = new HashSet<TransitionDefinition>();
+    for (final ActivityDefinition activity : getActivities()) {
+      final Set<TransitionDefinition> activityTransitions = activity.getOutgoingTransitions();
+      for (final TransitionDefinition transition : activityTransitions) {
         transitions.add(transition);
       }
     }
     return transitions;
   }
 
+  @Override
   public Map<String, String> getMetaData() {
     if (metadata == null) {
       return Collections.emptyMap();
@@ -228,7 +233,8 @@ public class ProcessDefinitionImpl extends LightProcessDefinitionImpl implements
     return metadata;
   }
 
-  public String getAMetaData(String key) {
+  @Override
+  public String getAMetaData(final String key) {
     Misc.checkArgsNotNull(key);
     if (this.metadata == null) {
       return null;
@@ -236,6 +242,7 @@ public class ProcessDefinitionImpl extends LightProcessDefinitionImpl implements
     return metadata.get(key);
   }
 
+  @Override
   public List<HookDefinition> getConnectors() {
     if (this.connectors == null) {
       return Collections.emptyList();
@@ -247,57 +254,57 @@ public class ProcessDefinitionImpl extends LightProcessDefinitionImpl implements
    * SETTERS
    */
 
-  public void setState(ProcessState state) {
-    this.state = state; 
+  public void setState(final ProcessState state) {
+    this.state = state;
   }
 
-  public void setType(ProcessType type) {
+  public void setType(final ProcessType type) {
     this.type = type;
   }
 
-  public void setUndeployedDate(Date undeployedDate) {
+  public void setUndeployedDate(final Date undeployedDate) {
     this.undeployedDate = Misc.getTime(undeployedDate);
   }
 
-  public void setUndeployedBy(String undeployedBy) {
+  public void setUndeployedBy(final String undeployedBy) {
     this.undeployedBy = undeployedBy;
   }
 
-  public void addData(DataFieldDefinition data) {
+  public void addData(final DataFieldDefinition data) {
     if (dataFields == null) {
       dataFields = new HashSet<DataFieldDefinition>();
     }
     this.dataFields.add(data);
   }
 
-  public void addGroup(ParticipantDefinitionImpl group) {
+  public void addGroup(final ParticipantDefinitionImpl group) {
     if (participants == null) {
       participants = new HashSet<ParticipantDefinition>();
     }
     this.participants.add(group);
   }
 
-  public void addActivity(ActivityDefinition activity) {
+  public void addActivity(final ActivityDefinition activity) {
     if (activities == null) {
       activities = new HashSet<ActivityDefinition>();
     }
     this.activities.add(activity);
   }
 
-  public void setDeployedDate(Date deployedDate) {
+  public void setDeployedDate(final Date deployedDate) {
     this.deployedDate = Misc.getTime(deployedDate);
   }
 
-  public void setDeployedBy(String deployedBy) {
+  public void setDeployedBy(final String deployedBy) {
     this.deployedBy = deployedBy;
   }
 
-  public void deleteAMetaData(String key) {
+  public void deleteAMetaData(final String key) {
     Misc.checkArgsNotNull(key);
     metadata.remove(key);
   }
 
-  public void addAMetaData(String key, String value) {
+  public void addAMetaData(final String key, final String value) {
     Misc.checkArgsNotNull(key, value);
     if (this.metadata == null) {
       this.metadata = new HashMap<String, String>();
@@ -305,7 +312,7 @@ public class ProcessDefinitionImpl extends LightProcessDefinitionImpl implements
     this.metadata.put(key, value);
   }
 
-  public void addAttachment(AttachmentDefinition attach) {
+  public void addAttachment(final AttachmentDefinition attach) {
     Misc.checkArgsNotNull(attach);
     if (this.attachments == null) {
       this.attachments = new HashSet<AttachmentDefinition>();
@@ -313,24 +320,26 @@ public class ProcessDefinitionImpl extends LightProcessDefinitionImpl implements
     this.attachments.add(attach);
   }
 
-  public void addConnector(HookDefinition connector) {
+  public void addConnector(final HookDefinition connector) {
     if (this.connectors == null) {
       this.connectors = new ArrayList<HookDefinition>();
     }
     this.connectors.add(connector);
   }
 
+  @Override
   public ActivityDefinition getActivity(final String name) {
-    for (ActivityDefinition activity : getActivities()) {
+    for (final ActivityDefinition activity : getActivities()) {
       if (activity.getName().equals(name)) {
         return activity;
       }
     }
     return null;
   }
-  
+
+  @Override
   public DataFieldDefinition getDatafield(final String name) {
-    for (DataFieldDefinition datafield : getDataFields()) {
+    for (final DataFieldDefinition datafield : getDataFields()) {
       if (datafield.getName().equals(name)) {
         return datafield;
       }
@@ -338,94 +347,101 @@ public class ProcessDefinitionImpl extends LightProcessDefinitionImpl implements
     return null;
   }
 
-  public AttachmentDefinition getAttachment(String name) {
+  @Override
+  public AttachmentDefinition getAttachment(final String name) {
     return getAttachments().get(name);
   }
 
+  @Override
   public Map<String, AttachmentDefinition> getAttachments() {
     if (this.attachments == null) {
       return Collections.emptyMap();
     }
-    Map<String, AttachmentDefinition> result = new HashMap<String, AttachmentDefinition>();
-    for (AttachmentDefinition attach : this.attachments) {
+    final Map<String, AttachmentDefinition> result = new HashMap<String, AttachmentDefinition>();
+    for (final AttachmentDefinition attach : this.attachments) {
       result.put(attach.getName(), attach);
     }
     return result;
   }
 
+  @Override
   public Map<String, ActivityDefinition> getFinalActivities() {
-    Map<String, ActivityDefinition> result = new HashMap<String, ActivityDefinition>();
-    for (ActivityDefinition activity : getActivities()) {
+    final Map<String, ActivityDefinition> result = new HashMap<String, ActivityDefinition>();
+    for (final ActivityDefinition activity : getActivities()) {
       if (!activity.hasOutgoingTransitions()) {
         result.put(activity.getName(), activity);
       }
     }
     return result;
   }
-  
+
+  @Override
   public Map<String, ActivityDefinition> getInitialActivities() {
-    Map<String, ActivityDefinition> result = new HashMap<String, ActivityDefinition>();
-    for (ActivityDefinition activity : getActivities()) {
+    final Map<String, ActivityDefinition> result = new HashMap<String, ActivityDefinition>();
+    for (final ActivityDefinition activity : getActivities()) {
       if (!activity.hasIncomingTransitions()) {
         result.put(activity.getName(), activity);
       }
     }
     return result;
-  }  
+  }
 
+  @Override
   public Set<IterationDescriptor> getIterationDescriptors() {
-  	if (this.iterationDescriptors == null) {
-  		return Collections.emptySet();
-  	}
+    if (this.iterationDescriptors == null) {
+      return Collections.emptySet();
+    }
     return iterationDescriptors;
   }
 
   public void addIterationDescriptors(final IterationDescriptor iterationDescriptor) {
-  	if (this.iterationDescriptors == null) {
-  		this.iterationDescriptors = new HashSet<IterationDescriptor>();
-  	}
+    if (this.iterationDescriptors == null) {
+      this.iterationDescriptors = new HashSet<IterationDescriptor>();
+    }
     this.iterationDescriptors.add(iterationDescriptor);
   }
 
-  public boolean containsIterationDescriptor(IterationDescriptor itDesc) {
-	  for (IterationDescriptor id : getIterationDescriptors()) {
-	  	if (id.equals(itDesc)) {
-	  		return true;
-	  	}
-	  }
-	  return false;
+  public boolean containsIterationDescriptor(final IterationDescriptor itDesc) {
+    for (final IterationDescriptor id : getIterationDescriptors()) {
+      if (id.equals(itDesc)) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  public Set<IterationDescriptor> getIterationDescriptors(String activityName) {
-  	Set<IterationDescriptor> result = new HashSet<IterationDescriptor>();
-  	for (IterationDescriptor id : getIterationDescriptors()) {
-	  	if (id.containsNode(activityName)) {
-	  		result.add(id);
-	  	}
-	  }
+  @Override
+  public Set<IterationDescriptor> getIterationDescriptors(final String activityName) {
+    final Set<IterationDescriptor> result = new HashSet<IterationDescriptor>();
+    for (final IterationDescriptor id : getIterationDescriptors()) {
+      if (id.containsNode(activityName)) {
+        result.add(id);
+      }
+    }
     return result;
   }
 
-  public void addCategory(String categoryName) {
-    if(categoryName!=null && categoryName.trim().length() > 0){
-      if(this.categories == null) {
+  public void addCategory(final String categoryName) {
+    if (categoryName != null && categoryName.trim().length() > 0) {
+      if (this.categories == null) {
         this.categories = new HashSet<String>();
       }
       this.categories.add(categoryName);
     }
   }
 
-  public void setCategories(Set<String> categoryNames) {
+  public void setCategories(final Set<String> categoryNames) {
     this.categories = categoryNames;
   }
 
-  public void addEventSubProcess(EventProcessDefinition eventProcess) {
+  public void addEventSubProcess(final EventProcessDefinition eventProcess) {
     if (eventSubProcesses == null) {
       eventSubProcesses = new ArrayList<EventProcessDefinition>();
     }
     eventSubProcesses.add(eventProcess);
   }
 
+  @Override
   public List<EventProcessDefinition> getEventSubProcesses() {
     if (this.eventSubProcesses == null) {
       return Collections.emptyList();

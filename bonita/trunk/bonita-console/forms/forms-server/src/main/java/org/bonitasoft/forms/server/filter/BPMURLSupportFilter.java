@@ -28,7 +28,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -38,6 +40,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.bonitasoft.console.security.server.LoginServlet;
 import org.bonitasoft.console.servlet.ServletLoginUtils;
 import org.bonitasoft.forms.server.api.FormAPIFactory;
 import org.bonitasoft.forms.server.api.IFormWorkflowAPI;
@@ -46,6 +49,7 @@ import org.ow2.bonita.facade.uuid.ActivityInstanceUUID;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
 import org.ow2.bonita.facade.uuid.ProcessInstanceUUID;
 import org.ow2.bonita.util.AccessorUtil;
+import org.ow2.bonita.util.SimpleCallbackHandler;
 
 /**
  * This filter transform the regular URL parameters into Hash parameters, with a generated formID.
@@ -58,6 +62,11 @@ public class BPMURLSupportFilter implements Filter {
      * the URL param for the locale to use
      */
     protected static final String LOCALE_URL_PARAM = "locale";
+    
+    /**
+     * the URL param for the form locale to use
+     */
+    protected static final String FORM_LOCALE_URL_PARAM = "formLocale";
     
     /**
      * user's domain URL parameter
@@ -160,6 +169,11 @@ public class BPMURLSupportFilter implements Filter {
     public static final String MODE_FORM = "form";
     
     /**
+     * simple engine login name
+     */
+    private static String SIMPLE_ENGINE_USERNAME = "username";
+    
+    /**
      * Logger
      */
     private static final Logger LOGGER = Logger.getLogger(BPMURLSupportFilter.class.getName());
@@ -173,7 +187,7 @@ public class BPMURLSupportFilter implements Filter {
             final HttpServletRequest httpServletRequest = (HttpServletRequest) request;
             final HttpServletResponse httpServletResponse = (HttpServletResponse) response;
             Map<String, String[]> parameters = httpServletRequest.getParameterMap();
-            final List<String> supportedParameterKeysList = Arrays.asList(LOCALE_URL_PARAM, DOMAIN_PARAM, UI_MODE_PARAM, THEME_PARAM, GWT_DEBUG_PARAM);
+            final List<String> supportedParameterKeysList = Arrays.asList(LOCALE_URL_PARAM, FORM_LOCALE_URL_PARAM, DOMAIN_PARAM, UI_MODE_PARAM, THEME_PARAM, GWT_DEBUG_PARAM);
             Set<String> parameterKeys = new HashSet<String>(parameters.keySet());
             parameterKeys.removeAll(supportedParameterKeysList);
             if (!parameterKeys.isEmpty()) {
@@ -264,7 +278,7 @@ public class BPMURLSupportFilter implements Filter {
         final StringBuffer tempFormID = new StringBuffer();
         try {
             if (taskUUIDStr != null) {
-                loginContext = ServletLoginUtils.engineLogin(request);
+                loginContext = simpleEngineLogin(request);
                 final IFormWorkflowAPI workflowAPI = FormAPIFactory.getFormWorkflowAPI();
                 final ActivityInstanceUUID activityInstanceUUID = new ActivityInstanceUUID(taskUUIDStr);
                 final String activityDefinitionUUIDStr = activityInstanceUUID.getActivityDefinitionUUID().getValue();
@@ -305,10 +319,10 @@ public class BPMURLSupportFilter implements Filter {
             
         } catch (final Exception e) {
             if (LOGGER.isLoggable(Level.SEVERE)) {
-                LOGGER.log(Level.SEVERE, "Cannot get the formID with current URL parameters.");
+                LOGGER.log(Level.SEVERE, "Cannot get the formID with current URL parameters.", e);
             }
             return null;
-            
+
         } finally {
             if (loginContext != null) {
                 ServletLoginUtils.engineLogout(loginContext);
@@ -368,6 +382,19 @@ public class BPMURLSupportFilter implements Filter {
     	final String urlPrefix = request.getServletPath().replaceAll(HOMEPAGE, "");
     	final String mode = request.getParameter(MODE_PARAM);
         return urlPrefix.startsWith(APPLICATION_PREFIX) || urlPrefix.startsWith(CONSOLE_PREFIX) && (MODE_APP.equals(mode) || MODE_FORM.equals(mode));
+    }
+    
+    /**
+     * Simple engin login
+     * 
+     * @return the login context
+     * @throws LoginException
+     */
+    protected LoginContext simpleEngineLogin(final HttpServletRequest request) throws LoginException {
+        final CallbackHandler handler = new SimpleCallbackHandler(SIMPLE_ENGINE_USERNAME, SIMPLE_ENGINE_USERNAME);
+        final LoginContext loginContext = new LoginContext(LoginServlet.JAAS_STORE_LOGIN_CONTEXT, handler);
+        loginContext.login();
+        return loginContext;
     }
     
     public void destroy() {

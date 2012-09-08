@@ -365,4 +365,8 @@ public interface DocumentationManager {
   public void attachDocumentTo(final ProcessDefinitionUUID processDefinitionUUID, final ProcessInstanceUUID processInstanceUUID, final String documentId)
   throws DocumentNotFoundException;
 
+  void deleteFolderOfProcessInstance(ProcessInstanceUUID instanceUUID);
+  
+  void deleteFolderOfProcessDefinition(ProcessDefinitionUUID definitionUUID);
+
 }

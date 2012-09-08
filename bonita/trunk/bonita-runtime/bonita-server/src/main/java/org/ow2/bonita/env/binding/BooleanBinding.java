@@ -21,7 +21,7 @@ import org.w3c.dom.Element;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class BooleanBinding extends BasicTypeBinding {
 
@@ -30,9 +30,9 @@ public class BooleanBinding extends BasicTypeBinding {
   }
 
   @Override
-  protected AbstractDescriptor createDescriptor(String value, Element element, Parse parse) {
-    BooleanDescriptor descriptor = new BooleanDescriptor();
-    Boolean booleanValue = new Boolean(value);
+  protected AbstractDescriptor createDescriptor(final String value, final Element element, final Parse parse) {
+    final BooleanDescriptor descriptor = new BooleanDescriptor();
+    final Boolean booleanValue = Boolean.valueOf(value);
     descriptor.setValue(booleanValue);
     return descriptor;
   }

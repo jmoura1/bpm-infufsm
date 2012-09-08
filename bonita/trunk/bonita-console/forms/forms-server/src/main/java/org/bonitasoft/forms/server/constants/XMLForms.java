@@ -43,30 +43,6 @@ public final class XMLForms {
      * the forms definition external welcome page
      */
     public static final String EXTERNAL_WELCOME_PAGE = "external-welcome-page";
-    
-    /**
-     * the process element name
-     * @deprecated As of version 6.0, replaced by APPLICATION
-     * @see #APPLICATION
-     */
-    @Deprecated
-    public static final String PROCESS = "process";
-
-    /**
-     * the process label element name
-     * @deprecated As of version 6.0, replaced by APPLICATION_LABEL
-     * @see #APPLICATION_LABEL
-     */
-    @Deprecated
-    public static final String PROCESS_LABEL = "process-label";
-    
-    /**
-     * the process template element name
-     * @deprecated As of version 6.0, replaced by APPLICATION_LAYOUT
-     * @see #APPLICATION_LAYOUT
-     */
-    @Deprecated
-    public static final String PROCESS_TEMPLATE = "process-template";
 
     /**
      * the application element name
@@ -109,14 +85,6 @@ public final class XMLForms {
     public static final String MIGRATION_PRODUCT_VERSION = "migration-product-version";
 
     /**
-     * the pageflow element name
-     * @deprecated As of version 6.0, replaced by ENTRY_FORM
-     * @see #ENTRY_FORM
-     */
-    @Deprecated
-    public static final String PAGEFLOW = "pageflow";
-
-    /**
      * the forms element name
      */
     public static final String FORMS = "forms";
@@ -142,93 +110,9 @@ public final class XMLForms {
     public static final String FORM_TYPE = "form-type";
     
     /**
-     * the entry forms element name
-     */
-    @Deprecated
-    public static final String ENTRY_FORMS = "entry-forms";
-    
-    /**
-     * the entry form element name
-     */
-    @Deprecated
-    public static final String ENTRY_FORM = "entry-form";
-    
-    /**
-     * the pages element name
-     */
-    @Deprecated
-    public static final String ENTRY_PAGES = "entry-pages";
-    
-    /**
-     * the entry page element name
-     */
-    @Deprecated
-    public static final String ENTRY_PAGE = "entry-page";
-
-    /**
-     * the view pageflow element name
-     * @deprecated As of version 6.0, replaced by VIEW_FORM
-     * @see #VIEW_FORM
-     */
-    @Deprecated
-    public static final String VIEW_PAGEFLOW = "view-pageflow";
-
-    /**
-     * the view view forms element name
-     */
-    @Deprecated
-    public static final String VIEW_FORMS = "view-forms";
-    
-    /**
-     * the view view form element name
-     */
-    @Deprecated
-    public static final String VIEW_FORM = "view-form";
-    
-    /**
-     * the view pages element name
-     */
-    @Deprecated
-    public static final String VIEW_PAGES = "view-pages";
-    
-    /**
-     * the view page element name
-     */
-    @Deprecated
-    public static final String VIEW_PAGE = "view-page";
-    
-    /**
-     * the recapflow element name
-     * @deprecated Removed as of version 6.0
-     */
-    @Deprecated
-    public static final String RECAP_PAGEFLOW = "recap-pageflow";
-    
-    /**
-     * the recap pages element name
-     */
-    @Deprecated
-    public static final String RECAP_PAGES = "recap-pages";
-    
-    /**
-     * the recap page element name
-     * @deprecated Removed as of version 6.0
-     */
-    @Deprecated
-    public static final String RECAP_PAGE = "recap-page";
-    
-    /**
      * the page label element name
      */
     public static final String PAGE_LABEL = "page-label";
-
-    /**
-     * the page template element name
-     * @deprecated As of version 6.0, replaced by PAGE_LAYOUT
-     * @see #PAGE_LAYOUT
-     */
-    @Deprecated
-    public static final String PAGE_TEMPLATE = "page-template";
     
     /**
      * the page template element name
@@ -404,27 +288,6 @@ public final class XMLForms {
      * the submit button element name
      */
     public static final String SUBMIT_BUTTON = "submit-button";
-    
-    /**
-     * the activities element name
-     * @deprecated Removed as of version 6.0
-     */
-    @Deprecated
-    public static final String ACTIVITIES = "activities";
-    
-    /**
-     * the activity element name
-     * @deprecated Removed as of version 6.0
-     */
-    @Deprecated
-    public static final String ACTIVITY = "activity";
-    
-    /**
-     * the confirmation template element name
-     * @Deprecated Removed as of version 6.0
-     */
-    @Deprecated
-    public static final String CONFIRMATION_TEMPLATE = "confirmation-template";
     
     /**
      * the confirmation template element name

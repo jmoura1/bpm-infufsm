@@ -10,7 +10,7 @@
 	<artifactId>bonita-console</artifactId>
 	<name>bonita console</name>
 	<packaging>pom</packaging>
-	<version>5.6.1</version>
+	<version>5.7.2</version>
 
 	<modules>
 		<module>security</module>
@@ -37,11 +37,12 @@
 			to the same value. -->
 		<gwtVersion>${gwt.version}</gwtVersion>
 		<gwtx.version>1.5.3</gwtx.version>
-		<bonita.version>5.6.1</bonita.version>
+		<bonita.version>5.7.2</bonita.version>
 		<junit.version>4.1</junit.version>
 		<commons-fileupload.version>1.2.1</commons-fileupload.version>
 		<commons-io.version>1.4</commons-io.version>
 		<commons-codec.version>1.4</commons-codec.version>
+		<commons-lang.version>2.4</commons-lang.version>
 		<jericho.version>3.1</jericho.version>
 		<birt.version>2.6.1</birt.version>
 		<emfecore.version>2.5.0</emfecore.version>
@@ -98,6 +99,11 @@
 				<artifactId>commons-codec</artifactId>
 				<version>${commons-codec.version}</version>
 			</dependency>
+			<dependency>
+		        <groupId>commons-lang</groupId>
+		        <artifactId>commons-lang</artifactId>
+		        <version>${commons-lang.version}</version>
+		    </dependency>
 			<dependency>
 				<groupId>net.htmlparser.jericho</groupId>
 				<artifactId>jericho-html</artifactId>
@@ -172,6 +178,12 @@
 				<enabled>true</enabled>
 				<updatePolicy>never</updatePolicy>
 			</snapshots>
+		</repository>
+		<!-- Used to get Birt 2.6.1 -->
+		<repository>
+			<id>archiva.internal</id>
+			<name>Bonita Archiva Internal Repository</name>
+			<url>http://91.121.75.179:8081/archiva/repository/internal/</url>
 		</repository>
 	</repositories>
 

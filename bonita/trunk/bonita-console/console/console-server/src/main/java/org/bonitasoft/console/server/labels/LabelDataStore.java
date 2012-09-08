@@ -47,6 +47,7 @@ import org.ow2.bonita.facade.exception.InstanceNotFoundException;
 import org.ow2.bonita.facade.runtime.Label;
 import org.ow2.bonita.facade.runtime.command.WebDeleteAllCustomLabelsExceptCommand;
 import org.ow2.bonita.facade.runtime.command.WebDeleteAllLabelsByNameCommand;
+import org.ow2.bonita.facade.runtime.command.WebGetNumberOfManageableParentProcessInstances;
 import org.ow2.bonita.facade.runtime.command.WebGetNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate;
 import org.ow2.bonita.facade.runtime.command.WebGetNumberOfParentProcessInstancesWithOverdueTasks;
 import org.ow2.bonita.facade.runtime.command.WebGetProcessInstancesNumberWithActiveUser;
@@ -500,11 +501,15 @@ public class LabelDataStore {
     } else if (aLabelUUID.equals(LabelModel.MY_CASES_LABEL.getUUID())) {
       theCaseNumber = theCommandAPI.execute(new WebGetProcessInstancesNumberWithStartedBy(theUserID, theUserRoles, theUserGroups, theUserMemberships, theUsername, searchInHistory));
     } else if (aLabelUUID.equals(LabelModel.ADMIN_ALL_CASES.getUUID())) {
-    	if (aUserProfile.isAdmin() || aUserProfile.hasAccessToAdminCaseList()) {
+    	if (aUserProfile.isAdmin()) {
             theCaseNumber = theQueryRuntimeAPI.getNumberOfParentProcessInstances();
-          } else {
-        	  throw new ConsoleSecurityException(theUsername, LabelDataStore.class.getName() + "getLabelUpdates(non-authorized argument)");
-          }
+        } else if(aUserProfile.hasAccessToAdminCaseList()){
+            theCaseNumber = theCommandAPI.execute(new WebGetNumberOfManageableParentProcessInstances(searchInHistory, theUserID, theUserRoles, theUserGroups,
+                    theUserMemberships, theUsername));
+        }
+    	else {
+        	throw new ConsoleSecurityException(theUsername, LabelDataStore.class.getName() + "getLabelUpdates(non-authorized argument)");
+        }
     } else if (aLabelUUID.equals(LabelModel.ATRISK_LABEL.getUUID())) {
       theCaseNumber = theCommandAPI.execute(new WebGetNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(theUserID, theUserRoles, theUserGroups, theUserMemberships, theUsername, DEFAULT_REMAINING_DAYS));
     } else if (aLabelUUID.equals(LabelModel.OVERDUE_LABEL.getUUID())) {

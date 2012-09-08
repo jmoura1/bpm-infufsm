@@ -53,86 +53,93 @@ public class ClientRemoteAPIInterceptor implements InvocationHandler {
     this.queryList = queryList;
   }
 
+  @Override
   public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-  	final Map<String, String> options = new HashMap<String, String>();
-  	options.put(APIAccessor.QUERYLIST_OPTION, this.queryList);
-  	if (!APIMethodsSecurity.isSecuredMethod(method)) {
-  	  options.put(APIAccessor.USER_OPTION, null);
-  	} else {
-  	  options.put(APIAccessor.USER_OPTION, UserOwner.getUser());
-  	}
-  	options.put(APIAccessor.DOMAIN_OPTION, DomainOwner.getDomain());
-  	
-  	//if is REST set hashed password
-  	if (isREST() && APIMethodsSecurity.isSecuredMethod(method)){
-  	  options.put(APIAccessor.REST_USER_OPTION, RESTUserOwner.getUser());
-  		options.put(APIAccessor.PASSWORD_HASH_OPTION, PasswordOwner.getPassword());
-  	}
-  	
+    final Map<String, String> options = new HashMap<String, String>();
+    options.put(APIAccessor.QUERYLIST_OPTION, this.queryList);
+    if (!APIMethodsSecurity.isSecuredMethod(method)) {
+      options.put(APIAccessor.USER_OPTION, null);
+    } else {
+      options.put(APIAccessor.USER_OPTION, UserOwner.getUser());
+    }
+    options.put(APIAccessor.DOMAIN_OPTION, DomainOwner.getDomain());
+
+    // if is REST set hashed password
+    if (isREST() && APIMethodsSecurity.isSecuredMethod(method)) {
+      options.put(APIAccessor.REST_USER_OPTION, RESTUserOwner.getUser());
+      options.put(APIAccessor.PASSWORD_HASH_OPTION, PasswordOwner.getPassword());
+    }
+
     try {
-      Class< ? >[] params;
+      Class<?>[] params;
       Object[] methodsArgs;
 
-        final Class< ? >[] p = method.getParameterTypes();
-        if (p != null) {
-          params = new Class< ? >[p.length + 1];
-          for (int i = 0; i < p.length; i++) {
-            params[i] = p[i];
-          }
-          params[p.length] = Map.class;
-        } else {
-          params = new Class< ? >[] {Map.class};
+      final Class<?>[] p = method.getParameterTypes();
+      if (p.length > 0) {
+        params = new Class<?>[p.length + 1];
+        for (int i = 0; i < p.length; i++) {
+          params[i] = p[i];
         }
-        if (args != null) {
-          methodsArgs = new Object[args.length + 1];
-          for (int i = 0; i < args.length; i++) {
-            methodsArgs[i] = args[i];
-          }
-          methodsArgs[args.length] = options;
-        } else {
-          methodsArgs = new Object[] {options};
+        params[p.length] = Map.class;
+      } else {
+        params = new Class<?>[] { Map.class };
+      }
+      if (args != null) {
+        methodsArgs = new Object[args.length + 1];
+        for (int i = 0; i < args.length; i++) {
+          methodsArgs[i] = args[i];
         }
-              
-			if (isREST()) {
-				int i = 0;
-				Type[] genericParams = method.getGenericParameterTypes();
-				for (Class<?> currentClass : method.getParameterTypes()) {
-					if (currentClass.equals(Collection.class)) {
-						params[i] = List.class;
-						methodsArgs[i] = getList((Collection<?>)methodsArgs[i]);						
-					}
-					//workaround for generic Set<E>
-					else if (currentClass.equals(Set.class)){
-						if (genericParams[i] instanceof ParameterizedType){							
-							Type type = ((ParameterizedType)genericParams[i]).getActualTypeArguments()[0];
-							if (!(type instanceof Class<?>)) {								
-								params[i] = RESTSet.class;
-								methodsArgs[i] = new RESTSet((Set<?>) methodsArgs[i]);
-							}
-							
-						} 
-					}
-					i++;
-				}
-			}
-			
-			String methodName = method.getName();
-      
-			//change method to invoke, 
-			if (isREST()) {
-			  if (methodName.equals("createDocument")
-          && methodsArgs.length == 6 && methodsArgs[4] != null /*content cannot be null*/) {
-			    methodName = "createDocumentOctetStream";
-			  } else if(methodName.equals("addDocumentVersion") 
-			      && methodsArgs.length == 6 && methodsArgs[4] != null /*content cannot be null*/) {
-			    methodName = "addDocumentVersionOctetStream";
-			  } else if(methodName.equals("addAttachment") 
-            && methodsArgs.length == 5 && methodsArgs[3] != null /*content cannot be null*/) {
+        methodsArgs[args.length] = options;
+      } else {
+        methodsArgs = new Object[] { options };
+      }
+
+      if (isREST()) {
+        int i = 0;
+        final Type[] genericParams = method.getGenericParameterTypes();
+        for (final Class<?> currentClass : method.getParameterTypes()) {
+          if (currentClass.equals(Collection.class)) {
+            params[i] = List.class;
+            methodsArgs[i] = getList((Collection<?>) methodsArgs[i]);
+          }
+          // workaround for generic Set<E>
+          else if (currentClass.equals(Set.class) && genericParams[i] instanceof ParameterizedType) {
+            final Type type = ((ParameterizedType) genericParams[i]).getActualTypeArguments()[0];
+            if (!(type instanceof Class<?>)) {
+              params[i] = RESTSet.class;
+              methodsArgs[i] = new RESTSet((Set<?>) methodsArgs[i]);
+            }
+          }
+          i++;
+        }
+      }
+
+      String methodName = method.getName();
+
+      // change method to invoke,
+      if (isREST()) {
+        if (methodName.equals("createDocument") && methodsArgs.length == 6 && methodsArgs[4] != null /*
+                                                                                                      * content cannot
+                                                                                                      * be null
+                                                                                                      */) {
+          methodName = "createDocumentOctetStream";
+        } else if (methodName.equals("addDocumentVersion") && methodsArgs.length == 6 && methodsArgs[4] != null /*
+                                                                                                                 * content
+                                                                                                                 * cannot
+                                                                                                                 * be
+                                                                                                                 * null
+                                                                                                                 */) {
+          methodName = "addDocumentVersionOctetStream";
+        } else if (methodName.equals("addAttachment") && methodsArgs.length == 5 && methodsArgs[3] != null /*
+                                                                                                            * content
+                                                                                                            * cannot be
+                                                                                                            * null
+                                                                                                            */) {
           methodName = "addAttachmentOctetStream";
         }
-			}
-			
-			final Method m = this.api.getClass().getMethod(methodName, params);
+      }
+
+      final Method m = this.api.getClass().getMethod(methodName, params);
       return m.invoke(this.api, methodsArgs);
     } catch (final Exception e) {
       if (e instanceof InvocationTargetException) {
@@ -142,27 +149,27 @@ public class ClientRemoteAPIInterceptor implements InvocationHandler {
           final Throwable remoteCause = getRemoteCause(remoteException);
           InterceptorUtil.manageInvokeExceptionCause(method, remoteCause);
         } else if (invocationExceptionCause instanceof RESTBonitaRuntimeExceptionWrapper) {
-          RESTBonitaRuntimeExceptionWrapper exception = (RESTBonitaRuntimeExceptionWrapper) invocationExceptionCause;
-          throw  exception.getCause();
+          final RESTBonitaRuntimeExceptionWrapper exception = (RESTBonitaRuntimeExceptionWrapper) invocationExceptionCause;
+          throw exception.getCause();
         } else {
           throw invocationExceptionCause;
         }
       }
-      String message = ExceptionManager.getInstance().getFullMessage("baa_CAPII_1", e);
+      final String message = ExceptionManager.getInstance().getFullMessage("baa_CAPII_1", e);
       throw new BonitaInternalException(message, e);
     }
   }
 
-	private boolean isREST() {
-	  String apiType = System.getProperty(BonitaConstants.API_TYPE_PROPERTY);
-	  return (apiType != null && apiType.equalsIgnoreCase(Context.REST.toString()));
-	}
+  private boolean isREST() {
+    final String apiType = System.getProperty(BonitaConstants.API_TYPE_PROPERTY);
+    return apiType != null && apiType.equalsIgnoreCase(Context.REST.toString());
+  }
 
   private <T> List<T> getList(final Collection<T> col) {
-  	if (col == null) {
-  		return Collections.emptyList();
-  	}
-  	return new ArrayList<T>(col);	
+    if (col == null) {
+      return Collections.emptyList();
+    }
+    return new ArrayList<T>(col);
   }
 
   private Throwable getRemoteCause(final RemoteException e) {

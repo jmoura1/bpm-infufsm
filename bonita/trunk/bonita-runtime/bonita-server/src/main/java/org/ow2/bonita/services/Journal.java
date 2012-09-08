@@ -1,6 +1,7 @@
 package org.ow2.bonita.services;
 
 
+
 public interface Journal extends Querier, Recorder {
 
   /*
@@ -14,4 +15,6 @@ public interface Journal extends Querier, Recorder {
   long getLockedMetadata(String seqName);
   void updateLockedMetadata(String seqName, long value);
   void removeLockedMetadata(String seqName);
+  
+  void removeExecution(long id);
 }

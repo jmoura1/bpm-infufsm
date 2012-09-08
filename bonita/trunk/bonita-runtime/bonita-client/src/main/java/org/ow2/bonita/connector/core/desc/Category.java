@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009  BonitaSoft S.A..
+ * Copyright (C) 2009-2012  BonitaSoft S.A..
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -14,19 +14,23 @@
 package org.ow2.bonita.connector.core.desc;
 
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class Category {
 
-  private String name;
-  private String icon;
-  private ClassLoader classLoader;
+  private static final Logger LOG = Logger.getLogger(Category.class.getName());
 
-  public Category(String name, String icon, ClassLoader classLoader) {
+  private final String name;
+  private final String icon;
+  private final ClassLoader classLoader;
+
+  public Category(final String name, final String icon, final ClassLoader classLoader) {
     this.name = name;
     this.icon = icon;
     this.classLoader = classLoader;
@@ -46,18 +50,46 @@ public class Category {
       if (loader == null) {
         loader = Thread.currentThread().getContextClassLoader();
       }
-      return loader.getResourceAsStream(icon);
+      try {
+        return loader.getResourceAsStream(icon);
+      } catch (final RuntimeException e) {
+        if (LOG.isLoggable(Level.WARNING)) {
+          LOG.log(Level.WARNING, "Icon Of the category " + name + " cannot be loaded", e);
+        }
+        return null;
+      }
     }
     return null;
   }
 
-  public boolean equals(Object object) {
-    if (object instanceof Category) {
-      Category cat = (Category) object;
-      String catName = cat.getName();
-      return (name == null && catName == null) || (name != null && name.equals(cat.getName()));
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (name == null ? 0 : name.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
     }
-    return false;
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Category other = (Category) obj;
+    if (name == null) {
+      if (other.name != null) {
+        return false;
+      }
+    } else if (!name.equals(other.name)) {
+      return false;
+    }
+    return true;
   }
 
 }

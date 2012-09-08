@@ -18,14 +18,14 @@ package org.ow2.bonita.connector.core.desc;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class Text extends Widget {
 
-  private int size;
-  private int maxChar;
+  private final int size;
+  private final int maxChar;
 
-  public Text(String labelId, Setter setter, int size, int maxChar) {
+  public Text(final String labelId, final Setter setter, final int size, final int maxChar) {
     super(labelId, setter);
     this.size = size;
     this.maxChar = maxChar;
@@ -40,14 +40,33 @@ public class Text extends Widget {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    boolean equals = super.equals(obj);
-    if (equals && obj instanceof Text) {
-      Text temp = (Text) obj;
-      return (temp.getSize() == this.getSize()
-          && temp.getMaxChar() == this.getMaxChar());
-    } else {
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + maxChar;
+    result = prime * result + size;
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
       return false;
     }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Text other = (Text) obj;
+    if (maxChar != other.maxChar) {
+      return false;
+    }
+    if (size != other.size) {
+      return false;
+    }
+    return true;
   }
+
 }

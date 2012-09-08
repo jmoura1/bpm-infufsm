@@ -61,6 +61,8 @@ public class UserStatsView extends BonitaPanel {
     protected ReportFilter myReportFilter = new ReportFilter(0, 100);
 
     protected ReportItem[] bonitaReports;
+    
+    protected boolean isFinished = false;
 
     private class BonitaReportRequestCallback implements RequestCallback {
 
@@ -100,7 +102,9 @@ public class UserStatsView extends BonitaPanel {
             } else {
                 queryReport(myRow, myCol + 1, myReportIndex + 1);
             }
-
+            if ((myReportIndex + 1)== (bonitaReports.length - 1)) {
+            	
+            }
         }
     }
 
@@ -115,14 +119,14 @@ public class UserStatsView extends BonitaPanel {
         myReportingDataSource = aDataSource;
 
         myReportFilter.setScope(ReportScope.USER);
-
+     
         // Create the reload button.
         myReloadButton.addItem(constants.refresh(), new Command() {
             public void execute() {
                 refresh();
             }
         });
-
+        myReloadButton.setVisible(false);
         myOuterPanel.setStyleName("user_report_container");
         myOuterPanel.setWidget(0, 0, myReportListPanel);
         myOuterPanel.setWidget(1, 0, myReloadButton);
@@ -131,8 +135,8 @@ public class UserStatsView extends BonitaPanel {
     }
 
     protected void refresh() {
-        queryReports();
-
+    	myReloadButton.setVisible(false);
+    	queryReports();
     }
 
     @Override
@@ -194,6 +198,8 @@ public class UserStatsView extends BonitaPanel {
             } catch (RequestException e) {
                 GWT.log("Error while trying to query the reports:" + e.getMessage(), e);
             }
+        } else {
+        	myReloadButton.setVisible(true);
         }
     }
 

@@ -30,45 +30,27 @@ import org.ow2.bonita.facade.uuid.DocumentUUID;
  */
 public class GetDocument extends ProcessConnector {
 
-    private String documentUUID;
-    private Document document;
+  private String documentUUID;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#executeConnector()
-     */
-    @Override
-    protected void executeConnector() throws Exception {
-        final QueryRuntimeAPI queryTimeAPI = getApiAccessor().getQueryRuntimeAPI();
-        document = queryTimeAPI.getDocument(new DocumentUUID(this.documentUUID));
-    }
+  private Document document;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#validateValues()
-     */
-    @Override
-    protected List<ConnectorError> validateValues() {
-        return null;
-    }
+  @Override
+  protected void executeConnector() throws Exception {
+    final QueryRuntimeAPI queryTimeAPI = getApiAccessor().getQueryRuntimeAPI();
+    document = queryTimeAPI.getDocument(new DocumentUUID(documentUUID));
+  }
 
-    /**
-     * set document UUID
-     * 
-     * @param documentUUID
-     */
-    public void setDocumentUUID(java.lang.String documentUUID) {
-        this.documentUUID = documentUUID;
-    }
+  @Override
+  protected List<ConnectorError> validateValues() {
+    return null;
+  }
 
-    /**
-     * get document
-     * 
-     * @return Document
-     */
-    public Document getDocument() {
-        return document;
-    }
+  public void setDocumentUUID(final String documentUUID) {
+    this.documentUUID = documentUUID;
+  }
+
+  public Document getDocument() {
+    return document;
+  }
+
 }

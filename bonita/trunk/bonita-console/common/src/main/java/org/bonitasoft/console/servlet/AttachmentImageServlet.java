@@ -40,10 +40,10 @@ import org.ow2.bonita.facade.QueryDefinitionAPI;
 import org.ow2.bonita.facade.QueryRuntimeAPI;
 import org.ow2.bonita.facade.runtime.AttachmentInstance;
 import org.ow2.bonita.facade.runtime.InitialAttachment;
-import org.ow2.bonita.facade.runtime.ProcessInstance;
 import org.ow2.bonita.facade.uuid.ActivityInstanceUUID;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
 import org.ow2.bonita.facade.uuid.ProcessInstanceUUID;
+import org.ow2.bonita.light.LightProcessInstance;
 import org.ow2.bonita.util.AccessorUtil;
 
 /**
@@ -119,10 +119,17 @@ public class AttachmentImageServlet extends AttachmentDownloadServlet {
                 if (taskUUIDStr != null) {
                     final ActivityInstanceUUID activityInstanceUUID = new ActivityInstanceUUID(taskUUIDStr);
                     final ProcessInstanceUUID processInstanceUUID = activityInstanceUUID.getProcessInstanceUUID();
-                    final ProcessInstance processInstance = queryRuntimeAPI.getProcessInstance(processInstanceUUID);
+                    final LightProcessInstance processInstance = queryRuntimeAPI.getLightProcessInstance(processInstanceUUID);
                     final Set<String> involvedUsers = new HashSet<String>();
-                    involvedUsers.add(processInstance.getStartedBy());
-                    involvedUsers.addAll(processInstance.getInvolvedUsers());
+                    ProcessInstanceUUID rootProcessInstanceUUID = processInstance.getRootInstanceUUID();
+                    if (processInstanceUUID.equals(rootProcessInstanceUUID)) {
+                        involvedUsers.add(processInstance.getStartedBy());
+                        involvedUsers.addAll(queryRuntimeAPI.getInvolvedUsersOfProcessInstance(processInstanceUUID));
+                    } else {
+                        final LightProcessInstance rootProcessInstance = queryRuntimeAPI.getLightProcessInstance(rootProcessInstanceUUID);
+                        involvedUsers.add(rootProcessInstance.getStartedBy());
+                        involvedUsers.addAll(queryRuntimeAPI.getInvolvedUsersOfProcessInstance(rootProcessInstanceUUID));
+                    }
                     if (user.isAdmin() || (involvedUsers.contains(user.getUsername()) && user.isAllowed(RuleType.PROCESS_READ, processInstanceUUID.getProcessDefinitionUUID().getValue()))) {
                         final AttachmentInstance attachmentInstance = queryRuntimeAPI.getLastAttachment(activityInstanceUUID.getProcessInstanceUUID(), attachmentName, activityInstanceUUID);
                         attachmentFileName = attachmentInstance.getFileName();
@@ -155,10 +162,17 @@ public class AttachmentImageServlet extends AttachmentDownloadServlet {
                     }
                 } else {
                     final ProcessInstanceUUID processInstanceUUID = new ProcessInstanceUUID(instanceUUIDStr);
-                    final ProcessInstance processInstance = queryRuntimeAPI.getProcessInstance(processInstanceUUID);
+                    final LightProcessInstance processInstance = queryRuntimeAPI.getLightProcessInstance(processInstanceUUID);
                     final Set<String> involvedUsers = new HashSet<String>();
-                    involvedUsers.add(processInstance.getStartedBy());
-                    involvedUsers.addAll(processInstance.getInvolvedUsers());
+                    ProcessInstanceUUID rootProcessInstanceUUID = processInstance.getRootInstanceUUID();
+                    if (processInstanceUUID.equals(rootProcessInstanceUUID)) {
+                        involvedUsers.add(processInstance.getStartedBy());
+                        involvedUsers.addAll(queryRuntimeAPI.getInvolvedUsersOfProcessInstance(processInstanceUUID));
+                    } else {
+                        final LightProcessInstance rootProcessInstance = queryRuntimeAPI.getLightProcessInstance(rootProcessInstanceUUID);
+                        involvedUsers.add(rootProcessInstance.getStartedBy());
+                        involvedUsers.addAll(queryRuntimeAPI.getInvolvedUsersOfProcessInstance(rootProcessInstanceUUID));
+                    }
                     if (user.isAdmin() || (involvedUsers.contains(user.getUsername()) && user.isAllowed(RuleType.PROCESS_READ, processInstanceUUID.getProcessDefinitionUUID().getValue()))) {
                         AttachmentInstance attachmentInstance;
                         if (isCurrentValue) {

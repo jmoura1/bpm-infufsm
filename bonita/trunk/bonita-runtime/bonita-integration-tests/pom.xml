@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>org.ow2.bonita</groupId>
 		<artifactId>bonita-runtime</artifactId>
-		<version>5.6.1</version>
+		<version>5.7.2</version>
 	</parent>
 
 	<!-- Dependencies -->
@@ -83,6 +83,7 @@
 		<rest.test.class>org.ow2.bonita.facade.rest.RESTTests</rest.test.class>
 		<if.task>net.sf.antcontrib.logic.IfTask</if.task>
 		<restserveraddressKey>org.ow2.bonita.rest-server-address</restserveraddressKey>
+		<cmis.repository>${plateform}</cmis.repository>
 
 		<!-- DYNAMIC PROPERTIES -->
 		<bonita.version>${project.version}</bonita.version>

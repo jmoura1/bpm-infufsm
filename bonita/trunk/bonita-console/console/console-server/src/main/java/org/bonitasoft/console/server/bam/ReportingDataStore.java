@@ -315,7 +315,7 @@ public class ReportingDataStore {
                 final List<ReportItem> theManageableListOfReports = new ArrayList<ReportItem>();
                 for (ReportItem theReportItem : aReportList) {
                     if (aUserProfile.isAllowed(RuleType.REPORT_MANAGE, theReportItem.getUUID().getValue())) {
-                        if (anItemFilter.getScope() == null || anItemFilter.getScope() == ReportScope.ALL || theReportItem.getScope() == anItemFilter.getScope()) {
+                        if (anItemFilter.getScope() == null || theReportItem.getScope() == ReportScope.ALL || theReportItem.getScope() == anItemFilter.getScope()) {
                             theManageableListOfReports.add(theReportItem);
                         } else {
                             if (LOGGER.isLoggable(Level.FINE)) {
@@ -337,7 +337,7 @@ public class ReportingDataStore {
             final List<ReportItem> theReadableListOfReports = new ArrayList<ReportItem>();
             for (ReportItem theReportItem : aReportList) {
                 if (aUserProfile.isAllowed(RuleType.REPORT_VIEW, theReportItem.getUUID().getValue())) {
-                    if (anItemFilter.getScope() == null || (theReportItem.getScope() == anItemFilter.getScope())) {
+                    if (anItemFilter.getScope() == null || theReportItem.getScope() == ReportScope.ALL || (theReportItem.getScope() == anItemFilter.getScope())) {
                         theReadableListOfReports.add(theReportItem);
                     }
                 }

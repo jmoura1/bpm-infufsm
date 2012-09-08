@@ -83,16 +83,13 @@ import org.ow2.bonita.util.VariableUtil;
  * @author Marc Blachon, Guillaume Porcher, Charles Souillard, Miguel Valdes, Pierre Vigneras, Pascal Verdage
  */
 /**
- * Activity life cycle: 1- when an instance is created, activity state is
- * {@link ActivityState#INITIAL} 2- when the execution arrives on the node, the
- * activity becomes {@link ActivityState#READY} the activity state is recorded
- * (before start) 3- if the activity is Manual, a task is created. - when the
- * start task is started, the activity state is recorded (after start). 4- the
- * activity becomes {@link ActivityState#EXECUTING}. The business logic is
- * executed. - the activity state is recorded (before stopped) 5- if the
- * activity is Manual, wait for the task to finish. (TODO: change the activity
- * state ?) - when the task is finished, the activity state is recorded (after
- * stopped). 6- the activity becomes {@link ActivityState#FINISHED}.
+ * Activity life cycle: 1- when an instance is created, activity state is {@link ActivityState#INITIAL} 2- when the
+ * execution arrives on the node, the activity becomes {@link ActivityState#READY} the activity state is recorded
+ * (before start) 3- if the activity is Manual, a task is created. - when the start task is started, the activity state
+ * is recorded (after start). 4- the activity becomes {@link ActivityState#EXECUTING}. The business logic is executed. -
+ * the activity state is recorded (before stopped) 5- if the activity is Manual, wait for the task to finish. (TODO:
+ * change the activity state ?) - when the task is finished, the activity state is recorded (after stopped). 6- the
+ * activity becomes {@link ActivityState#FINISHED}.
  */
 public abstract class AbstractActivity implements ExternalActivity {
 
@@ -113,7 +110,7 @@ public abstract class AbstractActivity implements ExternalActivity {
   protected AbstractActivity() {
   }
 
-  public AbstractActivity(String activityName) {
+  public AbstractActivity(final String activityName) {
     this.activityName = activityName;
   }
 
@@ -124,8 +121,9 @@ public abstract class AbstractActivity implements ExternalActivity {
 
   protected abstract boolean bodyStartAutomatically();
 
+  @Override
   public void execute(final Execution execution, final boolean checkJoinType) {
-    ActivityDefinition activity = execution.getNode();
+    final ActivityDefinition activity = execution.getNode();
     if (activity.isAsynchronous()) {
       Authentication.setUserId(BonitaConstants.SYSTEM_USER);
     }
@@ -162,15 +160,15 @@ public abstract class AbstractActivity implements ExternalActivity {
         AbstractActivity.LOG.fine("Executing node: " + nodeName + ", class = " + this.getClass().getSimpleName());
       }
 
-      MultiInstantiationDefinition multiInstantiator = activity.getMultiInstantiationDefinition();
-      MultiInstantiationDefinition instantiator = activity.getMultipleInstancesInstantiator();
+      final MultiInstantiationDefinition multiInstantiator = activity.getMultiInstantiationDefinition();
+      final MultiInstantiationDefinition instantiator = activity.getMultipleInstancesInstantiator();
       if (multiInstantiator != null || instantiator != null) {
         instantiateMultiInstanceActivity(execution);
       } else {
 
         if (activity.isInALoop() && activity.evaluateLoopConditionBeforeExecution()) {
           if (ActivityUtil.evaluateLoopCondition(activity, execution)) {
-            Execution newExecution = execution.createChildExecution(execution.getNode().getName());
+            final Execution newExecution = execution.createChildExecution(execution.getNode().getName());
             initializeActivityInstance(newExecution, null);
             startActivityInstance(newExecution);
           } else {
@@ -179,7 +177,7 @@ public abstract class AbstractActivity implements ExternalActivity {
           }
 
         } else {
-          Execution newExecution = execution.createChildExecution(execution.getNode().getName());
+          final Execution newExecution = execution.createChildExecution(execution.getNode().getName());
           initializeActivityInstance(newExecution, null);
           startActivityInstance(newExecution);
         }
@@ -193,18 +191,9 @@ public abstract class AbstractActivity implements ExternalActivity {
     }
   }
 
-  private void instantiateMultiInstanceActivity(Execution execution) {
-    ActivityDefinition activity = execution.getNode();
-    MultiInstantiationDefinition instantiator = activity.getMultipleInstancesInstantiator();
-
-    /*
-     * if (multiInstantiator != null) { ConnectorDefinitionImpl inst = new
-     * ConnectorDefinitionImpl(MultiInstantiatorInstantiator.class.getName());
-     * inst.addParameter("setClassName", multiInstantiator.getClassName());
-     * inst.addParameter("variableName", multiInstantiator.getVariableName());
-     * instantiator = inst; }
-     */
-
+  private void instantiateMultiInstanceActivity(final Execution execution) {
+    final ActivityDefinition activity = execution.getNode();
+    final MultiInstantiationDefinition instantiator = activity.getMultipleInstancesInstantiator();
     final Recorder recorder = EnvTool.getRecorder();
 
     if (instantiator != null) {
@@ -213,15 +202,16 @@ public abstract class AbstractActivity implements ExternalActivity {
       }
       List<Map<String, Object>> contexts = new ArrayList<Map<String, Object>>();
       try {
-        contexts = ConnectorExecutor.executeMultipleInstancesInstantiatior(instantiator, execution.getInstance().getUUID(), activityName, execution.getIterationId());
+        contexts = ConnectorExecutor.executeMultipleInstancesInstantiatior(instantiator, execution.getInstance()
+            .getUUID(), activityName, execution.getIterationId());
         if (contexts == null) {
-          String message = ExceptionManager.getInstance().getFullMessage("be_AA_8", activity.getName());
+          final String message = ExceptionManager.getInstance().getFullMessage("be_AA_8", activity.getName());
           throw new BonitaRuntimeException(message);
         } else if (contexts.isEmpty()) {
-          String message = ExceptionManager.getInstance().getFullMessage("be_AA_9", activity.getName());
+          final String message = ExceptionManager.getInstance().getFullMessage("be_AA_9", activity.getName());
           throw new BonitaRuntimeException(message);
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new BonitaRuntimeException(e.getMessage(), e);
       }
       execution.setWaitingForActivityInstanceNb(contexts.size());
@@ -229,18 +219,19 @@ public abstract class AbstractActivity implements ExternalActivity {
       final List<Execution> activitiesToStart = new ArrayList<Execution>();
 
       RuntimeException caughtException = null;
-      for (Map<String, Object> context : contexts) {
+      for (final Map<String, Object> context : contexts) {
         if (execution.getWaitingForActivityInstanceNb() <= 0) {
           // maybe this execution is ended
           break;
         }
-        Execution childExec = createChildExecution(execution, childId);
+        final Execution childExec = createChildExecution(execution, childId);
 
-        Set<Variable> variables = new HashSet<Variable>();
+        final Set<Variable> variables = new HashSet<Variable>();
         try {
           if (context != null) {
-            for (Entry<String, Object> variable : context.entrySet()) {
-              Variable multiInstVar = VariableUtil.createVariable(activity.getProcessDefinitionUUID(), variable.getKey(), variable.getValue());
+            for (final Entry<String, Object> variable : context.entrySet()) {
+              final Variable multiInstVar = VariableUtil.createVariable(activity.getProcessDefinitionUUID(),
+                  variable.getKey(), variable.getValue());
               variables.add(multiInstVar);
             }
           }
@@ -277,16 +268,19 @@ public abstract class AbstractActivity implements ExternalActivity {
         AbstractActivity.LOG.fine("MultiInstantiation not null on activity " + this);
       }
       MultiInstantiatorDescriptor actInstDescr = null;
-      MultiInstantiationDefinition multiDef = activity.getMultiInstantiationDefinition();
-      final MultiInstantiator actInstantiator = EnvTool.getClassDataLoader().getInstance(MultiInstantiator.class, execution.getInstance().getProcessDefinitionUUID(), multiDef);
+      final MultiInstantiationDefinition multiDef = activity.getMultiInstantiationDefinition();
+      final MultiInstantiator actInstantiator = EnvTool.getClassDataLoader().getInstance(MultiInstantiator.class,
+          execution.getInstance().getProcessDefinitionUUID(), multiDef);
       try {
-        actInstDescr = ConnectorExecutor.executeMultiInstantiator(execution, activity.getName(), actInstantiator, multiDef.getParameters());
+        actInstDescr = ConnectorExecutor.executeMultiInstantiator(execution, activity.getName(), actInstantiator,
+            multiDef.getParameters());
         if (actInstDescr == null) {
-          String message = ExceptionManager.getInstance().getFullMessage("be_AA_3", activity.getName());
+          final String message = ExceptionManager.getInstance().getFullMessage("be_AA_3", activity.getName());
           throw new BonitaRuntimeException(message);
         }
       } catch (final Exception e) {
-        throw new BonitaWrapperException(new MultiInstantiatorInvocationException("be_AA_4", activity.getMultiInstantiationDefinition().getClassName().toString(), e));
+        throw new BonitaWrapperException(new MultiInstantiatorInvocationException("be_AA_4", activity
+            .getMultiInstantiationDefinition().getClassName(), e));
       }
 
       execution.setWaitingForActivityInstanceNb(actInstDescr.getJoinNumber());
@@ -298,10 +292,11 @@ public abstract class AbstractActivity implements ExternalActivity {
           // maybe this execution is ended
           break;
         }
-        Execution childExec = createChildExecution(execution, childId);
+        final Execution childExec = createChildExecution(execution, childId);
         Variable multiInstVar = null;
         try {
-          multiInstVar = VariableUtil.createVariable(activity.getProcessDefinitionUUID(), activity.getMultiInstantiationDefinition().getVariableName(), value);
+          multiInstVar = VariableUtil.createVariable(activity.getProcessDefinitionUUID(), activity
+              .getMultiInstantiationDefinition().getVariableName(), value);
         } catch (final RuntimeException e) {
           if (LOG.isLoggable(Level.SEVERE)) {
             LOG.severe("Error while creating multiInstantiator variable" + e);
@@ -338,25 +333,24 @@ public abstract class AbstractActivity implements ExternalActivity {
     }
   }
 
-  private Execution createChildExecution(Execution execution, int childId) {
-    Execution childExec = execution.createChildExecution(execution.getName() + "/" + childId);
+  private Execution createChildExecution(final Execution execution, final int childId) {
+    final Execution childExec = execution.createChildExecution(execution.getName() + "/" + childId);
     childExec.setActivityInstanceId(Integer.toString(childId));
     return childExec;
   }
 
   private void startActivityInstances(final List<Execution> activitiesToStart) {
-    for (Execution childExec : activitiesToStart) {
+    for (final Execution childExec : activitiesToStart) {
       if (childExec.isActive()) {
         // multi is not yet ended
         try {
           startActivityInstance(childExec);
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
           final InternalActivityInstance activityInstance = childExec.getActivityInstance();
           if (activityInstance != null) {
             EnvTool.getRecorder().recordActivityFailed(activityInstance);
-          } else {
-            throw e;
           }
+          throw e;
         }
       }
     }
@@ -374,7 +368,8 @@ public abstract class AbstractActivity implements ExternalActivity {
     }
   }
 
-  private void cancelJoinXORIncomingTransitions(final InternalProcessInstance instance, final InternalActivityDefinition currentNode, final Set<String> checkedNodes) {
+  private void cancelJoinXORIncomingTransitions(final InternalProcessInstance instance,
+      final InternalActivityDefinition currentNode, final Set<String> checkedNodes) {
     final Set<TransitionDefinition> incomingTransitions = currentNode.getIncomingTransitions();
     final String currentNodeName = currentNode.getName();
     if (AbstractActivity.LOG.isLoggable(Level.FINE)) {
@@ -384,9 +379,11 @@ public abstract class AbstractActivity implements ExternalActivity {
     for (final TransitionDefinition incomingTransition : incomingTransitions) {
       final String sourceNodeName = incomingTransition.getFrom();
       final TransitionState transitionState = instance.getTransitionState(incomingTransition.getName());
-      if (!checkedNodes.contains(sourceNodeName) && (transitionState == null || transitionState.equals(TransitionState.READY))) {
+      if (!checkedNodes.contains(sourceNodeName)
+          && (transitionState == null || transitionState.equals(TransitionState.READY))) {
         boolean enable = false;
-        final InternalActivityDefinition sourceNode = instance.getRootExecution().getProcessDefinition().getActivity(sourceNodeName);
+        final InternalActivityDefinition sourceNode = instance.getRootExecution().getProcessDefinition()
+            .getActivity(sourceNodeName);
         if (transitionState != null) {
           // disable transition
           instance.setTransitionState(incomingTransition.getName(), TransitionState.ABORTED);
@@ -394,11 +391,12 @@ public abstract class AbstractActivity implements ExternalActivity {
           // check if source node is still enabled
           // it is still enabled if it has at least one READY outgoing transition (in the
           // same cycle if in a cycle)
-          top:for (final TransitionDefinition tr : sourceNode.getOutgoingTransitions()) {
+          top: for (final TransitionDefinition tr : sourceNode.getOutgoingTransitions()) {
             final TransitionState ts = instance.getTransitionState(tr.getName());
             if (ts == null || ts.equals(TransitionState.READY)) {
               if (currentNode.isInCycle()) {
-                final ProcessDefinition process = EnvTool.getJournalQueriers().getProcess(instance.getProcessDefinitionUUID());
+                final ProcessDefinition process = EnvTool.getJournalQueriers().getProcess(
+                    instance.getProcessDefinitionUUID());
                 for (final IterationDescriptor itDesc : process.getIterationDescriptors()) {
                   if (itDesc.containsNode(tr.getTo())) {
                     // stay in same cycle => do not disable node
@@ -412,7 +410,7 @@ public abstract class AbstractActivity implements ExternalActivity {
         }
         if (!enable) {
           // abort sourceNode recursively: sourceNode is not enabled, maybe it doesn't have any
-          //activityInstance. Checks if there is one before
+          // activityInstance. Checks if there is one before
           if (AbstractActivity.LOG.isLoggable(Level.FINE)) {
             AbstractActivity.LOG.fine(sourceNodeName + " has no more outgoing transitions enabled.");
           }
@@ -430,7 +428,8 @@ public abstract class AbstractActivity implements ExternalActivity {
     }
   }
 
-  protected void initializeActivityInstance(final Execution internalExecution, final Set<Variable> multiInstanceVariables) {
+  protected void initializeActivityInstance(final Execution internalExecution,
+      final Set<Variable> multiInstanceVariables) {
     final InternalActivityDefinition activity = internalExecution.getNode();
     final ProcessInstanceUUID instanceUUID = internalExecution.getInstance().getUUID();
 
@@ -440,7 +439,7 @@ public abstract class AbstractActivity implements ExternalActivity {
     RuntimeException exception = null;
     try {
       initialVariables = VariableUtil.createVariables(activity.getDataFields(), instanceUUID, null);
-    } catch (RuntimeException t) {
+    } catch (final RuntimeException t) {
       if (LOG.isLoggable(Level.SEVERE)) {
         LOG.severe("Error while initializingVariables " + t);
       }
@@ -450,7 +449,7 @@ public abstract class AbstractActivity implements ExternalActivity {
       if (initialVariables == null) {
         initialVariables = new HashMap<String, Variable>();
       }
-      for (Variable variable : multiInstanceVariables) {
+      for (final Variable variable : multiInstanceVariables) {
         initialVariables.put(variable.getKey(), variable);
       }
     }
@@ -461,53 +460,59 @@ public abstract class AbstractActivity implements ExternalActivity {
 
     final String iterationId = internalExecution.getIterationId();
     final String activityInstanceId = internalExecution.getActivityInstanceId();
-    final ActivityInstanceUUID activityUUID = new ActivityInstanceUUID(instanceUUID, activity.getName(), iterationId, activityInstanceId, loopId);
+    final ActivityInstanceUUID activityUUID = new ActivityInstanceUUID(instanceUUID, activity.getName(), iterationId,
+        activityInstanceId, loopId);
 
-    final InternalActivityInstance activityInstance = new InternalActivityInstance(activityUUID, activity, instanceUUID, internalExecution.getInstance()
-        .getRootInstanceUUID(), iterationId, activityInstanceId, loopId);
+    final InternalActivityInstance activityInstance = new InternalActivityInstance(activityUUID, activity,
+        instanceUUID, internalExecution.getInstance().getRootInstanceUUID(), iterationId, activityInstanceId, loopId);
 
-    if(exception == null) {
+    if (exception == null) {
       activityInstance.setActivityState(ActivityState.READY, BonitaConstants.SYSTEM_USER);
       activityInstance.setVariables(initialVariables);
-      //add transient data
-      TransientData.addTransientVariables(activityUUID, VariableUtil.createTransientVariables(activity.getDataFields(), instanceUUID));
+      // add transient data
+      TransientData.addTransientVariables(activityUUID,
+          VariableUtil.createTransientVariables(activity.getDataFields(), instanceUUID));
 
       recorder.recordEnterActivity(activityInstance);
 
       if (activity.getDynamicDescription() != null) {
         try {
-          if(GroovyExpression.isGroovyExpression(activity.getDynamicDescription())) {
-            final Object dynamicDescription = GroovyUtil.evaluate(activity.getDynamicDescription(), null, activityUUID, false, false);
+          if (GroovyExpression.isGroovyExpression(activity.getDynamicDescription())) {
+            final Object dynamicDescription = GroovyUtil.evaluate(activity.getDynamicDescription(), null, activityUUID,
+                false, false);
             if (dynamicDescription != null) {
               activityInstance.setDynamicDescription(dynamicDescription.toString());
             }
           } else {
             activityInstance.setDynamicDescription(activity.getDynamicDescription());
           }
-        } catch (Exception e) {
+        } catch (final Exception e) {
           internalExecution.setActivityInstance(activityInstance);
-          throw new BonitaWrapperException(new BonitaRuntimeException("Error while evaluating dynamic description: " + activity.getDynamicDescription(), e));
+          throw new BonitaWrapperException(new BonitaRuntimeException("Error while evaluating dynamic description: "
+              + activity.getDynamicDescription(), e));
         }
       }
       if (activity.getDynamicLabel() != null) {
         try {
-          if(GroovyExpression.isGroovyExpression(activity.getDynamicLabel())) {
-            final Object dynamicLabel = GroovyUtil.evaluate(activity.getDynamicLabel(), null, activityUUID, false, false);
+          if (GroovyExpression.isGroovyExpression(activity.getDynamicLabel())) {
+            final Object dynamicLabel = GroovyUtil.evaluate(activity.getDynamicLabel(), null, activityUUID, false,
+                false);
             if (dynamicLabel != null) {
               activityInstance.setDynamicLabel(dynamicLabel.toString());
             }
           } else {
             activityInstance.setDynamicLabel(activity.getDynamicLabel());
           }
-        } catch (Exception e) {
+        } catch (final Exception e) {
           internalExecution.setActivityInstance(activityInstance);
-          throw new BonitaWrapperException(new BonitaRuntimeException("Error while evaluating dynamic label: " + activity.getDynamicLabel(), e));
+          throw new BonitaWrapperException(new BonitaRuntimeException("Error while evaluating dynamic label: "
+              + activity.getDynamicLabel(), e));
         }
       }
 
       internalExecution.setActivityInstance(activityInstance);
     } else {
-      //recordFailed
+      // recordFailed
       if (LOG.isLoggable(Level.SEVERE)) {
         LOG.log(Level.SEVERE, exception.getMessage(), exception);
       }
@@ -524,7 +529,7 @@ public abstract class AbstractActivity implements ExternalActivity {
     final ActivityInstanceUUID activityUUID = internalExecution.getActivityInstanceUUID();
     try {
       initializeEvents(internalExecution);
-    } catch (GroovyException e) {
+    } catch (final GroovyException e) {
       final String message = "Error while initializing events: ";
       throw new BonitaWrapperException(new BonitaRuntimeException(message, e));
     }
@@ -538,9 +543,11 @@ public abstract class AbstractActivity implements ExternalActivity {
       final String activityName = activity.getName();
       final String eventName = BonitaConstants.ASYNC_EVENT_PREFIX + activityUUID;
       final long overdue = -1;
-      final IncomingEventInstance incoming = new IncomingEventInstance(eventName, null, instanceUUID, activity.getUUID(), activityUUID, processName, activityName, uuid, AbstractActivity.ASYNC_SIGNAL,
+      final IncomingEventInstance incoming = new IncomingEventInstance(eventName, null, instanceUUID,
+          activity.getUUID(), activityUUID, processName, activityName, uuid, AbstractActivity.ASYNC_SIGNAL,
           System.currentTimeMillis(), true);
-      final OutgoingEventInstance outgoing = new OutgoingEventInstance(eventName, processName, activityName, null, instanceUUID, activityUUID, overdue);
+      final OutgoingEventInstance outgoing = new OutgoingEventInstance(eventName, processName, activityName, null,
+          instanceUUID, activityUUID, overdue);
       internalExecution.setEventUUID(uuid);
 
       eventService.fire(outgoing);
@@ -562,20 +569,22 @@ public abstract class AbstractActivity implements ExternalActivity {
 
   protected void end(final Execution internalExecution) {
     try {
-      ActivityDefinition activity = internalExecution.getNode();
+      final ActivityDefinition activity = internalExecution.getNode();
 
       if (activity.getDynamicExecutionSummary() != null) {
         try {
-          if(GroovyExpression.isGroovyExpression(activity.getDynamicExecutionSummary())) {
-            final Object dynamicExecutionSummary = GroovyUtil.evaluate(activity.getDynamicExecutionSummary(), null, internalExecution.getActivityInstanceUUID(), false, false);
+          if (GroovyExpression.isGroovyExpression(activity.getDynamicExecutionSummary())) {
+            final Object dynamicExecutionSummary = GroovyUtil.evaluate(activity.getDynamicExecutionSummary(), null,
+                internalExecution.getActivityInstanceUUID(), false, false);
             if (dynamicExecutionSummary != null) {
               internalExecution.getActivityInstance().setDynamicExecutionSummary(dynamicExecutionSummary.toString());
             }
           } else {
             internalExecution.getActivityInstance().setDynamicExecutionSummary(activity.getDynamicExecutionSummary());
           }
-        } catch (Exception e) {
-          throw new BonitaWrapperException(new BonitaRuntimeException("Error while evaluating dynamic execution summary: " + activity.getDynamicExecutionSummary(), e));
+        } catch (final Exception e) {
+          throw new BonitaWrapperException(new BonitaRuntimeException(
+              "Error while evaluating dynamic execution summary: " + activity.getDynamicExecutionSummary(), e));
         }
       }
 
@@ -595,28 +604,28 @@ public abstract class AbstractActivity implements ExternalActivity {
       }
       final InternalActivityInstance activityInstance = internalExecution.getActivityInstance();
       EnvTool.getRecorder().recordActivityFailed(activityInstance);
-    }
-    finally {
+    } finally {
       TransientData.removeTransientData(internalExecution.getActivityInstance().getUUID());
     }
   }
 
-  protected void skip(final Execution internalExecution){
-    ActivityDefinition activity = internalExecution.getNode();
+  protected void skip(final Execution internalExecution) {
+    final ActivityDefinition activity = internalExecution.getNode();
 
     if (activity.getDynamicExecutionSummary() != null) {
       try {
-        if(GroovyExpression.isGroovyExpression(activity.getDynamicExecutionSummary())) {
-          final Object dynamicExecutionSummary = GroovyUtil.evaluate(activity.getDynamicExecutionSummary(), 
-              null, internalExecution.getActivityInstanceUUID(), false, false);
+        if (GroovyExpression.isGroovyExpression(activity.getDynamicExecutionSummary())) {
+          final Object dynamicExecutionSummary = GroovyUtil.evaluate(activity.getDynamicExecutionSummary(), null,
+              internalExecution.getActivityInstanceUUID(), false, false);
           if (dynamicExecutionSummary != null) {
             internalExecution.getActivityInstance().setDynamicExecutionSummary(dynamicExecutionSummary.toString());
           }
         } else {
           internalExecution.getActivityInstance().setDynamicExecutionSummary(activity.getDynamicExecutionSummary());
         }
-      } catch (Exception e) {
-        throw new BonitaWrapperException(new BonitaRuntimeException("Error while evaluating dynamic execution summary: " + activity.getDynamicExecutionSummary(), e));
+      } catch (final Exception e) {
+        throw new BonitaWrapperException(new BonitaRuntimeException(
+            "Error while evaluating dynamic execution summary: " + activity.getDynamicExecutionSummary(), e));
       }
     }
 
@@ -634,19 +643,18 @@ public abstract class AbstractActivity implements ExternalActivity {
   protected void endMultiInstantiation(final Execution internalExecution) {
     final ActivityDefinition activity = internalExecution.getNode();
     final Execution parent = internalExecution.getParent();
-    MultiInstantiationDefinition joinChecker = activity.getMultipleInstancesJoinChecker();
-    if (joinChecker != null) {
-      boolean join = false;
-      try {
-        join = ConnectorExecutor.executeMultipleInstancesJoinChecker(joinChecker, internalExecution.getActivityInstance().getUUID());
-      } catch (Exception e) {
-        throw new BonitaRuntimeException(e.getMessage(), e);
-      }
-      if (join) {
-        parent.setWaitingForActivityInstanceNb(1);
-      } else {
-        if (parent.getWaitingForActivityInstanceNb() == 1) {
-          parent.setWaitingForActivityInstanceNb(2);
+    if (parent.getWaitingForActivityInstanceNb() > 1) {
+      final MultiInstantiationDefinition joinChecker = activity.getMultipleInstancesJoinChecker();
+      if (joinChecker != null) {
+        boolean join = false;
+        try {
+          join = ConnectorExecutor.executeMultipleInstancesJoinChecker(joinChecker, internalExecution
+              .getActivityInstance().getUUID());
+        } catch (final Exception e) {
+          throw new BonitaRuntimeException(e.getMessage(), e);
+        }
+        if (join) {
+          parent.setWaitingForActivityInstanceNb(1);
         }
       }
     }
@@ -660,20 +668,23 @@ public abstract class AbstractActivity implements ExternalActivity {
     final ActivityDefinition activity = internalExecution.getNode();
     final Execution parent = internalExecution.getParent();
     int maxIterations = 0;
-    String maxIterationsExpr = activity.getLoopMaximum();
+    final String maxIterationsExpr = activity.getLoopMaximum();
     if (maxIterationsExpr != null) {
       try {
         if (Misc.isJustAGroovyExpression(maxIterationsExpr)) {
           final ProcessInstanceUUID instanceUUID = internalExecution.getInstance().getUUID();
           final Querier journal = EnvTool.getJournalQueriers();
-          final ActivityInstance activityInstance = journal.getActivityInstance(instanceUUID, internalExecution.getNodeName(), internalExecution.getIterationId(), internalExecution
-              .getActivityInstanceId(), internalExecution.getActivityInstance().getLoopId());
-          maxIterations = (Integer) GroovyUtil.evaluate(maxIterationsExpr, null, activityInstance.getUUID(), false, false);
+          final ActivityInstance activityInstance = journal.getActivityInstance(instanceUUID,
+              internalExecution.getNodeName(), internalExecution.getIterationId(),
+              internalExecution.getActivityInstanceId(), internalExecution.getActivityInstance().getLoopId());
+          maxIterations = (Integer) GroovyUtil.evaluate(maxIterationsExpr, null, activityInstance.getUUID(), false,
+              false);
         } else {
           maxIterations = Integer.parseInt(maxIterationsExpr);
         }
-      } catch (Exception e) {
-        AbstractActivity.LOG.log(Level.SEVERE, "The maximum number of loop iterations for activity " + activityName + " must be an integer or an expression that evaluates to an integer", e);
+      } catch (final Exception e) {
+        AbstractActivity.LOG.log(Level.SEVERE, "The maximum number of loop iterations for activity " + activityName
+            + " must be an integer or an expression that evaluates to an integer", e);
       }
     }
     parent.setWaitingForActivityInstanceNb(maxIterations);
@@ -696,13 +707,12 @@ public abstract class AbstractActivity implements ExternalActivity {
   }
 
   private void terminateInstanceIfNoOutgoingTransitions(final Execution internalExecution) {
-    ActivityDefinition activity = internalExecution.getNode();
+    final ActivityDefinition activity = internalExecution.getNode();
     final InternalProcessInstance instance = internalExecution.getInstance();
     final ProcessInstanceUUID instanceUUID = instance.getUUID();
     final ActivityInstanceUUID activityUUID = internalExecution.getActivityInstanceUUID();
     if (activity.isTerminateProcess()
-        || !(activity.hasOutgoingTransitions()  || hasStillReadyActivities(instanceUUID, activityUUID)
-            || hasStillReadyTransitions(instance))) {
+        || !(activity.hasOutgoingTransitions() || hasStillReadyActivities(instanceUUID, activityUUID) || hasStillReadyTransitions(instance))) {
 
       final ProcessInstanceUUID parentInstanceUUID = instance.getParentInstanceUUID();
       ConnectorExecutor.executeConnectors(internalExecution, HookDefinition.Event.instanceOnFinish);
@@ -711,13 +721,15 @@ public abstract class AbstractActivity implements ExternalActivity {
       ProcessUtil.removeInternalInstanceEvents(instance.getUUID());
 
       if (parentInstanceUUID != null) {
-        if(ProcessType.EVENT_SUB_PROCESS.equals(internalExecution.getProcessDefinition().getType())) {
-          final InternalProcessInstance parentInstance = EnvTool.getJournalQueriers().getProcessInstance(parentInstanceUUID);
+        if (ProcessType.EVENT_SUB_PROCESS.equals(internalExecution.getProcessDefinition().getType())) {
+          final InternalProcessInstance parentInstance = EnvTool.getJournalQueriers().getProcessInstance(
+              parentInstanceUUID);
           if (parentInstance.getParentActivityUUID() != null) {
-            final Execution rootExecution = EnvTool.getAllQueriers().getExecutionOnActivity(parentInstance.getParentInstanceUUID(), parentInstance.getParentActivityUUID());
+            final Execution rootExecution = EnvTool.getAllQueriers().getExecutionOnActivity(
+                parentInstance.getParentInstanceUUID(), parentInstance.getParentActivityUUID());
             try {
               rootExecution.getNode().getBehaviour().signal(rootExecution, BODY_FINISHED, null);
-            } catch (Exception e) {
+            } catch (final Exception e) {
               throw new BonitaRuntimeException(e.getMessage(), e);
             }
           } else {
@@ -728,13 +740,14 @@ public abstract class AbstractActivity implements ExternalActivity {
           final Map<String, Object> signalParameters = new HashMap<String, Object>();
           signalParameters.put("childInstanceUUID", instanceUUID);
 
-          final InternalProcessInstance parentInstance = EnvTool.getJournalQueriers().getProcessInstance(parentInstanceUUID);
+          final InternalProcessInstance parentInstance = EnvTool.getJournalQueriers().getProcessInstance(
+              parentInstanceUUID);
           final Execution parentRootExecution = parentInstance.getRootExecution();
           final Execution execToSignal = getSubflowExecution(parentRootExecution, instanceUUID);
 
           try {
             execToSignal.getNode().getBehaviour().signal(execToSignal, SubFlow.SUBFLOW_SIGNAL, signalParameters);
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new BonitaRuntimeException(e.getMessage(), e);
           }
         }
@@ -744,7 +757,8 @@ public abstract class AbstractActivity implements ExternalActivity {
     }
   }
 
-  private boolean hasStillReadyActivities(final ProcessInstanceUUID instanceUUID, final ActivityInstanceUUID activityUUID) {
+  private boolean hasStillReadyActivities(final ProcessInstanceUUID instanceUUID,
+      final ActivityInstanceUUID activityUUID) {
     return EnvTool.getJournalQueriers().containsOtherActiveActivities(instanceUUID, activityUUID);
   }
 
@@ -753,19 +767,19 @@ public abstract class AbstractActivity implements ExternalActivity {
     final Iterator<String> iterator = instance.getTransitionsStates().values().iterator();
     while (!hasStillReadyTransitions && iterator.hasNext()) {
       final String state = iterator.next();
-      if(TransitionState.READY.toString().equals(state)){
+      if (TransitionState.READY.toString().equals(state)) {
         hasStillReadyTransitions = true;
       }
     }
     return hasStillReadyTransitions;
   }
 
-  private Execution getSubflowExecution(Execution exec, ProcessInstanceUUID subflowInstanceUUID) {
+  private Execution getSubflowExecution(final Execution exec, final ProcessInstanceUUID subflowInstanceUUID) {
     if (exec.getActivityInstance() != null && exec.getActivityInstance().getSubflowProcessInstanceUUID() != null
         && exec.getActivityInstance().getSubflowProcessInstanceUUID().equals(subflowInstanceUUID)) {
       return exec;
     }
-    for (Execution child : exec.getExecutions()) {
+    for (final Execution child : exec.getExecutions()) {
       final Execution e = getSubflowExecution(child, subflowInstanceUUID);
       if (e != null) {
         return e;
@@ -774,10 +788,11 @@ public abstract class AbstractActivity implements ExternalActivity {
     return null;
   }
 
+  @Override
   @SuppressWarnings("deprecation")
   public void signal(final Execution execution, final String signal, final Map<String, Object> parameters) {
-    final Execution internalExecution = (Execution) execution;
-    InternalActivityDefinition activity = execution.getNode();
+    final Execution internalExecution = execution;
+    final InternalActivityDefinition activity = execution.getNode();
     if (AbstractActivity.BODY_FINISHED.equals(signal)) {
       this.end(internalExecution);
     } else if (AbstractActivity.ACT_INSTANCE_FINISHED.equals(signal)) {
@@ -792,7 +807,7 @@ public abstract class AbstractActivity implements ExternalActivity {
       } else {
         // in case of a loop
         internalExecution.setActivityInstanceNb(internalExecution.getActivityInstanceNb() + 1);
-        int maxIterations = internalExecution.getWaitingForActivityInstanceNb();
+        final int maxIterations = internalExecution.getWaitingForActivityInstanceNb();
         if (0 < maxIterations && maxIterations <= internalExecution.getActivityInstanceNb()) {
           endChildrenActivityInstances(internalExecution);
           terminateInstanceIfNoOutgoingTransitions(internalExecution);
@@ -820,11 +835,12 @@ public abstract class AbstractActivity implements ExternalActivity {
       }
     } else if (signal.startsWith(EventConstants.BOUNDARY_EVENT)) {
       destroyEvents(internalExecution, activityName);
-      InternalActivityInstance activityInstance = internalExecution.getActivityInstance();
+      final InternalActivityInstance activityInstance = internalExecution.getActivityInstance();
       EnvTool.getRecorder().recordBodyAborted(activityInstance);
       TransientData.removeTransientData(activityInstance.getUUID());
       if (activity.isSubflow()) {
-        final InternalProcessInstance subprocessInstance = EnvTool.getJournalQueriers().getProcessInstance(activityInstance.getSubflowProcessInstanceUUID());
+        final InternalProcessInstance subprocessInstance = EnvTool.getJournalQueriers().getProcessInstance(
+            activityInstance.getSubflowProcessInstanceUUID());
         EnvTool.getRecorder().recordInstanceAborted(subprocessInstance.getUUID(), BonitaConstants.SYSTEM_USER);
       }
       internalExecution.setActivityInstance(null);
@@ -840,7 +856,7 @@ public abstract class AbstractActivity implements ExternalActivity {
   }
 
   private DeadlineDefinition getCompatibleDeadline(final String className, final Set<DeadlineDefinition> deadlines) {
-    for (DeadlineDefinition deadline : deadlines) {
+    for (final DeadlineDefinition deadline : deadlines) {
       if (deadline.getClassName().equals(className)) {
         return deadline;
       }
@@ -849,8 +865,8 @@ public abstract class AbstractActivity implements ExternalActivity {
   }
 
   private DeadlineDefinition getMatchingDeadline(final Long id, final Set<DeadlineDefinition> deadlines) {
-    for (DeadlineDefinition d : deadlines) {
-      InternalConnectorDefinition deadline = (InternalConnectorDefinition) d;
+    for (final DeadlineDefinition d : deadlines) {
+      final InternalConnectorDefinition deadline = (InternalConnectorDefinition) d;
       if (deadline.getDbid() == id) {
         return deadline;
       }
@@ -900,22 +916,25 @@ public abstract class AbstractActivity implements ExternalActivity {
       final String activityName = activity.getName();
       final String eventName = BonitaConstants.DEADLINE_EVENT_PREFIX + activityUUID;
       for (final DeadlineDefinition d : deadlines) {
-        InternalConnectorDefinition deadline = (InternalConnectorDefinition) d;
+        final InternalConnectorDefinition deadline = (InternalConnectorDefinition) d;
         final String condition = deadline.getCondition();
-        long enableTime = ProcessUtil.getTimerDate(condition, activityUUID).getTime();
+        final long enableTime = ProcessUtil.getTimerDate(condition, activityUUID).getTime();
         final Map<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("id", deadline.getDbid());
 
-        final IncomingEventInstance incoming = new IncomingEventInstance(eventName, "id == " + deadline.getDbid(), instanceUUID, activity.getUUID(), activityUUID, processName,
-            activityName, executionEventUUID, DEADLINE_EVENT_SIGNAL, enableTime, false);
-        final OutgoingEventInstance outgoing = new OutgoingEventInstance(eventName, processName, activityName, parameters, instanceUUID, activityUUID, -1);
+        final IncomingEventInstance incoming = new IncomingEventInstance(eventName, "id == " + deadline.getDbid(),
+            instanceUUID, activity.getUUID(), activityUUID, processName, activityName, executionEventUUID,
+            DEADLINE_EVENT_SIGNAL, enableTime, false);
+        final OutgoingEventInstance outgoing = new OutgoingEventInstance(eventName, processName, activityName,
+            parameters, instanceUUID, activityUUID, -1);
         eventService.subscribe(incoming);
         eventService.fire(outgoing);
       }
     }
   }
 
-  private void initializeBoundaryEvents(final Execution execution, final String executionEventUUID) throws GroovyException {
+  private void initializeBoundaryEvents(final Execution execution, final String executionEventUUID)
+      throws GroovyException {
     final InternalActivityDefinition activity = execution.getNode();
     final List<BoundaryEvent> boundaryEvents = activity.getBoundaryEvents();
     if (!boundaryEvents.isEmpty()) {
@@ -924,42 +943,46 @@ public abstract class AbstractActivity implements ExternalActivity {
       final ProcessInstanceUUID instanceUUID = activityInstance.getProcessInstanceUUID();
       final EventService eventService = EnvTool.getEventService();
       final String processName = execution.getProcessDefinition().getName();
-      for (BoundaryEvent boundaryEvent : boundaryEvents) {
+      for (final BoundaryEvent boundaryEvent : boundaryEvents) {
         if (boundaryEvent instanceof TimerBoundaryEventImpl) {
           final TimerBoundaryEventImpl timer = (TimerBoundaryEventImpl) boundaryEvent;
           final String eventName = timer.getName();
           final String condition = timer.getCondition();
-          final OutgoingEventInstance outgoing = new OutgoingEventInstance(eventName, processName, activityName, null, instanceUUID, activityUUID, -1);
+          final OutgoingEventInstance outgoing = new OutgoingEventInstance(eventName, processName, activityName, null,
+              instanceUUID, activityUUID, -1);
           eventService.fire(outgoing);
-          final Date date = (Date) ProcessUtil.getTimerDate(condition, activityUUID);
-          IncomingEventInstance timerEventInstance = new IncomingEventInstance(eventName, null, instanceUUID, activity.getUUID(), activityUUID, processName, activityName, executionEventUUID, EventConstants.TIMER_BOUNDARY_EVENT, date.getTime(), false);
+          final Date date = ProcessUtil.getTimerDate(condition, activityUUID);
+          final IncomingEventInstance timerEventInstance = new IncomingEventInstance(eventName, null, instanceUUID,
+              activity.getUUID(), activityUUID, processName, activityName, executionEventUUID,
+              EventConstants.TIMER_BOUNDARY_EVENT, date.getTime(), false);
           eventService.subscribe(timerEventInstance);
         } else if (boundaryEvent instanceof MessageBoundaryEventImpl) {
           final MessageBoundaryEventImpl message = (MessageBoundaryEventImpl) boundaryEvent;
           final String expression = message.getExpression();
-          IncomingEventInstance incomingEventInstance = new IncomingEventInstance(message.getName(), expression, instanceUUID,
-              activity.getUUID(), activityUUID, processName, activityName,
-              executionEventUUID, EventConstants.MESSAGE_BOUNDARY_EVENT, System.currentTimeMillis(), true);
+          final IncomingEventInstance incomingEventInstance = new IncomingEventInstance(message.getName(), expression,
+              instanceUUID, activity.getUUID(), activityUUID, processName, activityName, executionEventUUID,
+              EventConstants.MESSAGE_BOUNDARY_EVENT, System.currentTimeMillis(), true);
           eventService.subscribe(incomingEventInstance);
         } else if (boundaryEvent instanceof ErrorBoundaryEventImpl) {
           final ErrorBoundaryEventImpl error = (ErrorBoundaryEventImpl) boundaryEvent;
           final String errorCode = error.getErrorCode();
-          StringBuilder builder = new StringBuilder(error.getName());
+          final StringBuilder builder = new StringBuilder(error.getName());
           builder.append(EventConstants.SEPARATOR);
           if (errorCode != null) {
             builder.append(errorCode);
           } else {
             builder.append("all");
           }
-          IncomingEventInstance incomingEventInstance = new IncomingEventInstance(builder.toString(), null, instanceUUID,
-              activity.getUUID(), activityUUID, processName, activityName, executionEventUUID, EventConstants.ERROR_BOUNDARY_EVENT,
-              System.currentTimeMillis(), true);
+          final IncomingEventInstance incomingEventInstance = new IncomingEventInstance(builder.toString(), null,
+              instanceUUID, activity.getUUID(), activityUUID, processName, activityName, executionEventUUID,
+              EventConstants.ERROR_BOUNDARY_EVENT, System.currentTimeMillis(), true);
           eventService.subscribe(incomingEventInstance);
         } else if (boundaryEvent instanceof SignalBoundaryEventImpl) {
           final SignalBoundaryEventImpl signal = (SignalBoundaryEventImpl) boundaryEvent;
           final String signalName = signal.getSignalCode();
-          IncomingEventInstance signalEventInstance = new IncomingEventInstance(signalName, null, instanceUUID, activity.getUUID(),
-              null, processName, signal.getName(), executionEventUUID, EventConstants.SIGNAL_BOUNDARY_EVENT, -1, false);
+          final IncomingEventInstance signalEventInstance = new IncomingEventInstance(signalName, null, instanceUUID,
+              activity.getUUID(), null, processName, signal.getName(), executionEventUUID,
+              EventConstants.SIGNAL_BOUNDARY_EVENT, -1, false);
           eventService.subscribe(signalEventInstance);
         }
       }
@@ -974,9 +997,12 @@ public abstract class AbstractActivity implements ExternalActivity {
     final String processName = execution.getProcessDefinition().getName();
     if (activityUUID != null) {
       ActivityUtil.deleteBoundaryEvents(activityUUID);
-      ActivityUtil.deleteEvents(BonitaConstants.TIMER_EVENT_PREFIX + activityUUID, processName, activityName, activityUUID);
-      ActivityUtil.deleteEvents(BonitaConstants.DEADLINE_EVENT_PREFIX + activityUUID, processName, activityName, activityUUID);
-      ActivityUtil.deleteEvents(BonitaConstants.ASYNC_EVENT_PREFIX + activityUUID, processName, activityName, activityUUID);
+      ActivityUtil.deleteEvents(BonitaConstants.TIMER_EVENT_PREFIX + activityUUID, processName, activityName,
+          activityUUID);
+      ActivityUtil.deleteEvents(BonitaConstants.DEADLINE_EVENT_PREFIX + activityUUID, processName, activityName,
+          activityUUID);
+      ActivityUtil.deleteEvents(BonitaConstants.ASYNC_EVENT_PREFIX + activityUUID, processName, activityName,
+          activityUUID);
     }
   }
 
@@ -1001,16 +1027,19 @@ public abstract class AbstractActivity implements ExternalActivity {
 
   public void executeSplit(final Execution execution, final boolean removeScope) {
     final ActivityDefinition activity = execution.getNode();
-    Execution internalExecution = (Execution) execution;
+    Execution internalExecution = execution;
     final InternalActivityDefinition currentNode = internalExecution.getNode();
     if (AbstractActivity.LOG.isLoggable(Level.FINE)) {
-      AbstractActivity.LOG.fine("node = " + currentNode.getName() + " - splitType = " + activity.getSplitType() + " - execution = " + execution.getName());
+      AbstractActivity.LOG.fine("node = " + currentNode.getName() + " - splitType = " + activity.getSplitType()
+          + " - execution = " + execution.getName());
     }
+
     final Set<TransitionDefinition> transitions = currentNode.getOutgoingTransitions();
-    if (transitions == null) {
+
+    if (transitions.isEmpty()) {
       if (AbstractActivity.LOG.isLoggable(Level.FINE)) {
-        AbstractActivity.LOG.fine("node = " + currentNode.getName() + " - splitType = " + activity.getSplitType() + " - execution = " + execution.getName()
-            + " no transition available. Ending execution");
+        AbstractActivity.LOG.fine("node = " + currentNode.getName() + " - splitType = " + activity.getSplitType()
+            + " - execution = " + execution.getName() + " no transition available. Ending execution");
       }
       internalExecution.end();
       final Execution parent = internalExecution.getParent();
@@ -1032,7 +1061,8 @@ public abstract class AbstractActivity implements ExternalActivity {
         }
       }
       if (defaultTransition != null && transitionsToTake.size() == 0) {
-        final TransitionState transitionState = internalExecution.getInstance().getTransitionState(defaultTransition.getName());
+        final TransitionState transitionState = internalExecution.getInstance().getTransitionState(
+            defaultTransition.getName());
         if (transitionState == null) {
           internalExecution.getInstance().setTransitionState(defaultTransition.getName(), TransitionState.READY);
           transitionsToTake.add(defaultTransition);
@@ -1054,7 +1084,8 @@ public abstract class AbstractActivity implements ExternalActivity {
         Set<IterationDescriptor> iterationDescriptors = null;
         // check we are leaving a cycle
         if (activity.isInCycle()) {
-          final ProcessDefinition process = EnvTool.getJournalQueriers().getProcess(activity.getProcessDefinitionUUID());
+          final ProcessDefinition process = EnvTool.getJournalQueriers()
+              .getProcess(activity.getProcessDefinitionUUID());
           iterationDescriptors = process.getIterationDescriptors();
           for (final IterationDescriptor itD : iterationDescriptors) {
             boolean isLeaving = false;
@@ -1105,7 +1136,7 @@ public abstract class AbstractActivity implements ExternalActivity {
                 }
               }
               if (isStaying && isLeaving) {
-                String message = ExceptionManager.getInstance().getFullMessage("be_AA_5");
+                final String message = ExceptionManager.getInstance().getFullMessage("be_AA_5");
                 throw new BonitaWrapperException(new BonitaRuntimeException(message));
               }
             }

@@ -21,7 +21,7 @@ import org.ow2.bonita.util.Misc;
 public final class CommonClassLoader extends AbstractClassLoader {
 
   private static final Logger LOG = Logger.getLogger(CommonClassLoader.class.getName());
-
+  
   CommonClassLoader() {
     super(Misc.getGlobalClassDataCategories(), CommonClassLoader.class.getClassLoader());
     if (LOG.isLoggable(Level.FINE)) {

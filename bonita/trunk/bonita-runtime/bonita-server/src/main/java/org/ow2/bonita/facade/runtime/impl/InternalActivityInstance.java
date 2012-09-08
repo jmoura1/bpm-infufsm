@@ -44,20 +44,24 @@ public class InternalActivityInstance extends ActivityInstanceImpl {
   protected long dbid;
   protected Map<String, Variable> variables;
 
-  protected InternalActivityInstance() { }
+  protected InternalActivityInstance() {
+  }
 
-  public InternalActivityInstance(final ActivityInstanceUUID uuid, final ActivityDefinition activityDefinition, final ProcessInstanceUUID instanceUUID,
-      final ProcessInstanceUUID rootInstanceUUID, final String iterationId, final String activityInstanceId, final String loopId) {
-    super(uuid, activityDefinition, activityDefinition.getProcessDefinitionUUID(), instanceUUID, rootInstanceUUID, iterationId, activityInstanceId, loopId);
+  public InternalActivityInstance(final ActivityInstanceUUID uuid, final ActivityDefinition activityDefinition,
+      final ProcessInstanceUUID instanceUUID, final ProcessInstanceUUID rootInstanceUUID, final String iterationId,
+      final String activityInstanceId, final String loopId) {
+    super(uuid, activityDefinition, activityDefinition.getProcessDefinitionUUID(), instanceUUID, rootInstanceUUID,
+        iterationId, activityInstanceId, loopId);
   }
 
   public InternalActivityInstance(final ActivityInstance src) {
     super(src);
     setVariables(VariableUtil.createVariableMap(src.getProcessDefinitionUUID(), src.getVariablesBeforeStarted()));
     this.variableUpdates = null;
-    for (VariableUpdate varUpdate : src.getVariableUpdates()) {
+    for (final VariableUpdate varUpdate : src.getVariableUpdates()) {
       final Serializable value = varUpdate.getValue();
-      addVariableUpdate(new InternalVariableUpdate(varUpdate.getDate(), varUpdate.getUserId(), varUpdate.getName(), VariableUtil.createVariable(src.getProcessDefinitionUUID(), varUpdate.getName(), value)));
+      addVariableUpdate(new InternalVariableUpdate(varUpdate.getDate(), varUpdate.getUserId(), varUpdate.getName(),
+          VariableUtil.createVariable(src.getProcessDefinitionUUID(), varUpdate.getName(), value)));
     }
   }
 
@@ -66,20 +70,20 @@ public class InternalActivityInstance extends ActivityInstanceImpl {
   }
 
   public void setReadyDate(final Date readyDate) {
-    this.readyDate = Misc.getTime(readyDate); 
+    this.readyDate = Misc.getTime(readyDate);
   }
-  
+
   public void setEndedDate(final Date endedDate) {
     this.endedDate = Misc.getTime(endedDate);
   }
-  
+
   public void addVariableUpdate(final VariableUpdate varUpdate) {
     if (this.variableUpdates == null) {
       this.variableUpdates = new ArrayList<VariableUpdate>();
     }
     this.variableUpdates.add(varUpdate);
   }
-  
+
   public void setVariableValue(final String variableName, final Variable variable) {
     updateLastUpdateDate();
     this.variables.put(variableName, variable);
@@ -91,9 +95,9 @@ public class InternalActivityInstance extends ActivityInstanceImpl {
     querier.getProcessInstance(getProcessInstanceUUID()).updateLastUpdateDate();
   }
 
-  public void setTaskAssign(ActivityState taskState, String loggedInUserId, String assignedUserId) {
-    Set<String> previouslyActiveUsers = new HashSet<String>();
-    if(isTaskAssigned()){
+  public void setTaskAssign(final ActivityState taskState, final String loggedInUserId, final String assignedUserId) {
+    final Set<String> previouslyActiveUsers = new HashSet<String>();
+    if (isTaskAssigned()) {
       previouslyActiveUsers.add(getTaskUser());
     } else {
       previouslyActiveUsers.addAll(getTaskCandidates());
@@ -103,48 +107,46 @@ public class InternalActivityInstance extends ActivityInstanceImpl {
       this.assignUpdates = new ArrayList<AssignUpdate>();
     }
     this.userId = assignedUserId;
-    this.getAssignUpdates().add(new AssignUpdateImpl(new Date(), taskState, loggedInUserId, this.candidates, this.userId));
+    this.getAssignUpdates().add(
+        new AssignUpdateImpl(new Date(), taskState, loggedInUserId, this.candidates, this.userId));
     if (assignedUserId != null) {
       final Querier querier = EnvTool.getJournalQueriers();
       final InternalProcessInstance instance = querier.getProcessInstance(getRootInstanceUUID());
-      if(previouslyActiveUsers!=null && !previouslyActiveUsers.isEmpty()){
+      if (previouslyActiveUsers != null && !previouslyActiveUsers.isEmpty()) {
         instance.removeActiveUsers(previouslyActiveUsers);
       }
       instance.addInvolvedUser(assignedUserId);
-      if(assignedUserId!=null){
-        instance.addActiveUser(assignedUserId);
-      }
+      instance.addActiveUser(assignedUserId);
     }
   }
 
-  public void setTaskAssign(ActivityState taskState, String loggedInUserId, Set<String> candidates) {
-    Set<String> previouslyActiveUsers = new HashSet<String>();
-    if(isTaskAssigned()){
+  public void setTaskAssign(final ActivityState taskState, final String loggedInUserId, final Set<String> candidates) {
+    final Set<String> previouslyActiveUsers = new HashSet<String>();
+    if (isTaskAssigned()) {
       previouslyActiveUsers.add(getTaskUser());
     } else {
       previouslyActiveUsers.addAll(getTaskCandidates());
     }
-    
+
     updateLastUpdateDate();
     if (getAssignUpdates() == null) {
       this.assignUpdates = new ArrayList<AssignUpdate>();
     }
-    
+
     this.userId = null;
     this.candidates = candidates;
-    
-    this.getAssignUpdates().add(new AssignUpdateImpl(new Date(), taskState, loggedInUserId, this.candidates, this.userId));
-    
+
+    this.getAssignUpdates().add(
+        new AssignUpdateImpl(new Date(), taskState, loggedInUserId, this.candidates, this.userId));
+
     if (candidates != null && !candidates.isEmpty()) {
       final Querier querier = EnvTool.getJournalQueriers();
-      final InternalProcessInstance instance = querier.getProcessInstance(getRootInstanceUUID()); 
-      if(previouslyActiveUsers!=null && !previouslyActiveUsers.isEmpty()){
+      final InternalProcessInstance instance = querier.getProcessInstance(getRootInstanceUUID());
+      if (previouslyActiveUsers != null && !previouslyActiveUsers.isEmpty()) {
         instance.removeActiveUsers(previouslyActiveUsers);
       }
       instance.addInvolvedUsers(candidates);
-      if(candidates!=null && !candidates.isEmpty()){
-        instance.addActiveUsers(candidates);
-      }
+      instance.addActiveUsers(candidates);
     }
   }
 
@@ -152,31 +154,31 @@ public class InternalActivityInstance extends ActivityInstanceImpl {
     this.subflowProcessInstanceUUID = subflowProcessInstanceUUID;
   }
 
-  public void setPriority(int priority) {
+  public void setPriority(final int priority) {
     this.priority = priority;
   }
 
-  public void setDynamicDescription(String dynamicDescription) {
+  public void setDynamicDescription(final String dynamicDescription) {
     this.dynamicDescription = dynamicDescription;
   }
 
-  public void setDynamicLabel(String dynamicLabel) {
+  public void setDynamicLabel(final String dynamicLabel) {
     this.dynamicLabel = dynamicLabel;
   }
 
-  public void setDynamicExecutionSummary(String executionSummary) {
+  public void setDynamicExecutionSummary(final String executionSummary) {
     this.executionSummary = executionSummary;
   }
 
-  public void setActivityState(ActivityState newState, String userId) {
+  public void setActivityState(final ActivityState newState, final String userId) {
     // Perform the update first
     if (ActivityState.FINISHED.equals(newState) || ActivityState.CANCELLED.equals(newState)
         || ActivityState.ABORTED.equals(newState) || ActivityState.SKIPPED.equals(newState)) {
-      
-      if(isTask()){
+
+      if (isTask()) {
         final Querier querier = EnvTool.getJournalQueriers();
         final InternalProcessInstance instance = querier.getProcessInstance(getRootInstanceUUID());
-        if(isTaskAssigned()){
+        if (isTaskAssigned()) {
           instance.removeActiveUser(getTaskUser());
         } else {
           instance.removeActiveUsers(getTaskCandidates());
@@ -184,10 +186,10 @@ public class InternalActivityInstance extends ActivityInstanceImpl {
       }
     }
     updateLastUpdateDate();
-    ActivityState oldState = getState();
+    final ActivityState oldState = getState();
     this.state = newState;
     final Date actual = new Date();
-    //add a state update
+    // add a state update
     this.getStateUpdates().add(new StateUpdateImpl(actual, newState, oldState, userId));
     if (ActivityState.READY.equals(newState)) {
       readyDate = actual.getTime();
@@ -199,13 +201,14 @@ public class InternalActivityInstance extends ActivityInstanceImpl {
       endedDate = actual.getTime();
       endedBy = userId;
     } else if (ActivityState.SKIPPED.equals(newState)) {
-    	startedDate = actual.getTime();
-    	startedBy = userId;
-    	endedDate = actual.getTime();
-    	endedBy = userId;
+      startedDate = actual.getTime();
+      startedBy = userId;
+      endedDate = actual.getTime();
+      endedBy = userId;
     }
   }
 
+  @Override
   public Map<String, Object> getVariablesBeforeStarted() {
     if (this.variables != null) {
       return VariableUtil.getVariableValues(this.variables);

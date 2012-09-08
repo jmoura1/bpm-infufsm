@@ -53,448 +53,459 @@ import org.ow2.bonita.util.TransientData;
 
 /**
  * is one task instance that can be assigned to an user
+ * 
  * @author Marc Blachon, Guillaume Porcher, Charles Souillard, Miguel Valdes, Pierre Vigneras
  */
 public class TaskManager {
 
-	private static final Logger LOG = Logger.getLogger(TaskManager.class.getName());
+  private static final Logger LOG = Logger.getLogger(TaskManager.class.getName());
 
-	private static TaskInstance getTask(final ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
-		TaskInstance task = (TaskInstance) EnvTool.getJournalQueriers().getTaskInstance(taskUUID);
-		if (task == null) {
-			throw new TaskNotFoundException("bai_RAPII_19", taskUUID);
-		}
-		return task;
-	}
+  private static TaskInstance getTask(final ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
+    final TaskInstance task = EnvTool.getJournalQueriers().getTaskInstance(taskUUID);
+    if (task == null) {
+      throw new TaskNotFoundException("bai_RAPII_19", taskUUID);
+    }
+    return task;
+  }
 
-	private static ActivityDefinition getActivityDefinition(ProcessDefinitionUUID processUUID, String activityName) {
-		ActivityDefinition activity = (ActivityDefinition) EnvTool.getJournalQueriers().getActivity(new ActivityDefinitionUUID(processUUID, activityName));
-		return activity;
-	}
+  private static ActivityDefinition getActivityDefinition(final ProcessDefinitionUUID processUUID,
+      final String activityName) {
+    final ActivityDefinition activity = EnvTool.getJournalQueriers().getActivity(
+        new ActivityDefinitionUUID(processUUID, activityName));
+    return activity;
+  }
 
-	protected static Execution getExecution(final ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
-	  TaskInstance task = getTask(taskUUID);
-		return EnvTool.getJournalQueriers().getExecutionOnActivity(task.getProcessInstanceUUID(), taskUUID);
-	}
+  protected static Execution getExecution(final ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
+    final TaskInstance task = getTask(taskUUID);
+    return EnvTool.getJournalQueriers().getExecutionOnActivity(task.getProcessInstanceUUID(), taskUUID);
+  }
 
-	private static void assign(final ActivityInstance task, final java.util.Set<java.lang.String> candidates, final String userId) {
-		ActivityInstanceUUID taskUUID = task.getUUID();
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("assigning task : " + taskUUID + " on activity " + task.getActivityName());
-		}
-		final Recorder recorder = EnvTool.getRecorder();
-		recorder.recordTaskAssigned(taskUUID, task.getState(), EnvTool.getUserId(), candidates, userId);
-	}
+  private static void assign(final ActivityInstance task, final java.util.Set<java.lang.String> candidates,
+      final String userId) {
+    final ActivityInstanceUUID taskUUID = task.getUUID();
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("assigning task : " + taskUUID + " on activity " + task.getActivityName());
+    }
+    final Recorder recorder = EnvTool.getRecorder();
+    recorder.recordTaskAssigned(taskUUID, task.getState(), EnvTool.getUserId(), candidates, userId);
+  }
 
-	public static void unAssign(ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
-		TaskInstance task = getTask(taskUUID);
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Unassigning: " + task);
-		}
-		//record the assign
-		assign(task, task.getTaskCandidates(), null);
+  public static void unAssign(final ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
+    final TaskInstance task = getTask(taskUUID);
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Unassigning: " + task);
+    }
+    // record the assign
+    assign(task, task.getTaskCandidates(), null);
 
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Unassigned: " + task);
-		}
-	}
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Unassigned: " + task);
+    }
+  }
 
-	public static void assign(ActivityInstanceUUID taskUUID, Set<String> candidates) throws TaskNotFoundException {
-		TaskInstance task = getTask(taskUUID);
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Assigning: " + task);
-		}
-		//record the assign
-		assign(task, candidates, null);
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Assigned: " + task);
-		}
-	}
+  public static void assign(final ActivityInstanceUUID taskUUID, final Set<String> candidates)
+      throws TaskNotFoundException {
+    final TaskInstance task = getTask(taskUUID);
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Assigning: " + task);
+    }
+    // record the assign
+    assign(task, candidates, null);
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Assigned: " + task);
+    }
+  }
 
-	public static void assign(ActivityInstanceUUID taskUUID, String userId) throws TaskNotFoundException {
-		TaskInstance task = getTask(taskUUID);
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Assigning: " + task + " to " + userId);
-		}
-		//record the assign
-		assign(task, null, userId);
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Assigned: " + task + " to " + userId);
-		}
-	}
+  public static void assign(final ActivityInstanceUUID taskUUID, final String userId) throws TaskNotFoundException {
+    final TaskInstance task = getTask(taskUUID);
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Assigning: " + task + " to " + userId);
+    }
+    // record the assign
+    assign(task, null, userId);
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Assigned: " + task + " to " + userId);
+    }
+  }
 
-	private static Set<String> getCandidates(Set<Performer> performers, TaskInstance task) {
-		Set<String> candidates = null;
-		if (performers != null) {
-			candidates = new HashSet<String>();
-			for (Performer performer : performers) {
-				if (performer.isHuman()) {
-					candidates.add(performer.getName());
-				} else if (performer.getRoleMapperDefinition() != null) {
-					Set<String> tmp = executeRoleMapper(task, performer);
-					if (tmp != null) {
-						candidates.addAll(tmp);
-					}
-				}
-			}
-		}
-		return candidates;
-	}
+  private static Set<String> getCandidates(final Set<Performer> performers, final TaskInstance task) {
+    Set<String> candidates = null;
+    if (performers != null) {
+      candidates = new HashSet<String>();
+      for (final Performer performer : performers) {
+        if (performer.isHuman()) {
+          candidates.add(performer.getName());
+        } else if (performer.getRoleMapperDefinition() != null) {
+          final Set<String> tmp = executeRoleMapper(task, performer);
+          if (tmp != null) {
+            candidates.addAll(tmp);
+          }
+        }
+      }
+    }
+    return candidates;
+  }
 
-	public static void assign(ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
-		TaskInstance task = getTask(taskUUID);
-		ProcessDefinitionUUID processUUID = task.getProcessDefinitionUUID();
-		ActivityDefinition activityDefinition = getActivityDefinition(processUUID, task.getActivityName());
+  public static void assign(final ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
+    final TaskInstance task = getTask(taskUUID);
+    final ProcessDefinitionUUID processUUID = task.getProcessDefinitionUUID();
+    final ActivityDefinition activityDefinition = getActivityDefinition(processUUID, task.getActivityName());
 
-		//execute role resolvers and filters
-		Set<Performer> performers = getPerformers(activityDefinition);
+    // execute role resolvers and filters
+    final Set<Performer> performers = getPerformers(activityDefinition);
 
-		Set<String> candidates = getCandidates(performers, task);
-		String userId = null;
+    Set<String> candidates = getCandidates(performers, task);
+    String userId = null;
 
-		Performer performer = performers.iterator().next();
-		if (performer.getFilterDefinition() != null) {
-			candidates = executeFilter(task, candidates, performer);
-			if (candidates.size() == 1) {
-				userId = candidates.iterator().next();
-			}
-		}
+    final Performer performer = performers.iterator().next();
+    if (performer.getFilterDefinition() != null) {
+      candidates = executeFilter(task, candidates, performer);
+      if (candidates.size() == 1) {
+        userId = candidates.iterator().next();
+      }
+    }
 
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Assigning: " + task);
-		}
-		//record the assign
-		if (userId != null) {
-		  assign(task, null, userId); 
-		} else {
-		  assign(task, candidates, null);
-		}
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Assigned: " + task);
-		}
-	}
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Assigning: " + task);
+    }
+    // record the assign
+    if (userId != null) {
+      assign(task, null, userId);
+    } else {
+      assign(task, candidates, null);
+    }
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Assigned: " + task);
+    }
+  }
 
+  public static void finish(final ActivityInstanceUUID taskUUID, final boolean assignTask)
+      throws TaskNotFoundException, IllegalTaskStateException {
+    final TaskInstance task = getTask(taskUUID);
+    if (!ActivityState.ABORTED.equals(task.getState()) && !ActivityState.FAILED.equals(task.getState())) {
+      if (LOG.isLoggable(Level.FINE)) {
+        LOG.fine("Checking compatible state of " + task);
+      }
+      if (!task.getState().equals(ActivityState.EXECUTING)) {
+        final Set<ActivityState> expectedStates = new HashSet<ActivityState>();
+        expectedStates.add(ActivityState.EXECUTING);
+        final String message = ExceptionManager.getInstance().getFullMessage("bai_RAPII_11");
+        throw new IllegalTaskStateException("bai_RAPII_11", message, taskUUID, expectedStates, task.getState());
+      }
+      final String activityName = task.getActivityName();
+      if (LOG.isLoggable(Level.FINE)) {
+        LOG.fine("Finishing task : " + taskUUID + " on activity " + activityName);
+      }
+      final Recorder recorder = EnvTool.getRecorder();
+      if (assignTask) {
+        assign(task, null, task.getTaskUser());
+      }
+      recorder.recordTaskFinished(taskUUID, EnvTool.getUserId());
 
-	public static void finish(final ActivityInstanceUUID taskUUID, final boolean assignTask) throws TaskNotFoundException, IllegalTaskStateException {
-	  TaskInstance task = getTask(taskUUID);
-	  if (!ActivityState.ABORTED.equals(task.getState()) && !ActivityState.FAILED.equals(task.getState())) {
-	    if (LOG.isLoggable(Level.FINE)) {
-	      LOG.fine("Checking compatible state of " + task);
-	    }
-	    if (!task.getState().equals(ActivityState.EXECUTING)) {
-	      final Set<ActivityState> expectedStates = new HashSet<ActivityState>();
-	      expectedStates.add(ActivityState.EXECUTING);
-	      String message = ExceptionManager.getInstance().getFullMessage("bai_RAPII_11");
-	      throw new IllegalTaskStateException("bai_RAPII_11", message,
-	          taskUUID, expectedStates, task.getState());
-	    }
-	    String activityName = task.getActivityName();
-	    if (LOG.isLoggable(Level.FINE)) {
-	      LOG.fine("Finishing task : " + taskUUID + " on activity " + activityName);
-	    }
-	    final Recorder recorder = EnvTool.getRecorder();
-	    if (assignTask) {
-	      assign(task, null, task.getTaskUser());
-	    }
-	    recorder.recordTaskFinished(taskUUID, EnvTool.getUserId());
+      final Execution internalExecution = getExecution(taskUUID);
+      final InternalActivityDefinition activityDef = internalExecution.getNode();
 
-	    Execution internalExecution = getExecution(taskUUID);
-	    InternalActivityDefinition activityDef = internalExecution.getNode();
+      final AbstractActivity abstractActivity = (AbstractActivity) activityDef.getBehaviour();
 
-	    AbstractActivity abstractActivity = (AbstractActivity) activityDef.getBehaviour();
-
-	    try {
-	      ConnectorExecutor.executeConnectors(activityDef, internalExecution, HookDefinition.Event.taskOnFinish);
-	    } catch (RuntimeException e) {
-	      //put activity in the state FAILED
-	      recorder.recordActivityFailed(task);
-	    }
-	    final ActivityState activityState = internalExecution.getActivityInstance().getState();
+      try {
+        ConnectorExecutor.executeConnectors(activityDef, internalExecution, HookDefinition.Event.taskOnFinish);
+      } catch (final RuntimeException e) {
+        // put activity in the state FAILED
+        recorder.recordActivityFailed(task);
+      }
+      final ActivityState activityState = internalExecution.getActivityInstance().getState();
       if (!ActivityState.ABORTED.equals(activityState) && !ActivityState.FAILED.equals(activityState)) {
-	      abstractActivity.signal(internalExecution, AbstractActivity.BODY_FINISHED, null);
-	      if (LOG.isLoggable(Level.FINE)) {
-	        LOG.fine("Terminated: " + task);
-	      }
-	    } else {
-	      //if the the state is not aborted the data is already removed in AbstractActivity.end()
-	      TransientData.removeTransientData(taskUUID);
-	    }
-	  }
-	}
+        abstractActivity.signal(internalExecution, AbstractActivity.BODY_FINISHED, null);
+        if (LOG.isLoggable(Level.FINE)) {
+          LOG.fine("Terminated: " + task);
+        }
+      } else {
+        // if the the state is not aborted the data is already removed in AbstractActivity.end()
+        TransientData.removeTransientData(taskUUID);
+      }
+    }
+  }
 
-	public static void suspend(final ActivityInstanceUUID taskUUID, final boolean assignTask) throws TaskNotFoundException, IllegalTaskStateException {
-		TaskInstance task = getTask(taskUUID);
+  public static void suspend(final ActivityInstanceUUID taskUUID, final boolean assignTask)
+      throws TaskNotFoundException, IllegalTaskStateException {
+    final TaskInstance task = getTask(taskUUID);
 
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Checking compatible state of " + task);
-		}
-		if (!(task.getState().equals(ActivityState.READY)
-				|| task.getState().equals(ActivityState.EXECUTING))) {
-			final Set<ActivityState> expectedStates = new HashSet<ActivityState>();
-			expectedStates.add(ActivityState.READY);
-			expectedStates.add(ActivityState.EXECUTING);
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Checking compatible state of " + task);
+    }
+    if (!(task.getState().equals(ActivityState.READY) || task.getState().equals(ActivityState.EXECUTING))) {
+      final Set<ActivityState> expectedStates = new HashSet<ActivityState>();
+      expectedStates.add(ActivityState.READY);
+      expectedStates.add(ActivityState.EXECUTING);
 
-			String message = ExceptionManager.getInstance().getFullMessage("bai_RAPII_13");
-			throw new IllegalTaskStateException("bai_RAPII_13", message,
-					taskUUID, expectedStates, task.getState());
-		}
+      final String message = ExceptionManager.getInstance().getFullMessage("bai_RAPII_13");
+      throw new IllegalTaskStateException("bai_RAPII_13", message, taskUUID, expectedStates, task.getState());
+    }
 
-		final String currentUserId = EnvTool.getUserId();
+    final String currentUserId = EnvTool.getUserId();
 
-		ProcessDefinitionUUID processUUID = task.getProcessDefinitionUUID();
-		String activityName = task.getActivityName();
+    final ProcessDefinitionUUID processUUID = task.getProcessDefinitionUUID();
+    final String activityName = task.getActivityName();
 
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Suspending task : " + taskUUID + " on activity " + activityName);
-		}
-		final Recorder recorder = EnvTool.getRecorder();
-		if (assignTask) {
-			assign(task, null, currentUserId);
-		}
-		recorder.recordTaskSuspended(taskUUID, EnvTool.getUserId());
-		
-		Execution internalExecution = getExecution(taskUUID);
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Suspending task : " + taskUUID + " on activity " + activityName);
+    }
+    final Recorder recorder = EnvTool.getRecorder();
+    if (assignTask) {
+      assign(task, null, currentUserId);
+    }
+    recorder.recordTaskSuspended(taskUUID, EnvTool.getUserId());
 
-		ActivityDefinition activityDef = getActivityDefinition(processUUID, activityName);
-		
+    final Execution internalExecution = getExecution(taskUUID);
+
+    final ActivityDefinition activityDef = getActivityDefinition(processUUID, activityName);
+
     ConnectorExecutor.executeConnectors(activityDef, internalExecution, HookDefinition.Event.taskOnSuspend);
 
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Suspended: " + task);
-		}
-	}
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Suspended: " + task);
+    }
+  }
 
-	public static void resume(final ActivityInstanceUUID taskUUID, final boolean taskAssign) throws IllegalTaskStateException, TaskNotFoundException {
-		TaskInstance task = getTask(taskUUID);
+  public static void resume(final ActivityInstanceUUID taskUUID, final boolean taskAssign)
+      throws IllegalTaskStateException, TaskNotFoundException {
+    final TaskInstance task = getTask(taskUUID);
 
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Checking compatible state of " + task);
-		}
-		if (!task.getState().equals(ActivityState.SUSPENDED)) {
-			final Set<ActivityState> expectedStates = new HashSet<ActivityState>();
-			expectedStates.add(ActivityState.SUSPENDED);
-			String message = ExceptionManager.getInstance().getFullMessage("bai_RAPII_15");
-			throw new IllegalTaskStateException("bai_RAPII_15", message,
-					taskUUID, expectedStates, task.getState());
-		}
-		final String currentUserId = EnvTool.getUserId();
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Checking compatible state of " + task);
+    }
+    if (!task.getState().equals(ActivityState.SUSPENDED)) {
+      final Set<ActivityState> expectedStates = new HashSet<ActivityState>();
+      expectedStates.add(ActivityState.SUSPENDED);
+      final String message = ExceptionManager.getInstance().getFullMessage("bai_RAPII_15");
+      throw new IllegalTaskStateException("bai_RAPII_15", message, taskUUID, expectedStates, task.getState());
+    }
+    final String currentUserId = EnvTool.getUserId();
 
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Resuming: " + task);
-		}
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Resuming: " + task);
+    }
 
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Resuming task : " + taskUUID + " on activity " + task.getActivityName());
-		}
-		final Recorder recorder = EnvTool.getRecorder();
-		if (taskAssign) {
-			assign(task, null, currentUserId);
-		}
-		recorder.recordTaskResumed(taskUUID, EnvTool.getUserId());
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Resuming task : " + taskUUID + " on activity " + task.getActivityName());
+    }
+    final Recorder recorder = EnvTool.getRecorder();
+    if (taskAssign) {
+      assign(task, null, currentUserId);
+    }
+    recorder.recordTaskResumed(taskUUID, EnvTool.getUserId());
 
-		Execution internalExecution = getExecution(taskUUID);
+    final Execution internalExecution = getExecution(taskUUID);
 
-		InternalActivityDefinition activityDef = internalExecution.getNode();
+    final InternalActivityDefinition activityDef = internalExecution.getNode();
 
     ConnectorExecutor.executeConnectors(activityDef, internalExecution, HookDefinition.Event.taskOnResume);
 
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Resumed: " + task);
-		}
-	}
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Resumed: " + task);
+    }
+  }
 
-	public static void start(final ActivityInstanceUUID taskUUID, final boolean assignTask) throws IllegalTaskStateException, TaskNotFoundException {
-		TaskInstance task = getTask(taskUUID);
-		if (!ActivityState.ABORTED.equals(task.getState())) {
-	    if (LOG.isLoggable(Level.FINE)) {
-	      LOG.fine("Checking compatible state of " + task);
-	    }
-	    if (!task.getState().equals(ActivityState.READY)) {
-	      final Set<ActivityState> expectedStates = new HashSet<ActivityState>();
-	      expectedStates.add(ActivityState.READY);
-	      String message = ExceptionManager.getInstance().getFullMessage("bai_RAPII_9");
-	      throw new IllegalTaskStateException("bai_RAPII_9", message, taskUUID, expectedStates, task.getState());
-	    }
-	    if (LOG.isLoggable(Level.FINE)) {
-	      LOG.fine("Starting: " + task);
-	    }
+  public static void start(final ActivityInstanceUUID taskUUID, final boolean assignTask)
+      throws IllegalTaskStateException, TaskNotFoundException {
+    final TaskInstance task = getTask(taskUUID);
+    if (!ActivityState.ABORTED.equals(task.getState())) {
+      if (LOG.isLoggable(Level.FINE)) {
+        LOG.fine("Checking compatible state of " + task);
+      }
+      if (!task.getState().equals(ActivityState.READY)) {
+        final Set<ActivityState> expectedStates = new HashSet<ActivityState>();
+        expectedStates.add(ActivityState.READY);
+        final String message = ExceptionManager.getInstance().getFullMessage("bai_RAPII_9");
+        throw new IllegalTaskStateException("bai_RAPII_9", message, taskUUID, expectedStates, task.getState());
+      }
+      if (LOG.isLoggable(Level.FINE)) {
+        LOG.fine("Starting: " + task);
+      }
 
-	    final Recorder recorder = EnvTool.getRecorder();
-	    if (assignTask) {
-	      assign(task, null, EnvTool.getUserId());
-	    }
+      final Recorder recorder = EnvTool.getRecorder();
+      if (assignTask) {
+        assign(task, null, EnvTool.getUserId());
+      }
 
-	    Execution internalExecution = getExecution(taskUUID);
-	    recorder.recordBodyStarted(task);
-	    recorder.recordTaskStarted(taskUUID, EnvTool.getUserId());
-	    InternalActivityDefinition activityDef = internalExecution.getNode();
-	    try {
-	      ConnectorExecutor.executeConnectors(activityDef, internalExecution, HookDefinition.Event.taskOnStart);
-	    } catch (RuntimeException e) {
-        //put activity in the state FAILED
+      final Execution internalExecution = getExecution(taskUUID);
+      recorder.recordBodyStarted(task);
+      recorder.recordTaskStarted(taskUUID, EnvTool.getUserId());
+      final InternalActivityDefinition activityDef = internalExecution.getNode();
+      try {
+        ConnectorExecutor.executeConnectors(activityDef, internalExecution, HookDefinition.Event.taskOnStart);
+      } catch (final RuntimeException e) {
+        // put activity in the state FAILED
         recorder.recordActivityFailed(task);
       }
-	    if (LOG.isLoggable(Level.FINE)) {
-	      LOG.fine("Started: " + task);
-	    }
-		}
-	}
+      if (LOG.isLoggable(Level.FINE)) {
+        LOG.fine("Started: " + task);
+      }
+    }
+  }
 
-	private static Set<String> executeFilter(final TaskInstance task, final Set<String> candidates, final Performer performer) {
-	  final ProcessDefinitionUUID processUUID = task.getProcessDefinitionUUID();
-	  ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
-	  try {
-	    ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processUUID);
-	    Thread.currentThread().setContextClassLoader(processClassLoader);
+  private static Set<String> executeFilter(final TaskInstance task, final Set<String> candidates,
+      final Performer performer) {
+    final ProcessDefinitionUUID processUUID = task.getProcessDefinitionUUID();
+    final ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
+    try {
+      final ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processUUID);
+      Thread.currentThread().setContextClassLoader(processClassLoader);
 
-	    final FilterDefinition filterDefinition = performer.getFilterDefinition();
-	    if (filterDefinition != null) {
-	      PerformerAssign performerAssign = getPerformerAssign(processUUID, filterDefinition);
-	      Filter filter = null;
-	      if (performerAssign == null) {
-	        filter = EnvTool.getClassDataLoader().getInstance(Filter.class, processUUID, filterDefinition);
-	      } else {
-	        filter = new PerformerAssignFilter();
-	      }
-	      try {
-	        return ConnectorExecutor.executeFilter(filter, performerAssign, task, candidates, filterDefinition.getParameters());
+      final FilterDefinition filterDefinition = performer.getFilterDefinition();
+      if (filterDefinition != null) {
+        final PerformerAssign performerAssign = getPerformerAssign(processUUID, filterDefinition);
+        Filter filter = null;
+        if (performerAssign == null) {
+          filter = EnvTool.getClassDataLoader().getInstance(Filter.class, processUUID, filterDefinition);
+        } else {
+          filter = new PerformerAssignFilter();
+        }
+        try {
+          return ConnectorExecutor.executeFilter(filter, performerAssign, task, candidates,
+              filterDefinition.getParameters());
 
-	      } catch (Exception e) {
-	        throw new BonitaWrapperException(e);
-	      }
-	    }
-	    return candidates;
-	  } finally {
-	    Thread.currentThread().setContextClassLoader(baseClassLoader);
-	  }
-	}
+        } catch (final Exception e) {
+          throw new BonitaWrapperException(e);
+        }
+      }
+      return candidates;
+    } finally {
+      Thread.currentThread().setContextClassLoader(baseClassLoader);
+    }
+  }
 
-	private static PerformerAssign getPerformerAssign(ProcessDefinitionUUID processUUID, FilterDefinition filterDefinition) {
-		try {
-			return EnvTool.getClassDataLoader().getInstance(PerformerAssign.class, processUUID, filterDefinition);
-		} catch (Exception e) {
-			return null;
-		}
-	}
+  private static PerformerAssign getPerformerAssign(final ProcessDefinitionUUID processUUID,
+      final FilterDefinition filterDefinition) {
+    try {
+      return EnvTool.getClassDataLoader().getInstance(PerformerAssign.class, processUUID, filterDefinition);
+    } catch (final Exception e) {
+      return null;
+    }
+  }
 
-	private static Set<String> executeRoleMapper(final TaskInstance task, final Performer performer) {
-	  ProcessDefinitionUUID processUUID = task.getProcessDefinitionUUID();
-	  final RoleMapperDefinition rolemapperDef = performer.getRoleMapperDefinition();
-	  ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
-	  try {
-	    ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processUUID);
-	    Thread.currentThread().setContextClassLoader(processClassLoader);
-	    if (rolemapperDef != null) {
-	      final RoleMapper roleMapper = EnvTool.getClassDataLoader().getInstance(RoleMapper.class, processUUID, rolemapperDef);
-	      try {
-	        return ConnectorExecutor.executeRoleMapper(roleMapper, task.getProcessInstanceUUID(), performer.getName(), rolemapperDef.getParameters());
-	      } catch (final Exception e) {
-	        throw new BonitaWrapperException(
-	            new RoleMapperInvocationException("be_TRT_2", rolemapperDef.toString(), e)
-	        );
-	      }
-	    }
-	    return null;
-	  } finally {
-	    Thread.currentThread().setContextClassLoader(baseClassLoader);
-	  }
-	}
+  private static Set<String> executeRoleMapper(final TaskInstance task, final Performer performer) {
+    final ProcessDefinitionUUID processUUID = task.getProcessDefinitionUUID();
+    final RoleMapperDefinition rolemapperDef = performer.getRoleMapperDefinition();
+    final ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
+    try {
+      final ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processUUID);
+      Thread.currentThread().setContextClassLoader(processClassLoader);
+      if (rolemapperDef != null) {
+        final RoleMapper roleMapper = EnvTool.getClassDataLoader().getInstance(RoleMapper.class, processUUID,
+            rolemapperDef);
+        try {
+          return ConnectorExecutor.executeRoleMapper(roleMapper, task, performer.getName(),
+              rolemapperDef.getParameters());
+        } catch (final Exception e) {
+          throw new BonitaWrapperException(new RoleMapperInvocationException("be_TRT_2", rolemapperDef.toString(), e));
+        }
+      }
+      return null;
+    } finally {
+      Thread.currentThread().setContextClassLoader(baseClassLoader);
+    }
+  }
 
-	public static void ready(Execution internalExecution) throws TaskNotFoundException {
-		ActivityInstanceUUID taskUUID = new ActivityInstanceUUID(internalExecution.getActivityInstanceUUID().toString());
-		InternalActivityDefinition activityDef = internalExecution.getNode();
-		TaskInstance task = getTask(taskUUID);
-		String activityName = task.getActivityName();
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Ready task : " + taskUUID + " on activity " + activityName);
-		}
+  public static void ready(final Execution internalExecution) throws TaskNotFoundException {
+    final ActivityInstanceUUID taskUUID = new ActivityInstanceUUID(internalExecution.getActivityInstanceUUID()
+        .toString());
+    final InternalActivityDefinition activityDef = internalExecution.getNode();
+    final TaskInstance task = getTask(taskUUID);
+    final String activityName = task.getActivityName();
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Ready task : " + taskUUID + " on activity " + activityName);
+    }
 
-		// get performer (aka participant/swimlane)
-		final Set<Performer> performers = getPerformers(activityDef);
-		String userId = null;
-		Set<String> candidates = null;
-		if (performers != null) {
-			candidates = getCandidates(performers, task);
-			Performer performer = performers.iterator().next();
-			if (performer.getFilterDefinition() != null) {
-				candidates = executeFilter(task, candidates, performer);
-				if (candidates.size() == 1) {
-					userId = candidates.iterator().next();
-				}
-			}
-		}
+    // get performer (aka participant/swimlane)
+    final Set<Performer> performers = getPerformers(activityDef);
+    String userId = null;
+    Set<String> candidates = null;
+    if (performers != null) {
+      candidates = getCandidates(performers, task);
+      final Performer performer = performers.iterator().next();
+      if (performer.getFilterDefinition() != null) {
+        candidates = executeFilter(task, candidates, performer);
+        if (candidates.size() == 1) {
+          userId = candidates.iterator().next();
+        }
+      }
+    }
 
-		if (userId != null) {
-		  EnvTool.getRecorder().recordTaskReady(taskUUID, null, userId);  
-		} else {
-		  EnvTool.getRecorder().recordTaskReady(taskUUID, candidates, null);
-		}
-		ConnectorExecutor.executeConnectors(activityDef, internalExecution, HookDefinition.Event.taskOnReady);
-	}
+    if (userId != null) {
+      EnvTool.getRecorder().recordTaskReady(taskUUID, null, userId);
+    } else {
+      EnvTool.getRecorder().recordTaskReady(taskUUID, candidates, null);
+    }
+    ConnectorExecutor.executeConnectors(activityDef, internalExecution, HookDefinition.Event.taskOnReady);
+  }
 
-	protected static Performer getPerformer(final ActivityDefinition activity, final ProcessDefinition processDef, String performer) {
-		ParticipantDefinition participant = null;
-		if (processDef.getParticipants() != null) {
-			for (final ParticipantDefinition p : processDef.getParticipants()) {
-				if (p.getName().equals(performer)) {
-					participant = p;
-					break;
-				}
-			}
-		}
-		if (participant == null) {
-			throw new BonitaRuntimeException("Wrong performer: " + performer
-					+ ". No participant is defined within the process with processDefinitionUUID: " + performer);
-		}
-		return new Performer(performer, participant.getRoleMapper(), activity.getFilter());
-	}
+  protected static Performer getPerformer(final ActivityDefinition activity, final ProcessDefinition processDef,
+      final String performer) {
+    ParticipantDefinition participant = null;
+    if (processDef.getParticipants() != null) {
+      for (final ParticipantDefinition p : processDef.getParticipants()) {
+        if (p.getName().equals(performer)) {
+          participant = p;
+          break;
+        }
+      }
+    }
+    if (participant == null) {
+      throw new BonitaRuntimeException("Wrong performer: " + performer
+          + ". No participant is defined within the process with processDefinitionUUID: " + performer);
+    }
+    return new Performer(performer, participant.getRoleMapper(), activity.getFilter());
+  }
 
-	private static Set<Performer> getPerformers(ActivityDefinition activityDefinition) {
-		Set<String> performers = activityDefinition.getPerformers();
-		Set<Performer> result = null;
-		if (!performers.isEmpty()) {
-			ProcessDefinition processDef = EnvTool.getJournalQueriers().getProcess(activityDefinition.getProcessDefinitionUUID());
-			result = new HashSet<Performer>();
-			for (String performer : performers) {
-				result.add(getPerformer(activityDefinition, processDef, performer));
-			}
-		}
-		return result;
-	}
+  private static Set<Performer> getPerformers(final ActivityDefinition activityDefinition) {
+    final Set<String> performers = activityDefinition.getPerformers();
+    Set<Performer> result = null;
+    if (!performers.isEmpty()) {
+      final ProcessDefinition processDef = EnvTool.getJournalQueriers().getProcess(
+          activityDefinition.getProcessDefinitionUUID());
+      result = new HashSet<Performer>();
+      for (final String performer : performers) {
+        result.add(getPerformer(activityDefinition, processDef, performer));
+      }
+    }
+    return result;
+  }
 
-	private static class Performer {
-		protected String name;
-		protected RoleMapperDefinition roleMapper;
-		protected FilterDefinition filter;
+  private static class Performer {
+    protected String name;
+    protected RoleMapperDefinition roleMapper;
+    protected FilterDefinition filter;
 
-		public Performer(final String name, final RoleMapperDefinition roleMapper, final FilterDefinition filter) {
-			super();
-			this.name = name;
-			this.roleMapper = roleMapper;
-			this.filter = filter;
-		}
+    public Performer(final String name, final RoleMapperDefinition roleMapper, final FilterDefinition filter) {
+      super();
+      this.name = name;
+      this.roleMapper = roleMapper;
+      this.filter = filter;
+    }
 
-		public RoleMapperDefinition getRoleMapperDefinition() {
-			return roleMapper;
-		}
+    public RoleMapperDefinition getRoleMapperDefinition() {
+      return roleMapper;
+    }
 
-		public FilterDefinition getFilterDefinition() {
-			return filter;
-		}
+    public FilterDefinition getFilterDefinition() {
+      return filter;
+    }
 
-		public String getName() {
-			return this.name;
-		}
+    public String getName() {
+      return this.name;
+    }
 
-		public boolean isHuman() {
-			return roleMapper == null && filter == null;
-		}
-	}
-	
-	public static void skip(final ActivityInstanceUUID taskUUID, Map<String, Object> variablesToUpdate) throws TaskNotFoundException, IllegalTaskStateException {
-		TaskInstance task = getTask(taskUUID);		
-		Execution internalExecution = getExecution(taskUUID);
+    public boolean isHuman() {
+      return roleMapper == null && filter == null;
+    }
+  }
+
+  public static void skip(final ActivityInstanceUUID taskUUID, final Map<String, Object> variablesToUpdate)
+      throws TaskNotFoundException, IllegalTaskStateException {
+    final TaskInstance task = getTask(taskUUID);
+    final Execution internalExecution = getExecution(taskUUID);
     ActivityManager.skip(internalExecution, task, variablesToUpdate);
-	}
+  }
 
 }

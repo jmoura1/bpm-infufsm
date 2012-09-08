@@ -80,4 +80,14 @@ public class ProcessIntegrationTest extends APITestCase {
     getManagementAPI().deleteProcess(process.getUUID());
   }
 
+  public void testDeployProcessWithAVersionGreaterThanTen() throws Exception {
+    ProcessDefinition process = ProcessBuilder.createProcess("process", "9.4").done();
+    ProcessDefinition newProcess = ProcessBuilder.createProcess("process", "10.0").done();
+    ProcessDefinition definition = getManagementAPI().deploy(getBusinessArchive(process));
+    ProcessDefinition newDefinition = getManagementAPI().deploy(getBusinessArchive(newProcess));
+
+    getManagementAPI().deleteProcess(definition.getUUID());
+    getManagementAPI().deleteProcess(newDefinition.getUUID());
+  }
+
 }

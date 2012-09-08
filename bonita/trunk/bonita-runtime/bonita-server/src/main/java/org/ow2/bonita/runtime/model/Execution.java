@@ -33,8 +33,11 @@ import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.transaction.Synchronization;
+
 import org.ow2.bonita.definition.activity.ConnectorExecutor;
 import org.ow2.bonita.definition.activity.ExternalActivity;
+import org.ow2.bonita.env.Environment;
 import org.ow2.bonita.facade.def.InternalActivityDefinition;
 import org.ow2.bonita.facade.def.InternalProcessDefinition;
 import org.ow2.bonita.facade.def.element.HookDefinition;
@@ -47,6 +50,7 @@ import org.ow2.bonita.facade.uuid.ActivityInstanceUUID;
 import org.ow2.bonita.services.Querier;
 import org.ow2.bonita.services.Recorder;
 import org.ow2.bonita.util.BonitaRuntimeException;
+import org.ow2.bonita.util.Command;
 import org.ow2.bonita.util.EnvTool;
 import org.ow2.bonita.util.EqualsUtil;
 import org.ow2.bonita.util.ExceptionManager;
@@ -66,7 +70,8 @@ public class Execution implements Serializable {
   protected long id;
   protected int dbversion;
 
-  protected String activityInstanceId = "mainActivityInstance"; // used when this execution points a node in a multi instantiation
+  protected String activityInstanceId = "mainActivityInstance"; // used when this execution points a node in a multi
+                                                                // instantiation
   protected String iterationId;
   protected int waitingForActivityInstanceNb;
   protected int activityInstanceNb;
@@ -90,53 +95,46 @@ public class Execution implements Serializable {
   }
 
   /**
-   * between creation of
-   * a new process instance and the {@link Execution#beginWithOneStartNode() start} of
-   * that process instance. The motivation of this state is that variables can
-   * be set programmatically on the process instance so that they can be used
-   * during initializations of variables and timers
+   * between creation of a new process instance and the {@link Execution#beginWithOneStartNode() start} of that process
+   * instance. The motivation of this state is that variables can be set programmatically on the process instance so
+   * that they can be used during initializations of variables and timers
    */
   public static final String STATE_CREATED = "created";
   /**
-   * either executing or in a wait state waiting for a signal. This is the
-   * normal state of an execution and the initial state when creating a new
-   * execution. Make sure that comparisons are done with .equals and not with
-   * '==' because if executions are loaded from persistent storage, a new string
-   * is created instead of the constants.
+   * either executing or in a wait state waiting for a signal. This is the normal state of an execution and the initial
+   * state when creating a new execution. Make sure that comparisons are done with .equals and not with '==' because if
+   * executions are loaded from persistent storage, a new string is created instead of the constants.
    */
   public static final String STATE_ACTIVE = "active";
   /**
-   * parents with concurrent child executions are inactive. When an execution
-   * has concurrent child executions, it implies that this execution can't be
-   * active. For example, at a fork, the parent execution can wait inactively in
-   * the fork being till all the child executions are joined. Only leaves of the
-   * execution tree can be active. Make sure that comparisons are done with
-   * .equals and not with '==' because if executions are loaded from persistent
-   * storage, a new string is created instead of the constants.
+   * parents with concurrent child executions are inactive. When an execution has concurrent child executions, it
+   * implies that this execution can't be active. For example, at a fork, the parent execution can wait inactively in
+   * the fork being till all the child executions are joined. Only leaves of the execution tree can be active. Make sure
+   * that comparisons are done with .equals and not with '==' because if executions are loaded from persistent storage,
+   * a new string is created instead of the constants.
    */
   public static final String STATE_INACTIVE = "inactive";
   /**
-   * this execution has ended normally. Make sure that comparisons are done with
-   * .equals and not with '==' because if executions are loaded from persistent
-   * storage, a new string is created instead of the constants.
+   * this execution has ended normally. Make sure that comparisons are done with .equals and not with '==' because if
+   * executions are loaded from persistent storage, a new string is created instead of the constants.
    */
   public static final String STATE_ENDED = "ended";
   /**
-   * this execution was cancelled with the {@link #cancel()} method before
-   * normal execution ended. Make sure that comparisons are done with .equals
-   * and not with '==' because if executions are loaded from persistent storage,
-   * a new string is created instead of the constants.
+   * this execution was cancelled with the {@link #cancel()} method before normal execution ended. Make sure that
+   * comparisons are done with .equals and not with '==' because if executions are loaded from persistent storage, a new
+   * string is created instead of the constants.
    */
   public static final String STATE_CANCELLED = "cancelled";
   /** indicates that this execution is doing an asynchronous continuation. */
   public static final String STATE_ASYNC = "async";
 
-  //Mandatory for hibernate
-  protected Execution() {}
+  // Mandatory for hibernate
+  protected Execution() {
+  }
 
-  public Execution(final String name, final InternalProcessDefinition processDefinition, 
-      final InternalProcessInstance processInstance, final InternalActivityDefinition activity, 
-      final String state, final String iterationId) {
+  public Execution(final String name, final InternalProcessDefinition processDefinition,
+      final InternalProcessInstance processInstance, final InternalActivityDefinition activity, final String state,
+      final String iterationId) {
     this.processDefinition = processDefinition;
     this.instance = processInstance;
     this.name = name;
@@ -148,7 +146,7 @@ public class Execution implements Serializable {
   public void beginWithOneStartNode() {
     setIterationId(INITIAL_ITERATION_ID);
     if (!STATE_CREATED.equals(this.state)) {
-      String message = ExceptionManager.getInstance().getFullMessage("bp_EI_1 ", toString(), this.state);
+      final String message = ExceptionManager.getInstance().getFullMessage("bp_EI_1 ", toString(), this.state);
       throw new BonitaRuntimeException(message);
     }
     this.state = STATE_ACTIVE;
@@ -159,9 +157,9 @@ public class Execution implements Serializable {
 
   public void beginWithManyStartNodes(final ActivityDefinitionUUID activityUUID) {
     beginWithOneStartNode();
-    for (InternalActivityDefinition activity : getProcessDefinition().getInternalInitialActivities().values()) {
-      if ((activityUUID == null && !activity.isReceiveEvent()) || (activityUUID != null && activity.getUUID().equals(activityUUID))) {
-        Execution child = createChildExecution(activity.getName());
+    for (final InternalActivityDefinition activity : getProcessDefinition().getInternalInitialActivities().values()) {
+      if (activityUUID == null && !activity.isReceiveEvent() || activity.getUUID().equals(activityUUID)) {
+        final Execution child = createChildExecution(activity.getName());
         child.execute(activity);
       }
     }
@@ -176,7 +174,8 @@ public class Execution implements Serializable {
     }
 
     // create child execution
-    final Execution child = new Execution(name, getProcessDefinition(), getInstance(), getNode(), STATE_ACTIVE, getIterationId());
+    final Execution child = new Execution(name, getProcessDefinition(), getInstance(), getNode(), STATE_ACTIVE,
+        getIterationId());
     if (LOG.isLoggable(Level.FINE)) {
       LOG.fine("creating " + child);
     }
@@ -206,11 +205,10 @@ public class Execution implements Serializable {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("execution, name=").append(this.getName())
-    .append(", parent= ").append(this.getParent())
-    .append(", instance= ").append(this.getInstance())
-    .append(", activityInstanceUUID= ").append(getActivityInstanceUUID());
+    final StringBuilder builder = new StringBuilder();
+    builder.append("execution, name=").append(this.getName()).append(", parent= ").append(this.getParent())
+        .append(", instance= ").append(this.getInstance()).append(", activityInstanceUUID= ")
+        .append(getActivityInstanceUUID());
     return builder.toString();
   }
 
@@ -220,13 +218,12 @@ public class Execution implements Serializable {
 
   public void end(final String state) {
     if (state == null) {
-      String message = ExceptionManager.getInstance().getFullMessage("bp_EI_2");
+      final String message = ExceptionManager.getInstance().getFullMessage("bp_EI_2");
       throw new BonitaRuntimeException(message);
     }
-    if (state.equals(STATE_ACTIVE) || state.equals(STATE_CREATED)
-        || state.equals(STATE_INACTIVE)
+    if (state.equals(STATE_ACTIVE) || state.equals(STATE_CREATED) || state.equals(STATE_INACTIVE)
         || state.equals(STATE_ASYNC)) {
-      String message = ExceptionManager.getInstance().getFullMessage("bp_EI_3", state);
+      final String message = ExceptionManager.getInstance().getFullMessage("bp_EI_3", state);
       throw new BonitaRuntimeException(message);
     }
 
@@ -254,10 +251,11 @@ public class Execution implements Serializable {
       LOG.fine(this + " cancelled.");
     }
     if (this.getActivityInstanceUUID() != null) {
-      boolean isSubflow = this.getNode().isSubflow();
+      final boolean isSubflow = this.getNode().isSubflow();
       if (isSubflow) {
         final Querier journal = EnvTool.getJournalQueriers();
-        final InternalProcessInstance childInstance = journal.getProcessInstance(this.getActivityInstance().getSubflowProcessInstanceUUID());
+        final InternalProcessInstance childInstance = journal.getProcessInstance(this.getActivityInstance()
+            .getSubflowProcessInstanceUUID());
         childInstance.cancel();
       }
       EnvTool.getRecorder().recordBodyCancelled(this.getActivityInstance());
@@ -282,15 +280,16 @@ public class Execution implements Serializable {
     if (LOG.isLoggable(Level.FINE)) {
       LOG.fine(this + " aborted.");
     }
-    //if (this.getParent() == null) {
+    // if (this.getParent() == null) {
     ConnectorExecutor.executeConnectors(this, HookDefinition.Event.instanceOnAbort);
-    //}
+    // }
     if (this.getActivityInstanceUUID() != null) {
-      boolean isSubflow = this.getNode().isSubflow();
+      final boolean isSubflow = this.getNode().isSubflow();
       if (isSubflow && this.getActivityInstance().getSubflowProcessInstanceUUID() != null) {
-        //execution has been started only if getSubflowProcessInstanceUUID is not null
+        // execution has been started only if getSubflowProcessInstanceUUID is not null
         final Querier journal = EnvTool.getJournalQueriers();
-        final InternalProcessInstance childInstance = journal.getProcessInstance(this.getActivityInstance().getSubflowProcessInstanceUUID());
+        final InternalProcessInstance childInstance = journal.getProcessInstance(this.getActivityInstance()
+            .getSubflowProcessInstanceUUID());
         childInstance.getRootExecution().abort();
         final Recorder recorder = EnvTool.getRecorder();
 
@@ -314,22 +313,22 @@ public class Execution implements Serializable {
       if (LOG.isLoggable(Level.FINE)) {
         LOG.fine(toString() + " signals " + this.node);
       }
-      ExternalActivity externalActivity = node.getBehaviour();
+      final ExternalActivity externalActivity = node.getBehaviour();
       try {
         setPropagation(Propagation.UNSPECIFIED);
         externalActivity.signal(this, signal, parameters);
-      } catch (RuntimeException e) {
+      } catch (final RuntimeException e) {
         throw e;
-      } catch (Exception e) {
-        String message = ExceptionManager.getInstance().getFullMessage("bp_S_1", node, e.getMessage());
-        throw new BonitaRuntimeException(message,e);
+      } catch (final Exception e) {
+        final String message = ExceptionManager.getInstance().getFullMessage("bp_S_1", node, e.getMessage());
+        throw new BonitaRuntimeException(message, e);
       }
 
       if (getPropagation() == Propagation.UNSPECIFIED) {
         proceed();
       }
     } else {
-      String message = ExceptionManager.getInstance().getFullMessage("bp_EI_6");
+      final String message = ExceptionManager.getInstance().getFullMessage("bp_EI_6");
       throw new BonitaRuntimeException(message);
     }
   }
@@ -350,7 +349,7 @@ public class Execution implements Serializable {
 
   public void execute(final InternalActivityDefinition node) {
     if (node == null) {
-      String message = ExceptionManager.getInstance().getFullMessage("bp_EI_12");
+      final String message = ExceptionManager.getInstance().getFullMessage("bp_EI_12");
       throw new BonitaRuntimeException(message);
     }
     checkLock();
@@ -401,7 +400,7 @@ public class Execution implements Serializable {
   /** @see Execution#lock(String) */
   public void lock(final String state) {
     if (state == null) {
-      String message = ExceptionManager.getInstance().getFullMessage("bp_EI_22");
+      final String message = ExceptionManager.getInstance().getFullMessage("bp_EI_22");
       throw new BonitaRuntimeException(message);
     }
     checkLock();
@@ -414,7 +413,7 @@ public class Execution implements Serializable {
   /** @see Execution#unlock() */
   public void unlock() {
     if (STATE_ACTIVE.equals(this.state)) {
-      String message = ExceptionManager.getInstance().getFullMessage("bp_EI_23");
+      final String message = ExceptionManager.getInstance().getFullMessage("bp_EI_23");
       throw new BonitaRuntimeException(message);
     }
     if (LOG.isLoggable(Level.FINE)) {
@@ -427,7 +426,7 @@ public class Execution implements Serializable {
 
   protected void checkLock() {
     if (!STATE_ACTIVE.equals(this.state)) {
-      String message = ExceptionManager.getInstance().getFullMessage("bp_EI_24", toString(), this.state);
+      final String message = ExceptionManager.getInstance().getFullMessage("bp_EI_24", toString(), this.state);
       throw new BonitaRuntimeException(message);
     }
   }
@@ -475,7 +474,7 @@ public class Execution implements Serializable {
     return this.instance;
   }
 
-  public void setInstance(InternalProcessInstance instance) {
+  public void setInstance(final InternalProcessInstance instance) {
     this.instance = instance;
   }
 
@@ -502,7 +501,7 @@ public class Execution implements Serializable {
   public void setWaitingForActivityInstanceNb(final int waitingFor) {
     this.waitingForActivityInstanceNb = waitingFor;
   }
-  
+
   public int getActivityInstanceNb() {
     return this.activityInstanceNb;
   }
@@ -517,6 +516,7 @@ public class Execution implements Serializable {
     }
     return this.activityInstance.getUUID();
   }
+
   public InternalActivityInstance getActivityInstance() {
     return this.activityInstance;
   }
@@ -534,7 +534,7 @@ public class Execution implements Serializable {
   }
 
   public Execution getExecution(final String name) {
-    for (Execution exec : getExecutions()) {
+    for (final Execution exec : getExecutions()) {
       if (exec.getName().equals(name)) {
         return exec;
       }
@@ -545,18 +545,44 @@ public class Execution implements Serializable {
   public void removeExecution(final Execution child) {
     if (this.executions != null) {
       if (this.executions.remove(child)) {
-        if (this.state.equals(STATE_INACTIVE) && (this.executions.isEmpty())) {
+        if (this.state.equals(STATE_INACTIVE) && this.executions.isEmpty()) {
           if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("last child execution was removed; unlocking");
           }
           this.state = STATE_ACTIVE;
-        } if (LOG.isLoggable(Level.FINE)) {
+        }
+        if (LOG.isLoggable(Level.FINE)) {
           LOG.fine("removed " + child + " from " + this);
         }
       } else {
-        String message = ExceptionManager.getInstance().getFullMessage("bp_EI_29", child, this);
+        final String message = ExceptionManager.getInstance().getFullMessage("bp_EI_29", child, this);
         throw new BonitaRuntimeException(message);
       }
+    }
+    EnvTool.getTransaction().registerSynchronization(new Synchronization() {
+      @Override
+      public void beforeCompletion() {
+      }
+
+      @Override
+      public void afterCompletion(final int status) {
+        EnvTool.getCommandService().execute(new DeleteExecutionCommand(child.getId()));
+      }
+    });
+  }
+
+  private static class DeleteExecutionCommand implements Command<Void> {
+    private static final long serialVersionUID = 1L;
+    private final long executionId;
+
+    public DeleteExecutionCommand(final long executionId) {
+      this.executionId = executionId;
+    }
+
+    @Override
+    public Void execute(final Environment environment) throws Exception {
+      EnvTool.getJournal().removeExecution(executionId);
+      return null;
     }
   }
 
@@ -568,11 +594,9 @@ public class Execution implements Serializable {
   }
 
   /**
-   * by default this will use activity.getOutgoingTransitions to
-   * search for the outgoing transition, which includes a search over the parent
-   * chain of the current node. This method allows process languages to
-   * overwrite this default implementation of the transition lookup by
-   * transitionName.
+   * by default this will use activity.getOutgoingTransitions to search for the outgoing transition, which includes a
+   * search over the parent chain of the current node. This method allows process languages to overwrite this default
+   * implementation of the transition lookup by transitionName.
    */
   protected TransitionDefinition findTransition(final String transitionName) {
     return this.node.getOutgoingTransition(transitionName);
@@ -636,7 +660,7 @@ public class Execution implements Serializable {
     return processDefinition;
   }
 
-  private static TransitionDefinition getDefaultTransition(InternalActivityDefinition activity) {
+  private static TransitionDefinition getDefaultTransition(final InternalActivityDefinition activity) {
     if (activity.hasOutgoingTransitions()) {
       return activity.getOutgoingTransitions().iterator().next();
     }
@@ -647,7 +671,7 @@ public class Execution implements Serializable {
     return eventUUID;
   }
 
-  public void setEventUUID(String eventUUID) {
+  public void setEventUUID(final String eventUUID) {
     this.eventUUID = eventUUID;
   }
 

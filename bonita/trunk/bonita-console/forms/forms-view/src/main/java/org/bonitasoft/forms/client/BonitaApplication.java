@@ -150,7 +150,7 @@ public class BonitaApplication implements EntryPoint {
     	formID = urlUtils.getFormID();
     	
     	urlContext = urlUtils.getHashParameters();
-
+    	
         applicationMode = (String) urlContext.get(URLUtils.VIEW_MODE_PARAM);
         if (applicationMode == null || applicationMode.length() == 0) {
             applicationMode = URLUtils.FULL_FORM_APPLICATION_MODE;
@@ -206,7 +206,11 @@ public class BonitaApplication implements EntryPoint {
             });
             boolean isTodolist = Boolean.valueOf((String) urlContext.get(URLUtils.TODOLIST_PARAM));
             if (isTodolist) {
-                GetAnyTodolistFormHandler getAnyTodolistFormHandler = new GetAnyTodolistFormHandler();
+             	final String themeName = Window.Location.getParameter(URLUtils.THEME);
+            	if(themeName != null){
+            		urlContext.put(URLUtils.THEME, themeName);
+            	}
+                final GetAnyTodolistFormHandler getAnyTodolistFormHandler = new GetAnyTodolistFormHandler();
                 RpcFormsServices.getFormsService().getAnyTodoListForm(urlContext, getAnyTodolistFormHandler);
             } else {
                 createApplicationView(user);

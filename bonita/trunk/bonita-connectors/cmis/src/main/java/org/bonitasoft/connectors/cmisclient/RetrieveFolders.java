@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 BonitaSoft S.A.
+ * Copyright (C) 2011-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,106 +37,98 @@ import org.ow2.bonita.connector.core.ConnectorError;
  */
 public class RetrieveFolders extends AbstractCmisConnector {
 
-    private Map<String, String> conditions;
-    private List<Folder> cmisFolders = new ArrayList<Folder>();
-    private static final Log logger = LogFactory.getLog(RetrieveFolders.class.getClass());
+  private Map<String, String> conditions;
+  private final List<Folder> cmisFolders = new ArrayList<Folder>();
+  private static final Log LOGGER = LogFactory.getLog(RetrieveFolders.class.getClass());
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#executeConnector()
-     */
-    @Override
-    protected void executeConnector() throws Exception {
-        retrieveFoldersByConditions(username, password, url, binding_type, repositoryName, conditions);
-    }
+  @Override
+  protected void executeConnector() throws Exception {
+    retrieveFoldersByConditions(username, password, url, binding_type, repositoryName, conditions);
+  }
 
-    /**
-     * generate the whole query sentence.
-     * 
-     * @param conditions
-     * @return String
-     */
-    private String prepareQuery(final Map<String, String> conditions) {
+  /**
+   * generate the whole query sentence.
+   * 
+   * @param conditions
+   * @return String
+   */
+  private String prepareQuery(final Map<String, String> conditions) {
 
-        final String query = "SELECT * from cmis:folder";
-        final StringBuilder stringBuilder = new StringBuilder(query);
-        if (!conditions.isEmpty()) {
-            stringBuilder.append(" where");
-            int i = 0;
-            for (Entry<String, String> entry : conditions.entrySet()) {
-                if (i != 0) {
-                    stringBuilder.append(" and");
-                }
-                stringBuilder.append(" cmis:" + entry.getKey() + " = '" + entry.getValue() + "'");
-                i++;
-            }
+    final String query = "SELECT * from cmis:folder";
+    final StringBuilder stringBuilder = new StringBuilder(query);
+    if (!conditions.isEmpty()) {
+      stringBuilder.append(" where");
+      int i = 0;
+      for (final Entry<String, String> entry : conditions.entrySet()) {
+        if (i != 0) {
+          stringBuilder.append(" and");
         }
-        return stringBuilder.toString();
+        stringBuilder.append(" cmis:" + entry.getKey() + " = '" + entry.getValue() + "'");
+        i++;
+      }
+    }
+    return stringBuilder.toString();
+  }
+
+  @Override
+  protected List<ConnectorError> validateValues() {
+    return null;
+  }
+
+  /**
+   * retrieve CMIS folders by query.
+   * 
+   * @param username
+   * @param password
+   * @param url
+   * @param binding
+   * @param repositoryName
+   * @param conditions
+   * @return List<Folder>
+   */
+  protected List<Folder> retrieveFoldersByConditions(final String username, final String password, final String url,
+      final String binding, final String repositoryName, final Map<String, String> conditions) {
+    final Session s = createSessionByName(username, password, url, binding, repositoryName);
+    final String cmisSql = prepareQuery(conditions);
+    if (LOGGER.isInfoEnabled()) {
+      LOGGER.info("cmisSql = " + cmisSql);
+    }
+    final ItemIterable<QueryResult> items = s.query(cmisSql, true).getPage(100);
+    Folder cmisFolder = null;
+    for (final QueryResult item : items) {
+      final PropertyData<?> propertyData = item.getPropertyByQueryName("cmis:objectId");
+      cmisFolder = (Folder) s.getObject(s.createObjectId(propertyData.getFirstValue().toString()));
+      cmisFolders.add(cmisFolder);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#validateValues()
-     */
-    @Override
-    protected List<ConnectorError> validateValues() {
-        return null;
-    }
+    return cmisFolders;
+  }
 
-    /**
-     * retrieve CMIS folders by query.
-     * 
-     * @param username
-     * @param password
-     * @param url
-     * @param binding
-     * @param repositoryName
-     * @param conditions
-     * @return List<Folder>
-     */
-    protected List<Folder> retrieveFoldersByConditions(final String username, final String password, final String url, final String binding, final String repositoryName, final Map<String, String> conditions) {
-        final Session s = createSessionByName(username, password, url, binding, repositoryName);
-        final String cmisSql = prepareQuery(conditions);
-        if (logger.isInfoEnabled())
-            logger.info("cmisSql = " + cmisSql);
-        ItemIterable<QueryResult> items = s.query(cmisSql, true).getPage(100);
-        Folder cmisFolder = null;
-        for (QueryResult item : items) {
-            PropertyData<?> propertyData = item.getPropertyByQueryName("cmis:objectId");
-            cmisFolder = (Folder) s.getObject(s.createObjectId(propertyData.getFirstValue().toString()));
-            cmisFolders.add(cmisFolder);
-        }
+  /**
+   * set conditions
+   * 
+   * @param conditions
+   */
+  public void setConditions(final Map<String, String> conditions) {
+    this.conditions = conditions;
+  }
 
-        return cmisFolders;
-    }
+  /**
+   * get cmis folders
+   * 
+   * @return List<Folder>
+   */
+  public List<Folder> getCmisFolders() {
+    return cmisFolders;
+  }
 
-    /**
-     * set conditions
-     * 
-     * @param conditions
-     */
-    public void setConditions(final Map<String, String> conditions) {
-        this.conditions = conditions;
-    }
-
-    /**
-     * get cmis folders
-     * 
-     * @return List<Folder>
-     */
-    public List<Folder> getCmisFolders() {
-        return cmisFolders;
-    }
-
-    /**
-     * set the condition parameters
-     * 
-     * @param parameters the parameters
-     */
-    public void setConditions(final List<List<Object>> conditions) {
-        setConditions(bonitaListToMap(conditions, String.class, String.class));
-    }
+  /**
+   * set the condition parameters
+   * 
+   * @param parameters the parameters
+   */
+  public void setConditions(final List<List<Object>> conditions) {
+    setConditions(bonitaListToMap(conditions, String.class, String.class));
+  }
 
 }

@@ -1,0 +1,15 @@
+<ehcache>
+
+  <!-- nothing is stored to disk but ehcache generate a NPE if not specified -->
+  <diskStore path="target/bonita-cache/core"/>
+
+  <defaultCache
+  	maxElementsInMemory="10000"
+    eternal="false"
+    timeToIdleSeconds="120"
+    timeToLiveSeconds="120"
+    overflowToDisk="false"
+    memoryStoreEvictionPolicy="LRU"
+  />
+
+</ehcache>

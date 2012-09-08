@@ -75,6 +75,7 @@ public class UnZIPUtil {
                         dest.write(data, 0, count);
                         dest.flush();
                     }
+                    fos.close();
                 }
             }
         } catch (final Exception e) {

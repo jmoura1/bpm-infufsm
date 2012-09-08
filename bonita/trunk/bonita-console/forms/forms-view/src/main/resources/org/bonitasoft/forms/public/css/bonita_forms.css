@@ -97,6 +97,23 @@ div#loading {
 	width: 85%;
 }
 
+.bonita_form_field_left_no_width {
+	text-align: right;
+}
+
+.bonita_form_field_right_no_width {
+	margin-left: 1%;
+	text-align: left;
+}
+
+.bonita_form_field_top_no_width {
+	text-align: left;
+}
+
+.bonita_form_field_bottom_no_width {
+	text-align: left;
+}
+
 .bonita_form_image {
 	display: block;
 	margin-left: auto;

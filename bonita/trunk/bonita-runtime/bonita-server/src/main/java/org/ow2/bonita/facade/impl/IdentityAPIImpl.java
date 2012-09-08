@@ -55,20 +55,21 @@ import org.ow2.bonita.util.Misc;
 
 /**
  * @author Anthony Birembaut, Matthieu Chaffotte
- *
+ * 
  */
 public class IdentityAPIImpl implements IdentityAPI {
 
-  private String queryList;
+  private final String queryList;
 
   protected IdentityAPIImpl(final String queryList) {
-  	this.queryList = queryList;
+    this.queryList = queryList;
   }
 
   private String getQueryList() {
-  	return this.queryList;
+    return this.queryList;
   }
 
+  @Override
   public Role addRole(final String name) throws RoleAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(name);
     final IdentityService identityService = EnvTool.getIdentityService();
@@ -81,7 +82,9 @@ public class IdentityAPIImpl implements IdentityAPI {
     return role;
   }
 
-  public Role addRole(final String name, final String label, final String description) throws RoleAlreadyExistsException {
+  @Override
+  public Role addRole(final String name, final String label, final String description)
+      throws RoleAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(name);
     final IdentityService identityService = EnvTool.getIdentityService();
     RoleImpl role = identityService.findRoleByName(name);
@@ -95,11 +98,13 @@ public class IdentityAPIImpl implements IdentityAPI {
     return role;
   }
 
-  public Role importRole(final String uuid, final String name, final String label, final String description) throws RoleAlreadyExistsException {
+  @Override
+  public Role importRole(final String uuid, final String name, final String label, final String description)
+      throws RoleAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(name);
     final IdentityService identityService = EnvTool.getIdentityService();
     Role role = identityService.getRole(uuid);
-    if(role != null) {
+    if (role != null) {
       throw new RoleAlreadyExistsException("bai_IAPII_1", uuid);
     }
     role = identityService.findRoleByName(name);
@@ -113,8 +118,10 @@ public class IdentityAPIImpl implements IdentityAPI {
     return role;
   }
 
+  @Override
   @Deprecated
-  public void addRoleToUser(final String roleName, final String username) throws UserNotFoundException, RoleNotFoundException {
+  public void addRoleToUser(final String roleName, final String username) throws UserNotFoundException,
+      RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(roleName, username);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.findUserByUsername(username);
@@ -128,7 +135,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
     final RoleImpl role = identityService.findRoleByName(roleName);
     if (role == null || defaultGroup == null) {
-      throw new RoleNotFoundException("bai_IAPII_3", roleName + IdentityAPI.MEMBERSHIP_SEPARATOR + IdentityAPI.GROUP_PATH_SEPARATOR + IdentityAPI.DEFAULT_GROUP_NAME);
+      throw new RoleNotFoundException("bai_IAPII_3", roleName + IdentityAPI.MEMBERSHIP_SEPARATOR
+          + IdentityAPI.GROUP_PATH_SEPARATOR + IdentityAPI.DEFAULT_GROUP_NAME);
     }
     MembershipImpl membership = identityService.findMembershipByRoleAndGroup(role.getUUID(), defaultGroup.getUUID());
     if (membership == null) {
@@ -140,8 +148,10 @@ public class IdentityAPIImpl implements IdentityAPI {
     identityService.addMembershipToUser(user, membership);
   }
 
+  @Override
   @Deprecated
-  public void setUserRoles(final String username, final Set<String> roleNames) throws UserNotFoundException, RoleNotFoundException {
+  public void setUserRoles(final String username, final Set<String> roleNames) throws UserNotFoundException,
+      RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(username);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.findUserByUsername(username);
@@ -154,26 +164,29 @@ public class IdentityAPIImpl implements IdentityAPI {
       defaultGroup = groups.iterator().next();
     }
     final Set<MembershipImpl> memberships = new HashSet<MembershipImpl>();
-    if (roleNames != null){
-			for (String roleName : roleNames) {
-			  final RoleImpl role = identityService.findRoleByName(roleName);
-			  if (role == null || defaultGroup == null) {
-			    throw new RoleNotFoundException("bai_IAPII_3", roleName + IdentityAPI.MEMBERSHIP_SEPARATOR + IdentityAPI.GROUP_PATH_SEPARATOR + IdentityAPI.DEFAULT_GROUP_NAME);
-			  }
-			  MembershipImpl membership = identityService.findMembershipByRoleAndGroup(role.getUUID(), defaultGroup.getUUID());
-			  if (membership == null) {
-			    membership = new MembershipImpl();
-			    membership.setGroup(defaultGroup);
-			    membership.setRole(role);
-			    identityService.addMembership(membership);
-			  }
-			  memberships.add(membership);
-			}
+    if (roleNames != null) {
+      for (final String roleName : roleNames) {
+        final RoleImpl role = identityService.findRoleByName(roleName);
+        if (role == null || defaultGroup == null) {
+          throw new RoleNotFoundException("bai_IAPII_3", roleName + IdentityAPI.MEMBERSHIP_SEPARATOR
+              + IdentityAPI.GROUP_PATH_SEPARATOR + IdentityAPI.DEFAULT_GROUP_NAME);
+        }
+        MembershipImpl membership = identityService
+            .findMembershipByRoleAndGroup(role.getUUID(), defaultGroup.getUUID());
+        if (membership == null) {
+          membership = new MembershipImpl();
+          membership.setGroup(defaultGroup);
+          membership.setRole(role);
+          identityService.addMembership(membership);
+        }
+        memberships.add(membership);
+      }
     }
 
     identityService.setUserMemberships(user, memberships);
   }
 
+  @Override
   public User addUser(final String username, final String password) throws UserAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(username, password);
     final IdentityService identityService = EnvTool.getIdentityService();
@@ -186,8 +199,10 @@ public class IdentityAPIImpl implements IdentityAPI {
     return user;
   }
 
+  @Override
   @Deprecated
-  public User addUser(final String username, final String password, final String firstName, final String lastName, final String email) throws UserAlreadyExistsException {
+  public User addUser(final String username, final String password, final String firstName, final String lastName,
+      final String email) throws UserAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(username, password);
     final IdentityService identityService = EnvTool.getIdentityService();
     UserImpl user = identityService.findUserByUsername(username);
@@ -202,6 +217,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     return user;
   }
 
+  @Override
   @Deprecated
   public Set<Role> getRoles() {
     final IdentityService identityService = EnvTool.getIdentityService();
@@ -215,6 +231,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
+  @Override
   @Deprecated
   public Set<User> getUsers() {
     final IdentityService identityService = EnvTool.getIdentityService();
@@ -228,6 +245,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
+  @Override
   @Deprecated
   public Role getRole(final String name) throws RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(name);
@@ -239,6 +257,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new RoleImpl(role);
   }
 
+  @Override
   @Deprecated
   public User getUser(final String username) throws UserNotFoundException {
     FacadeUtil.checkArgsNotNull(username);
@@ -250,6 +269,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new UserImpl(user);
   }
 
+  @Override
   @Deprecated
   public void removeRole(final String name) throws RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(name);
@@ -261,9 +281,9 @@ public class IdentityAPIImpl implements IdentityAPI {
     final Set<MembershipImpl> memberships = identityService.getMembershipsByRole(role.getUUID());
     if (memberships != null) {
       final Set<String> membershipUUIDs = new HashSet<String>();
-      for (MembershipImpl membership : memberships) {
+      for (final MembershipImpl membership : memberships) {
         final List<UserImpl> usersInMembership = identityService.getUsersByMembership(membership.getUUID());
-        for (UserImpl user : usersInMembership) {
+        for (final UserImpl user : usersInMembership) {
           identityService.removeMembershipFromUser(user, membership);
         }
         identityService.deleteMembership(membership);
@@ -278,6 +298,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     removeRolesFromRules(roleUUIDs);
   }
 
+  @Override
   @Deprecated
   public void removeUser(final String username) throws UserNotFoundException {
     FacadeUtil.checkArgsNotNull(username);
@@ -287,11 +308,11 @@ public class IdentityAPIImpl implements IdentityAPI {
       throw new UserNotFoundException("bai_IAPII_2", username);
     }
     final List<UserImpl> usersOfManager = identityService.getUsersByManager(user.getUUID());
-    for (UserImpl userOfManager : usersOfManager) {
+    for (final UserImpl userOfManager : usersOfManager) {
       userOfManager.setManagerUUID(null);
     }
     final List<UserImpl> delegeesUsers = identityService.getUsersByDelegee(user.getUUID());
-    for (UserImpl delegeesUser : delegeesUsers) {
+    for (final UserImpl delegeesUser : delegeesUsers) {
       delegeesUser.setDelegeeUUID(null);
     }
     identityService.deleteUser(user);
@@ -301,8 +322,10 @@ public class IdentityAPIImpl implements IdentityAPI {
     removeUsersFromRules(userUUIDs);
   }
 
+  @Override
   @Deprecated
-  public void removeRoleFromUser(final String roleName, final String username) throws UserNotFoundException, RoleNotFoundException {
+  public void removeRoleFromUser(final String roleName, final String username) throws UserNotFoundException,
+      RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(roleName, username);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.findUserByUsername(username);
@@ -316,14 +339,17 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
     final RoleImpl role = identityService.findRoleByName(roleName);
     if (role == null || defaultGroup == null) {
-      throw new RoleNotFoundException("bai_IAPII_3", roleName + IdentityAPI.MEMBERSHIP_SEPARATOR + IdentityAPI.GROUP_PATH_SEPARATOR + IdentityAPI.DEFAULT_GROUP_NAME);
+      throw new RoleNotFoundException("bai_IAPII_3", roleName + IdentityAPI.MEMBERSHIP_SEPARATOR
+          + IdentityAPI.GROUP_PATH_SEPARATOR + IdentityAPI.DEFAULT_GROUP_NAME);
     }
-    final MembershipImpl membership = identityService.findMembershipByRoleAndGroup(role.getUUID(), defaultGroup.getUUID());
+    final MembershipImpl membership = identityService.findMembershipByRoleAndGroup(role.getUUID(),
+        defaultGroup.getUUID());
     if (membership != null) {
       identityService.removeMembershipFromUser(user, membership);
     }
   }
 
+  @Override
   @Deprecated
   public Set<Role> getUserRoles(final String username) throws UserNotFoundException {
     FacadeUtil.checkArgsNotNull(username);
@@ -334,7 +360,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
     final Set<Role> roles = new HashSet<Role>();
     final Set<Membership> memberships = user.getMemberships();
-    for (Membership membership : memberships) {
+    for (final Membership membership : memberships) {
       if (IdentityAPI.DEFAULT_GROUP_NAME.equals(membership.getGroup().getName())) {
         roles.add(new RoleImpl((RoleImpl) membership.getRole()));
       }
@@ -342,6 +368,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     return roles;
   }
 
+  @Override
   @Deprecated
   public Set<User> getUsersInRole(final String name) throws RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(name);
@@ -353,14 +380,16 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
     final RoleImpl role = identityService.findRoleByName(name);
     if (role == null || defaultGroup == null) {
-      throw new RoleNotFoundException("bai_IAPII_3", name + IdentityAPI.MEMBERSHIP_SEPARATOR + IdentityAPI.GROUP_PATH_SEPARATOR + IdentityAPI.DEFAULT_GROUP_NAME);
+      throw new RoleNotFoundException("bai_IAPII_3", name + IdentityAPI.MEMBERSHIP_SEPARATOR
+          + IdentityAPI.GROUP_PATH_SEPARATOR + IdentityAPI.DEFAULT_GROUP_NAME);
     }
-    final MembershipImpl membership = identityService.findMembershipByRoleAndGroup(role.getUUID(), defaultGroup.getUUID());
+    final MembershipImpl membership = identityService.findMembershipByRoleAndGroup(role.getUUID(),
+        defaultGroup.getUUID());
     final Set<User> users = new HashSet<User>();
     if (membership != null) {
       final List<UserImpl> usersInRole = identityService.getUsersByMembership(membership.getUUID());
       if (usersInRole != null) {
-        for (UserImpl user : usersInRole) {
+        for (final UserImpl user : usersInRole) {
           users.add(new UserImpl(user));
         }
       }
@@ -368,9 +397,10 @@ public class IdentityAPIImpl implements IdentityAPI {
     return users;
   }
 
+  @Override
   @Deprecated
-  public Role updateRole(final String oldName, final String name, final String label, final String description) throws 
-      RoleNotFoundException, RoleAlreadyExistsException {
+  public Role updateRole(final String oldName, final String name, final String label, final String description)
+      throws RoleNotFoundException, RoleAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(oldName, name);
     final IdentityService identityService = EnvTool.getIdentityService();
     final RoleImpl role = identityService.findRoleByName(oldName);
@@ -387,9 +417,11 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new RoleImpl(role);
   }
 
+  @Override
   @Deprecated
-  public User updateUser(final String oldUsername, final String username, final String password, final String firstName, final String lastName,
-      final String email) throws UserNotFoundException, UserAlreadyExistsException {
+  public User updateUser(final String oldUsername, final String username, final String password,
+      final String firstName, final String lastName, final String email) throws UserNotFoundException,
+      UserAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(oldUsername, username);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.findUserByUsername(oldUsername);
@@ -408,6 +440,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new UserImpl(user);
   }
 
+  @Override
   public User updateUserPassword(final String userUUID, final String password) throws UserNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
@@ -419,11 +452,13 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new UserImpl(user);
   }
 
-  public Group addGroup(String name, String parentGroupUUID) throws GroupAlreadyExistsException, GroupNotFoundException {
+  @Override
+  public Group addGroup(final String name, final String parentGroupUUID) throws GroupAlreadyExistsException,
+      GroupNotFoundException {
     FacadeUtil.checkArgsNotNull(name);
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<GroupImpl> childrenGroups = identityService.getGroupChildren(parentGroupUUID);
-    for (GroupImpl childGroup : childrenGroups) {
+    for (final GroupImpl childGroup : childrenGroups) {
       if (name.equalsIgnoreCase(childGroup.getName())) {
         throw new GroupAlreadyExistsException("bai_IAPII_7", name);
       }
@@ -440,12 +475,13 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new GroupImpl(group);
   }
 
-  public Group addGroup(String name, String label, String description, String parentGroupUUID) throws 
-      GroupAlreadyExistsException, GroupNotFoundException {
+  @Override
+  public Group addGroup(final String name, final String label, final String description, final String parentGroupUUID)
+      throws GroupAlreadyExistsException, GroupNotFoundException {
     FacadeUtil.checkArgsNotNull(name);
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<GroupImpl> childrenGroups = identityService.getGroupChildren(parentGroupUUID);
-    for (GroupImpl childGroup : childrenGroups) {
+    for (final GroupImpl childGroup : childrenGroups) {
       if (name.equalsIgnoreCase(childGroup.getName())) {
         throw new GroupAlreadyExistsException("bai_IAPII_7", name);
       }
@@ -464,16 +500,17 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new GroupImpl(group);
   }
 
-  public Group importGroup(String uuid, String name, String label, String description, String parentGroupUUID)
-      throws GroupAlreadyExistsException, GroupNotFoundException {
+  @Override
+  public Group importGroup(final String uuid, final String name, final String label, final String description,
+      final String parentGroupUUID) throws GroupAlreadyExistsException, GroupNotFoundException {
     FacadeUtil.checkArgsNotNull(name);
     final IdentityService identityService = EnvTool.getIdentityService();
-    Group group = identityService.getGroup(uuid);
-    if(group != null) {
+    final Group group = identityService.getGroup(uuid);
+    if (group != null) {
       throw new GroupAlreadyExistsException("bai_IAPII_7", uuid);
     }
     final List<GroupImpl> childrenGroups = identityService.getGroupChildren(parentGroupUUID);
-    for (GroupImpl childGroup : childrenGroups) {
+    for (final GroupImpl childGroup : childrenGroups) {
       if (name.equalsIgnoreCase(childGroup.getName())) {
         throw new GroupAlreadyExistsException("bai_IAPII_7", name);
       }
@@ -492,8 +529,9 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new GroupImpl(groupToImport);
   }
 
-  public void addMembershipToUser(String userUUID, String membershipUUID) throws 
-      UserNotFoundException, MembershipNotFoundException {
+  @Override
+  public void addMembershipToUser(final String userUUID, final String membershipUUID) throws UserNotFoundException,
+      MembershipNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUID, membershipUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.getUser(userUUID);
@@ -507,15 +545,16 @@ public class IdentityAPIImpl implements IdentityAPI {
     identityService.addMembershipToUser(user, membership);
   }
 
-  public void addMembershipsToUser(String userUUID, Collection<String> membershipUUIDs) throws 
-      UserNotFoundException, MembershipNotFoundException {
+  @Override
+  public void addMembershipsToUser(final String userUUID, final Collection<String> membershipUUIDs)
+      throws UserNotFoundException, MembershipNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUID, membershipUUIDs);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.getUser(userUUID);
     if (user == null) {
       throw new UserNotFoundException("bai_IAPII_2", userUUID);
     }
-    for (String membershipUUID : membershipUUIDs) {
+    for (final String membershipUUID : membershipUUIDs) {
       final MembershipImpl membership = identityService.getMembership(membershipUUID);
       if (membership == null) {
         throw new MembershipNotFoundException("bai_IAPII_8", membershipUUID);
@@ -524,7 +563,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
   }
 
-  public ProfileMetadata addProfileMetadata(String name) throws MetadataAlreadyExistsException {
+  @Override
+  public ProfileMetadata addProfileMetadata(final String name) throws MetadataAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(name);
     final IdentityService identityService = EnvTool.getIdentityService();
     final ProfileMetadataImpl metadata = identityService.findProfileMetadataByName(name);
@@ -536,8 +576,9 @@ public class IdentityAPIImpl implements IdentityAPI {
     return profileMetadata;
   }
 
-  public ProfileMetadata addProfileMetadata(String name, String label) throws 
-      MetadataAlreadyExistsException {
+  @Override
+  public ProfileMetadata addProfileMetadata(final String name, final String label)
+      throws MetadataAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(name);
     final IdentityService identityService = EnvTool.getIdentityService();
     final ProfileMetadataImpl metadata = identityService.findProfileMetadataByName(name);
@@ -550,9 +591,10 @@ public class IdentityAPIImpl implements IdentityAPI {
     return profileMetadata;
   }
 
-  public User addUser(String username, String password, String firstName, String lastName, String title,
-      String jobTitle, String managerUserUUID, Map<String, String> profileMetadata) throws 
-      UserAlreadyExistsException, UserNotFoundException, MetadataNotFoundException {
+  @Override
+  public User addUser(final String username, final String password, final String firstName, final String lastName,
+      final String title, final String jobTitle, final String managerUserUUID, final Map<String, String> profileMetadata)
+      throws UserAlreadyExistsException, UserNotFoundException, MetadataNotFoundException {
     FacadeUtil.checkArgsNotNull(username, password);
     final IdentityService identityService = EnvTool.getIdentityService();
     UserImpl user = identityService.findUserByUsername(username);
@@ -572,10 +614,10 @@ public class IdentityAPIImpl implements IdentityAPI {
       user.setManagerUUID(managerUserUUID);
     }
     identityService.addUser(user);
-    
+
     if (profileMetadata != null) {
       final Map<ProfileMetadata, String> userMetadata = new HashMap<ProfileMetadata, String>();
-      for (Entry<String, String> profileMetadataEntry : profileMetadata.entrySet()) {
+      for (final Entry<String, String> profileMetadataEntry : profileMetadata.entrySet()) {
         final ProfileMetadataImpl metadata = identityService.findProfileMetadataByName(profileMetadataEntry.getKey());
         if (metadata == null) {
           throw new MetadataNotFoundException("bai_IAPII_11", profileMetadataEntry.getKey());
@@ -590,8 +632,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new UserImpl(user);
   }
 
-  public ProfileMetadata findProfileMetadataByName(String metadataName) throws 
-      MetadataNotFoundException {
+  @Override
+  public ProfileMetadata findProfileMetadataByName(final String metadataName) throws MetadataNotFoundException {
     FacadeUtil.checkArgsNotNull(metadataName);
     final IdentityService identityService = EnvTool.getIdentityService();
     final ProfileMetadataImpl metadata = identityService.findProfileMetadataByName(metadataName);
@@ -601,7 +643,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new ProfileMetadataImpl(metadata);
   }
 
-  public Role findRoleByName(String name) throws RoleNotFoundException {
+  @Override
+  public Role findRoleByName(final String name) throws RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(name);
     final IdentityService identityService = EnvTool.getIdentityService();
     final RoleImpl role = identityService.findRoleByName(name);
@@ -611,7 +654,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new RoleImpl(role);
   }
 
-  public User findUserByUserName(String username) throws UserNotFoundException {
+  @Override
+  public User findUserByUserName(final String username) throws UserNotFoundException {
     FacadeUtil.checkArgsNotNull(username);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.findUserByUsername(username);
@@ -621,6 +665,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new UserImpl(user);
   }
 
+  @Override
   public List<Group> getAllGroups() {
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<GroupImpl> groups = identityService.getAllGroups();
@@ -633,6 +678,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
+  @Override
   public List<ProfileMetadata> getAllProfileMetadata() {
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<ProfileMetadataImpl> profileMetadata = identityService.getAllProfileMetadata();
@@ -645,7 +691,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public List<ProfileMetadata> getProfileMetadata(int fromIndex, int numberOfMetadata) {
+  @Override
+  public List<ProfileMetadata> getProfileMetadata(final int fromIndex, final int numberOfMetadata) {
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<ProfileMetadataImpl> profileMetadata = identityService.getProfileMetadata(fromIndex, numberOfMetadata);
     final List<ProfileMetadata> result = new ArrayList<ProfileMetadata>();
@@ -657,6 +704,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
+  @Override
   public List<Role> getAllRoles() {
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<RoleImpl> roles = identityService.getAllRoles();
@@ -669,6 +717,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
+  @Override
   public List<User> getAllUsers() {
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<UserImpl> users = identityService.getAllUsers();
@@ -681,7 +730,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public List<User> getAllUsersInGroup(String groupUUID) throws GroupNotFoundException {
+  @Override
+  public List<User> getAllUsersInGroup(final String groupUUID) throws GroupNotFoundException {
     FacadeUtil.checkArgsNotNull(groupUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final GroupImpl group = identityService.getGroup(groupUUID);
@@ -698,7 +748,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public List<User> getAllUsersInMembership(String membershipUUID) throws MembershipNotFoundException {
+  @Override
+  public List<User> getAllUsersInMembership(final String membershipUUID) throws MembershipNotFoundException {
     FacadeUtil.checkArgsNotNull(membershipUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final MembershipImpl membership = identityService.getMembership(membershipUUID);
@@ -715,7 +766,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public List<User> getAllUsersInRole(String roleUUID) throws RoleNotFoundException {
+  @Override
+  public List<User> getAllUsersInRole(final String roleUUID) throws RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(roleUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final RoleImpl role = identityService.getRole(roleUUID);
@@ -732,8 +784,9 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public List<User> getAllUsersInRoleAndGroup(String roleUUID, String groupUUID) throws 
-      RoleNotFoundException, GroupNotFoundException {
+  @Override
+  public List<User> getAllUsersInRoleAndGroup(final String roleUUID, final String groupUUID)
+      throws RoleNotFoundException, GroupNotFoundException {
     FacadeUtil.checkArgsNotNull(roleUUID, groupUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final RoleImpl role = identityService.getRole(roleUUID);
@@ -755,7 +808,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public List<User> getUsersByManagerUUID(String managerUUID) throws UserNotFoundException {
+  @Override
+  public List<User> getUsersByManagerUUID(final String managerUUID) throws UserNotFoundException {
     FacadeUtil.checkArgsNotNull(managerUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl manager = identityService.getUser(managerUUID);
@@ -772,7 +826,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public List<Group> getChildrenGroupsByUUID(String groupUUID) {
+  @Override
+  public List<Group> getChildrenGroupsByUUID(final String groupUUID) {
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<GroupImpl> groups = identityService.getGroupChildren(groupUUID);
     final List<Group> result = new ArrayList<Group>();
@@ -784,7 +839,9 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public List<Group> getChildrenGroups(String groupUUID, int fromIndex, int numberOfGroups) throws GroupNotFoundException {
+  @Override
+  public List<Group> getChildrenGroups(final String groupUUID, final int fromIndex, final int numberOfGroups)
+      throws GroupNotFoundException {
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<GroupImpl> groups = identityService.getGroupChildren(groupUUID, fromIndex, numberOfGroups);
     final List<Group> result = new ArrayList<Group>();
@@ -796,11 +853,12 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public List<Group> getChildrenGroups(String groupUUID, int fromIndex,
-      int numberOfGroups, GroupCriterion pagingCriterion)
-      throws GroupNotFoundException {
+  @Override
+  public List<Group> getChildrenGroups(final String groupUUID, final int fromIndex, final int numberOfGroups,
+      final GroupCriterion pagingCriterion) throws GroupNotFoundException {
     final IdentityService identityService = EnvTool.getIdentityService();
-    final List<GroupImpl> groups = identityService.getGroupChildren(groupUUID, fromIndex, numberOfGroups, pagingCriterion);
+    final List<GroupImpl> groups = identityService.getGroupChildren(groupUUID, fromIndex, numberOfGroups,
+        pagingCriterion);
     final List<Group> result = new ArrayList<Group>();
     if (groups != null) {
       for (final GroupImpl group : groups) {
@@ -810,12 +868,14 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public int getNumberOfChildrenGroups(String groupUUID) throws GroupNotFoundException {
+  @Override
+  public int getNumberOfChildrenGroups(final String groupUUID) throws GroupNotFoundException {
     final IdentityService identityService = EnvTool.getIdentityService();
     return identityService.getNumberOfGroupChildren(groupUUID);
   }
 
-  public Group getGroupByUUID(String groupUUID) throws GroupNotFoundException {
+  @Override
+  public Group getGroupByUUID(final String groupUUID) throws GroupNotFoundException {
     FacadeUtil.checkArgsNotNull(groupUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final GroupImpl group = identityService.getGroup(groupUUID);
@@ -825,32 +885,34 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new GroupImpl(group);
   }
 
-  public List<Group> getGroupsByUUIDs(Collection<String> groupUUIDs) throws GroupNotFoundException {
+  @Override
+  public List<Group> getGroupsByUUIDs(final Collection<String> groupUUIDs) throws GroupNotFoundException {
     FacadeUtil.checkArgsNotNull(groupUUIDs);
-    List<Group> result = new ArrayList<Group>();
+    final List<Group> result = new ArrayList<Group>();
     final IdentityService identityService = EnvTool.getIdentityService();
     if (groupUUIDs.size() > 0) {
       final List<GroupImpl> groups = identityService.getGroups(groupUUIDs);
       if (groupUUIDs.size() != groups.size()) {
         // The request tries to get an unknown group.
         final Set<String> storedGroupUUIDs = new HashSet<String>();
-        for (Group group : groups) {
+        for (final Group group : groups) {
           storedGroupUUIDs.add(group.getUUID());
         }
-        for (String groupUUID : groupUUIDs) {
+        for (final String groupUUID : groupUUIDs) {
           if (!storedGroupUUIDs.contains(groupUUID)) {
             throw new GroupNotFoundException("bai_IAPII_12", groupUUID);
           }
         }
       }
-      for (GroupImpl group : groups) {
+      for (final GroupImpl group : groups) {
         result.add(new GroupImpl(group));
       }
     }
     return result;
   }
 
-  public List<Group> getGroups(int fromIndex, int numberOfGroups) {
+  @Override
+  public List<Group> getGroups(final int fromIndex, final int numberOfGroups) {
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<GroupImpl> groups = identityService.getGroups(fromIndex, numberOfGroups);
     final List<Group> result = new ArrayList<Group>();
@@ -862,8 +924,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public List<Group> getGroups(int fromIndex, int numberOfGroups,
-      GroupCriterion pagingCriterion) {
+  @Override
+  public List<Group> getGroups(final int fromIndex, final int numberOfGroups, final GroupCriterion pagingCriterion) {
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<GroupImpl> groups = identityService.getGroups(fromIndex, numberOfGroups, pagingCriterion);
     final List<Group> result = new ArrayList<Group>();
@@ -875,7 +937,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public Membership getMembershipByUUID(String membershipUUID) throws MembershipNotFoundException {
+  @Override
+  public Membership getMembershipByUUID(final String membershipUUID) throws MembershipNotFoundException {
     FacadeUtil.checkArgsNotNull(membershipUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final MembershipImpl membership = identityService.getMembership(membershipUUID);
@@ -885,33 +948,36 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new MembershipImpl(membership);
   }
 
-  public List<Membership> getMembershipsByUUIDs(Collection<String> membershipUUIDs) throws MembershipNotFoundException {
+  @Override
+  public List<Membership> getMembershipsByUUIDs(final Collection<String> membershipUUIDs)
+      throws MembershipNotFoundException {
     FacadeUtil.checkArgsNotNull(membershipUUIDs);
-    List<Membership> result = new ArrayList<Membership>();
+    final List<Membership> result = new ArrayList<Membership>();
     final IdentityService identityService = EnvTool.getIdentityService();
     if (membershipUUIDs.size() > 0) {
       final List<MembershipImpl> memberships = identityService.getMemberships(membershipUUIDs);
       if (membershipUUIDs.size() != memberships.size()) {
         // The request tries to get an unknown membership.
         final Set<String> storedMembershipUUIDs = new HashSet<String>();
-        for (Membership membership : memberships) {
+        for (final Membership membership : memberships) {
           storedMembershipUUIDs.add(membership.getUUID());
         }
-        for (String membershipUUID : membershipUUIDs) {
+        for (final String membershipUUID : membershipUUIDs) {
           if (!storedMembershipUUIDs.contains(membershipUUID)) {
             throw new MembershipNotFoundException("bai_IAPII_8", membershipUUID);
           }
         }
       }
-      for (MembershipImpl membership : memberships) {
+      for (final MembershipImpl membership : memberships) {
         result.add(new MembershipImpl(membership));
       }
     }
     return result;
   }
 
-  public Membership getMembershipForRoleAndGroup(String roleUUID, String groupUUID) throws 
-      RoleNotFoundException, GroupNotFoundException {
+  @Override
+  public Membership getMembershipForRoleAndGroup(final String roleUUID, final String groupUUID)
+      throws RoleNotFoundException, GroupNotFoundException {
     FacadeUtil.checkArgsNotNull(roleUUID, groupUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final RoleImpl role = identityService.getRole(roleUUID);
@@ -934,35 +1000,40 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
   }
 
+  @Override
   public int getNumberOfGroups() {
     final IdentityService identityService = EnvTool.getIdentityService();
     return identityService.getNumberOfGroups();
   }
 
+  @Override
   public int getNumberOfRoles() {
     final IdentityService identityService = EnvTool.getIdentityService();
     return identityService.getNumberOfRoles();
   }
 
+  @Override
   public int getNumberOfUsers() {
     final IdentityService identityService = EnvTool.getIdentityService();
     return identityService.getNumberOfUsers();
   }
 
-  public int getNumberOfUsersInGroup(String groupUUID) {
+  @Override
+  public int getNumberOfUsersInGroup(final String groupUUID) {
     FacadeUtil.checkArgsNotNull(groupUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     return identityService.getNumberOfUsersByGroup(groupUUID);
   }
 
-  public int getNumberOfUsersInRole(String roleUUID) {
+  @Override
+  public int getNumberOfUsersInRole(final String roleUUID) {
     FacadeUtil.checkArgsNotNull(roleUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     return identityService.getNumberOfUsersByRole(roleUUID);
   }
 
-  public ProfileMetadata getProfileMetadataByUUID(String metadataUUID) throws 
-      MetadataNotFoundException {
+  @Override
+  public ProfileMetadata getProfileMetadataByUUID(final String metadataUUID) throws MetadataNotFoundException {
     FacadeUtil.checkArgsNotNull(metadataUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final ProfileMetadataImpl profileMetadata = identityService.getProfileMetadata(metadataUUID);
@@ -972,7 +1043,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new ProfileMetadataImpl(profileMetadata);
   }
 
-  public Role getRoleByUUID(String roleUUID) throws RoleNotFoundException {
+  @Override
+  public Role getRoleByUUID(final String roleUUID) throws RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(roleUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final RoleImpl role = identityService.getRole(roleUUID);
@@ -982,32 +1054,34 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new RoleImpl(role);
   }
 
-  public List<Role> getRolesByUUIDs(Collection<String> roleUUIDs) throws RoleNotFoundException {
+  @Override
+  public List<Role> getRolesByUUIDs(final Collection<String> roleUUIDs) throws RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(roleUUIDs);
-    List<Role> result = new ArrayList<Role>();
+    final List<Role> result = new ArrayList<Role>();
     final IdentityService identityService = EnvTool.getIdentityService();
     if (roleUUIDs.size() > 0) {
       final List<RoleImpl> roles = identityService.getRoles(roleUUIDs);
       if (roleUUIDs.size() != roles.size()) {
         // The request tries to get an unknown role.
         final Set<String> storedGroupUUIDs = new HashSet<String>();
-        for (Role group : roles) {
+        for (final Role group : roles) {
           storedGroupUUIDs.add(group.getUUID());
         }
-        for (String roleUUID : roleUUIDs) {
+        for (final String roleUUID : roleUUIDs) {
           if (!storedGroupUUIDs.contains(roleUUID)) {
             throw new RoleNotFoundException("bai_IAPII_3", roleUUID);
           }
         }
       }
-      for (RoleImpl role : roles) {
+      for (final RoleImpl role : roles) {
         result.add(new RoleImpl(role));
       }
     }
     return result;
   }
 
-  public List<Role> getRoles(int fromIndex, int numberOfRoles) {
+  @Override
+  public List<Role> getRoles(final int fromIndex, final int numberOfRoles) {
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<RoleImpl> roles = identityService.getRoles(fromIndex, numberOfRoles);
     final List<Role> result = new ArrayList<Role>();
@@ -1019,8 +1093,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public List<Role> getRoles(int fromIndex, int numberOfRoles,
-      RoleCriterion pagingCriterion) {
+  @Override
+  public List<Role> getRoles(final int fromIndex, final int numberOfRoles, final RoleCriterion pagingCriterion) {
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<RoleImpl> roles = identityService.getRoles(fromIndex, numberOfRoles, pagingCriterion);
     final List<Role> result = new ArrayList<Role>();
@@ -1032,7 +1106,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return result;
   }
 
-  public User getUserByUUID(String userUUID) throws UserNotFoundException {
+  @Override
+  public User getUserByUUID(final String userUUID) throws UserNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.getUser(userUUID);
@@ -1042,53 +1117,57 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new UserImpl(user);
   }
 
-  public List<User> getUsersByUUIDs(Collection<String> userUUIDs) throws UserNotFoundException {
+  @Override
+  public List<User> getUsersByUUIDs(final Collection<String> userUUIDs) throws UserNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUIDs);
-    List<User> result = new ArrayList<User>();
+    final List<User> result = new ArrayList<User>();
     final IdentityService identityService = EnvTool.getIdentityService();
     if (userUUIDs.size() > 0) {
       final List<UserImpl> users = identityService.getUsers(userUUIDs);
       if (userUUIDs.size() != users.size()) {
         // The request tries to get an unknown user.
         final Set<String> storedUserUUIDs = new HashSet<String>();
-        for (User user : users) {
+        for (final User user : users) {
           storedUserUUIDs.add(user.getUUID());
         }
-        for (String userUUID : userUUIDs) {
+        for (final String userUUID : userUUIDs) {
           if (!storedUserUUIDs.contains(userUUID)) {
             throw new UserNotFoundException("bai_IAPII_2", userUUID);
           }
         }
       }
-      for (UserImpl user : users) {
+      for (final UserImpl user : users) {
         result.add(new UserImpl(user));
       }
     }
     return result;
   }
 
-  public List<User> getUsers(int fromIndex, int numberOfUsers) {
+  @Override
+  public List<User> getUsers(final int fromIndex, final int numberOfUsers) {
     final IdentityService identityService = EnvTool.getIdentityService();
     final List<UserImpl> usersInGroup = identityService.getUsers(fromIndex, numberOfUsers);
     final List<User> users = new ArrayList<User>();
-    for (UserImpl userInGroup : usersInGroup) {
+    for (final UserImpl userInGroup : usersInGroup) {
       users.add(new UserImpl(userInGroup));
     }
     return users;
   }
-	public List<User> getUsers(int fromIndex, int numberOfUsers,
-			UserCriterion pagingCriterion) {
-	  final IdentityService identityService = EnvTool.getIdentityService();
+
+  @Override
+  public List<User> getUsers(final int fromIndex, final int numberOfUsers, final UserCriterion pagingCriterion) {
+    final IdentityService identityService = EnvTool.getIdentityService();
     final List<UserImpl> usersInGroup = identityService.getUsers(fromIndex, numberOfUsers, pagingCriterion);
     final List<User> users = new ArrayList<User>();
-    for (UserImpl userInGroup : usersInGroup) {
+    for (final UserImpl userInGroup : usersInGroup) {
       users.add(new UserImpl(userInGroup));
     }
     return users;
-	}
+  }
 
-  public List<User> getUsersInGroup(String groupUUID, int fromIndex, int numberOfUsers) throws 
-      GroupNotFoundException {
+  @Override
+  public List<User> getUsersInGroup(final String groupUUID, final int fromIndex, final int numberOfUsers)
+      throws GroupNotFoundException {
     FacadeUtil.checkArgsNotNull(groupUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final GroupImpl group = identityService.getGroup(groupUUID);
@@ -1097,31 +1176,33 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
     final List<UserImpl> usersInGroup = identityService.getUsersByGroup(groupUUID, fromIndex, numberOfUsers);
     final List<User> users = new ArrayList<User>();
-    for (UserImpl userInGroup : usersInGroup) {
+    for (final UserImpl userInGroup : usersInGroup) {
       users.add(new UserImpl(userInGroup));
     }
     return users;
   }
 
-  public List<User> getUsersInGroup(String groupUUID, int fromIndex,
-      int numberOfUsers, UserCriterion pagingCriterion)
-      throws GroupNotFoundException {
+  @Override
+  public List<User> getUsersInGroup(final String groupUUID, final int fromIndex, final int numberOfUsers,
+      final UserCriterion pagingCriterion) throws GroupNotFoundException {
     FacadeUtil.checkArgsNotNull(groupUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final GroupImpl group = identityService.getGroup(groupUUID);
     if (group == null) {
       throw new GroupNotFoundException("bai_IAPII_12", groupUUID);
     }
-    final List<UserImpl> usersInGroup = identityService.getUsersByGroup(groupUUID, fromIndex, numberOfUsers, pagingCriterion);
+    final List<UserImpl> usersInGroup = identityService.getUsersByGroup(groupUUID, fromIndex, numberOfUsers,
+        pagingCriterion);
     final List<User> users = new ArrayList<User>();
-    for (UserImpl userInGroup : usersInGroup) {
+    for (final UserImpl userInGroup : usersInGroup) {
       users.add(new UserImpl(userInGroup));
     }
     return users;
   }
 
-  public List<User> getUsersInRole(String roleUUID, int fromIndex, int numberOfUsers) throws 
-      RoleNotFoundException {
+  @Override
+  public List<User> getUsersInRole(final String roleUUID, final int fromIndex, final int numberOfUsers)
+      throws RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(roleUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final RoleImpl role = identityService.getRole(roleUUID);
@@ -1130,30 +1211,32 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
     final List<UserImpl> usersInGroup = identityService.getUsersByRole(roleUUID, fromIndex, numberOfUsers);
     final List<User> users = new ArrayList<User>();
-    for (UserImpl userInGroup : usersInGroup) {
+    for (final UserImpl userInGroup : usersInGroup) {
       users.add(new UserImpl(userInGroup));
     }
     return users;
   }
 
-  public List<User> getUsersInRole(String roleUUID, int fromIndex,
-      int numberOfUsers, UserCriterion pagingCriterion)
-      throws RoleNotFoundException {
+  @Override
+  public List<User> getUsersInRole(final String roleUUID, final int fromIndex, final int numberOfUsers,
+      final UserCriterion pagingCriterion) throws RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(roleUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final RoleImpl role = identityService.getRole(roleUUID);
     if (role == null) {
       throw new RoleNotFoundException("bai_IAPII_3", roleUUID);
     }
-    final List<UserImpl> usersInGroup = identityService.getUsersByRole(roleUUID, fromIndex, numberOfUsers, pagingCriterion);
+    final List<UserImpl> usersInGroup = identityService.getUsersByRole(roleUUID, fromIndex, numberOfUsers,
+        pagingCriterion);
     final List<User> users = new ArrayList<User>();
-    for (UserImpl userInGroup : usersInGroup) {
+    for (final UserImpl userInGroup : usersInGroup) {
       users.add(new UserImpl(userInGroup));
     }
     return users;
   }
 
-  public void removeGroupByUUID(String groupUUID) throws GroupNotFoundException {
+  @Override
+  public void removeGroupByUUID(final String groupUUID) throws GroupNotFoundException {
     FacadeUtil.checkArgsNotNull(groupUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final GroupImpl group = identityService.getGroup(groupUUID);
@@ -1162,7 +1245,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
     final List<GroupImpl> children = identityService.getGroupChildren(groupUUID);
     final List<String> childrenUUIDs = new ArrayList<String>();
-    for (GroupImpl child : children) {
+    for (final GroupImpl child : children) {
       childrenUUIDs.add(child.getUUID());
     }
     if (children != null && !children.isEmpty()) {
@@ -1171,9 +1254,9 @@ public class IdentityAPIImpl implements IdentityAPI {
     final Set<MembershipImpl> memberships = identityService.getMembershipsByGroup(group.getUUID());
     if (memberships != null) {
       final Set<String> membershipUUIDs = new HashSet<String>();
-      for (MembershipImpl membership : memberships) {
+      for (final MembershipImpl membership : memberships) {
         final List<UserImpl> usersInMembership = identityService.getUsersByMembership(membership.getUUID());
-        for (UserImpl user : usersInMembership) {
+        for (final UserImpl user : usersInMembership) {
           identityService.removeMembershipFromUser(user, membership);
         }
         identityService.deleteMembership(membership);
@@ -1188,8 +1271,9 @@ public class IdentityAPIImpl implements IdentityAPI {
     removeGroupsFromRules(groupUUIDs);
   }
 
-  public void removeMembershipFromUser(String userUUID, String membershipUUID) throws 
-      UserNotFoundException, MembershipNotFoundException {
+  @Override
+  public void removeMembershipFromUser(final String userUUID, final String membershipUUID)
+      throws UserNotFoundException, MembershipNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUID, membershipUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.getUser(userUUID);
@@ -1203,15 +1287,16 @@ public class IdentityAPIImpl implements IdentityAPI {
     identityService.removeMembershipFromUser(user, membership);
   }
 
-  public void removeMembershipsFromUser(String userUUID, Collection<String> membershipUUIDs) throws 
-      UserNotFoundException, MembershipNotFoundException {
+  @Override
+  public void removeMembershipsFromUser(final String userUUID, final Collection<String> membershipUUIDs)
+      throws UserNotFoundException, MembershipNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUID, membershipUUIDs);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.getUser(userUUID);
     if (user == null) {
       throw new UserNotFoundException("bai_IAPII_2", userUUID);
     }
-    for (String membershipUUID : membershipUUIDs) {
+    for (final String membershipUUID : membershipUUIDs) {
       final MembershipImpl membership = identityService.getMembership(membershipUUID);
       if (membership == null) {
         throw new MembershipNotFoundException("bai_IAPII_8", membershipUUID);
@@ -1220,7 +1305,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
   }
 
-  public void removeProfileMetadataByUUID(String profileMetadataUUID) throws MetadataNotFoundException {
+  @Override
+  public void removeProfileMetadataByUUID(final String profileMetadataUUID) throws MetadataNotFoundException {
     Misc.checkArgsNotNull(profileMetadataUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final ProfileMetadataImpl profileMetadata = identityService.getProfileMetadata(profileMetadataUUID);
@@ -1230,7 +1316,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     identityService.deleteProfileMetadata(profileMetadata);
   }
 
-  public void removeRoleByUUID(String roleUUID) throws RoleNotFoundException {
+  @Override
+  public void removeRoleByUUID(final String roleUUID) throws RoleNotFoundException {
     Misc.checkArgsNotNull(roleUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final RoleImpl role = identityService.getRole(roleUUID);
@@ -1244,7 +1331,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     removeRolesFromRules(roleUUIDs);
   }
 
-  public void removeUserByUUID(String userUUID) throws UserNotFoundException {
+  @Override
+  public void removeUserByUUID(final String userUUID) throws UserNotFoundException {
     Misc.checkArgsNotNull(userUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.getUser(userUUID);
@@ -1252,11 +1340,11 @@ public class IdentityAPIImpl implements IdentityAPI {
       throw new UserNotFoundException("bai_IAPII_2", userUUID);
     }
     final List<UserImpl> usersOfManager = identityService.getUsersByManager(userUUID);
-    for (UserImpl userOfManager : usersOfManager) {
+    for (final UserImpl userOfManager : usersOfManager) {
       userOfManager.setManagerUUID(null);
     }
     final List<UserImpl> delegeesUsers = identityService.getUsersByDelegee(userUUID);
-    for (UserImpl delegeesUser : delegeesUsers) {
+    for (final UserImpl delegeesUser : delegeesUsers) {
       delegeesUser.setDelegeeUUID(null);
     }
     identityService.deleteUser(user);
@@ -1266,8 +1354,9 @@ public class IdentityAPIImpl implements IdentityAPI {
     removeUsersFromRules(userUUIDs);
   }
 
-  public void setUserMemberships(String userUUID, Collection<String> membershipUUIDs) throws 
-      UserNotFoundException, MembershipNotFoundException {
+  @Override
+  public void setUserMemberships(final String userUUID, final Collection<String> membershipUUIDs)
+      throws UserNotFoundException, MembershipNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUID, membershipUUIDs);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.getUser(userUUID);
@@ -1275,7 +1364,7 @@ public class IdentityAPIImpl implements IdentityAPI {
       throw new UserNotFoundException("bai_IAPII_2", userUUID);
     }
     final Set<MembershipImpl> userMemberships = new HashSet<MembershipImpl>();
-    for (String membershipUUID : membershipUUIDs) {
+    for (final String membershipUUID : membershipUUIDs) {
       final MembershipImpl membership = identityService.getMembership(membershipUUID);
       if (membership == null) {
         throw new MembershipNotFoundException("bai_IAPII_8", membershipUUID);
@@ -1285,7 +1374,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     identityService.setUserMemberships(user, userMemberships);
   }
 
-  public boolean groupExists(String groupUUID) {
+  @Override
+  public boolean groupExists(final String groupUUID) {
     FacadeUtil.checkArgsNotNull(groupUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     if (identityService.getGroup(groupUUID) != null) {
@@ -1293,9 +1383,11 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
     return false;
   }
-  
-  public Group updateGroupByUUID(String groupUUID, String name, String label, String description, String parentGroupUUID)
-      throws GroupNotFoundException, GroupAlreadyExistsException {
+
+  @Override
+  public Group updateGroupByUUID(final String groupUUID, final String name, final String label,
+      final String description, final String parentGroupUUID) throws GroupNotFoundException,
+      GroupAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(groupUUID, name);
     final IdentityService identityService = EnvTool.getIdentityService();
     final GroupImpl group = identityService.getGroup(groupUUID);
@@ -1311,7 +1403,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
     if (!group.getName().equals(name)) {
       final List<GroupImpl> groupChildren = identityService.getGroupChildren(parentGroupUUID);
-      for (GroupImpl child : groupChildren) {
+      for (final GroupImpl child : groupChildren) {
         if (child.getName().equals(name)) {
           throw new GroupAlreadyExistsException("bai_IAPII_7", name);
         }
@@ -1325,8 +1417,9 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new GroupImpl(group);
   }
 
-  public ProfileMetadata updateProfileMetadataByUUID(String profileMetadataUUID, String name, String label)
-      throws MetadataNotFoundException, MetadataAlreadyExistsException {
+  @Override
+  public ProfileMetadata updateProfileMetadataByUUID(final String profileMetadataUUID, final String name,
+      final String label) throws MetadataNotFoundException, MetadataAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(profileMetadataUUID, name);
     final IdentityService identityService = EnvTool.getIdentityService();
     final ProfileMetadataImpl metadata = identityService.getProfileMetadata(profileMetadataUUID);
@@ -1342,8 +1435,9 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new ProfileMetadataImpl(metadata);
   }
 
-  public Role updateRoleByUUID(String roleUUID, String name, String label, String description) throws 
-      RoleNotFoundException, RoleAlreadyExistsException {
+  @Override
+  public Role updateRoleByUUID(final String roleUUID, final String name, final String label, final String description)
+      throws RoleNotFoundException, RoleAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(roleUUID, name);
     final IdentityService identityService = EnvTool.getIdentityService();
     final RoleImpl role = identityService.getRole(roleUUID);
@@ -1360,9 +1454,11 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new RoleImpl(role);
   }
 
-  public User updateUserByUUID(String userUUID, String username, String firstName, String lastName, String title,
-      String jobTitle, String managerUserUUID, Map<String, String> profileMetadata) throws 
-      UserNotFoundException, UserAlreadyExistsException, MetadataNotFoundException {
+  @Override
+  public User updateUserByUUID(final String userUUID, final String username, final String firstName,
+      final String lastName, final String title, final String jobTitle, final String managerUserUUID,
+      final Map<String, String> profileMetadata) throws UserNotFoundException, UserAlreadyExistsException,
+      MetadataNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUID, username);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.getUser(userUUID);
@@ -1386,7 +1482,7 @@ public class IdentityAPIImpl implements IdentityAPI {
     user.setManagerUUID(managerUserUUID);
     if (profileMetadata != null) {
       final Map<ProfileMetadata, String> userMetadata = new HashMap<ProfileMetadata, String>();
-      for (Entry<String, String> profileMetadataEntry : profileMetadata.entrySet()) {
+      for (final Entry<String, String> profileMetadataEntry : profileMetadata.entrySet()) {
         final ProfileMetadataImpl metadata = identityService.findProfileMetadataByName(profileMetadataEntry.getKey());
         if (metadata == null) {
           throw new MetadataNotFoundException("bai_IAPII_11", profileMetadataEntry.getKey());
@@ -1401,7 +1497,8 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new UserImpl(user);
   }
 
-  public void updateUserDelegee(String userUUID, String delegeeUserUUID) throws UserNotFoundException {
+  @Override
+  public void updateUserDelegee(final String userUUID, final String delegeeUserUUID) throws UserNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.getUser(userUUID);
@@ -1418,38 +1515,43 @@ public class IdentityAPIImpl implements IdentityAPI {
     identityService.updateUser(user);
   }
 
-  public void updateUserPersonalContactInfo(String userUUID, String email, String phoneNumber, String mobileNumber,
-      String faxNumber, String building, String room, String address, String zipCode, String city, String state,
-      String country, String website) throws UserNotFoundException {
+  @Override
+  public void updateUserPersonalContactInfo(final String userUUID, final String email, final String phoneNumber,
+      final String mobileNumber, final String faxNumber, final String building, final String room,
+      final String address, final String zipCode, final String city, final String state, final String country,
+      final String website) throws UserNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.getUser(userUUID);
     if (user == null) {
       throw new UserNotFoundException("bai_IAPII_2", userUUID);
     }
-    final ContactInfoImpl personalContactInfo = createContactInfo(email, phoneNumber, mobileNumber, faxNumber, building, room, address, zipCode, city, state, country, website);
+    final ContactInfoImpl personalContactInfo = createContactInfo(email, phoneNumber, mobileNumber, faxNumber,
+        building, room, address, zipCode, city, state, country, website);
     user.setPersonalContactInfo(personalContactInfo);
     identityService.updateUser(user);
   }
 
-
-  public void updateUserProfessionalContactInfo(String userUUID, String email, String phoneNumber, String mobileNumber,
-      String faxNumber, String building, String room, String address, String zipCode, String city, String state,
-      String country, String website) throws UserNotFoundException {
+  @Override
+  public void updateUserProfessionalContactInfo(final String userUUID, final String email, final String phoneNumber,
+      final String mobileNumber, final String faxNumber, final String building, final String room,
+      final String address, final String zipCode, final String city, final String state, final String country,
+      final String website) throws UserNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUID);
     final IdentityService identityService = EnvTool.getIdentityService();
     final UserImpl user = identityService.getUser(userUUID);
     if (user == null) {
       throw new UserNotFoundException("bai_IAPII_2", userUUID);
     }
-    final ContactInfoImpl professionalContactInfo = createContactInfo(email, phoneNumber, mobileNumber, faxNumber, building, room, address, zipCode, city, state, country, website);
+    final ContactInfoImpl professionalContactInfo = createContactInfo(email, phoneNumber, mobileNumber, faxNumber,
+        building, room, address, zipCode, city, state, country, website);
     user.setProfessionalContactInfo(professionalContactInfo);
     identityService.updateUser(user);
   }
 
-  private ContactInfoImpl createContactInfo(String email, String phoneNumber, String mobileNumber,
-      String faxNumber, String building, String room, String address, String zipCode, String city, String state,
-      String country, String website) {
+  private ContactInfoImpl createContactInfo(final String email, final String phoneNumber, final String mobileNumber,
+      final String faxNumber, final String building, final String room, final String address, final String zipCode,
+      final String city, final String state, final String country, final String website) {
     final ContactInfoImpl contactInfo = new ContactInfoImpl();
     contactInfo.setEmail(email);
     contactInfo.setPhoneNumber(phoneNumber);
@@ -1466,82 +1568,79 @@ public class IdentityAPIImpl implements IdentityAPI {
     return contactInfo;
   }
 
-  public void removeGroups(Collection<String> groupUUIDs) throws GroupNotFoundException {
+  @Override
+  public void removeGroups(final Collection<String> groupUUIDs) throws GroupNotFoundException {
     FacadeUtil.checkArgsNotNull(groupUUIDs);
     final IdentityService identityService = EnvTool.getIdentityService();
-    for (String groupUUID : groupUUIDs) {
+    for (final String groupUUID : groupUUIDs) {
       final GroupImpl group = identityService.getGroup(groupUUID);
-      if (group == null) {
-        throw new GroupNotFoundException("bai_IAPII_12", groupUUID);
-      }
-      final List<GroupImpl> children = identityService.getGroupChildren(groupUUID);
-      final List<String> childrenUUIDs = new ArrayList<String>();
-      for (GroupImpl child : children) {
-        childrenUUIDs.add(child.getUUID());
-      }
-      if (children != null && !children.isEmpty()) {
-        removeGroups(childrenUUIDs);
-      }
-      final Set<MembershipImpl> memberships = identityService.getMembershipsByGroup(group.getUUID());
-      if (memberships != null) {
-        Set<String> membershipUUIDs = new HashSet<String>();
-        for (MembershipImpl membership : memberships) {
+      if (group != null) {
+        final List<GroupImpl> children = identityService.getGroupChildren(groupUUID);
+        final List<String> childrenUUIDs = new ArrayList<String>();
+        for (final GroupImpl child : children) {
+          childrenUUIDs.add(child.getUUID());
+        }
+        if (!children.isEmpty()) {
+          removeGroups(childrenUUIDs);
+        }
+        final Set<MembershipImpl> memberships = identityService.getMembershipsByGroup(group.getUUID());
+        final Set<String> membershipUUIDs = new HashSet<String>();
+        for (final MembershipImpl membership : memberships) {
           final List<UserImpl> usersInMembership = identityService.getUsersByMembership(membership.getUUID());
-          for (UserImpl user : usersInMembership) {
+          for (final UserImpl user : usersInMembership) {
             identityService.removeMembershipFromUser(user, membership);
           }
           identityService.deleteMembership(membership);
           membershipUUIDs.add(membership.getUUID());
         }
         removeMembershipsFromRules(membershipUUIDs);
+        identityService.deleteGroup(group);
       }
-      identityService.deleteGroup(group);
     }
-
     removeGroupsFromRules(groupUUIDs);
   }
 
-  public void removeRoles(Collection<String> roleUUIDs) throws RoleNotFoundException {
+  @Override
+  public void removeRoles(final Collection<String> roleUUIDs) throws RoleNotFoundException {
     FacadeUtil.checkArgsNotNull(roleUUIDs);
     final IdentityService identityService = EnvTool.getIdentityService();
-    for (String roleUUID : roleUUIDs) {
+    for (final String roleUUID : roleUUIDs) {
       final RoleImpl role = identityService.getRole(roleUUID);
       if (role == null) {
         throw new RoleNotFoundException("bai_IAPII_3", roleUUID);
       }
       final Set<MembershipImpl> memberships = identityService.getMembershipsByRole(role.getUUID());
-      if (memberships != null) {
-        final Set<String> membershipUUIDs = new HashSet<String>();
-        for (MembershipImpl membership : memberships) {
-          final List<UserImpl> usersInMembership = identityService.getUsersByMembership(membership.getUUID());
-          for (UserImpl user : usersInMembership) {
-            identityService.removeMembershipFromUser(user, membership);
-          }
-          identityService.deleteMembership(membership);
-          membershipUUIDs.add(membership.getUUID());
+      final Set<String> membershipUUIDs = new HashSet<String>();
+      for (final MembershipImpl membership : memberships) {
+        final List<UserImpl> usersInMembership = identityService.getUsersByMembership(membership.getUUID());
+        for (final UserImpl user : usersInMembership) {
+          identityService.removeMembershipFromUser(user, membership);
         }
-        removeMembershipsFromRules(membershipUUIDs);
+        identityService.deleteMembership(membership);
+        membershipUUIDs.add(membership.getUUID());
       }
+      removeMembershipsFromRules(membershipUUIDs);
       identityService.deleteRole(role);
     }
 
     removeRolesFromRules(roleUUIDs);
   }
 
-  public void removeUsers(Collection<String> userUUIDs) throws UserNotFoundException {
+  @Override
+  public void removeUsers(final Collection<String> userUUIDs) throws UserNotFoundException {
     FacadeUtil.checkArgsNotNull(userUUIDs);
     final IdentityService identityService = EnvTool.getIdentityService();
-    for (String userUUID : userUUIDs) {
+    for (final String userUUID : userUUIDs) {
       final UserImpl user = identityService.getUser(userUUID);
       if (user == null) {
         throw new UserNotFoundException("bai_IAPII_2", userUUID);
       }
-      List<UserImpl> usersOfManager = identityService.getUsersByManager(userUUID);
-      for (UserImpl userOfManager : usersOfManager) {
+      final List<UserImpl> usersOfManager = identityService.getUsersByManager(userUUID);
+      for (final UserImpl userOfManager : usersOfManager) {
         userOfManager.setManagerUUID(null);
       }
-      List<UserImpl> delegeesUsers = identityService.getUsersByDelegee(userUUID);
-      for (UserImpl delegeesUser : delegeesUsers) {
+      final List<UserImpl> delegeesUsers = identityService.getUsersByDelegee(userUUID);
+      for (final UserImpl delegeesUser : delegeesUsers) {
         delegeesUser.setDelegeeUUID(null);
       }
       identityService.deleteUser(user);
@@ -1549,11 +1648,11 @@ public class IdentityAPIImpl implements IdentityAPI {
     removeUsersFromRules(userUUIDs);
   }
 
-  public void removeProfileMetadata(Collection<String> profileMetadataUUIDs) throws 
-      MetadataNotFoundException {
+  @Override
+  public void removeProfileMetadata(final Collection<String> profileMetadataUUIDs) throws MetadataNotFoundException {
     Misc.checkArgsNotNull(profileMetadataUUIDs);
     final IdentityService identityService = EnvTool.getIdentityService();
-    for (String profileMetadataUUID : profileMetadataUUIDs) {
+    for (final String profileMetadataUUID : profileMetadataUUIDs) {
       final ProfileMetadataImpl profileMetadata = identityService.getProfileMetadata(profileMetadataUUID);
       if (profileMetadata == null) {
         throw new MetadataNotFoundException("bai_IAPII_11", profileMetadataUUID);
@@ -1562,54 +1661,56 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
   }
 
+  @Override
   public int getNumberOfProfileMetadata() {
     final IdentityService identityService = EnvTool.getIdentityService();
     return identityService.getNumberOfProfileMetadata();
   }
 
-  private void removeMembershipsFromRules (Collection<String> membershipUUIDs) {
+  private void removeMembershipsFromRules(final Collection<String> membershipUUIDs) {
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
     final List<Rule> rules = privilegeService.getAllApplicableRules(null, null, null, membershipUUIDs, null);
-    for (Rule rule : rules) {
+    for (final Rule rule : rules) {
       ((RuleImpl) rule).removeMemberships(membershipUUIDs);
       privilegeService.updateRule(rule);
     }
   }
 
-  private void removeRolesFromRules (Collection<String> roleUUIDs) {
+  private void removeRolesFromRules(final Collection<String> roleUUIDs) {
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
     final List<Rule> rules = privilegeService.getAllApplicableRules(null, roleUUIDs, null, null, null);
-    for (Rule rule : rules) {
+    for (final Rule rule : rules) {
       ((RuleImpl) rule).removeRoles(roleUUIDs);
       privilegeService.updateRule(rule);
     }
   }
 
-  private void removeGroupsFromRules (Collection<String> groupUUIDs) {
+  private void removeGroupsFromRules(final Collection<String> groupUUIDs) {
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
     final List<Rule> rules = privilegeService.getAllApplicableRules(null, null, groupUUIDs, null, null);
-    for (Rule rule : rules) {
+    for (final Rule rule : rules) {
       ((RuleImpl) rule).removeGroups(groupUUIDs);
       privilegeService.updateRule(rule);
     }
   }
 
-  private void removeUsersFromRules (Collection<String> userUUIDs) {
+  private void removeUsersFromRules(final Collection<String> userUUIDs) {
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
-    for (String userUUID : userUUIDs) {
+    for (final String userUUID : userUUIDs) {
       final List<Rule> rules = privilegeService.getAllApplicableRules(userUUID, null, null, null, null);
       final Set<String> userUUIDCollection = new HashSet<String>();
       userUUIDCollection.add(userUUID);
-      for (Rule rule : rules) {
+      for (final Rule rule : rules) {
         ((RuleImpl) rule).removeUsers(userUUIDCollection);
         privilegeService.updateRule(rule);
       }
     }
   }
 
-  public User importUser(String uuid, String username, String passwordHash, String firstName, String lastName,
-      String title, String jobTitle, String managerUserUUID, Map<String, String> profileMetadata)
-      throws UserAlreadyExistsException, MetadataNotFoundException {
+  @Override
+  public User importUser(final String uuid, final String username, final String passwordHash, final String firstName,
+      final String lastName, final String title, final String jobTitle, final String managerUserUUID,
+      final Map<String, String> profileMetadata) throws UserAlreadyExistsException, MetadataNotFoundException {
     FacadeUtil.checkArgsNotNull(uuid, username, passwordHash);
     final IdentityService identityService = EnvTool.getIdentityService();
     UserImpl user = identityService.getUser(uuid);
@@ -1627,10 +1728,10 @@ public class IdentityAPIImpl implements IdentityAPI {
     userToImport.setTitle(title);
     userToImport.setManagerUUID(managerUserUUID);
     identityService.importUser(userToImport);
-    
+
     if (profileMetadata != null) {
       final Map<ProfileMetadata, String> userMetadata = new HashMap<ProfileMetadata, String>();
-      for (Entry<String, String> profileMetadataEntry : profileMetadata.entrySet()) {
+      for (final Entry<String, String> profileMetadataEntry : profileMetadata.entrySet()) {
         final ProfileMetadataImpl metadata = identityService.findProfileMetadataByName(profileMetadataEntry.getKey());
         if (metadata == null) {
           throw new MetadataNotFoundException("bai_IAPII_11", profileMetadataEntry.getKey());
@@ -1645,16 +1746,17 @@ public class IdentityAPIImpl implements IdentityAPI {
     return new UserImpl(userToImport);
   }
 
+  @Override
   public Group getGroupUsingPath(final List<String> path) {
     FacadeUtil.checkArgsNotNull(path);
     if (path.isEmpty()) {
       return null;
     }
-    String groupName = path.get(path.size() - 1);
+    final String groupName = path.get(path.size() - 1);
     final IdentityService identityService = EnvTool.getIdentityService();
-    Set<GroupImpl> possibleGroups = identityService.findGroupsByName(groupName);
+    final Set<GroupImpl> possibleGroups = identityService.findGroupsByName(groupName);
     GroupImpl group = null;
-    for (GroupImpl possibleGroup : possibleGroups) {
+    for (final GroupImpl possibleGroup : possibleGroups) {
       if (isAValidGroupPath(possibleGroup, path)) {
         group = possibleGroup;
         break;
@@ -1667,28 +1769,28 @@ public class IdentityAPIImpl implements IdentityAPI {
     }
   }
 
-  private boolean isAValidGroupPath(GroupImpl group, List<String> hierarchy) {
-    String groupPath = getGroupPath(group);
-    String expectedPath = getListPath(hierarchy);
+  private boolean isAValidGroupPath(final GroupImpl group, final List<String> hierarchy) {
+    final String groupPath = getGroupPath(group);
+    final String expectedPath = getListPath(hierarchy);
     return groupPath.equals(expectedPath);
   }
 
-  private String getListPath(List<String> hierarchy) {
-    StringBuilder builder = new StringBuilder();
-    for (String groupName : hierarchy) {
+  private String getListPath(final List<String> hierarchy) {
+    final StringBuilder builder = new StringBuilder();
+    for (final String groupName : hierarchy) {
       builder.append("/").append(groupName);
     }
     return builder.toString();
   }
 
   private String getGroupPath(final GroupImpl group) {
-    StringBuilder builder = new StringBuilder();
+    final StringBuilder builder = new StringBuilder();
     GroupImpl currentGroup = group;
     final IdentityService identityService = EnvTool.getIdentityService();
     while (currentGroup != null) {
       builder.insert(0, currentGroup.getName());
       builder.insert(0, "/");
-      Group parent = currentGroup.getParentGroup();
+      final Group parent = currentGroup.getParentGroup();
       if (parent != null) {
         currentGroup = identityService.getGroup(parent.getUUID());
       } else {

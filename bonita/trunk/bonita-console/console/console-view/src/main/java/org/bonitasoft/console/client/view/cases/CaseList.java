@@ -476,7 +476,7 @@ public class CaseList extends AbstractItemList<CaseUUID, CaseItem, CaseFilter> {
     if (!myCaseDescriptionWidgets.containsKey(aCase) && (myCaseConfiguration == null || (myCaseConfiguration != null && myCaseConfiguration.getColumnIndex(Columns.DESCRIPTION_COLUMN) > -1))) {
       myCaseDescriptionWidgets.put(aCase, new CaseDescriptionWidget(aCase, myProcessDataSource));
     }
-    if (!myCaseUpdateDateAndTime.containsKey(aCase) && (myCaseConfiguration == null || (myCaseConfiguration != null && myCaseConfiguration.getColumnIndex(Columns.UPDATE_COLUMN) > -1))) {
+    if (myCaseConfiguration == null || (myCaseConfiguration != null && myCaseConfiguration.getColumnIndex(Columns.UPDATE_COLUMN) > -1)) {
       final Label theLabel = new Label(DateTimeFormat.getFormat(constants.dateShortFormat()).format(aCase.getLastUpdateDate()));
       theLabel.setTitle(constants.lastUpdateDate());
       myCaseUpdateDateAndTime.put(aCase, theLabel);

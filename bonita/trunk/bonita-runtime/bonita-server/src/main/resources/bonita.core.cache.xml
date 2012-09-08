@@ -1,6 +1,5 @@
 <cache-configuration usage="read-write">
-  
-  <!-- ##### DEFINITION OBJECTS ##### -->
+
   <class-cache class="org.ow2.bonita.facade.def.InternalProcessDefinition" usage="nonstrict-read-write"/>
   <class-cache class="org.ow2.bonita.facade.def.InternalActivityDefinition" usage="nonstrict-read-write"/>
   <class-cache class="org.ow2.bonita.facade.def.InternalDataFieldDefinition" usage="nonstrict-read-write"/>  
@@ -13,8 +12,7 @@
   <class-cache class="org.ow2.bonita.facade.def.element.impl.IterationDescriptor" usage="nonstrict-read-write"/>
   <class-cache class="org.ow2.bonita.facade.def.element.impl.IncomingEventDefinitionImpl" usage="nonstrict-read-write"/>
   <class-cache class="org.ow2.bonita.facade.def.InternalOutgoingEventDefinition" usage="nonstrict-read-write"/>
-  <class-cache class="org.ow2.bonita.definition.activity.AbstractActivity" usage="nonstrict-read-write"/>
-  
+
   <collection-cache collection="org.ow2.bonita.facade.def.InternalProcessDefinition.dataFields" usage="nonstrict-read-write"/>
   <collection-cache collection="org.ow2.bonita.facade.def.InternalProcessDefinition.participants" usage="nonstrict-read-write"/>
   <collection-cache collection="org.ow2.bonita.facade.def.InternalProcessDefinition.activities" usage="nonstrict-read-write"/>
@@ -36,59 +34,5 @@
   <collection-cache collection="org.ow2.bonita.facade.def.element.impl.IterationDescriptor.exitNodes" usage="nonstrict-read-write"/>
   
   <collection-cache collection="org.ow2.bonita.facade.def.ConnectorParameters.variables" />
-  
-  <!-- maps
-  <collection-cache collection="org.ow2.bonita.facade.def.InternalOutgoingEventDefinition.clientParameters" />
-  <collection-cache collection="org.ow2.bonita.facade.def.InternalOutgoingEventDefinition.variableParameters" />
-  -->
-  
-  <!-- ##### RUNTIME OBJECTS ##### -->
-  <class-cache class="org.ow2.bonita.facade.runtime.impl.InternalProcessInstance" />
-  <class-cache class="org.ow2.bonita.facade.runtime.impl.InternalActivityInstance" />
-  <class-cache class="org.ow2.bonita.facade.runtime.impl.AssignUpdateImpl" />
-  <class-cache class="org.ow2.bonita.facade.runtime.impl.StateUpdateImpl" />
-  <class-cache class="org.ow2.bonita.facade.runtime.impl.InstanceStateUpdateImpl" />
-  <class-cache class="org.ow2.bonita.facade.runtime.impl.InternalVariableUpdate" />
-  <class-cache class="org.ow2.bonita.facade.runtime.impl.CommentImpl" />
-  <class-cache class="org.ow2.bonita.runtime.model.Execution" />
-  <class-cache class="org.ow2.bonita.env.descriptor.AbstractDescriptor" />
-  <class-cache class="org.ow2.bonita.env.descriptor.ArgDescriptor" />
-  <class-cache class="org.ow2.bonita.env.operation.AbstractOperation" />
-  
-  <collection-cache collection="org.ow2.bonita.facade.runtime.impl.InternalProcessInstance.transitionStates" />
-  <collection-cache collection="org.ow2.bonita.facade.runtime.impl.InternalProcessInstance.variables" />
-  <collection-cache collection="org.ow2.bonita.facade.runtime.impl.InternalProcessInstance.variableUpdates" />
-  <collection-cache collection="org.ow2.bonita.facade.runtime.impl.InternalProcessInstance.instanceStateUpdates" />
-  <collection-cache collection="org.ow2.bonita.facade.runtime.impl.InternalProcessInstance.commentFeed" />
-  <collection-cache collection="org.ow2.bonita.facade.runtime.impl.InternalProcessInstance.activities" />
-  
-  <collection-cache collection="org.ow2.bonita.facade.runtime.impl.InternalActivityInstance.stateUpdates" />
-  <collection-cache collection="org.ow2.bonita.facade.runtime.impl.InternalActivityInstance.variables" />
-  <collection-cache collection="org.ow2.bonita.facade.runtime.impl.InternalActivityInstance.variableUpdates" />
-  <collection-cache collection="org.ow2.bonita.facade.runtime.impl.InternalActivityInstance.assignUpdates" />
-  
-  <collection-cache collection="org.ow2.bonita.facade.runtime.impl.AssignUpdateImpl.candidates" />
-  
-  <collection-cache collection="org.ow2.bonita.runtime.model.Execution.executions" />
-  
-  <!-- ##### VARIABLES OBJECTS ##### -->
-  <class-cache class="org.ow2.bonita.type.Variable" />
 
-  <!-- ##### IDENTITY OBJECTS ##### -->
-  <class-cache class="org.ow2.bonita.facade.identity.impl.RoleImpl" />
-  <class-cache class="org.ow2.bonita.facade.identity.impl.UserImpl" />
-  <class-cache class="org.ow2.bonita.facade.identity.impl.GroupImpl" />
-  <class-cache class="org.ow2.bonita.facade.identity.impl.MembershipImpl" />
-  <class-cache class="org.ow2.bonita.facade.identity.impl.ProfileMetadataImpl" />
-
-  <!-- ##### WEB OBJECTS ##### -->
-  <class-cache class="org.ow2.bonita.facade.runtime.impl.CaseImpl" />
-  <class-cache class="org.ow2.bonita.facade.runtime.impl.CategoryImpl" />
-  
-  <!-- <collection-cache collection="org.ow2.bonita.facade.runtime.impl.LabelImpl.cases" />-->
-  
-    <!-- #### PRIVILEGES OBJECTS #### -->
-  <class-cache class="org.ow2.bonita.facade.privilege.impl.RuleTypePolicyImpl" />
-  <class-cache class="org.ow2.bonita.facade.privilege.impl.RuleImpl" />
-  
 </cache-configuration>

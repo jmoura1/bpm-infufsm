@@ -67,7 +67,7 @@ import org.w3c.dom.Node;
  * @author Charles Souillard, Matthieu Chaffotte, Elias Ricken de Medeiros
  */
 public class QueryRuntimeAPITest extends APITestCase {
-
+	
   public void testGetTaskCandidates() throws Exception {
     ProcessDefinition process = ProcessBuilder.createProcess("myProcess", "1.0")
     .addHuman(getLogin())
@@ -270,6 +270,13 @@ public class QueryRuntimeAPITest extends APITestCase {
     assertEquals(4, getQueryRuntimeAPI().getNumberOfProcessInstances());
 
     assertEquals(2, getQueryRuntimeAPI().getNumberOfParentProcessInstances());
+    
+    Set<ProcessDefinitionUUID> processUUIDs = new HashSet<ProcessDefinitionUUID>();
+    assertEquals(0, getQueryRuntimeAPI().getNumberOfParentProcessInstances(processUUIDs));
+    assertEquals(2, getQueryRuntimeAPI().getNumberOfParentProcessInstancesExcept(processUUIDs));
+    processUUIDs.add(process.getUUID());
+    assertEquals(2, getQueryRuntimeAPI().getNumberOfParentProcessInstances(processUUIDs));
+    assertEquals(0, getQueryRuntimeAPI().getNumberOfParentProcessInstancesExcept(processUUIDs));
 
     //Archive one instance and checks numbers are the same
     Collection<TaskInstance> tasks = getQueryRuntimeAPI().getTaskList(ActivityState.READY);
@@ -9583,5 +9590,11 @@ public class QueryRuntimeAPITest extends APITestCase {
     
     getManagementAPI().deleteProcess(process.getUUID());
   }
-  
+
+  public void testGetLightParentProcessInstancesWithActiveUserExcept() throws BonitaException {
+    Set<ProcessDefinitionUUID> processes = Collections.emptySet();
+    List<LightProcessInstance> list = getQueryRuntimeAPI().getLightParentProcessInstancesWithActiveUserExcept(getLogin(), 0, 10, processes);
+    assertTrue(list.isEmpty());
+  }
+
 }

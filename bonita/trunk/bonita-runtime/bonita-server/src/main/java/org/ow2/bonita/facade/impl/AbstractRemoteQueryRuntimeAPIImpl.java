@@ -129,6 +129,16 @@ public abstract class AbstractRemoteQueryRuntimeAPIImpl implements AbstractRemot
   throws RemoteException {
     return getAPI(options).getNumberOfParentProcessInstances();
   }
+  
+  public int getNumberOfParentProcessInstances(Set<ProcessDefinitionUUID> processDefinitionUUIDs, Map<String, String> options)
+  throws RemoteException {
+    return getAPI(options).getNumberOfParentProcessInstances(processDefinitionUUIDs);
+  }
+  
+  public int getNumberOfParentProcessInstancesExcept(Set<ProcessDefinitionUUID> exceptions, Map<String, String> options)
+  throws RemoteException {
+    return getAPI(options).getNumberOfParentProcessInstancesExcept(exceptions);
+  }
 
   public int getNumberOfProcessInstances(Map<String, String> options)
   throws RemoteException {
@@ -840,4 +850,15 @@ public abstract class AbstractRemoteQueryRuntimeAPIImpl implements AbstractRemot
     return getAPI(options).getDocumentVersions(documentUUID);
   }
 
+  @Override
+  public Set<String> getInvolvedUsersOfProcessInstance(ProcessInstanceUUID instanceUUID, Map<String, String> options)
+  throws RemoteException, InstanceNotFoundException {
+    return getAPI(options).getInvolvedUsersOfProcessInstance(instanceUUID);
+  }
+
+  @Override
+  public Set<ProcessInstanceUUID> getChildrenInstanceUUIDsOfProcessInstance(ProcessInstanceUUID instanceUUID, Map<String, String> options)
+  throws RemoteException, InstanceNotFoundException {
+    return getAPI(options).getChildrenInstanceUUIDsOfProcessInstance(instanceUUID);
+  }
 }

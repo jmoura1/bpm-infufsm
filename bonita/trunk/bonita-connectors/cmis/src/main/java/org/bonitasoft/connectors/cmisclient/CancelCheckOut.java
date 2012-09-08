@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 BonitaSoft S.A.
+ * Copyright (C) 2011-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,65 +32,56 @@ import org.ow2.bonita.connector.core.ConnectorError;
  */
 public class CancelCheckOut extends AbstractCmisConnector {
 
-    private String pWCDocumentID;
-    private boolean isSucceed;
+  private String pWCDocumentID;
+  private boolean isSucceed;
 
-    private static final Log logger = LogFactory.getLog(CheckIn.class.getClass());
+  private static final Log LOGGER = LogFactory.getLog(CheckIn.class.getClass());
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#executeConnector()
-     */
-    @Override
-    protected void executeConnector() throws Exception {
-        isSucceed = this.cancelCheckOutDocument();
+  @Override
+  protected void executeConnector() throws Exception {
+    isSucceed = this.cancelCheckOutDocument();
+  }
+
+  @Override
+  protected List<ConnectorError> validateValues() {
+    return null;
+  }
+
+  /**
+   * cancel check out pWCDocumentID specified document
+   * 
+   * @return
+   * @throws Exception
+   */
+  public boolean cancelCheckOutDocument() throws Exception {
+    final Session s = this.createSessionByName(username, password, url, binding_type, repositoryName);
+    Document document = null;
+    try {
+      document = (Document) s.getObject(s.createObjectId(pWCDocumentID));
+    } catch (final CmisObjectNotFoundException e1) {
+      if (LOGGER.isErrorEnabled()) {
+        LOGGER.error(e1.getMessage());
+      }
+      throw e1;
+    } catch (final Exception e) {
+      if (LOGGER.isErrorEnabled()) {
+        LOGGER.error(e.getMessage());
+      }
+      throw e;
     }
+    document.cancelCheckOut();
+    return true;
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#validateValues()
-     */
-    @Override
-    protected List<ConnectorError> validateValues() {
-        return null;
-    }
+  /**
+   * set the PWC document id
+   */
+  public void setPWCDocumentID(final String pWCDocumentID) {
+    this.pWCDocumentID = pWCDocumentID;
+  }
 
-    /**
-     * cancel check out pWCDocumentID specified document
-     * 
-     * @return
-     * @throws Exception
-     */
-    public boolean cancelCheckOutDocument() throws Exception {
-        final Session s = this.createSessionByName(username, password, url, binding_type, repositoryName);
-        Document document = null;
-        try {
-            document = (Document) s.getObject(s.createObjectId(pWCDocumentID));
-        } catch (final CmisObjectNotFoundException e1) {
-            if (logger.isErrorEnabled()) {
-                logger.error(e1.getMessage());
-            }
-            throw e1;
-        } catch (final Exception e) {
-            if (logger.isErrorEnabled()) {
-                logger.error(e.getMessage());
-            }
-            throw e;
-        }
-        document.cancelCheckOut();
-        return true;
-    }
+  public Boolean getIsSucceed() {
+    return isSucceed;
+  }
 
-    /**
-     * set the PWC document id
-     */
-    public void setPWCDocumentID(final String pWCDocumentID) {
-        this.pWCDocumentID = pWCDocumentID;
-    }
-
-    public Boolean getIsSucceed() {
-        return isSucceed;
-    }
 }

@@ -289,7 +289,7 @@ public interface QueryDefinitionAPI {
   throws ProcessNotFoundException;
 
   /**
-   * Returns the process definition of the last deployed process of the given process name.
+   * Returns the process definition of the most recently deployed process of the given process name.
    * @param processName the process name.
    * @return the process definition of the last deployed process of the given process name.
    * @throws ProcessNotFoundException if the process with the given process name does not exist.
@@ -298,7 +298,7 @@ public interface QueryDefinitionAPI {
   ProcessDefinition getLastProcess(String processName) throws ProcessNotFoundException;
 
   /**
-   * Returns the light process definition of the last deployed process of the given process name.
+   * Returns the light process definition of the most recently deployed process of the given process name.
    * @param processName the process name.
    * @return the light process definition of the last deployed process of the given process name.
    * @throws ProcessNotFoundException if the process with the given process name does not exist.

@@ -40,6 +40,12 @@
 	<!-- Russian language, independent of country					-->
 	<extend-property name="locale" values="ru"/>
 	
+	<!-- Japanese language, independent of country					-->
+	<extend-property name="locale" values="ja"/>
+	
+	<!-- Polish language, independent of country				-->
+	<extend-property name="locale" values="pl"/>
+	
 	<!-- Turkish language, independent of country					-->
 	<extend-property name="locale" values="tr"/>
 	
@@ -57,5 +63,6 @@
     <servlet path="/fileUpload" class="org.bonitasoft.console.servlet.FileUploadServlet"/>
     <servlet path="/formlogin" class="org.bonitasoft.forms.server.login.FormLoginServlet"/>
     <servlet path="/attachmentDownload" class="org.bonitasoft.console.servlet.AttachmentDownloadServlet"/>
+    <servlet path="/formLayoutDownload" class="org.bonitasoft.forms.server.FormLayoutDownloadServlet"/>
     <servlet path="/attachmentImage" class="org.bonitasoft.console.servlet.AttachmentImageServlet"/>
 </module>

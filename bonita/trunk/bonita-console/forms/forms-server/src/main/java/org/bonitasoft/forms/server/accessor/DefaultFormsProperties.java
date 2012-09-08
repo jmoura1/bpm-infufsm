@@ -75,6 +75,11 @@ public class DefaultFormsProperties {
     protected final static long DEFAULT_CACHE_PROCESS_EXPIRATION_TIME = 300000;
     
     /**
+     * Default form attachment max size
+     */
+    protected final static long DEFAULT_ATTACHMENT_MAX_SIZE = 15;
+    
+    /**
      * Logger
      */
     private static Logger LOGGER = Logger.getLogger(DefaultFormsProperties.class.getName());
@@ -182,6 +187,16 @@ public class DefaultFormsProperties {
         } catch (final NumberFormatException nfe) {
             LOGGER.log(Level.INFO, "the processes form definifion time to live in cache is undefined or incorrectly defined. Using the default value : " + DEFAULT_CACHE_PROCESS_EXPIRATION_TIME);
             return DEFAULT_CACHE_PROCESS_EXPIRATION_TIME;
+        }
+    }
+    
+    public long getAttachmentMaxSize() {
+        final String attachmentMaxSize = defaultProperties.getProperty("form.attachment.max.size");
+        try {
+            return Long.parseLong(attachmentMaxSize);
+        } catch (final NumberFormatException nfe) {
+            LOGGER.log(Level.INFO, "the attachment max size is undefined or incorrectly defined. Using the default value : " + DEFAULT_ATTACHMENT_MAX_SIZE);
+            return DEFAULT_ATTACHMENT_MAX_SIZE;
         }
     }
 

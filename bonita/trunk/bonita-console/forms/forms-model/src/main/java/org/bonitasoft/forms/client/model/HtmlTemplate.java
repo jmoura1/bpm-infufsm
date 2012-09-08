@@ -36,6 +36,11 @@ public class HtmlTemplate implements Serializable {
      * content of the body
      */
     private String bodyContent;
+
+    /**
+     * content id of the body
+     */
+    private String bodyContentId;
     
     /**
      * content of the header
@@ -72,6 +77,14 @@ public class HtmlTemplate implements Serializable {
         this.headNodes = headNodes;
     }
 
+    public String getBodyContentId() {
+        return bodyContentId;
+    }
+
+    public void setBodyContentId(final String bodyContentId) {
+        this.bodyContentId = bodyContentId;
+    }
+
     public String getBodyContent() {
         return bodyContent;
     }
@@ -80,6 +93,7 @@ public class HtmlTemplate implements Serializable {
         this.bodyContent = bodyContent;
     }
 
+    
     public Map<String, String> getBodyAttributes() {
         return bodyAttributes;
     }

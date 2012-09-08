@@ -3,12 +3,16 @@
 	<parent>
 		<artifactId>forms-parent</artifactId>
 		<groupId>org.bonitasoft.forms</groupId>
-		<version>5.6.1</version>
+		<version>5.7.2</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.bonitasoft.forms</groupId>
 	<artifactId>forms-server</artifactId>
 	<name>forms server</name>
+
+	<properties>
+		<cmis.repository>${plateform}</cmis.repository>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -172,7 +176,7 @@
 									token="localhost:8080" value="192.168.1.212:8387" />
 								<replace
 									file="${project.build.directory}/bonita/server/default/conf/bonita-server.xml"
-									token="string value='default'" value="string value='${plateform}'" />
+									token="string value='default'" value="string value='${cmis.repository}'" />
 							</tasks>
 						</configuration>
 					</execution>

@@ -35,7 +35,7 @@
 					<fixedCols>true</fixedCols>
 					<fixedRows>false</fixedRows>
 					<colsCaptions>
-						<string>documentUUId</string>
+						<string>documentUUID</string>
 						<string>allVersions</string>
 					</colsCaptions>
 				</array>

@@ -16,6 +16,7 @@ package org.ow2.bonita.facade.internal;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,6 +41,7 @@ import org.ow2.bonita.facade.exception.UncancellableInstanceException;
 import org.ow2.bonita.facade.exception.UndeletableInstanceException;
 import org.ow2.bonita.facade.exception.VariableNotFoundException;
 import org.ow2.bonita.facade.runtime.AttachmentInstance;
+import org.ow2.bonita.facade.runtime.ConnectorExecutionDescriptor;
 import org.ow2.bonita.facade.runtime.Document;
 import org.ow2.bonita.facade.uuid.ActivityDefinitionUUID;
 import org.ow2.bonita.facade.uuid.ActivityInstanceUUID;
@@ -1050,6 +1052,60 @@ public interface AbstractRemoteRuntimeAPI extends Remote {
       ClassLoader classLoader, 
       @FormParam("options") final Map<String, String> options)
       throws RemoteException, Exception;
+  
+  /**
+   * Execute a list of Connector in the context of a process. 
+   * The ClassLoader uses the process UUID to load the connectors' class and the process data's initial values are added to the groovy evaluation context.
+   * @param processDefinitionUUID the process definition UUID
+   * @param connectorExecutionDescriptors the descriptor used for connector execution (class name, input and output parameters)
+   * @param context additional context for input parameters expressions evaluation
+   * @return the context updated based on output parameters of connectorExecutionDescriptors
+   * @throws Exception if any exception occurs
+   */
+  @POST @Path("executeConnectors/{processDefinitionUUID}")
+  Map<String, Object> executeConnectors(
+      @PathParam("processDefinitionUUID") final ProcessDefinitionUUID processDefinitionUUID, 
+      @FormParam("connectorExecutionDescriptors") final List<ConnectorExecutionDescriptor> connectorExecutionDescriptors, 
+      @FormParam("context") final Map<String, Object> context, 
+      @FormParam("options") final Map<String, String> options) 
+    throws RemoteException, Exception;
+  
+  /**
+   * Execute a list of Connector in the context of a process instance.
+   * @param processInstanceUUID the process instance UUID
+   * @param connectorExecutionDescriptors the descriptor used for connector execution (class name, input and output parameters)
+   * @param context additional context for input parameters expressions evaluation
+   * @param useCurrentVariableValues if true the current variable values should be used for expression evaluation, otherwise the values at process instantiation are used
+   * @return the context updated based on output parameters of connectorExecutionDescriptors
+   * @throws Exception if any exception occurs
+   */
+  @POST @Path("executeConnectors/{processInstanceUUID}/{useCurrentVariableValues}")
+  Map<String, Object> executeConnectors(
+      @PathParam("processInstanceUUID") final ProcessInstanceUUID processInstanceUUID, 
+      @FormParam("connectorExecutionDescriptors") final List<ConnectorExecutionDescriptor> connectorExecutionDescriptors, 
+      @FormParam("context") final Map<String, Object> context, 
+      @PathParam("useCurrentVariableValues") boolean useCurrentVariableValues, 
+      @FormParam("options") final Map<String, String> options) 
+  throws RemoteException, Exception;
+  
+  /**
+   * Execute a list of Connector in the context of an activity instance.
+   * @param activityInstanceUUID the activity instance UUID
+   * @param connectorExecutionDescriptors the descriptor used for connector execution (class name, input and output parameters)
+   * @param context additional context for input parameters expressions evaluation
+   * @param useCurrentVariableValues if true the current variable values should be used for expression evaluation, otherwise the values at step end are used
+   * @return the context updated based on output parameters of connectorExecutionDescriptors
+   * @throws Exception if any exception occurs
+   */
+  @POST @Path("executeConnectorsInActivityInstance/{activityInstanceUUID}/{useCurrentVariableValues}")
+  Map<String, Object> executeConnectors(
+      @PathParam("activityInstanceUUID") final ActivityInstanceUUID activityInstanceUUID, 
+      @FormParam("connectorExecutionDescriptors") final List<ConnectorExecutionDescriptor> connectorExecutionDescriptors, 
+      @FormParam("context") final Map<String, Object> context, 
+      @PathParam("useCurrentVariableValues") boolean useCurrentVariableValues, 
+      @FormParam("options") final Map<String, String> options) 
+  throws RemoteException, Exception;
+
 
   /**
    * Executes a Filter.

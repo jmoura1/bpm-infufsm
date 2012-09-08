@@ -58,6 +58,7 @@ import org.ow2.bonita.facade.runtime.command.WebDeleteDocumentsOfProcessCommand;
 import org.ow2.bonita.facade.runtime.command.WebDeleteProcessCommand;
 import org.ow2.bonita.facade.uuid.ActivityInstanceUUID;
 import org.ow2.bonita.facade.uuid.ProcessInstanceUUID;
+import org.ow2.bonita.light.LightProcessInstance;
 import org.ow2.bonita.util.AccessorUtil;
 import org.ow2.bonita.util.BonitaConstants;
 import org.ow2.bonita.util.BusinessArchiveFactory;
@@ -330,10 +331,9 @@ public class TestFormWorkflowAPIImpl extends FormsTestCase {
                   Assert.assertEquals("subprocess", activityInstance.getActivityName());
               }
               
-              ProcessInstance processInstance = queryRuntimeAPI.getProcessInstance(processInstanceUUID);
-              Set<ProcessInstanceUUID> childrenInstanceUUID = processInstance.getChildrenInstanceUUID();
+              Set<ProcessInstanceUUID> childrenInstanceUUID = queryRuntimeAPI.getChildrenInstanceUUIDsOfProcessInstance(processInstanceUUID);
               for (ProcessInstanceUUID childInstanceUUID : childrenInstanceUUID) {
-                ProcessInstance childInstance = queryRuntimeAPI.getProcessInstance(childInstanceUUID);
+                LightProcessInstance childInstance = queryRuntimeAPI.getLightProcessInstance(childInstanceUUID);
                 if (InstanceState.STARTED.equals(childInstance.getInstanceState())) {
                   Collection<TaskInstance> taskInstances = queryRuntimeAPI.getTaskList(childInstanceUUID, ActivityState.READY);
                   Assert.assertEquals(1, taskInstances.size());
@@ -354,7 +354,7 @@ public class TestFormWorkflowAPIImpl extends FormsTestCase {
                       Assert.assertEquals("task1", activityInstanceUUID.getActivityName());
                   }
               
-                  childInstance = queryRuntimeAPI.getProcessInstance(childInstanceUUID);
+                  childInstance = queryRuntimeAPI.getLightProcessInstance(childInstanceUUID);
                   Assert.assertEquals(InstanceState.FINISHED, childInstance.getInstanceState());
                 }
               }

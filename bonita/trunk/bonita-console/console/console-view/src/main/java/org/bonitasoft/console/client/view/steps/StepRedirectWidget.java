@@ -97,6 +97,7 @@ public class StepRedirectWidget extends BonitaPanel implements ModelChangeListen
 
         if (aStep.getApplicationURL() != null) {
             myApplicationURL = aStep.getApplicationURL();
+            urlHashParamsMap.put(URLUtils.VIEW_MODE_PARAM, URLUtils.FULL_FORM_APPLICATION_MODE);
             button = new RedirectButtonWidget(myApplicationURL, APPLICATION_WINDOW_NAME, urlParamsMap, urlHashParamsMap, constants.redirectButtonTitle());
             myOuterPanel.add(button);
         } else {

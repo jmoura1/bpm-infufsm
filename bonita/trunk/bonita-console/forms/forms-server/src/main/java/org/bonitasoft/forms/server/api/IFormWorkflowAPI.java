@@ -382,4 +382,149 @@ public interface IFormWorkflowAPI {
      * @throws InstanceNotFoundException
      */
     Set<String> getProcessInvolvedUsers(ProcessInstanceUUID processInstanceUUID) throws InstanceNotFoundException;
+
+    /**
+     * Retrieve some fields initial value
+     * @param activityInstanceUUID the {@link ActivityInstanceUUID} 
+     * @param expressions the initial values expressions Map
+     * @param fieldValues some field values this field may depend on
+     * @param locale the user's locale
+     * @param isCurrentValue if true, value returned is the current value for the instance. otherwise, it's the value at step end
+     * @param transientDataContext the context of transient data
+     * @return the values for the fields as a Map
+     * @throws ActivityNotFoundException 
+     * @throws InstanceNotFoundException 
+     */
+    Map<String, Object> getFieldsValues(ActivityInstanceUUID activityInstanceUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, boolean isCurrentValue, Map<String, Object> transientDataContext) throws ActivityNotFoundException, InstanceNotFoundException;
+
+    /**
+     * Retrieve some fields initial value
+     * @param activityInstanceUUID the {@link ActivityInstanceUUID} 
+     * @param expressions the initial values expressions Map
+     * @param fieldValues some field values this field may depend on
+     * @param locale the user's locale
+     * @param isCurrentValue if true, value returned is the current value for the instance. otherwise, it's the value at step end
+     * @return the values for the fields as a Map
+     * @throws ActivityNotFoundException 
+     * @throws InstanceNotFoundException 
+     */
+    Map<String, Object> getFieldsValues(ActivityInstanceUUID activityInstanceUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, boolean isCurrentValue) throws ActivityNotFoundException, InstanceNotFoundException;
+
+    /**
+     * Retrieve some fields initial value
+     * @param activityInstanceUUID the {@link ActivityInstanceUUID} 
+     * @param expressions the initial values expressions Map
+     * @param locale the user's locale
+     * @param isCurrentValue if true, value returned is the current value for the instance. otherwise, it's the value at step end
+     * @param transientDataContext
+     * @return the values for the fields as a Map
+     * @throws ActivityNotFoundException 
+     * @throws InstanceNotFoundException 
+     */
+    Map<String, Object> getFieldsValues(ActivityInstanceUUID activityInstanceUUID, Map<String, String> expressions, Locale locale, boolean isCurrentValue, Map<String, Object> transientDataContext) throws ActivityNotFoundException, InstanceNotFoundException;
+
+    /**
+     * Retrieve some fields initial value
+     * @param activityInstanceUUID the {@link ActivityInstanceUUID} 
+     * @param expressions the initial values expressions Map
+     * @param locale the user's locale
+     * @param isCurrentValue if true, value returned is the current value for the instance. otherwise, it's the value at step end
+     * @return the values for the fields as a Map
+     * @throws ActivityNotFoundException 
+     * @throws InstanceNotFoundException 
+     */
+    Map<String, Object> getFieldsValues(ActivityInstanceUUID activityInstanceUUID, Map<String, String> expressions, Locale locale, boolean isCurrentValue) throws ActivityNotFoundException, InstanceNotFoundException;
+
+    /**
+     * Retrieve some fields initial value
+     * @param processInstanceUUID the {@link ProcessInstanceUUID} 
+     * @param expressions the initial values expressions Map
+     * @param fieldValues some field values this field may depend on
+     * @param locale the user's locale
+     * @param isCurrentValue if true, value returned is the current value for the instance. otherwise, it's the value at instantiation
+     * @param transientDataContext the context of transient data
+     * @return the values for the fields as a Map
+     * @throws InstanceNotFoundException 
+     */
+    Map<String, Object> getFieldsValues(ProcessInstanceUUID processInstanceUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, boolean isCurrentValue, Map<String, Object> transientDataContext) throws InstanceNotFoundException;
+
+    /**
+     * Retrieve some fields initial value
+     * @param processInstanceUUID the {@link ProcessInstanceUUID} 
+     * @param expressions the initial values expressions Map
+     * @param fieldValues some field values this field may depend on
+     * @param locale the user's locale
+     * @param isCurrentValue if true, value returned is the current value for the instance. otherwise, it's the value at instantiation
+     * @return the values for the fields as a Map
+     * @throws InstanceNotFoundException 
+     */
+    Map<String, Object> getFieldsValues(ProcessInstanceUUID processInstanceUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, boolean isCurrentValue) throws InstanceNotFoundException;
+
+    /**
+     * Retrieve some fields initial value
+     * @param processInstanceUUID the {@link ProcessInstanceUUID} 
+     * @param expressions the initial values expressions Map
+     * @param locale the user's locale
+     * @param isCurrentValue if true, value returned is the current value for the instance. otherwise, it's the value at instantiation
+     * @param transientDataContext the context of transient data
+     * @return the values for the fields as a Map
+     * @throws InstanceNotFoundException 
+     */
+    Map<String, Object> getFieldsValues(ProcessInstanceUUID processInstanceUUID, Map<String, String> expressions, Locale locale, boolean isCurrentValue, Map<String, Object> transientDataContext) throws InstanceNotFoundException;
+
+    /**
+     * Retrieve some fields initial value
+     * @param processInstanceUUID the {@link ProcessInstanceUUID} 
+     * @param expressions the initial values expressions Map
+     * @param locale the user's locale
+     * @param isCurrentValue if true, value returned is the current value for the instance. otherwise, it's the value at instantiation
+     * @return the values for the fields as a Map
+     * @throws InstanceNotFoundException 
+     */
+    Map<String, Object> getFieldsValues(ProcessInstanceUUID processInstanceUUID, Map<String, String> expressions, Locale locale, boolean isCurrentValue) throws InstanceNotFoundException;
+
+    /**
+     * Retrieve some fields initial value
+     * @param processDefinitionUUID the {@link ProcessDefinitionUUID} 
+     * @param expressions the initial values expressions Map
+     * @param fieldValues some field values this field may depend on
+     * @param locale the user's locale
+     * @param transientDataContext the context of transient data
+     * @return the values for the fields as a Map
+     * @throws ProcessNotFoundException 
+     */
+    Map<String, Object> getFieldsValues(ProcessDefinitionUUID processDefinitionUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, Map<String, Object> transientDataContext) throws ProcessNotFoundException;
+
+    /**
+     * Retrieve some fields initial value
+     * Retrieve some fields initial value
+     * @param processDefinitionUUID the {@link ProcessDefinitionUUID} 
+     * @param expressions the initial values expressions Map
+     * @param fieldValues some field values this field may depend on
+     * @param locale the user's locale
+     * @return the values for the fields as a Map
+     * @throws ProcessNotFoundException 
+     */
+    Map<String, Object> getFieldsValues(ProcessDefinitionUUID processDefinitionUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale) throws ProcessNotFoundException;
+
+    /**
+     * Retrieve some fields initial value
+     * @param processDefinitionUUID the {@link ProcessDefinitionUUID} 
+     * @param expressions the initial values expressions Map
+     * @param locale the user's locale
+     * @param transientDataContext the context of transient data
+     * @return the values for the fields as a Map
+     * @throws ProcessNotFoundException 
+     */
+    Map<String, Object> getFieldsValues(ProcessDefinitionUUID processDefinitionUUID, Map<String, String> expressions, Locale locale, Map<String, Object> transientDataContext) throws ProcessNotFoundException;
+
+    /**
+     * Retrieve some fields initial value
+     * @param processDefinitionUUID the {@link ProcessDefinitionUUID} 
+     * @param expressions the initial values expressions Map
+     * @param locale the user's locale
+     * @return the values for the fields as a Map
+     * @throws ProcessNotFoundException 
+     */
+    Map<String, Object> getFieldsValues(ProcessDefinitionUUID processDefinitionUUID, Map<String, String> expressions, Locale locale) throws ProcessNotFoundException;
 }

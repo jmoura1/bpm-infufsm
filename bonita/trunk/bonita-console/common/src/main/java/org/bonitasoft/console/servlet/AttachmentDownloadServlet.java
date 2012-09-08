@@ -5,14 +5,14 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2.0 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.bonitasoft.console.servlet;
 
@@ -22,7 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Set;
@@ -45,11 +44,11 @@ import org.ow2.bonita.facade.QueryRuntimeAPI;
 import org.ow2.bonita.facade.exception.InstanceNotFoundException;
 import org.ow2.bonita.facade.runtime.AttachmentInstance;
 import org.ow2.bonita.facade.runtime.InitialAttachment;
-import org.ow2.bonita.facade.runtime.ProcessInstance;
 import org.ow2.bonita.facade.uuid.ActivityInstanceUUID;
 import org.ow2.bonita.facade.uuid.DocumentUUID;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
 import org.ow2.bonita.facade.uuid.ProcessInstanceUUID;
+import org.ow2.bonita.light.LightProcessInstance;
 import org.ow2.bonita.util.AccessorUtil;
 
 /**
@@ -120,6 +119,11 @@ public class AttachmentDownloadServlet extends HttpServlet {
     public static final String ATTACHMENT_FILE_NAME_PARAM = "attachmentFileName";
 
     /**
+     * recap : indicate recap or not
+     */
+    public static final String RECAP = "recap";
+
+    /**
      * Logger
      */
     private static final Logger LOGGER = Logger.getLogger(AttachmentDownloadServlet.class.getName());
@@ -143,6 +147,7 @@ public class AttachmentDownloadServlet extends HttpServlet {
         final String attachmentName = request.getParameter(ATTACHMENT_PARAM);
         final String attachmentPath = request.getParameter(ATTACHMENT_PATH_PARAM);
         String attachmentFileName = request.getParameter(ATTACHMENT_FILE_NAME_PARAM);
+        final String isRecap = request.getParameter(RECAP);
         final QueryRuntimeAPI queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
         final QueryDefinitionAPI queryDefinitionAPI = AccessorUtil.getQueryDefinitionAPI();
         byte[] attachment = null;
@@ -157,7 +162,8 @@ public class AttachmentDownloadServlet extends HttpServlet {
                     throw new IOException();
                 }
             } catch (final IOException e) {
-                final String errorMessage = "Error while getting the file " + attachmentPath + " For security reasons, access to paths other than " + WebBonitaConstants.BONITA_HOME + "/" + WebBonitaConstants.platformCommonTempSubFolderPath + " is restricted";
+                final String errorMessage = "Error while getting the file " + attachmentPath + " For security reasons, access to paths other than "
+                        + WebBonitaConstants.BONITA_HOME + "/" + WebBonitaConstants.platformCommonTempSubFolderPath + " is restricted";
                 if (LOGGER.isLoggable(Level.SEVERE)) {
                     LOGGER.log(Level.SEVERE, errorMessage, e);
                 }
@@ -181,12 +187,22 @@ public class AttachmentDownloadServlet extends HttpServlet {
                 if (taskUUIDStr != null) {
                     final ActivityInstanceUUID activityInstanceUUID = new ActivityInstanceUUID(taskUUIDStr);
                     final ProcessInstanceUUID processInstanceUUID = activityInstanceUUID.getProcessInstanceUUID();
-                    final ProcessInstance processInstance = queryRuntimeAPI.getProcessInstance(processInstanceUUID);
+                    final LightProcessInstance processInstance = queryRuntimeAPI.getLightProcessInstance(processInstanceUUID);
                     final Set<String> involvedUsers = new HashSet<String>();
-                    involvedUsers.add(processInstance.getStartedBy());
-                    involvedUsers.addAll(processInstance.getInvolvedUsers());
-                    if (user.isAdmin() || (involvedUsers.contains(user.getUsername()) && user.isAllowed(RuleType.PROCESS_READ, processInstanceUUID.getProcessDefinitionUUID().getValue()))) {
-                        final AttachmentInstance attachmentInstance = queryRuntimeAPI.getLastAttachment(processInstanceUUID, attachmentName, activityInstanceUUID);
+                    ProcessInstanceUUID rootProcessInstanceUUID = processInstance.getRootInstanceUUID();
+                    if (processInstanceUUID.equals(rootProcessInstanceUUID)) {
+                        involvedUsers.add(processInstance.getStartedBy());
+                        involvedUsers.addAll(queryRuntimeAPI.getInvolvedUsersOfProcessInstance(processInstanceUUID));
+                    } else {
+                        final LightProcessInstance rootProcessInstance = queryRuntimeAPI.getLightProcessInstance(rootProcessInstanceUUID);
+                        involvedUsers.add(rootProcessInstance.getStartedBy());
+                        involvedUsers.addAll(queryRuntimeAPI.getInvolvedUsersOfProcessInstance(rootProcessInstanceUUID));
+                    }
+                    if (user.isAdmin()
+                            || (involvedUsers.contains(user.getUsername()) && user.isAllowed(RuleType.PROCESS_READ, processInstanceUUID
+                                    .getProcessDefinitionUUID().getValue()))) {
+                        final AttachmentInstance attachmentInstance = queryRuntimeAPI.getLastAttachment(processInstanceUUID, attachmentName,
+                                activityInstanceUUID);
                         attachment = queryRuntimeAPI.getAttachmentValue(attachmentInstance);
                         attachmentFileName = attachmentInstance.getFileName();
                     } else {
@@ -216,16 +232,29 @@ public class AttachmentDownloadServlet extends HttpServlet {
                     }
                 } else if (instanceUUIDStr != null && documentIDstr == null) {
                     final ProcessInstanceUUID processInstanceUUID = new ProcessInstanceUUID(instanceUUIDStr);
-                    final ProcessInstance processInstance = queryRuntimeAPI.getProcessInstance(processInstanceUUID);
+                    final LightProcessInstance processInstance = queryRuntimeAPI.getLightProcessInstance(processInstanceUUID);
                     final Set<String> involvedUsers = new HashSet<String>();
-                    involvedUsers.add(processInstance.getStartedBy());
-                    involvedUsers.addAll(processInstance.getInvolvedUsers());
-                    if (user.isAdmin() || (involvedUsers.contains(user.getUsername()) && user.isAllowed(RuleType.PROCESS_READ, processInstanceUUID.getProcessDefinitionUUID().getValue()))) {
+                    ProcessInstanceUUID rootProcessInstanceUUID = processInstance.getRootInstanceUUID();
+                    if (processInstanceUUID.equals(rootProcessInstanceUUID)) {
+                        involvedUsers.add(processInstance.getStartedBy());
+                        involvedUsers.addAll(queryRuntimeAPI.getInvolvedUsersOfProcessInstance(processInstanceUUID));
+                    } else {
+                        final LightProcessInstance rootProcessInstance = queryRuntimeAPI.getLightProcessInstance(rootProcessInstanceUUID);
+                        involvedUsers.add(rootProcessInstance.getStartedBy());
+                        involvedUsers.addAll(queryRuntimeAPI.getInvolvedUsersOfProcessInstance(rootProcessInstanceUUID));
+                    }
+                    if (user.isAdmin()
+                            || (involvedUsers.contains(user.getUsername()) && user.isAllowed(RuleType.PROCESS_READ, processInstanceUUID
+                                    .getProcessDefinitionUUID().getValue()))) {
                         AttachmentInstance attachmentInstance;
-                        if (isCurrentValue) {
+                        if (Boolean.TRUE.toString().equals(isRecap)) {
                             attachmentInstance = queryRuntimeAPI.getLastAttachment(processInstanceUUID, attachmentName);
                         } else {
-                            attachmentInstance = queryRuntimeAPI.getLastAttachment(processInstanceUUID, attachmentName, processInstance.getStartedDate());
+                            if (isCurrentValue) {
+                                attachmentInstance = queryRuntimeAPI.getLastAttachment(processInstanceUUID, attachmentName);
+                            } else {
+                                attachmentInstance = queryRuntimeAPI.getLastAttachment(processInstanceUUID, attachmentName, processInstance.getStartedDate());
+                            }
                         }
                         attachment = queryRuntimeAPI.getAttachmentValue(attachmentInstance);
                         attachmentFileName = attachmentInstance.getFileName();
@@ -240,9 +269,10 @@ public class AttachmentDownloadServlet extends HttpServlet {
                     // Download a document based on its ID
                     final ProcessInstanceUUID processInstanceUUID = new ProcessInstanceUUID(instanceUUIDStr);
                     try {
-                        final ProcessInstance processInstance = queryRuntimeAPI.getProcessInstance(processInstanceUUID);
-                        final Set<String> involvedUsers = processInstance.getInvolvedUsers();
-                        if (user.isAdmin() || (involvedUsers.contains(user.getUsername()) && user.isAllowed(RuleType.PROCESS_READ, processInstanceUUID.getProcessDefinitionUUID().getValue()))) {
+                        final Set<String> involvedUsers = queryRuntimeAPI.getInvolvedUsersOfProcessInstance(processInstanceUUID);
+                        if (user.isAdmin()
+                                || (involvedUsers.contains(user.getUsername()) && user.isAllowed(RuleType.PROCESS_READ, processInstanceUUID
+                                        .getProcessDefinitionUUID().getValue()))) {
                             attachment = queryRuntimeAPI.getDocumentContent(new DocumentUUID(documentIDstr));
                             attachmentFileName = documentFileNamestr;
                         } else {
@@ -258,12 +288,12 @@ public class AttachmentDownloadServlet extends HttpServlet {
                         attachmentFileName = documentFileNamestr;
                     }
                 }
-            }catch(NoCredentialsInSessionException e){
+            } catch (NoCredentialsInSessionException e) {
                 if (LOGGER.isLoggable(Level.SEVERE)) {
                     LOGGER.log(Level.SEVERE, e.getMessage(), e);
                 }
                 String refer = request.getParameter("refer");
-                String newURL = "login.jsp?redirectUrl="+URLEncoder.encode(refer);
+                String newURL = "login.jsp?redirectUrl=" + URLEncoder.encode(refer);
                 try {
                     response.sendRedirect(newURL);
                 } catch (IOException e1) {
@@ -273,9 +303,10 @@ public class AttachmentDownloadServlet extends HttpServlet {
                     }
                     throw new ServletException(errorMessage, e);
                 }
-                
-            }catch (final Exception e) {
-                final String errorMessage = "Error while getting the attachment " + attachmentName + " for task: " + taskUUIDStr + " or instance: " + instanceUUIDStr + " or process: " + processUUIDStr;
+
+            } catch (final Exception e) {
+                final String errorMessage = "Error while getting the attachment " + attachmentName + " for task: " + taskUUIDStr + " or instance: "
+                        + instanceUUIDStr + " or process: " + processUUIDStr;
                 if (LOGGER.isLoggable(Level.SEVERE)) {
                     LOGGER.log(Level.SEVERE, errorMessage, e);
                 }
@@ -292,14 +323,15 @@ public class AttachmentDownloadServlet extends HttpServlet {
             if (userAgent != null && userAgent.contains("Firefox")) {
                 response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedfileName.replace("+", "%20"));
             } else {
-                response.setHeader("Content-Disposition", "attachment; filename=\"" + encodedfileName.replaceAll("\\+", " ") + "\"; filename*=UTF-8''" + encodedfileName.replace("+", "%20"));
+                response.setHeader("Content-Disposition", "attachment; filename=\"" + encodedfileName.replaceAll("\\+", " ") + "\"; filename*=UTF-8''"
+                        + encodedfileName.replace("+", "%20"));
             }
             final OutputStream out = response.getOutputStream();
             if (attachment == null) {
-            	response.setContentLength(0);
+                response.setContentLength(0);
             } else {
-            	response.setContentLength(attachment.length);
-            	out.write(attachment);
+                response.setContentLength(attachment.length);
+                out.write(attachment);
             }
             out.close();
         } catch (final IOException e) {

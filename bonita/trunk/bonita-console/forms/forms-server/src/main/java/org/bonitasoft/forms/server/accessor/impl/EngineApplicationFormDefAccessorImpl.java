@@ -229,6 +229,7 @@ public class EngineApplicationFormDefAccessorImpl implements IApplicationFormDef
             }
             applicationWidgets.add(attachmentWidget);
         }
+        Collections.sort(applicationWidgets);
     }
 
     /**

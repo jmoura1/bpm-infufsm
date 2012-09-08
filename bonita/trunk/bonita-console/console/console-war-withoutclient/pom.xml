@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>console-parent</artifactId>
 		<groupId>org.bonitasoft.console</groupId>
-		<version>5.6.1</version>
+		<version>5.7.2</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.bonitasoft.console</groupId>
@@ -54,7 +54,7 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
 				<!-- need to write it in the same line because it doesn't otherwise -->
-					<packagingExcludes>WEB-INF/lib/asm-*.jar,WEB-INF/lib/bonita-client-*.jar,WEB-INF/lib/jaxrs-api-*.jar,WEB-INF/lib/activation-*.jar,WEB-INF/lib/commons-codec-*.jar,WEB-INF/lib/commons-httpclient-*.jar,WEB-INF/lib/commons-logging-*.jar,WEB-INF/lib/httpclient-*.jar,WEB-INF/lib/httpcore-*.jar,WEB-INF/lib/javassist-*.jar,WEB-INF/lib/jcip-annotations-*.jar,WEB-INF/lib/resteasy-jaxrs-*.jar,WEB-INF/lib/scannotation-*.jar,WEB-INF/lib/slf4j-api-*.jar,WEB-INF/lib/slf4j-jdk14-*.jar,WEB-INF/lib/xpp3_min-*.jar,WEB-INF/lib/xstream-*.jar</packagingExcludes>
+					<packagingExcludes>WEB-INF/lib/asm-*.jar,WEB-INF/lib/bonita-client-*.jar,WEB-INF/lib/jaxrs-api-*.jar,WEB-INF/lib/activation-*.jar,WEB-INF/lib/commons-codec-*.jar,WEB-INF/lib/commons-logging-*.jar,WEB-INF/lib/httpclient-*.jar,WEB-INF/lib/httpcore-*.jar,WEB-INF/lib/javassist-*.jar,WEB-INF/lib/jcip-annotations-*.jar,WEB-INF/lib/resteasy-jaxrs-*.jar,WEB-INF/lib/scannotation-*.jar,WEB-INF/lib/slf4j-api-*.jar,WEB-INF/lib/slf4j-jdk14-*.jar,WEB-INF/lib/xpp3_min-*.jar,WEB-INF/lib/xstream-*.jar</packagingExcludes>
 				</configuration>
 			</plugin>				
 		</plugins>

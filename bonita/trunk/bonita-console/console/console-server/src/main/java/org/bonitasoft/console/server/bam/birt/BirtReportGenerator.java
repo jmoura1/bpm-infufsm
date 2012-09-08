@@ -18,6 +18,8 @@ package org.bonitasoft.console.server.bam.birt;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -161,13 +163,27 @@ public class BirtReportGenerator {
             task.setParameterValue("Locale", SessionManager.getUserProfile(aRequest).getLocale());
 
             // Add report parameters
-            task.setParameterValue("StartDate", aRequest.getParameter("StartDate"));
-            task.setParameterValue("EndDate", aRequest.getParameter("EndDate"));
-            task.setParameterValue("TimeUnit", aRequest.getParameter("TimeUnit"));
-            task.setParameterValue("ActivityType", aRequest.getParameter("ActivityType"));
-            task.setParameterValue("ProcessUUID", aRequest.getParameter("ProcessUUID"));
-            task.setParameterValue("ActivityUUID", aRequest.getParameter("ActivityUUID"));
-            task.setParameterValue("User", aRequest.getParameter("User"));
+            Map<String, String[]> parameters = aRequest.getParameterMap();
+            for (final Entry<String, String[]> parameter : parameters.entrySet()) {
+                final String key = parameter.getKey();
+                final String[] values = parameter.getValue();
+                if (values != null) {
+                    if (values.length == 1) {
+                        task.setParameterValue(key, values[0]);
+                    } else {
+                        StringBuilder value = new StringBuilder();
+                        for (String parameterValue : values) {
+                            if (value.length() > 0) {
+                                value.append(",");
+                            }
+                            value.append(parameterValue);
+                        }
+                        task.setParameterValue(key, value.toString());
+                    }
+                } else {
+                    task.setParameterValue(key, null);
+                }
+            }
 
             task.validateParameters();
             // Build the output options and set the response content type.

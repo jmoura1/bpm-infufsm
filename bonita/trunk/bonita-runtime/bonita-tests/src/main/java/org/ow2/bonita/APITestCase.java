@@ -116,19 +116,23 @@ public abstract class APITestCase extends TestCase {
     }
 
     if (System.getProperty(BonitaConstants.HOME) == null) {
-    	throw new RuntimeException("You must specify the system property " + BonitaConstants.HOME + " in order to execute tests. Please add a -D" +BonitaConstants.HOME + " VM argument in your test configuration." );
+      throw new RuntimeException("You must specify the system property " + BonitaConstants.HOME
+          + " in order to execute tests. Please add a -D" + BonitaConstants.HOME
+          + " VM argument in your test configuration.");
     }
 
     super.setUp();
 
     if (LOG.isLoggable(Level.WARNING)) {
-      LOG.warning("======== Starting test: " + this.getClass().getName() + "." + this.getName() + "() ==========");
+      LOG.warning("======== Starting test: " + this.getClass().getName() + "." + getName() + "() ==========");
     }
     login();
+    final String jarName = "database.jar";
     try {
-      getManagementAPI().deployJar("database.jar", Misc.generateJar(CreateDatabaseCommand.class, DatabaseCleanerCommand.class));
-    } catch (DeploymentException de) {
-      String message = de.getMessage();
+      getManagementAPI()
+          .deployJar(jarName, Misc.generateJar(CreateDatabaseCommand.class, DatabaseCleanerCommand.class));
+    } catch (final DeploymentException de) {
+      final String message = de.getMessage();
       if (!message.contains("database.jar")) {
         throw de;
       }
@@ -139,23 +143,23 @@ public abstract class APITestCase extends TestCase {
 
   @Override
   protected void tearDown() throws Exception {
-    String message = getCommandAPI().execute(new DatabaseCleanerCommand(this.testFail));
-    if (!this.testFail && !message.equals(BonitaConstants.DEFAULT_DOMAIN)) {
+    final String message = getCommandAPI().execute(new DatabaseCleanerCommand(testFail));
+    if (!testFail && !message.equals(BonitaConstants.DEFAULT_DOMAIN)) {
       throw new BonitaRuntimeException(message);
     }
 
-    if (this.loginContext != null) {
-      this.loginContext.logout();
+    if (loginContext != null) {
+      loginContext.logout();
     }
     if (LOG.isLoggable(Level.WARNING)) {
-      LOG.warning("======== Ending test: " + this.getName() + "==========");
+      LOG.warning("======== Ending test: " + getName() + "==========");
     }
-    this.runtimeAPI = null;
-    this.managementAPI = null;
-    this.queryRuntimeAPI = null;
-    this.queryDefinitionAPI = null;
-    this.commandAPI = null;
-    this.loginContext = null;
+    runtimeAPI = null;
+    managementAPI = null;
+    queryRuntimeAPI = null;
+    queryDefinitionAPI = null;
+    commandAPI = null;
+    loginContext = null;
   }
 
   @Override
@@ -167,7 +171,7 @@ public abstract class APITestCase extends TestCase {
     } catch (final Throwable e) {
       // There is a failure, we need to recreate db
       recreateDb = true;
-      this.testFail = true;
+      testFail = true;
       throw e;
     }
   }
@@ -176,119 +180,118 @@ public abstract class APITestCase extends TestCase {
    * APIs
    */
   protected synchronized RuntimeAPI getRuntimeAPI() {
-    if (this.runtimeAPI == null) {
-      this.runtimeAPI = AccessorUtil.getRuntimeAPI();
+    if (runtimeAPI == null) {
+      runtimeAPI = AccessorUtil.getRuntimeAPI();
     }
-    return this.runtimeAPI;
+    return runtimeAPI;
   }
 
   protected synchronized ManagementAPI getManagementAPI() {
-    if (this.managementAPI == null) {
-      this.managementAPI = AccessorUtil.getManagementAPI();
+    if (managementAPI == null) {
+      managementAPI = AccessorUtil.getManagementAPI();
     }
-    return this.managementAPI;
+    return managementAPI;
   }
 
   protected synchronized QueryRuntimeAPI getQueryRuntimeAPI() {
-    if (this.queryRuntimeAPI == null) {
-      this.queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
+    if (queryRuntimeAPI == null) {
+      queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
     }
-    return this.queryRuntimeAPI;
+    return queryRuntimeAPI;
   }
 
   protected synchronized WebAPI getWebAPI() {
-    if (this.webAPI == null) {
-      this.webAPI = AccessorUtil.getWebAPI();
+    if (webAPI == null) {
+      webAPI = AccessorUtil.getWebAPI();
     }
-    return this.webAPI;
+    return webAPI;
   }
 
   protected synchronized BAMAPI getBAMAPI() {
-    if (this.bamAPI == null) {
-      this.bamAPI = AccessorUtil.getBAMAPI();
+    if (bamAPI == null) {
+      bamAPI = AccessorUtil.getBAMAPI();
     }
-    return this.bamAPI;
+    return bamAPI;
   }
 
   protected synchronized QueryDefinitionAPI getQueryDefinitionAPI() {
-    if (this.queryDefinitionAPI == null) {
-      this.queryDefinitionAPI = AccessorUtil.getQueryDefinitionAPI();
+    if (queryDefinitionAPI == null) {
+      queryDefinitionAPI = AccessorUtil.getQueryDefinitionAPI();
     }
-    return this.queryDefinitionAPI;
+    return queryDefinitionAPI;
   }
 
   protected synchronized CommandAPI getCommandAPI() {
-    if (this.commandAPI == null) {
-      this.commandAPI = AccessorUtil.getCommandAPI();
+    if (commandAPI == null) {
+      commandAPI = AccessorUtil.getCommandAPI();
     }
-    return this.commandAPI;
+    return commandAPI;
   }
 
   protected synchronized IdentityAPI getIdentityAPI() {
-    if (this.identityAPI == null) {
-      this.identityAPI = AccessorUtil.getIdentityAPI();
+    if (identityAPI == null) {
+      identityAPI = AccessorUtil.getIdentityAPI();
     }
-    return this.identityAPI;
+    return identityAPI;
   }
 
   protected synchronized RepairAPI getRepairAPI() {
-    if (this.repairAPI == null) {
-      this.repairAPI = AccessorUtil.getRepairAPI();
+    if (repairAPI == null) {
+      repairAPI = AccessorUtil.getRepairAPI();
     }
-    return this.repairAPI;
+    return repairAPI;
   }
 
   /*
    * BEGIN OF TO BE REMOVED
    */
   protected void checkExecutedOnce(final ProcessInstance instance, final String[] activityIds)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+      throws InstanceNotFoundException, ActivityNotFoundException {
     checkExecutedOnce(instance.getUUID(), activityIds);
   }
 
   protected void checkExecutedOnce(final ProcessInstanceUUID instanceUUID, final String... activityIds)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+      throws InstanceNotFoundException, ActivityNotFoundException {
     checkExecuted(instanceUUID, activityIds);
     final ProcessInstance processInstance = getQueryRuntimeAPI().getProcessInstance(instanceUUID);
     assertEquals(InstanceState.FINISHED, processInstance.getInstanceState());
   }
 
   protected void checkNotExecuted(final ProcessInstance processInstance, final String[] activityIds)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+      throws InstanceNotFoundException, ActivityNotFoundException {
     checkNotExecuted(processInstance.getUUID(), activityIds);
   }
 
   protected void checkNotExecuted(final ProcessInstanceUUID instanceUUID, final String... activityIds)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+      throws InstanceNotFoundException, ActivityNotFoundException {
     for (final String activityId : activityIds) {
       try {
         getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
         fail("Activity : " + activityId + " must not be executed in this instance!");
       } catch (final ActivityNotFoundException e) {
-        //nothing, we expect an exception
-      } 
+        // nothing, we expect an exception
+      }
     }
     final ProcessInstance processInstance = getQueryRuntimeAPI().getProcessInstance(instanceUUID);
     assertEquals(InstanceState.FINISHED, processInstance.getInstanceState());
   }
 
   protected void checkStopped(final ProcessInstance instance, final String[] activityIds)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+      throws InstanceNotFoundException, ActivityNotFoundException {
     checkStopped(instance.getUUID(), activityIds);
   }
 
   protected void checkStopped(final ProcessInstanceUUID instanceUUID, final String[] activityIds)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+      throws InstanceNotFoundException, ActivityNotFoundException {
     final ProcessInstance instance = getQueryRuntimeAPI().getProcessInstance(instanceUUID);
     assertNotNull("Can't find an instance with uuid : " + instanceUUID, instance);
     checkExecuted(instanceUUID, activityIds);
   }
 
   private void checkExecuted(final ProcessInstanceUUID instanceUUID, final String[] activityIds)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+      throws InstanceNotFoundException, ActivityNotFoundException {
     for (final String activityId : activityIds) {
-      final Set<ActivityInstance> activityInsts =
-        getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
+      final Set<ActivityInstance> activityInsts = getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
       assertEquals("Activity " + activityId + " executed more than once.", 1, activityInsts.size());
       final ActivityInstance activityInst = activityInsts.iterator().next();
       assertNotNull("Activity " + activityId + " not executed", activityInst);
@@ -297,12 +300,12 @@ public abstract class APITestCase extends TestCase {
   }
 
   protected void checkExecutedManyTimes(final ProcessInstance instance, final String[] activityIds, final int execNb)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+      throws InstanceNotFoundException, ActivityNotFoundException {
     checkExecutedManyTimes(instance.getUUID(), activityIds, execNb);
   }
 
-  protected void checkExecutedManyTimes(final ProcessInstanceUUID instanceUUID, final String[] activityIds, final int execNb)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+  protected void checkExecutedManyTimes(final ProcessInstanceUUID instanceUUID, final String[] activityIds,
+      final int execNb) throws InstanceNotFoundException, ActivityNotFoundException {
     for (final String activityId : activityIds) {
       final Set<ActivityInstance> activities = getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
       assertNotNull("Activity " + activityId + " not executed", activities);
@@ -316,13 +319,13 @@ public abstract class APITestCase extends TestCase {
   }
 
   protected void checkOnlyOneExecuted(final ProcessInstanceUUID instanceUUID, final String[] activityIds)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+      throws InstanceNotFoundException, ActivityNotFoundException {
     checkAtLeastOneExecuted(instanceUUID, activityIds);
     checkAtMostOneExecuted(instanceUUID, activityIds);
   }
 
   protected void checkAtMostOneExecuted(final ProcessInstanceUUID instanceUUID, final String[] activityIds)
-  throws InstanceNotFoundException {
+      throws InstanceNotFoundException {
     boolean found = false;
     for (final String activityId : activityIds) {
       Set<ActivityInstance> activityInsts = null;
@@ -330,24 +333,22 @@ public abstract class APITestCase extends TestCase {
         activityInsts = getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
         for (final ActivityInstance activityInst : activityInsts) {
           if (activityInst.getEndedDate() != null) {
-            assertFalse("More than one activity in "
-                + Misc.componentsToString(activityIds, false)
+            assertFalse("More than one activity in " + Misc.componentsToString(activityIds, false)
                 + " has been executed.", found);
             found = true;
           }
         }
       } catch (final ActivityNotFoundException e) {
         // nothing to do
-      } 
+      }
     }
   }
 
   protected void checkAtLeastOneExecuted(final ProcessInstanceUUID instanceUUID, final String[] activityIds)
-  throws InstanceNotFoundException {
+      throws InstanceNotFoundException {
     for (final String activityId : activityIds) {
       try {
-        final Set<ActivityInstance> activityInsts =
-          getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
+        final Set<ActivityInstance> activityInsts = getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
         for (final ActivityInstance activityInst : activityInsts) {
           if (activityInst.getEndedDate() != null) {
             return;
@@ -355,7 +356,7 @@ public abstract class APITestCase extends TestCase {
         }
       } catch (final ActivityNotFoundException e) {
         // nothing to do
-      } 
+      }
     }
     fail("At least one activity of " + Misc.componentsToString(activityIds, false)
         + " has to be executed, none was found.");
@@ -365,10 +366,9 @@ public abstract class APITestCase extends TestCase {
    * END OF TO BE REMOVED
    */
   protected void executeTask(final ProcessInstanceUUID instanceUUID, final String activityId)
-  throws InstanceNotFoundException, TaskNotFoundException, IllegalTaskStateException {
+      throws InstanceNotFoundException, TaskNotFoundException, IllegalTaskStateException {
     TaskInstance matchingActivity;
-    final ActivityInstanceUUID taskUUID = executeTaskWithoutCheckingState(
-        instanceUUID, activityId);
+    final ActivityInstanceUUID taskUUID = executeTaskWithoutCheckingState(instanceUUID, activityId);
 
     matchingActivity = getQueryRuntimeAPI().getTask(taskUUID);
     assertEquals(ActivityState.FINISHED, matchingActivity.getState());
@@ -381,13 +381,10 @@ public abstract class APITestCase extends TestCase {
     assertTrue(endTime >= startTime);
   }
 
-  protected ActivityInstanceUUID executeTaskWithoutCheckingState(
-      final ProcessInstanceUUID instanceUUID, final String activityId)
-      throws InstanceNotFoundException, TaskNotFoundException,
-      IllegalTaskStateException {
+  protected ActivityInstanceUUID executeTaskWithoutCheckingState(final ProcessInstanceUUID instanceUUID,
+      final String activityId) throws InstanceNotFoundException, TaskNotFoundException, IllegalTaskStateException {
     TaskInstance matchingActivity;
-    final ActivityInstanceUUID taskUUID = startTaskWithoutVerifiyAfterState(
-        instanceUUID, activityId);
+    final ActivityInstanceUUID taskUUID = startTaskWithoutVerifiyAfterState(instanceUUID, activityId);
 
     matchingActivity = getQueryRuntimeAPI().getTask(taskUUID);
     assertEquals(ActivityState.EXECUTING, matchingActivity.getState());
@@ -399,18 +396,15 @@ public abstract class APITestCase extends TestCase {
     return taskUUID;
   }
 
-  protected ActivityInstanceUUID startTaskWithoutVerifiyAfterState(
-      final ProcessInstanceUUID instanceUUID, final String activityId)
-      throws InstanceNotFoundException, TaskNotFoundException,
-      IllegalTaskStateException {
+  protected ActivityInstanceUUID startTaskWithoutVerifiyAfterState(final ProcessInstanceUUID instanceUUID,
+      final String activityId) throws InstanceNotFoundException, TaskNotFoundException, IllegalTaskStateException {
     final Collection<TaskInstance> taskActivities = getQueryRuntimeAPI().getTaskList(instanceUUID, ActivityState.READY);
 
     final Collection<ActivityInstanceUUID> tasksToDo = new ArrayList<ActivityInstanceUUID>();
     TaskInstance matchingActivity = null;
     for (final TaskInstance task : taskActivities) {
       tasksToDo.add(task.getUUID());
-      if (task.getProcessInstanceUUID().equals(instanceUUID)
-          && task.getActivityName().equals(activityId)) {
+      if (task.getProcessInstanceUUID().equals(instanceUUID) && task.getActivityName().equals(activityId)) {
         matchingActivity = task;
         break;
       }
@@ -431,37 +425,39 @@ public abstract class APITestCase extends TestCase {
     return taskUUID;
   }
 
-  protected void waitForActivity(long maxWait, long sleepTime, ProcessInstanceUUID instanceUUID, final String activityId)
-  throws BonitaException {
-    long maxDate = System.currentTimeMillis() + maxWait;
+  protected void waitForActivity(final long maxWait, final long sleepTime, final ProcessInstanceUUID instanceUUID,
+      final String activityId) throws BonitaException {
+    final long maxDate = System.currentTimeMillis() + maxWait;
     ActivityInstance activity = null;
     while (System.currentTimeMillis() < maxDate) {
       activity = null;
       try {
-        Set<ActivityInstance> activities = getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
-        for (ActivityInstance act : activities) {
+        final Set<ActivityInstance> activities = getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
+        for (final ActivityInstance act : activities) {
           if (act.getActivityName().equals(activityId)) {
             activity = act;
             break;
           }
         }
-      } catch (ActivityNotFoundException anfe) {
-        //maybe instance move from journal to history
+      } catch (final ActivityNotFoundException anfe) {
+        // maybe instance move from journal to history
       }
       try {
         Thread.sleep(sleepTime);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new BonitaRuntimeException(e);
       }
     }
     assertNotNull(activity);
   }
 
-  protected void waitForInstanceEnd(long maxWait, long sleepTime, ProcessInstanceUUID instanceUUID) throws BonitaException {
+  protected void waitForInstanceEnd(final long maxWait, final long sleepTime, final ProcessInstanceUUID instanceUUID)
+      throws BonitaException {
     waitForInstance(maxWait, sleepTime, instanceUUID, InstanceState.FINISHED);
   }
 
-  protected void waitForInstance(final long maxWait, final long sleepTime, final ProcessInstanceUUID instanceUUID, final InstanceState state) throws BonitaException {
+  protected void waitForInstance(final long maxWait, final long sleepTime, final ProcessInstanceUUID instanceUUID,
+      final InstanceState state) throws BonitaException {
     final long maxDate = System.currentTimeMillis() + maxWait;
     LightProcessInstance processInstance = null;
     LightProcessInstance temp = null;
@@ -471,93 +467,98 @@ public abstract class APITestCase extends TestCase {
         if (state == temp.getInstanceState()) {
           processInstance = temp;
         }
-      } catch (Exception infe) {
-        //maybe instance move from journal to history due to handler
-        System.err.println("Warning: Instance not found. Probably due to FinishedProcessInstanceHandler that archives Process instances.");
+      } catch (final Exception infe) {
+        // maybe instance move from journal to history due to handler
+        System.err
+            .println("Warning: Instance not found. Probably due to FinishedProcessInstanceHandler that archives Process instances.");
       }
       try {
         Thread.sleep(sleepTime);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         // still waiting
         System.err.println("Warning: Thread sleep error.");
       }
     }
-    StringBuilder stb = new StringBuilder("No instance found with desired State: ");
+    final StringBuilder stb = new StringBuilder("No instance found with desired State: ");
     stb.append(state);
-    if(temp != null) {
+    if (temp != null) {
       stb.append("Actual state: ");
       stb.append(temp.getInstanceState());
     }
     assertNotNull(stb.toString(), processInstance);
   }
 
-  protected void waitForStartingInstance(long maxWait, long sleepTime, ProcessDefinitionUUID definitionUUID) throws BonitaException {
-    long maxDate = System.currentTimeMillis() + maxWait;
+  protected void waitForStartingInstance(final long maxWait, final long sleepTime,
+      final ProcessDefinitionUUID definitionUUID) throws BonitaException {
+    final long maxDate = System.currentTimeMillis() + maxWait;
     ProcessInstance processInstance = null;
     while (System.currentTimeMillis() < maxDate) {
       processInstance = null;
       try {
-        Set<ProcessInstance> processInstances = getQueryRuntimeAPI().getProcessInstances(definitionUUID);
+        final Set<ProcessInstance> processInstances = getQueryRuntimeAPI().getProcessInstances(definitionUUID);
         if (!processInstances.isEmpty()) {
           processInstance = processInstances.iterator().next();
         }
-      } catch (Exception infe) {
-        //maybe instance move from journal to history
+      } catch (final Exception infe) {
+        // maybe instance move from journal to history
       }
       try {
         Thread.sleep(sleepTime);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new BonitaRuntimeException(e);
       }
     }
     assertNotNull(processInstance);
   }
 
-  protected void waitForChildToBeFinished(long maxWait, long sleepTime, ProcessInstanceUUID instanceUUID) throws BonitaException {
-    long maxDate = System.currentTimeMillis() + maxWait;
+  protected void waitForChildToBeFinished(final long maxWait, final long sleepTime,
+      final ProcessInstanceUUID instanceUUID) throws BonitaException {
+    final long maxDate = System.currentTimeMillis() + maxWait;
     ProcessInstance processInstance = null;
     while (System.currentTimeMillis() < maxDate) {
       try {
         processInstance = getQueryRuntimeAPI().getProcessInstance(instanceUUID);
 
-        Set<ProcessInstanceUUID> childrenUUID = processInstance.getChildrenInstanceUUID();
+        final Set<ProcessInstanceUUID> childrenUUID = processInstance.getChildrenInstanceUUID();
         if (childrenUUID != null && childrenUUID.size() == 1) {
           final ProcessInstance childInstance = getQueryRuntimeAPI().getProcessInstance(childrenUUID.iterator().next());
           if (childInstance.getInstanceState().equals(InstanceState.FINISHED)) {
             break;
           }
         }
-      } catch (Exception infe) {
-        //maybe instance move from journal to history
+      } catch (final Exception infe) {
+        // maybe instance move from journal to history
       }
       try {
         Thread.sleep(sleepTime);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new BonitaRuntimeException(e);
       }
       processInstance = null;
     }
   }
 
-  protected void waitForTask(long maxWait, long sleepTime, ProcessInstanceUUID instanceUUID, String activityId)
-  throws BonitaException {
-    long maxDate = System.currentTimeMillis() + maxWait;
-    global:while (System.currentTimeMillis() < maxDate) {
-      final Collection<TaskInstance> taskActivities =
-        getQueryRuntimeAPI().getTaskList(instanceUUID, ActivityState.READY);
+  protected void waitForTask(final long maxWait, final long sleepTime, final ProcessInstanceUUID instanceUUID,
+      final String activityId) throws BonitaException {
+    waitForTask(maxWait, sleepTime, instanceUUID, activityId, ActivityState.READY);
+  }
 
+  protected void waitForTask(final long maxWait, final long sleepTime, final ProcessInstanceUUID instanceUUID,
+      final String activityId, final ActivityState activityState) throws BonitaException {
+    final long maxDate = System.currentTimeMillis() + maxWait;
+    global: while (System.currentTimeMillis() < maxDate) {
+      final Collection<TaskInstance> taskActivities = getQueryRuntimeAPI().getTaskList(instanceUUID, activityState);
       final Collection<ActivityInstanceUUID> tasksToDo = new ArrayList<ActivityInstanceUUID>();
 
       for (final TaskInstance task : taskActivities) {
         tasksToDo.add(task.getUUID());
-        if (task.getProcessInstanceUUID().equals(instanceUUID)
-            && task.getActivityName().equals(activityId)) {
+        if (task.getProcessInstanceUUID().equals(instanceUUID) && task.getActivityName().equals(activityId)) {
           break global;
         }
       }
       try {
         Thread.sleep(sleepTime);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new BonitaRuntimeException(e);
       }
     }
@@ -576,12 +577,12 @@ public abstract class APITestCase extends TestCase {
     return false;
   }
 
-  protected Map<String, byte[]> getResourcesFromConnector(Class<?>... clazz) throws IOException {
-    Map<String, byte[]> resources = new HashMap<String, byte[]>();
-    for (Class<?> class1 : clazz) {
-      String resourceName = class1.getName().replace('.', '/') + ".xml";
-      String resource = class1.getSimpleName() + ".xml";
-      URL resourcePath = class1.getResource(resource);
+  protected Map<String, byte[]> getResourcesFromConnector(final Class<?>... clazz) throws IOException {
+    final Map<String, byte[]> resources = new HashMap<String, byte[]>();
+    for (final Class<?> class1 : clazz) {
+      final String resourceName = class1.getName().replace('.', '/') + ".xml";
+      final String resource = class1.getSimpleName() + ".xml";
+      final URL resourcePath = class1.getResource(resource);
       resources.put(resourceName, Misc.getAllContentFrom(resourcePath));
     }
     return resources;
@@ -593,25 +594,26 @@ public abstract class APITestCase extends TestCase {
   protected String getLogin() {
     return "admin";
   }
+
   protected String getPassword() {
     return "bpm";
   }
-  protected void login() throws LoginException {
-    this.loginContext = new LoginContext("BonitaAuth",
-        new SimpleCallbackHandler(getLogin(), getPassword()));
-    this.loginContext.login();
-    this.loginContext.logout();
 
-    this.loginContext = new LoginContext("BonitaStore",
-        new SimpleCallbackHandler(getLogin(), getPassword()));
-    this.loginContext.login();
+  protected void login() throws LoginException {
+    loginContext = new LoginContext("BonitaAuth", new SimpleCallbackHandler(getLogin(), getPassword()));
+    loginContext.login();
+    loginContext.logout();
+
+    loginContext = new LoginContext("BonitaStore", new SimpleCallbackHandler(getLogin(), getPassword()));
+    loginContext.login();
   }
 
   protected BusinessArchive getBusinessArchive(final ProcessDefinition process) {
-    return getBusinessArchive(process, null, (Class< ? >) null);
+    return getBusinessArchive(process, null, (Class<?>) null);
   }
 
-  protected BusinessArchive getBusinessArchive(final ProcessDefinition process, final Map<String, byte[]> resources, final Class< ? >... classes) {
+  protected BusinessArchive getBusinessArchive(final ProcessDefinition process, final Map<String, byte[]> resources,
+      final Class<?>... classes) {
     try {
       return BusinessArchiveFactory.getBusinessArchive(process, resources, classes);
     } catch (final Exception e) {
@@ -621,32 +623,34 @@ public abstract class APITestCase extends TestCase {
   }
 
   protected BusinessArchive getBusinessArchiveFromXpdl(final URL xpdlURL) {
-    return getBusinessArchiveFromXpdl(xpdlURL, (Class< ? >) null);
+    return getBusinessArchiveFromXpdl(xpdlURL, (Class<?>) null);
   }
 
-  protected BusinessArchive getBusinessArchiveFromXpdl(final URL xpdlURL, final Class< ? >... classes) {
+  protected BusinessArchive getBusinessArchiveFromXpdl(final URL xpdlURL, final Class<?>... classes) {
     return getBusinessArchiveFromXpdl(xpdlURL, null, classes);
   }
 
-  protected BusinessArchive getBusinessArchiveFromXpdl(final URL xpdlURL, final Map<String, byte[]> resources, final Class< ? >... classes) {
-    ProcessDefinition process = ProcessBuilder.createProcessFromXpdlFile(xpdlURL);
+  protected BusinessArchive getBusinessArchiveFromXpdl(final URL xpdlURL, final Map<String, byte[]> resources,
+      final Class<?>... classes) {
+    final ProcessDefinition process = ProcessBuilder.createProcessFromXpdlFile(xpdlURL);
     try {
       return BusinessArchiveFactory.getBusinessArchive(process, resources, classes);
     } catch (final Exception e) {
-      fail("Unable to build businessArchive: " + e.getMessage() + " "+ Misc.getStackTraceFrom(e));
+      fail("Unable to build businessArchive: " + e.getMessage() + " " + Misc.getStackTraceFrom(e));
       return null;
     }
   }
 
-  protected Map<String, byte[]> getResources(String... resources) throws IOException {
-    Map<String, byte[]> result = new HashMap<String, byte[]>();
-    for (String jar : resources) {
-      URL jarUrl = this.getClass().getResource(jar);
+  protected Map<String, byte[]> getResources(final String... resources) throws IOException {
+    final Map<String, byte[]> result = new HashMap<String, byte[]>();
+    for (final String jar : resources) {
+      final URL jarUrl = this.getClass().getResource(jar);
       result.put(jar, Misc.getAllContentFrom(jarUrl));
     }
     return result;
   }
-  protected Set<byte[]> getClasses(final Class< ? >... classes) {
+
+  protected Set<byte[]> getClasses(final Class<?>... classes) {
     try {
       return ClassDataTool.getClasses(classes);
     } catch (final Exception e) {
@@ -655,25 +659,24 @@ public abstract class APITestCase extends TestCase {
     }
   }
 
-  protected void loginAs(String loginName, String password) throws LoginException {
+  protected void loginAs(final String loginName, final String password) throws LoginException {
     loginContext.logout();
     try {
-      loginContext = new LoginContext("BonitaAuth",
-          new SimpleCallbackHandler(loginName, password));
+      loginContext = new LoginContext("BonitaAuth", new SimpleCallbackHandler(loginName, password));
       loginContext.login();
       loginContext.logout();
 
       loginContext = new LoginContext("BonitaStore", new SimpleCallbackHandler(loginName, password));
       loginContext.login();
-    } catch (LoginException e) {
-      throw new RuntimeException("Please, configure a JAAS test user with login: "
-          + loginName + " and password: " + password, e);
+    } catch (final LoginException e) {
+      throw new RuntimeException("Please, configure a JAAS test user with login: " + loginName + " and password: "
+          + password, e);
     }
   }
 
   protected boolean isREST() {
-    String apiType = System.getProperty(AccessorUtil.API_TYPE_PROPERTY);
-    return (apiType != null && apiType.equalsIgnoreCase(Context.REST.toString()));
+    final String apiType = System.getProperty(AccessorUtil.API_TYPE_PROPERTY);
+    return apiType != null && apiType.equalsIgnoreCase(Context.REST.toString());
   }
 
   protected boolean executesTestsRemotely() {
@@ -681,15 +684,15 @@ public abstract class APITestCase extends TestCase {
     if (apiType == null) {
       apiType = Context.Standard.name();
     }
-    Context context = Misc.stringToEnum(Context.class, apiType);
+    final Context context = Misc.stringToEnum(Context.class, apiType);
     return Context.EJB2.equals(context) || Context.EJB3.equals(context) || Context.REST.equals(context);
   }
 
-  public LightProcessInstance getLightProcessInstance(Set<LightProcessInstance> instances, String processName, String version)
-  throws ProcessNotFoundException {
-    for (LightProcessInstance instance : instances) {
-      ProcessDefinitionUUID definitionUUID = instance.getProcessDefinitionUUID();
-      ProcessDefinition definition = getQueryDefinitionAPI().getProcess(definitionUUID);
+  public LightProcessInstance getLightProcessInstance(final Set<LightProcessInstance> instances,
+      final String processName, final String version) throws ProcessNotFoundException {
+    for (final LightProcessInstance instance : instances) {
+      final ProcessDefinitionUUID definitionUUID = instance.getProcessDefinitionUUID();
+      final ProcessDefinition definition = getQueryDefinitionAPI().getProcess(definitionUUID);
       if (processName.equals(definition.getName()) && version.equals(definition.getVersion())) {
         return instance;
       }
@@ -697,8 +700,9 @@ public abstract class APITestCase extends TestCase {
     return null;
   }
 
-  public static LightActivityInstance getLightActivityInstance(Collection<LightActivityInstance> activities, String activityName) {
-    for (LightActivityInstance activity : activities) {
+  public static LightActivityInstance getLightActivityInstance(final Collection<LightActivityInstance> activities,
+      final String activityName) {
+    for (final LightActivityInstance activity : activities) {
       if (activityName.equals(activity.getActivityName())) {
         return activity;
       }
@@ -706,8 +710,8 @@ public abstract class APITestCase extends TestCase {
     return null;
   }
 
-  public static ActivityInstance getActivityInstance(Set<ActivityInstance> activities, String activityName) {
-    for (ActivityInstance activity : activities) {
+  public static ActivityInstance getActivityInstance(final Set<ActivityInstance> activities, final String activityName) {
+    for (final ActivityInstance activity : activities) {
       if (activityName.equals(activity.getActivityName())) {
         return activity;
       }
@@ -715,8 +719,9 @@ public abstract class APITestCase extends TestCase {
     return null;
   }
 
-  public static ActivityDefinition getActivityDefinition(Set<ActivityDefinition> activities, String activityName) {
-    for (ActivityDefinition activity : activities) {
+  public static ActivityDefinition getActivityDefinition(final Set<ActivityDefinition> activities,
+      final String activityName) {
+    for (final ActivityDefinition activity : activities) {
       if (activityName.equals(activity.getName())) {
         return activity;
       }
@@ -724,8 +729,9 @@ public abstract class APITestCase extends TestCase {
     return null;
   }
 
-  public static TransitionDefinition getTransition(Set<TransitionDefinition> transitions, String tranistionName) {
-    for (TransitionDefinition tranistion : transitions) {
+  public static TransitionDefinition getTransition(final Set<TransitionDefinition> transitions,
+      final String tranistionName) {
+    for (final TransitionDefinition tranistion : transitions) {
       if (tranistionName.equals(tranistion.getName())) {
         return tranistion;
       }
@@ -733,8 +739,8 @@ public abstract class APITestCase extends TestCase {
     return null;
   }
 
-  public static BoundaryEvent getBoundaryEvent(List<BoundaryEvent> events, String eventName) {
-    for (BoundaryEvent event : events) {
+  public static BoundaryEvent getBoundaryEvent(final List<BoundaryEvent> events, final String eventName) {
+    for (final BoundaryEvent event : events) {
       if (eventName.equals(event.getName())) {
         return event;
       }
@@ -742,50 +748,48 @@ public abstract class APITestCase extends TestCase {
     return null;
   }
 
-  public static Category getCategory(Set<Category> categories, String categoryName) {
-    for (Category category : categories) {
+  public static Category getCategory(final Set<Category> categories, final String categoryName) {
+    for (final Category category : categories) {
       if (categoryName.equals(category.getName())) {
         return category;
       }
     }
     return null;
   }
-  
-  protected void checkState(final ProcessInstanceUUID instanceUUID, ActivityState activityState, final String... activityIds)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+
+  protected void checkState(final ProcessInstanceUUID instanceUUID, final ActivityState activityState,
+      final String... activityIds) throws InstanceNotFoundException, ActivityNotFoundException {
     for (final String activityId : activityIds) {
-      final Set<ActivityInstance> activityInsts =
-        getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
+      final Set<ActivityInstance> activityInsts = getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
       assertEquals("Activity " + activityId + " executed more than once.", 1, activityInsts.size());
       final ActivityInstance activityInst = activityInsts.iterator().next();
       assertEquals(activityState, activityInst.getState());
     }
   }
-  
-  protected void checkState(final ProcessInstanceUUID instanceUUID, ActivityState activityState, final String activityId, final int nb)
-  throws InstanceNotFoundException, ActivityNotFoundException {
-      final Set<ActivityInstance> activityInsts =
-        getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
-      assertEquals("Activity " + activityId, nb, activityInsts.size());
-      for (final ActivityInstance activityInstance : activityInsts) {
-        assertEquals(activityState, activityInstance.getState());
-      }
-  }
-  
-  protected void checkActivityInstanceNotExist(final ProcessInstanceUUID instanceUUID, final String... activityIds)
-  throws InstanceNotFoundException {
-    for (final String activityId : activityIds) {
-        try {
-          getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
-          fail("This activity has already created instances");
-        } catch (ActivityNotFoundException e) {
-          //OK
-        }
+
+  protected void checkState(final ProcessInstanceUUID instanceUUID, final ActivityState activityState,
+      final String activityId, final int nb) throws InstanceNotFoundException, ActivityNotFoundException {
+    final Set<ActivityInstance> activityInsts = getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
+    assertEquals("Activity " + activityId, nb, activityInsts.size());
+    for (final ActivityInstance activityInstance : activityInsts) {
+      assertEquals(activityState, activityInstance.getState());
     }
   }
-  
-  protected void checkState(final ProcessInstanceUUID instanceUUID, InstanceState instanceState)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+
+  protected void checkActivityInstanceNotExist(final ProcessInstanceUUID instanceUUID, final String... activityIds)
+      throws InstanceNotFoundException {
+    for (final String activityId : activityIds) {
+      try {
+        getQueryRuntimeAPI().getActivityInstances(instanceUUID, activityId);
+        fail("This activity has already created instances");
+      } catch (final ActivityNotFoundException e) {
+        // OK
+      }
+    }
+  }
+
+  protected void checkState(final ProcessInstanceUUID instanceUUID, final InstanceState instanceState)
+      throws InstanceNotFoundException, ActivityNotFoundException {
     final LightProcessInstance instance = getQueryRuntimeAPI().getLightProcessInstance(instanceUUID);
     assertEquals(instanceState, instance.getInstanceState());
   }

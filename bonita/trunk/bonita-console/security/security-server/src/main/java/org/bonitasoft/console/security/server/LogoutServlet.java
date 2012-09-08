@@ -42,6 +42,11 @@ public class LogoutServlet extends HttpServlet {
      * the URL param for the redirection URL after login
      */
     protected static final String REDIRECT_URL_PARAM = "redirectUrl";
+
+    /**
+     * the domain param
+     */
+    protected static final String DOMAIN_PARAM = "domain";
     
     /**
      * the URL of the login page
@@ -63,11 +68,15 @@ public class LogoutServlet extends HttpServlet {
         session.removeAttribute(LoginServlet.USER_PROFILE_SESSION_PARAM_KEY);
         
         final String redirectURL = request.getParameter(REDIRECT_URL_PARAM);
+        final String domain = request.getParameter(DOMAIN_PARAM);
         String encodedRedirectURL;
         if (redirectURL != null) {
         	encodedRedirectURL = URLEncoder.encode(redirectURL, "UTF-8");
         } else {
         	encodedRedirectURL = "";
+        }
+        if (domain != null) {
+        	encodedRedirectURL += "&" + DOMAIN_PARAM + "=" + domain;
         }
 
         response.sendRedirect(LOGIN_PAGE + "?" + REDIRECT_URL_PARAM + "=" + encodedRedirectURL);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 BonitaSoft S.A.
+ * Copyright (C) 2011-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,21 +33,21 @@ import com.sforce.soap.partner.sobject.SObject;
  */
 public class RetrieveSObjectsConnector extends SalesforceConnector {
 
-  //input parameters
+  // input parameters
   private List<String> fieldsToRetrieve;
   private String sObjectType;
   private List<String> sObjectIds;
 
-  //output parameters
+  // output parameters
   private List<SObject> sObjects;
 
-  private static final Log logger = LogFactory.getLog(RetrieveSObjectsConnector.class.getClass());
+  private static final Log LOGGER = LogFactory.getLog(RetrieveSObjectsConnector.class.getClass());
 
   @Override
   protected List<ConnectorError> validateExtraValues() {
     final List<ConnectorError> errors = new ArrayList<ConnectorError>();
-    ConnectorError typeEmptyError = this.getErrorIfNullOrEmptyParam(sObjectType, "sObjectType");
-    if(typeEmptyError != null){
+    final ConnectorError typeEmptyError = this.getErrorIfNullOrEmptyParam(sObjectType, "sObjectType");
+    if (typeEmptyError != null) {
       errors.add(typeEmptyError);
       return errors;
     }
@@ -55,14 +55,14 @@ public class RetrieveSObjectsConnector extends SalesforceConnector {
       errors.add(new ConnectorError("sObjectIds", new IllegalArgumentException("Cannot be empty!")));
       return errors;
     }
-    for (String id : sObjectIds) {
-      ConnectorError idEmptyError = this.getErrorIfNullOrEmptyParam(id, "id");
-      if(idEmptyError != null){
+    for (final String id : sObjectIds) {
+      final ConnectorError idEmptyError = this.getErrorIfNullOrEmptyParam(id, "id");
+      if (idEmptyError != null) {
         errors.add(idEmptyError);
         return errors;
       }
-      ConnectorError invalidIdLengthError = this.getErrorIfIdLengthInvalid(id);
-      if(invalidIdLengthError != null){
+      final ConnectorError invalidIdLengthError = this.getErrorIfIdLengthInvalid(id);
+      if (invalidIdLengthError != null) {
         errors.add(invalidIdLengthError);
         return errors;
       }
@@ -73,8 +73,8 @@ public class RetrieveSObjectsConnector extends SalesforceConnector {
   @Override
   protected void executeFunction(final PartnerConnection connection) throws Exception {
     final String fieldsToRetrieve = SalesforceTool.buildFields(this.fieldsToRetrieve);
-    if (logger.isDebugEnabled()) {
-      logger.debug("fieldsToRetrieve = " + fieldsToRetrieve);
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("fieldsToRetrieve = " + fieldsToRetrieve);
     }
     final String[] ids = sObjectIds.toArray(new String[0]);
     sObjects = Arrays.asList(connection.retrieve(fieldsToRetrieve, sObjectType, ids));
@@ -107,4 +107,5 @@ public class RetrieveSObjectsConnector extends SalesforceConnector {
   public void setSObjectType(final String sObjectType) {
     this.sObjectType = sObjectType;
   }
+
 }

@@ -114,7 +114,7 @@ public class FileUploadEditor extends I18NComposite implements HasValue<String>,
         }
     }
     
-    protected void showEditor() {
+    public void showEditor() {
         if (myEditor == null) {
             myEditor = new FileUploadWidget(myMessageDataSource, myFileNamePattern, new FileUploadedHandler() {
 

@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>org.ow2.bonita</groupId>
 		<artifactId>bonita-runtime</artifactId>
-		<version>5.6.1</version>
+		<version>5.7.2</version>
 	</parent>
 
 	<properties>
@@ -34,7 +34,9 @@
 		<default.server.conf>${bonita.home}/server/default/conf</default.server.conf>
 		<tenant1.server.conf>${bonita.home}/server/tenant1/conf</tenant1.server.conf>
 		<tenant2.server.conf>${bonita.home}/server/tenant2/conf</tenant2.server.conf>
-	</properties>
+		<cmis.repository>${plateform}</cmis.repository>
+		<cmis.server.host>localhost:8080</cmis.server.host>
+		</properties>
 
 	<!-- Dependencies -->
 	<dependencies>
@@ -74,6 +76,11 @@
 		<dependency>
 			<groupId>org.bonitasoft.connectors</groupId>
 			<artifactId>java</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bonitasoft.connectors</groupId>
+			<artifactId>email</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
@@ -137,9 +144,10 @@
 								</tstamp>
 
 								<replace file="${project.build.directory}/bonita-server.xml"
-										token="localhost:8080" value="192.168.1.212:8387" />
+										token="localhost:8080" value="${cmis.server.host}" />
+										
 								<replace file="${project.build.directory}/bonita-server.xml"
-										token="string value='default'" value="string value='${plateform}'" />
+										token="string value='default'" value="string value='${cmis.repository}'" />
 
 								<copy todir="${default.server.conf}" verbose="true">
 									<fileset dir="${basedir}/conf/default" />

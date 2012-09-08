@@ -82,7 +82,7 @@ import com.google.gwt.user.datepicker.client.DateBox.Format;
  * 
  * @author Anthony Birembaut
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class FormFieldWidget extends Composite implements HasChangeHandlers, ChangeHandler, HasClickHandlers, ClickHandler, HasValueChangeHandlers, ValueChangeHandler, HasSelectionHandlers<Suggestion>, SelectionHandler<Suggestion> {
 
     /**
@@ -249,6 +249,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue the widget value
      * @return a {@link TextBox}
      */
+    @SuppressWarnings("unchecked")
     protected TextBox createTextBox(final FormWidget widgetData, final FormFieldValue fieldValue) {
         final TextBox textBox = new TextBox();
         textBox.addChangeHandler(this);
@@ -272,6 +273,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue the widget value
      * @return a {@link TextArea}
      */
+    @SuppressWarnings("unchecked")
     protected TextArea createTextArea(final FormWidget widgetData, final FormFieldValue fieldValue) {
         final TextArea textArea = new TextArea();
         textArea.addChangeHandler(this);
@@ -316,6 +318,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue the widget value
      * @return a {@link PasswordTextBox}
      */
+    @SuppressWarnings("unchecked")
     protected PasswordTextBox createPasswordTextBox(final FormWidget widgetData, final FormFieldValue fieldValue) {
         final PasswordTextBox passwordTextBox = new PasswordTextBox();
         passwordTextBox.addChangeHandler(this);
@@ -354,6 +357,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue the widget value
      * @return a {@link CheckBox}
      */
+    @SuppressWarnings("unchecked")
     protected CheckBox createCheckBox(final FormWidget widgetData, final FormFieldValue fieldValue) {
         final CheckBox checkBox = new CheckBox();
         checkBox.addClickHandler(this);
@@ -375,6 +379,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue the widget value
      * @return a {@link RadioButtonGroupWidget}
      */
+    @SuppressWarnings("unchecked")
     protected RadioButtonGroupWidget createRadioButtonGroup(final FormWidget widgetData, final FormFieldValue fieldValue) {
         final RadioButtonGroupWidget radioButtonGroupWidget = new RadioButtonGroupWidget(widgetData.getId(), widgetData.getAvailableValues(), getStringValue(fieldValue), widgetData.getItemsStyle(), widgetData.allowHTMLInField());
         radioButtonGroupWidget.addClickHandler(this);
@@ -443,6 +448,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue the widget value
      * @return a {@link SuggestBox}
      */
+    @SuppressWarnings("unchecked")
     protected SuggestBox createSuggestBox(final FormWidget widgetData, final FormFieldValue fieldValue) {
         final TextBox textBox = new TextBox();
         textBox.setEnabled(!widgetData.isReadOnly());
@@ -483,6 +489,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue
      * @return a {@link AsyncSuggestBoxWidget}
      */
+    @SuppressWarnings("unchecked")
     protected AsyncSuggestBoxWidget createSuggestBoxAsync(FormWidget widgetData, FormFieldValue fieldValue) {
         final AsyncSuggestBoxWidget formAsyncSuggestBoxWidget = new AsyncSuggestBoxWidget(widgetData, formID, contextMap, isCurrentValue, fieldValue);
         formAsyncSuggestBoxWidget.getAsyncSuggestBox().addValueChangeHandler(this);
@@ -497,6 +504,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue the widget value
      * @return a {@link CheckboxGroupWidget}
      */
+    @SuppressWarnings("unchecked")
     protected CheckboxGroupWidget createCheckboxGroup(final FormWidget widgetData, final FormFieldValue fieldValue) {
         final Collection<String> initialValues = getStringValues(fieldValue);
         final CheckboxGroupWidget checkBoxGroupWidget = new CheckboxGroupWidget(widgetData.getAvailableValues(), initialValues, widgetData.getItemsStyle(), widgetData.allowHTMLInField());
@@ -513,6 +521,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue the widget value
      * @return a {@link DateBox}
      */
+    @SuppressWarnings("unchecked")
     protected DateBox createDateBox(final FormWidget widgetData, final FormFieldValue fieldValue) {
         final DateBox dateBox = new DateBox();
         dateBox.addValueChangeHandler(this);
@@ -620,6 +629,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue the widget value
      * @return an {@link EditableGridWidget}
      */
+    @SuppressWarnings("unchecked")
     protected EditableGridWidget createEditableGrid(final FormWidget widgetData, final FormFieldValue fieldValue) {
         final EditableGridWidget gridWidget = new EditableGridWidget(formID, widgetData, getGridValue(fieldValue));
         gridWidget.addValueChangeHandler(this);
@@ -643,34 +653,6 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param widgetData the widget data object
      */
     protected void createWidget(final FormWidget widgetData, final FormFieldValue fieldValue) {
-
-        // tool-tip widget display
-        if (widgetData.getPopupToolTip() != null && widgetData.getPopupToolTip().length() > 0) {
-
-            theOuterToolTipPanel = new FlowPanel();
-            final PopupPanel toolTipPopupFrame = new PopupPanel(true);
-            toolTipPopupFrame.setWidget(new Label(widgetData.getPopupToolTip()));
-            toolTipPopupFrame.addStyleName("bonita_form_popup_tooltip");
-
-            final Image toolTipIcon = new Image("images/tooltip.gif");
-            toolTipIcon.setStylePrimaryName("bonita_form_popup_tooltip_img");
-            theOuterToolTipPanel.add(toolTipIcon);
-            theOuterToolTipPanel.setStylePrimaryName("bonita_form_popup_tooltip_icon");
-
-            toolTipIcon.addClickHandler(new ClickHandler() {
-                public void onClick(ClickEvent event) {
-                    final Widget source = (Widget) event.getSource();
-                    final int left = source.getAbsoluteLeft();
-                    final int top = source.getAbsoluteTop();
-                    toolTipPopupFrame.setPopupPosition(left + 10, top + 5);
-                    toolTipPopupFrame.show();
-                }
-            });
-            if (ItemPosition.RIGHT.equals(widgetData.getLabelPosition())) {
-                toolTipPopupFrame.addStyleName("bonita_form_popup_tooltip_left");
-                fieldContainer.add(theOuterToolTipPanel);
-            }
-        }
 
         // label creation
         HTML labelWidget = null;
@@ -767,6 +749,8 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
                 fieldContainer.add(labelWidget);
                 if (isStaticField()) {
                     fieldWidget.addStyleName("bonita_form_static_field_left");
+                } else if (WidgetType.TEXTAREA.equals(widgetData.getType()) && widgetData.getMaxLength() != 0) {
+                    fieldWidget.addStyleName("bonita_form_field_left_no_width");
                 } else {
                     fieldWidget.addStyleName("bonita_form_field_left");
                 }
@@ -775,18 +759,24 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
                 fieldContainer.add(labelWidget);
                 if (isStaticField()) {
                     fieldWidget.addStyleName("bonita_form_static_field_top");
+                } else if (WidgetType.TEXTAREA.equals(widgetData.getType()) && widgetData.getMaxLength() != 0) {
+                    fieldWidget.addStyleName("bonita_form_field_top_no_width");
                 } else {
                     fieldWidget.addStyleName("bonita_form_field_top");
                 }
             } else if (ItemPosition.TOP.equals(widgetData.getLabelPosition())) {
                 if (isStaticField()) {
                     fieldWidget.addStyleName("bonita_form_static_field_bottom");
+                } else if (WidgetType.TEXTAREA.equals(widgetData.getType()) && widgetData.getMaxLength() != 0) {
+                    fieldWidget.addStyleName("bonita_form_field_bottom_no_width");
                 } else {
                     fieldWidget.addStyleName("bonita_form_field_bottom");
                 }
             } else {
                 if (isStaticField()) {
                     fieldWidget.addStyleName("bonita_form_static_field_right");
+                } else if (WidgetType.TEXTAREA.equals(widgetData.getType()) && widgetData.getMaxLength() != 0) {
+                    fieldWidget.addStyleName("bonita_form_field_right_no_width");
                 } else {
                     fieldWidget.addStyleName("bonita_form_field_right");
                 }
@@ -842,8 +832,36 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
         }
         flowPanel.addStyleName("bonita_form_vertical_panel");
 
+     // tool-tip widget display
         if (widgetData.getPopupToolTip() != null && widgetData.getPopupToolTip().length() > 0) {
-            if (ItemPosition.LEFT.equals(widgetData.getLabelPosition())) {
+
+            theOuterToolTipPanel = new FlowPanel();
+            final PopupPanel toolTipPopupFrame = new PopupPanel(true);
+            toolTipPopupFrame.setWidget(new Label(widgetData.getPopupToolTip()));
+            toolTipPopupFrame.addStyleName("bonita_form_popup_tooltip");
+
+            final Image toolTipIcon = new Image("images/tooltip.gif");
+            toolTipIcon.setStylePrimaryName("bonita_form_popup_tooltip_img");
+            theOuterToolTipPanel.add(toolTipIcon);
+            theOuterToolTipPanel.setStylePrimaryName("bonita_form_popup_tooltip_icon");
+
+            toolTipIcon.addClickHandler(new ClickHandler() {
+                public void onClick(ClickEvent event) {
+                    final Widget source = (Widget) event.getSource();
+                    final int left = source.getAbsoluteLeft();
+                    final int top = source.getAbsoluteTop();
+                    toolTipPopupFrame.setPopupPosition(left + 10, top + 5);
+                    toolTipPopupFrame.show();
+                }
+            });
+            if (ItemPosition.RIGHT.equals(widgetData.getLabelPosition())) {
+                toolTipPopupFrame.addStyleName("bonita_form_popup_tooltip_left");
+                fieldContainer.add(theOuterToolTipPanel);
+            }else if(ItemPosition.LEFT.equals(widgetData.getLabelPosition())){
+                fieldContainer.add(theOuterToolTipPanel);
+            }else if(ItemPosition.TOP.equals(widgetData.getLabelPosition())){
+                fieldContainer.add(theOuterToolTipPanel);
+            }else if(ItemPosition.BOTTOM.equals(widgetData.getLabelPosition())){
                 fieldContainer.add(theOuterToolTipPanel);
             }
         }
@@ -885,6 +903,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue the data field value
      * @return a List<String>
      */
+    @SuppressWarnings("unchecked")
     protected List<String> getTableValue(final FormFieldValue fieldValue) {
         List<String> valueList = null;
         try {
@@ -904,6 +923,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue the data field value
      * @return a List of List<String>
      */
+    @SuppressWarnings("unchecked")
     protected List<List<String>> getGridValue(final FormFieldValue fieldValue) {
         List<List<String>> valueList = null;
         try {
@@ -956,6 +976,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue the {@link FormFieldValue}
      * @return a Collection<String>
      */
+    @SuppressWarnings("unchecked")
     protected Collection<String> getStringValues(final FormFieldValue fieldValue) {
         Collection<String> value = null;
         try {
@@ -1011,8 +1032,10 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * 
      * @return a {@link FormFieldValue} object
      */
+    @SuppressWarnings("unchecked")
     public FormFieldValue getValue() {
 
+    	String attachmentName = null;
         Serializable value = null;
         String valueType = null;
         String format = null;
@@ -1074,6 +1097,9 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
             final SuggestBox suggestBox = (SuggestBox) fieldWidget;
             final String displayedValue = suggestBox.getValue();
             value = suggestionsMap.get(displayedValue);
+            if (value == null) {
+                value = displayedValue;
+            }
             valueType = SupportedFieldTypes.JAVA_STRING_CLASSNAME;
             break;
         case SUGGESTBOX_ASYNC:
@@ -1108,6 +1134,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
             break;
         case FILEUPLOAD:
             final FileUploadWidget fileUpload = (FileUploadWidget) fieldWidget;
+            attachmentName = fileUpload.getAttachmentName();
             value = fileUpload.getValue();
             valueType = SupportedFieldTypes.JAVA_FILE_CLASSNAME;
             break;
@@ -1145,6 +1172,11 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
         } else {
             format = DateTimeFormat.getFormat(PredefinedFormat.DATE_LONG).getPattern();
         }
+        if(WidgetType.FILEUPLOAD.equals(widgetType)) {
+        	FormFieldValue formFieldValue = new FormFieldValue(value, valueType, format);
+        	formFieldValue.setAttachmentName(attachmentName);
+        	return formFieldValue;
+        }
         return new FormFieldValue(value, valueType, format);
     }
 
@@ -1161,175 +1193,182 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
      * @param fieldValue
      */
     public void setValue(final FormFieldValue fieldValue) {
-        Collection<String> values = null;
-        boolean fireEvents = true;
-        switch (widgetType) {
-        case TEXTBOX:
-            final TextBox textBox = (TextBox) fieldWidget;
-            if (SupportedFieldTypes.JAVA_DATE_CLASSNAME.equals(fieldValue.getValueType())) {
-                textBox.setValue(getDateAsText(fieldValue), fireEvents);
-            } else {
-                textBox.setValue(getStringValue(fieldValue), fireEvents);
-            }
-            break;
-        case TEXTAREA:
-            final TextArea textArea = (TextArea) fieldWidget;
-            if (SupportedFieldTypes.JAVA_DATE_CLASSNAME.equals(fieldValue.getValueType())) {
-                textArea.setValue(getDateAsText(fieldValue), fireEvents);
-            } else {
-                textArea.setValue(getStringValue(fieldValue), fireEvents);
-            }
-            break;
-        case RICH_TEXTAREA:
-            final RichTextWidget richTextWidget = (RichTextWidget) fieldWidget;
-            if (SupportedFieldTypes.JAVA_DATE_CLASSNAME.equals(fieldValue.getValueType())) {
-                richTextWidget.setValue(getDateAsText(fieldValue));
-            } else {
-                richTextWidget.setValue(getStringValue(fieldValue));
-            }
-            break;
-        case TEXT:
-            final HTML text = (HTML) fieldWidget;
-            if ((text.getHTML() != null && text.getHTML().equals(fieldValue.getValue())) || (fieldValue.getValue() != null && fieldValue.getValue().equals(text.getHTML()))) {
-                fireEvents = false;
-            }
-            if (SupportedFieldTypes.JAVA_DATE_CLASSNAME.equals(fieldValue.getValueType())) {
-                text.setText(getDateAsText(fieldValue));
-            } else {
-                text.setHTML(getStringValue(fieldValue));
-            }
-            if (fireEvents) {
-                DomEvent.fireNativeEvent(Document.get().createChangeEvent(), text);
-            }
-            break;
-        case PASSWORD:
-            final PasswordTextBox passwordTextBox = (PasswordTextBox) fieldWidget;
-            passwordTextBox.setValue(getStringValue(fieldValue), fireEvents);
-            break;
-        case CHECKBOX:
-            final CheckBox checkBox = (CheckBox) fieldWidget;
-            try {
-                checkBox.setValue((Boolean) fieldValue.getValue(), fireEvents);
-            } catch (final Exception e) {
-                checkBox.setValue(false, fireEvents);
-                Window.alert("initial value for checkbox " + widgetId + " should be a Boolean.");
-            }
-            break;
-        case RADIOBUTTON_GROUP:
-            final RadioButtonGroupWidget radioButtonGroupWidget = (RadioButtonGroupWidget) fieldWidget;
-            radioButtonGroupWidget.setValue(getStringValue(fieldValue), fireEvents);
-            break;
-        case LISTBOX_SIMPLE:
-            final ListBox listBox = (ListBox) fieldWidget;
-            if (listBox.getValue(listBox.getSelectedIndex()).equals(getStringValue(fieldValue))) {
-                fireEvents = false;
-            }
-            for (int i = 0; i < listBox.getItemCount(); i++) {
-                if (listBox.getItemText(i).equals(getStringValue(fieldValue))) {
-                    listBox.setItemSelected(i, true);
-                    break;
-                }
-            }
-            if (fireEvents) {
-                DomEvent.fireNativeEvent(Document.get().createChangeEvent(), listBox);
-            }
-            break;
-        case LISTBOX_MULTIPLE:
-            final ListBox listBoxMulti = (ListBox) fieldWidget;
-            values = getStringValues(fieldValue);
-            boolean valueChanged = false;
-            for (int i = 0; i < listBoxMulti.getItemCount(); i++) {
-                if (values != null && values.contains(listBoxMulti.getItemText(i))) {
-                    if (!listBoxMulti.isItemSelected(i)) {
-                        valueChanged = true;
-                        listBoxMulti.setItemSelected(i, true);
-                    }
+        if (fieldValue.getValue() != null) {
+            Collection<String> values = null;
+            boolean fireEvents = true;
+            switch (widgetType) {
+            case TEXTBOX:
+                final TextBox textBox = (TextBox) fieldWidget;
+                if (SupportedFieldTypes.JAVA_DATE_CLASSNAME.equals(fieldValue.getValueType())) {
+                    textBox.setValue(getDateAsText(fieldValue), fireEvents);
                 } else {
-                    if (listBoxMulti.isItemSelected(i)) {
-                        valueChanged = true;
-                        listBoxMulti.setItemSelected(i, false);
+                    textBox.setValue(getStringValue(fieldValue), fireEvents);
+                }
+                break;
+            case TEXTAREA:
+                final TextArea textArea = (TextArea) fieldWidget;
+                if (SupportedFieldTypes.JAVA_DATE_CLASSNAME.equals(fieldValue.getValueType())) {
+                    textArea.setValue(getDateAsText(fieldValue), fireEvents);
+                } else {
+                    textArea.setValue(getStringValue(fieldValue), fireEvents);
+                }
+                break;
+            case RICH_TEXTAREA:
+                final RichTextWidget richTextWidget = (RichTextWidget) fieldWidget;
+                if (SupportedFieldTypes.JAVA_DATE_CLASSNAME.equals(fieldValue.getValueType())) {
+                    richTextWidget.setValue(getDateAsText(fieldValue));
+                } else {
+                    richTextWidget.setValue(getStringValue(fieldValue));
+                }
+                break;
+            case TEXT:
+                final HTML text = (HTML) fieldWidget;
+                if ((text.getHTML() != null && text.getHTML().equals(fieldValue.getValue())) || (fieldValue.getValue() != null && fieldValue.getValue().equals(text.getHTML()))) {
+                    fireEvents = false;
+                }
+                if (SupportedFieldTypes.JAVA_DATE_CLASSNAME.equals(fieldValue.getValueType())) {
+                    text.setText(getDateAsText(fieldValue));
+                } else {
+                    text.setHTML(getStringValue(fieldValue));
+                }
+                if (fireEvents) {
+                    DomEvent.fireNativeEvent(Document.get().createChangeEvent(), text);
+                }
+                break;
+            case PASSWORD:
+                final PasswordTextBox passwordTextBox = (PasswordTextBox) fieldWidget;
+                passwordTextBox.setValue(getStringValue(fieldValue), fireEvents);
+                break;
+            case CHECKBOX:
+                final CheckBox checkBox = (CheckBox) fieldWidget;
+                try {
+                    checkBox.setValue((Boolean) fieldValue.getValue(), fireEvents);
+                } catch (final Exception e) {
+                    checkBox.setValue(false, fireEvents);
+                    Window.alert("initial value for checkbox " + widgetId + " should be a Boolean.");
+                }
+                break;
+            case RADIOBUTTON_GROUP:
+                final RadioButtonGroupWidget radioButtonGroupWidget = (RadioButtonGroupWidget) fieldWidget;
+                radioButtonGroupWidget.setValue(getStringValue(fieldValue), fireEvents);
+                break;
+            case LISTBOX_SIMPLE:
+                final ListBox listBox = (ListBox) fieldWidget;
+                final int index = listBox.getSelectedIndex();
+                if (index < 0) {
+                    fireEvents = false;
+                } else {
+                	if (listBox.getValue(index).equals(getStringValue(fieldValue))) {
+                		fireEvents = false;
+                	}
+                }
+                for (int i = 0; i < listBox.getItemCount(); i++) {
+                    if (listBox.getItemText(i).equals(getStringValue(fieldValue))) {
+                        listBox.setItemSelected(i, true);
+                        break;
                     }
                 }
-            }
-            if (fireEvents && valueChanged) {
-                DomEvent.fireNativeEvent(Document.get().createChangeEvent(), listBoxMulti);
-            }
-            break;
-        case SUGGESTBOX:
-            final SuggestBox suggestBox = (SuggestBox) fieldWidget;
-            final String stringValue = getStringValue(fieldValue);
-            String labelValue = null;
-            for (Entry<String, String> suggestionEntry : suggestionsMap.entrySet()) {
-                if (suggestionEntry.getValue() != null && suggestionEntry.getValue().equals(stringValue)) {
-                    labelValue = suggestionEntry.getKey();
+                if (fireEvents) {
+                    DomEvent.fireNativeEvent(Document.get().createChangeEvent(), listBox);
                 }
+                break;
+            case LISTBOX_MULTIPLE:
+                final ListBox listBoxMulti = (ListBox) fieldWidget;
+                values = getStringValues(fieldValue);
+                boolean valueChanged = false;
+                for (int i = 0; i < listBoxMulti.getItemCount(); i++) {
+                    if (values != null && values.contains(listBoxMulti.getItemText(i))) {
+                        if (!listBoxMulti.isItemSelected(i)) {
+                            valueChanged = true;
+                            listBoxMulti.setItemSelected(i, true);
+                        }
+                    } else {
+                        if (listBoxMulti.isItemSelected(i)) {
+                            valueChanged = true;
+                            listBoxMulti.setItemSelected(i, false);
+                        }
+                    }
+                }
+                if (fireEvents && valueChanged) {
+                    DomEvent.fireNativeEvent(Document.get().createChangeEvent(), listBoxMulti);
+                }
+                break;
+            case SUGGESTBOX:
+                final SuggestBox suggestBox = (SuggestBox) fieldWidget;
+                final String stringValue = getStringValue(fieldValue);
+                String labelValue = null;
+                for (Entry<String, String> suggestionEntry : suggestionsMap.entrySet()) {
+                    if (suggestionEntry.getValue() != null && suggestionEntry.getValue().equals(stringValue)) {
+                        labelValue = suggestionEntry.getKey();
+                    }
+                }
+                if (labelValue != null) {
+                    suggestBox.setValue(labelValue, fireEvents);
+                } else {
+                    suggestBox.setValue(stringValue, fireEvents);
+                }
+                break;
+            case SUGGESTBOX_ASYNC:
+                final AsyncSuggestBoxWidget formAsyncSuggestBoxWidget = (AsyncSuggestBoxWidget) fieldWidget;
+                formAsyncSuggestBoxWidget.setValue(getStringValue(fieldValue), fireEvents);
+                break;
+            case CHECKBOX_GROUP:
+                final CheckboxGroupWidget checkboxGroupWidget = (CheckboxGroupWidget) fieldWidget;
+                values = getStringValues(fieldValue);
+                checkboxGroupWidget.setValue(values, fireEvents);
+                break;
+            case DATE:
+                final DateBox dateBox = (DateBox) fieldWidget;
+                try {
+                    dateBox.setValue((Date) fieldValue.getValue(), fireEvents);
+                } catch (final Exception e) {
+                    dateBox.setValue(null, fireEvents);
+                    Window.alert("initial value for date " + widgetId + " should be a Date.");
+                }
+                break;
+            case DURATION:
+                final DurationWidget durationWidget = (DurationWidget) fieldWidget;
+                Long duration = null;
+                try {
+                    duration = (Long) fieldValue.getValue();
+                } catch (final Exception e) {
+                    duration = 0L;
+                    Window.alert("The initial value for duration widget " + widgetId + " should be a Long.");
+                }
+                durationWidget.setValue(duration, fireEvents);
+                break;
+            case IMAGE:
+                final ImageWidget image = (ImageWidget) fieldWidget;
+                image.setValue(getStringValue(fieldValue), fireEvents);
+                break;
+            case TABLE:
+                final TableWidget table = (TableWidget) fieldWidget;
+                table.setValue(getTableValue(fieldValue));
+                if (fireEvents) {
+                    DomEvent.fireNativeEvent(Document.get().createChangeEvent(), table);
+                }
+                break;
+            case EDITABLE_GRID:
+                final EditableGridWidget grid = (EditableGridWidget) fieldWidget;
+                grid.setValue(getGridValue(fieldValue));
+                if (fireEvents) {
+                    DomEvent.fireNativeEvent(Document.get().createChangeEvent(), grid);
+                }
+                break;
+            case HIDDEN:
+                final Hidden hidden = (Hidden) fieldWidget;
+                if ((hidden.getValue() != null && hidden.getValue().equals(fieldValue.getValue()) || (fieldValue.getValue() != null && fieldValue.getValue().equals(hidden.getValue())))) {
+                    fireEvents = false;
+                }
+                hidden.setValue(getStringValue(fieldValue));
+                if (fireEvents) {
+                    DomEvent.fireNativeEvent(Document.get().createChangeEvent(), hidden);
+                }
+                break;
+            default:
+                Window.alert("The modification of the value of a " + widgetType + " widget is not supported.");
+                break;
             }
-            if (labelValue != null) {
-                suggestBox.setValue(labelValue, fireEvents);
-            } else {
-                suggestBox.setValue(stringValue, fireEvents);
-            }
-            break;
-        case SUGGESTBOX_ASYNC:
-            final AsyncSuggestBoxWidget formAsyncSuggestBoxWidget = (AsyncSuggestBoxWidget) fieldWidget;
-            formAsyncSuggestBoxWidget.setValue(getStringValue(fieldValue), fireEvents);
-            break;
-        case CHECKBOX_GROUP:
-            final CheckboxGroupWidget checkboxGroupWidget = (CheckboxGroupWidget) fieldWidget;
-            values = getStringValues(fieldValue);
-            checkboxGroupWidget.setValue(values, fireEvents);
-            break;
-        case DATE:
-            final DateBox dateBox = (DateBox) fieldWidget;
-            try {
-                dateBox.setValue((Date) fieldValue.getValue(), fireEvents);
-            } catch (final Exception e) {
-                dateBox.setValue(null, fireEvents);
-                Window.alert("initial value for date " + widgetId + " should be a Date.");
-            }
-            break;
-        case DURATION:
-            final DurationWidget durationWidget = (DurationWidget) fieldWidget;
-            Long duration = null;
-            try {
-                duration = (Long) fieldValue.getValue();
-            } catch (final Exception e) {
-                duration = 0L;
-                Window.alert("The initial value for duration widget " + widgetId + " should be a Long.");
-            }
-            durationWidget.setValue(duration, fireEvents);
-            break;
-        case IMAGE:
-            final ImageWidget image = (ImageWidget) fieldWidget;
-            image.setValue(getStringValue(fieldValue), fireEvents);
-            break;
-        case TABLE:
-            final TableWidget table = (TableWidget) fieldWidget;
-            table.setValue(getTableValue(fieldValue));
-            if (fireEvents) {
-                DomEvent.fireNativeEvent(Document.get().createChangeEvent(), table);
-            }
-            break;
-        case EDITABLE_GRID:
-            final EditableGridWidget grid = (EditableGridWidget) fieldWidget;
-            grid.setValue(getGridValue(fieldValue));
-            if (fireEvents) {
-                DomEvent.fireNativeEvent(Document.get().createChangeEvent(), grid);
-            }
-            break;
-        case HIDDEN:
-            final Hidden hidden = (Hidden) fieldWidget;
-            if ((hidden.getValue() != null && hidden.getValue().equals(fieldValue.getValue()) || (fieldValue.getValue() != null && fieldValue.getValue().equals(hidden.getValue())))) {
-                fireEvents = false;
-            }
-            hidden.setValue(getStringValue(fieldValue));
-            if (fireEvents) {
-                DomEvent.fireNativeEvent(Document.get().createChangeEvent(), hidden);
-            }
-            break;
-        default:
-            Window.alert("The modification of the value of a " + widgetType + " widget is not supported.");
-            break;
         }
     }
 
@@ -1465,6 +1504,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     public HandlerRegistration addValueChangeHandler(final ValueChangeHandler valueChangeHandler) {
         if (valueChangeHandlers == null) {
             valueChangeHandlers = new ArrayList<ValueChangeHandler<Serializable>>();
@@ -1506,6 +1546,7 @@ public class FormFieldWidget extends Composite implements HasChangeHandlers, Cha
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     public void onValueChange(final ValueChangeEvent valueChangeEvent) {
         if (valueChangeHandlers != null) {
             for (final ValueChangeHandler valueChangeHandler : valueChangeHandlers) {

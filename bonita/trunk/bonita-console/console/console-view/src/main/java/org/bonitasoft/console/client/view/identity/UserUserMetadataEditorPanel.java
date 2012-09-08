@@ -127,6 +127,7 @@ public class UserUserMetadataEditorPanel extends BonitaPanel implements HasValid
     myAllMetadatas.clear();
     myAllMetadatasTextBoxes.clear();
     myOuterPanel.clear();
+    myUserMetadatas.clear();
     
     myUserMetadataDataSource.getAllItems(new AsyncHandler<List<UserMetadataItem>>() {
       public void handleFailure(Throwable aT) {

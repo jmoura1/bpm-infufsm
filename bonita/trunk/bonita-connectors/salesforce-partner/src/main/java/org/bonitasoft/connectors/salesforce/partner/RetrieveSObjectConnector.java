@@ -32,31 +32,31 @@ import com.sforce.soap.partner.sobject.SObject;
  */
 public class RetrieveSObjectConnector extends SalesforceConnector {
 
-  //input parameters
+  // input parameters
   private List<String> fieldsToRetrieve;
   private String sObjectType;
   private String sObjectId;
 
-  //output paraleters
+  // output paraleters
   private SObject sObject;
 
-  private static final Log logger = LogFactory.getLog(RetrieveSObjectConnector.class.getClass());
+  private static final Log LOGGER = LogFactory.getLog(RetrieveSObjectConnector.class.getClass());
 
   @Override
   protected List<ConnectorError> validateExtraValues() {
     final List<ConnectorError> errors = new ArrayList<ConnectorError>();
-    ConnectorError idEmptyError = this.getErrorIfNullOrEmptyParam(sObjectId, "sObjectId");
-    if(idEmptyError != null){
+    final ConnectorError idEmptyError = this.getErrorIfNullOrEmptyParam(sObjectId, "sObjectId");
+    if (idEmptyError != null) {
       errors.add(idEmptyError);
       return errors;
     }
-    ConnectorError invalidIdLengthError = this.getErrorIfIdLengthInvalid(sObjectId);
-    if(invalidIdLengthError != null){
+    final ConnectorError invalidIdLengthError = this.getErrorIfIdLengthInvalid(sObjectId);
+    if (invalidIdLengthError != null) {
       errors.add(invalidIdLengthError);
       return errors;
     }
-    ConnectorError typeEmptyError = this.getErrorIfNullOrEmptyParam(sObjectType, "sObjectType");
-    if(typeEmptyError != null){
+    final ConnectorError typeEmptyError = this.getErrorIfNullOrEmptyParam(sObjectType, "sObjectType");
+    if (typeEmptyError != null) {
       errors.add(typeEmptyError);
     }
     return errors;
@@ -65,10 +65,10 @@ public class RetrieveSObjectConnector extends SalesforceConnector {
   @Override
   protected void executeFunction(final PartnerConnection connection) throws Exception {
     final String fieldsToRetrieve = SalesforceTool.buildFields(this.fieldsToRetrieve);
-    if (logger.isDebugEnabled()) {
-      logger.debug("fieldsToRetrieve = " + fieldsToRetrieve);
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("fieldsToRetrieve = " + fieldsToRetrieve);
     }
-    final String[] ids = new String[]{sObjectId};
+    final String[] ids = new String[] { sObjectId };
     final SObject[] sObjects = connection.retrieve(fieldsToRetrieve, sObjectType, ids);
     if (sObjects != null && sObjects.length > 0) {
       sObject = sObjects[0];
@@ -90,4 +90,5 @@ public class RetrieveSObjectConnector extends SalesforceConnector {
   public SObject getSObject() {
     return sObject;
   }
+
 }

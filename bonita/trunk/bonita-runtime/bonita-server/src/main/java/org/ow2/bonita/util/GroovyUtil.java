@@ -46,43 +46,45 @@ import org.ow2.bonita.util.GroovyBindingBuilder.PropagateBinding;
  */
 public class GroovyUtil {
 
-  public static Object evaluate(String expression, Map<String, Object> variables, ClassLoader classLoader) throws GroovyException {
+  public static Object evaluate(final String expression, final Map<String, Object> variables, final ClassLoader classLoader) throws GroovyException {
     return evaluate(expression, variables, null, null, null, false, false, false, classLoader);
   }
 
-  public static Object evaluate(String expression, Map<String, Object> variables) throws GroovyException {
+  public static Object evaluate(final String expression, final Map<String, Object> variables) throws GroovyException {
     return evaluate(expression, variables, null, null, null, false, false, false, null);
   }
 
-  public static Object evaluate(String expression, Map<String, Object> context, ActivityInstanceUUID activityUUID, boolean useActivityScope, boolean propagate) throws GroovyException {
+  public static Object evaluate(final String expression, final Map<String, Object> context, final ActivityInstanceUUID activityUUID, final boolean useActivityScope, final boolean propagate) throws GroovyException {
     final ActivityInstance activity = EnvTool.getAllQueriers().getActivityInstance(activityUUID);
-    ProcessInstanceUUID processInstanceUUID = activity.getProcessInstanceUUID();
-    ProcessDefinitionUUID processDefinitionUUID = activity.getProcessDefinitionUUID();
+    final ProcessInstanceUUID processInstanceUUID = activity.getProcessInstanceUUID();
+    final ProcessDefinitionUUID processDefinitionUUID = activity.getProcessDefinitionUUID();
     return evaluate(expression, context, processDefinitionUUID, activityUUID, processInstanceUUID, useActivityScope, false, propagate, null);
   }
 
-  public static Object evaluate(String expression, Map<String, Object> context, ProcessInstanceUUID instanceUUID, boolean useInitialVariableValues, boolean propagate) throws GroovyException {
+  public static Object evaluate(final String expression, final Map<String, Object> context, final ProcessInstanceUUID instanceUUID, final boolean useInitialVariableValues, final boolean propagate) throws GroovyException {
     ProcessDefinitionUUID processDefinitionUUID = null;
+    boolean archived = false;
     if (instanceUUID != null) {
       final ProcessInstance instance = EnvTool.getAllQueriers().getProcessInstance(instanceUUID);
+      archived = instance.isArchived();
       processDefinitionUUID = instance.getProcessDefinitionUUID();
     }
-    return evaluate(expression, context, processDefinitionUUID, null, instanceUUID, false, useInitialVariableValues, propagate, null);
+    return evaluate(expression, context, processDefinitionUUID, null, instanceUUID, false, useInitialVariableValues, propagate && ! archived, null);
   }
 
-  public static Object evaluate(String expression, Map<String, Object> context, ProcessDefinitionUUID processUUID, boolean propagate) throws GroovyException {
+  public static Object evaluate(final String expression, final Map<String, Object> context, final ProcessDefinitionUUID processUUID, final boolean propagate) throws GroovyException {
     return evaluate(expression, context, processUUID, null, null, false, false, propagate, null);
   }
 
-  private static Object evaluate(String expression, Map<String, Object> context, ProcessDefinitionUUID processDefinitionUUID, ActivityInstanceUUID activityUUID, 
-      ProcessInstanceUUID instanceUUID, boolean useActivityScope, boolean useInitialVariableValues, boolean propagate, ClassLoader classLoader) throws GroovyException {
+  private static Object evaluate(final String expression, final Map<String, Object> context, final ProcessDefinitionUUID processDefinitionUUID, final ActivityInstanceUUID activityUUID, 
+      final ProcessInstanceUUID instanceUUID, final boolean useActivityScope, final boolean useInitialVariableValues, final boolean propagate, final ClassLoader classLoader) throws GroovyException {
 
     if (expression == null || "".equals(expression.trim())) {
       final String message = getMessage(activityUUID, instanceUUID, processDefinitionUUID, "The expression is null or empty.");
       throw new GroovyException(message);
     } else {
-      int begin = expression.indexOf(START_DELIMITER);
-      int end = expression.indexOf(END_DELIMITER);
+      final int begin = expression.indexOf(START_DELIMITER);
+      final int end = expression.indexOf(END_DELIMITER);
       if (begin >= end) {
         final String message = getMessage(activityUUID, instanceUUID, processDefinitionUUID, "The expression is not a Groovy one: " + expression + ".");
         throw new GroovyException(message);
@@ -98,49 +100,57 @@ public class GroovyUtil {
             }
             final Map<String, Object> allVariables = GroovyBindingBuilder.getContext(context, processDefinitionUUID, activityUUID, instanceUUID, useActivityScope, useInitialVariableValues);
 
-            final Object result = allVariables.get(insideExpression);
-            if (result != null && result instanceof ObjectVariable) {
-              return ((ObjectVariable)result).getValue();
+            if (allVariables.containsKey(insideExpression)) {
+              final Object result = allVariables.get(insideExpression);
+              if (result != null && result instanceof ObjectVariable) {
+                return ((ObjectVariable)result).getValue();
+              }
+              return result;
             }
-            return result;
-          } catch (Throwable t) {}
+          } catch (final Throwable t) {}
         }
       }
     }
-    ClassLoader ori = Thread.currentThread().getContextClassLoader();
+    final ClassLoader ori = Thread.currentThread().getContextClassLoader();
     try {
       ProcessDefinitionUUID pUUID = processDefinitionUUID;
+      boolean archived = false;
       ActivityInstance activity = null;
       if (pUUID == null && instanceUUID != null) {
         final ProcessInstance instance = EnvTool.getAllQueriers().getProcessInstance(instanceUUID);
+        archived = instance.isArchived();
         pUUID = instance.getProcessDefinitionUUID();
       } else if (activityUUID != null) {
-        activity = EnvTool.getAllQueriers().getActivityInstance(activityUUID);
+        activity =  EnvTool.getJournalQueriers().getActivityInstance(activityUUID);
+        if(activity == null){
+          archived = true;
+          activity =  EnvTool.getHistoryQueriers().getActivityInstance(activityUUID);
+        }
         if (pUUID == null) {
           pUUID = activity.getProcessDefinitionUUID();
         }
       }
 
       if (pUUID != null && classLoader == null) {
-        ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(pUUID);
+        final ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(pUUID);
         Thread.currentThread().setContextClassLoader(processClassLoader);
       } else if (classLoader != null) {
         Thread.currentThread().setContextClassLoader(classLoader);
       }
-
+      boolean propagateWhenInJournal = propagate && !archived;
       Binding binding = null;
-      if (propagate) {
+      if (propagateWhenInJournal) {
         binding = GroovyBindingBuilder.getPropagateBinding(processDefinitionUUID, instanceUUID, activityUUID, context, useActivityScope, useInitialVariableValues);
       } else {
         binding = GroovyBindingBuilder.getSimpleBinding(processDefinitionUUID, instanceUUID, activityUUID, context, useActivityScope, useInitialVariableValues);
       }
       
       final Object result = evaluate(expression, binding);
-      if (propagate && instanceUUID != null) {
+      if (propagateWhenInJournal && instanceUUID != null) {
         propagateVariables(((PropagateBinding)binding).getVariablesToPropagate(), activityUUID, instanceUUID);
       }
       return result;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       final String message = getMessage(activityUUID, instanceUUID, processDefinitionUUID, "Exception while evaluating expression.");
       throw new GroovyException(message, e);
     } finally {
@@ -149,32 +159,36 @@ public class GroovyUtil {
       }
     }
   }
-
+  
   public static Object evaluate(final String expression, final Binding binding) throws GroovyException, NotSerializableException, ActivityDefNotFoundException, DataFieldNotFoundException, ProcessNotFoundException, IOException, ClassNotFoundException {
     String workingExpression = expression;
     Object result = null;
     if (Misc.isJustAGroovyExpression(workingExpression)) {
       workingExpression = workingExpression.substring(START_DELIMITER.length());
       workingExpression = workingExpression.substring(0, workingExpression.lastIndexOf(END_DELIMITER));
-      result = evaluateGroovyExpression(workingExpression, binding);
+      if (Misc.isJavaIdentifier(workingExpression) && binding.getVariables().containsKey(workingExpression)) {
+        result = binding.getVariable(workingExpression);
+      } else {
+        result = evaluateGroovyExpression(workingExpression, binding);
+      }
     } else {
       result = evaluate(getExpressions(workingExpression), binding);
     }
     return result;
   }
 
-  public static void propagateVariables(Map<String, Object> variables, ActivityInstanceUUID activityUUID, ProcessInstanceUUID instanceUUID) throws GroovyException {
-    StandardAPIAccessorImpl accessor = new StandardAPIAccessorImpl();
-    RuntimeAPI runtime = accessor.getRuntimeAPI();
+  public static void propagateVariables(final Map<String, Object> variables, final ActivityInstanceUUID activityUUID, final ProcessInstanceUUID instanceUUID) throws GroovyException {
+    final StandardAPIAccessorImpl accessor = new StandardAPIAccessorImpl();
+    final RuntimeAPI runtime = accessor.getRuntimeAPI();
     if (variables != null) {
-      for (Entry<String, Object> variable : variables.entrySet()) {
+      for (final Entry<String, Object> variable : variables.entrySet()) {
         try {
           if (activityUUID != null) {
             runtime.setVariable(activityUUID, variable.getKey(), variable.getValue());
           } else {
             runtime.setProcessInstanceVariable(instanceUUID, variable.getKey(), variable.getValue());
           }
-        } catch (BonitaException e) {
+        } catch (final BonitaException e) {
           final String message = getMessage(activityUUID, instanceUUID, "Error while propagating variables.");
           throw new GroovyException(message, e);
         }
@@ -182,14 +196,14 @@ public class GroovyUtil {
     }
   }
 
-  private static Object evaluateGroovyExpression(String script, Binding binding) throws GroovyException {
-    ClassLoader scriptClassLoader = Thread.currentThread().getContextClassLoader();
-    Script groovyScript = GroovyScriptBuilder.getScript(script, scriptClassLoader);
+  private static Object evaluateGroovyExpression(final String script, final Binding binding) throws GroovyException {
+    final ClassLoader scriptClassLoader = Thread.currentThread().getContextClassLoader();
+    final Script groovyScript = GroovyScriptBuilder.getScript(script, scriptClassLoader);
     groovyScript.setBinding(binding);
     Object result = null;
     try {
       result = groovyScript.run();
-    } catch (MissingPropertyException e) {
+    } catch (final MissingPropertyException e) {
       final String lineSeparator = System.getProperty("line.separator", "\n");
       
       final StringBuilder stb = new StringBuilder();
@@ -217,8 +231,8 @@ public class GroovyUtil {
     return result;
   }
 
-  private static String evaluate(List<String> expressions, Binding binding)  throws GroovyException {
-    StringBuilder builder = new StringBuilder();
+  private static String evaluate(final List<String> expressions, final Binding binding)  throws GroovyException {
+    final StringBuilder builder = new StringBuilder();
     int i = 0;
     while (i < expressions.size()) {
       String expression = expressions.get(i);
@@ -237,11 +251,11 @@ public class GroovyUtil {
     final List<String> expressions = new ArrayList<String>();
     String concat = expression;
     while (concat.contains(START_DELIMITER)) {
-      int index = concat.indexOf(START_DELIMITER);
+      final int index = concat.indexOf(START_DELIMITER);
       expressions.add(concat.substring(0, index));
       concat = concat.substring(index);
       expressions.add(START_DELIMITER);
-      int endGroovy = Misc.getGroovyExpressionEndIndex(concat);
+      final int endGroovy = Misc.getGroovyExpressionEndIndex(concat);
       expressions.add(concat.substring(2, endGroovy - 1));
       concat = concat.substring(endGroovy);
     }

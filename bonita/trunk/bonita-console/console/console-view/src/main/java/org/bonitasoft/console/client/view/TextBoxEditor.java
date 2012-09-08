@@ -180,7 +180,7 @@ public class TextBoxEditor extends I18NComposite implements HasValue<String>, Cl
    */
   public void setValue(String aValue) {
     if (allowHtml) {
-      if (aValue != null && aValue.length() > 0) {
+      if (aValue != null && aValue.trim().length() > 0) {
         myHtmlView.setHTML(aValue);
         myHtmlView.removeStyleName("empty_field");
       } else {
@@ -188,7 +188,7 @@ public class TextBoxEditor extends I18NComposite implements HasValue<String>, Cl
         myHtmlView.addStyleName("empty_field");
       }
     } else {
-      if (aValue != null && aValue.length() > 0) {
+      if (aValue != null && aValue.trim().length() > 0) {
         myTextView.setText(aValue);
         myTextView.removeStyleName("empty_field");
       } else {

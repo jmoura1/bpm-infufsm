@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 BonitaSoft S.A.
+ * Copyright (C) 2011-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,53 +27,40 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
 /**
- * @author Christophe Havard
- *
+ * @author Christophe Havard, Matthieu Chaffotte
+ * 
  */
 public class MBeanUtil {
 
-    private static MBeanServer mbserver = null;
+  private static MBeanServer mbserver = null;
 
-    public static MBeanServer getMBeanServer(){
-        if(mbserver == null){
-            ArrayList<MBeanServer> mbservers = MBeanServerFactory.findMBeanServer(null);
-            if (mbservers.size() > 0) {
-                mbserver = (MBeanServer) mbservers.get(0);
-            }
-            if (mbserver != null) {
-                //System.out.println("Bonitasoft " + mbserver.toString() + " MBeanServer has been founded...");
-            } else {
-                mbserver = MBeanServerFactory.createMBeanServer();
-            }
-        }
-        return mbserver;
+  public static MBeanServer getMBeanServer() {
+    if (mbserver == null) {
+      final ArrayList<MBeanServer> mbservers = MBeanServerFactory.findMBeanServer(null);
+      if (mbservers.size() > 0) {
+        mbserver = mbservers.get(0);
+      }
+      if (mbserver == null) {
+        mbserver = MBeanServerFactory.createMBeanServer();
+      }
     }
+    return mbserver;
+  }
 
-    /**
-     * @return
-     */
-    public static MemoryMXBean getMemoryMXBean() {
-        return ManagementFactory.getMemoryMXBean();
-    }
+  public static MemoryMXBean getMemoryMXBean() {
+    return ManagementFactory.getMemoryMXBean();
+  }
 
-    /**
-     * @return
-     */
-    public static OperatingSystemMXBean getOSMXBean() {
-        return ManagementFactory.getOperatingSystemMXBean();
-    }
+  public static OperatingSystemMXBean getOSMXBean() {
+    return ManagementFactory.getOperatingSystemMXBean();
+  }
 
-    /**
-     * @return
-     */
-    public static RuntimeMXBean getRuntimeMXBean() {
-        return ManagementFactory.getRuntimeMXBean();
-    }
-    /**
-     * 
-     * @return
-     */
-    public static ThreadMXBean getThreadMXBean() {
-        return ManagementFactory.getThreadMXBean();
-    }    
+  public static RuntimeMXBean getRuntimeMXBean() {
+    return ManagementFactory.getRuntimeMXBean();
+  }
+
+  public static ThreadMXBean getThreadMXBean() {
+    return ManagementFactory.getThreadMXBean();
+  }
+
 }

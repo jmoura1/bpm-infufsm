@@ -65,7 +65,7 @@ import org.ow2.bonita.util.Misc;
 
 public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
 
-  private String queryList;
+  private final String queryList;
 
   protected QueryDefinitionAPIImpl(final String queryList) {
     this.queryList = queryList;
@@ -105,71 +105,81 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return result;
   }
 
-  public List<ProcessDefinition> getProcesses(int fromIndex, int pageSize)  {
+  @Override
+  public List<ProcessDefinition> getProcesses(final int fromIndex, final int pageSize) {
     final List<ProcessDefinition> result = new ArrayList<ProcessDefinition>();
     if (pageSize <= 0) {
       return result;
     }
 
-    List<InternalProcessDefinition> processes = getIndexedProcesses(fromIndex, pageSize, ProcessDefinitionCriterion.DEFAULT);
+    final List<InternalProcessDefinition> processes = getIndexedProcesses(fromIndex, pageSize,
+        ProcessDefinitionCriterion.DEFAULT);
     for (final ProcessDefinition record : processes) {
       result.add(new ProcessDefinitionImpl(record));
     }
     return result;
   }
 
-  public List<LightProcessDefinition> getLightProcesses(int fromIndex, int pageSize)  {
+  @Override
+  public List<LightProcessDefinition> getLightProcesses(final int fromIndex, final int pageSize) {
     final List<LightProcessDefinition> result = new ArrayList<LightProcessDefinition>();
     if (pageSize <= 0) {
       return result;
     }
 
-    List<InternalProcessDefinition> processes = getIndexedProcesses(fromIndex, pageSize, ProcessDefinitionCriterion.DEFAULT);
+    final List<InternalProcessDefinition> processes = getIndexedProcesses(fromIndex, pageSize,
+        ProcessDefinitionCriterion.DEFAULT);
     for (final ProcessDefinition record : processes) {
       result.add(new LightProcessDefinitionImpl(record));
     }
     return result;
   }
 
-  public List<LightProcessDefinition> getLightProcesses(int fromIndex,
-      int pageSize, ProcessDefinitionCriterion pagingCriterion) {
+  @Override
+  public List<LightProcessDefinition> getLightProcesses(final int fromIndex, final int pageSize,
+      final ProcessDefinitionCriterion pagingCriterion) {
     final List<LightProcessDefinition> result = new ArrayList<LightProcessDefinition>();
     if (pageSize <= 0) {
       return result;
     }
 
-    List<InternalProcessDefinition> processes = getIndexedProcesses(fromIndex, pageSize, pagingCriterion);
+    final List<InternalProcessDefinition> processes = getIndexedProcesses(fromIndex, pageSize, pagingCriterion);
     for (final ProcessDefinition record : processes) {
       result.add(new LightProcessDefinitionImpl(record));
     }
     return result;
   }
 
-  private List<InternalProcessDefinition> getIndexedProcesses(int fromIndex, int pageSize, ProcessDefinitionCriterion pagingCriterion) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessDefinition> getIndexedProcesses(final int fromIndex, final int pageSize,
+      final ProcessDefinitionCriterion pagingCriterion) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
-        if(!visibleProcessUUIDs.isEmpty()){
-          processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(visibleProcessUUIDs, fromIndex, pageSize, pagingCriterion);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
+        if (!visibleProcessUUIDs.isEmpty()) {
+          processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(visibleProcessUUIDs, fromIndex, pageSize,
+              pagingCriterion);
         }
       }
-    } else {      
-      processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(fromIndex ,pageSize, pagingCriterion);
+    } else {
+      processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(fromIndex, pageSize, pagingCriterion);
     }
     return processes;
   }
 
-  public int getNumberOfProcesses()  {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  @Override
+  public int getNumberOfProcesses() {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     if (!access) {
       return EnvTool.getAllQueriers(getQueryList()).getNumberOfProcesses();
     } else {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         return visibleProcessUUIDs.size();
       } else {
         return 0;
@@ -177,12 +187,14 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     }
   }
 
-  public BusinessArchive getBusinessArchive(ProcessDefinitionUUID processDefinitionUUID) throws ProcessNotFoundException {
+  @Override
+  public BusinessArchive getBusinessArchive(final ProcessDefinitionUUID processDefinitionUUID)
+      throws ProcessNotFoundException {
     Misc.checkArgsNotNull(processDefinitionUUID);
     final LargeDataRepository ldr = EnvTool.getLargeDataRepository();
-    final Map<String, byte[]> resources = ldr.getData(byte[].class, Misc.getBusinessArchiveCategories(processDefinitionUUID));
-    final BusinessArchive businessArchive = new BusinessArchiveImpl(processDefinitionUUID, resources);
-    return businessArchive;
+    final Map<String, byte[]> resources = ldr.getData(byte[].class,
+        Misc.getBusinessArchiveCategories(processDefinitionUUID));
+    return new BusinessArchiveImpl(processDefinitionUUID, resources);
   }
 
   private Set<DataFieldDefinition> getDataFieldCopy(final Set<DataFieldDefinition> src) {
@@ -195,24 +207,26 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return result;
   }
 
+  @Override
   public ProcessDefinition getLastProcess(final String processId) throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(processId);
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     ProcessDefinition last = null;
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName == null) {
         throw new ProcessNotFoundException("bai_QDAPII_2", processId);
       }
-      Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+          RuleType.PROCESS_READ);
 
       if (visibleProcessUUIDs.isEmpty()) {
         throw new ProcessNotFoundException("bai_QDAPII_2", processId);
       }
 
-      Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
+      final Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
 
-      for (ProcessDefinitionUUID processUUID : visibleProcessUUIDs) {
+      for (final ProcessDefinitionUUID processUUID : visibleProcessUUIDs) {
         final ProcessDefinition definition = EnvTool.getAllQueriers(getQueryList()).getProcess(processUUID);
         if (processId.equals(definition.getName())) {
           definitionUUIDs.add(processUUID);
@@ -225,28 +239,30 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     }
     if (last == null) {
       throw new ProcessNotFoundException("bai_QDAPII_2", processId);
-    }		
+    }
     return new ProcessDefinitionImpl(last);
   }
 
+  @Override
   public LightProcessDefinition getLastLightProcess(final String processId) throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(processId);
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     ProcessDefinition last = null;
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName==null) {
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName == null) {
         throw new ProcessNotFoundException("bai_QDAPII_2", processId);
       }
-      Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+          RuleType.PROCESS_READ);
 
       if (visibleProcessUUIDs.isEmpty()) {
         throw new ProcessNotFoundException("bai_QDAPII_2", processId);
       }
 
-      Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
+      final Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
 
-      for (ProcessDefinitionUUID processUUID : visibleProcessUUIDs) {
+      for (final ProcessDefinitionUUID processUUID : visibleProcessUUIDs) {
         final ProcessDefinition definition = EnvTool.getAllQueriers(getQueryList()).getProcess(processUUID);
         if (processId.equals(definition.getName())) {
           definitionUUIDs.add(processUUID);
@@ -259,11 +275,12 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     }
     if (last == null) {
       throw new ProcessNotFoundException("bai_QDAPII_2", processId);
-    }   
+    }
     return new LightProcessDefinitionImpl(last);
   }
 
-  private InternalProcessDefinition getInternalProcess(final ProcessDefinitionUUID processUUID) throws ProcessNotFoundException {
+  private InternalProcessDefinition getInternalProcess(final ProcessDefinitionUUID processUUID)
+      throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(processUUID);
     final InternalProcessDefinition process = EnvTool.getAllQueriers(getQueryList()).getProcess(processUUID);
     if (process == null) {
@@ -272,12 +289,15 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return process;
   }
 
+  @Override
   public ProcessDefinition getProcess(final ProcessDefinitionUUID processUUID) throws ProcessNotFoundException {
     final InternalProcessDefinition process = getInternalProcess(processUUID);
     return new ProcessDefinitionImpl(process);
   }
 
-  public LightProcessDefinition getLightProcess(final ProcessDefinitionUUID processUUID) throws ProcessNotFoundException {
+  @Override
+  public LightProcessDefinition getLightProcess(final ProcessDefinitionUUID processUUID)
+      throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(processUUID);
     final ProcessDefinition process = EnvTool.getAllQueriers(getQueryList()).getProcess(processUUID);
     if (process == null) {
@@ -286,20 +306,23 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return new LightProcessDefinitionImpl(process);
   }
 
-  public ProcessDefinition getProcess(final String processId, final String processVersion) throws ProcessNotFoundException {
+  @Override
+  public ProcessDefinition getProcess(final String processId, final String processVersion)
+      throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(processId, processVersion);
 
     final ProcessDefinition process = EnvTool.getAllQueriers(getQueryList()).getProcess(processId, processVersion);
     if (process == null) {
       throw new ProcessNotFoundException(processId, processVersion);
     }
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName==null) {
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName == null) {
         throw new ProcessNotFoundException(processId, processVersion);
       }
-      Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+          RuleType.PROCESS_READ);
       if (visibleProcessUUIDs == null || !visibleProcessUUIDs.contains(process.getUUID())) {
         throw new ProcessNotFoundException(processId, processVersion);
       }
@@ -307,7 +330,9 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return new ProcessDefinitionImpl(process);
   }
 
-  public Set<ActivityDefinition> getProcessActivities(final ProcessDefinitionUUID processUUID) throws ProcessNotFoundException {
+  @Override
+  public Set<ActivityDefinition> getProcessActivities(final ProcessDefinitionUUID processUUID)
+      throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(processUUID);
     final ProcessDefinition process = EnvTool.getAllQueriers(getQueryList()).getProcess(processUUID);
     if (process == null) {
@@ -317,9 +342,9 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return getActivityCopy(activities);
   }
 
-  public ActivityDefinition getProcessActivity(final ProcessDefinitionUUID processUUID, 
-      final String activityId)
-  throws ProcessNotFoundException, ActivityNotFoundException {
+  @Override
+  public ActivityDefinition getProcessActivity(final ProcessDefinitionUUID processUUID, final String activityId)
+      throws ProcessNotFoundException, ActivityNotFoundException {
     FacadeUtil.checkArgsNotNull(processUUID, activityId);
     final ProcessDefinition process = EnvTool.getAllQueriers(getQueryList()).getProcess(processUUID);
     if (process == null) {
@@ -336,8 +361,9 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     throw new ActivityNotFoundException("bai_QDAPII_9", processUUID, activityId);
   }
 
+  @Override
   public ParticipantDefinition getProcessParticipant(final ProcessDefinitionUUID processUUID, final String participantId)
-  throws ProcessNotFoundException, ParticipantNotFoundException {
+      throws ProcessNotFoundException, ParticipantNotFoundException {
     FacadeUtil.checkArgsNotNull(processUUID, participantId);
     final Set<ParticipantDefinition> participants = getProcessParticipants(processUUID);
     if (participants != null) {
@@ -350,21 +376,25 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     throw new ParticipantNotFoundException("bai_QDAPII_10", participantId, processUUID);
   }
 
-  public Set<ParticipantDefinition> getProcessParticipants(final ProcessDefinitionUUID processUUID) throws ProcessNotFoundException {
+  @Override
+  public Set<ParticipantDefinition> getProcessParticipants(final ProcessDefinitionUUID processUUID)
+      throws ProcessNotFoundException {
     final InternalProcessDefinition process = getInternalProcess(processUUID);
     final Set<ParticipantDefinition> participants = process.getParticipants();
     return getParticipantCopy(participants);
   }
 
+  @Override
   @SuppressWarnings({ "unchecked", "rawtypes" })
   public Set<ProcessDefinition> getProcesses() {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
-        if(visibleProcessUUIDs!=null && !visibleProcessUUIDs.isEmpty()){
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
+        if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
           processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(visibleProcessUUIDs);
         }
       }
@@ -374,13 +404,15 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return getProcessCopy((Set) processes);
   }
 
-  public Set<LightProcessDefinition> getLightProcesses()  {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  @Override
+  public Set<LightProcessDefinition> getLightProcesses() {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
           processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(visibleProcessUUIDs);
         }
@@ -389,25 +421,27 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
       processes = EnvTool.getAllQueriers(getQueryList()).getProcesses();
     }
 
-    Set<LightProcessDefinition> result = new HashSet<LightProcessDefinition>();
+    final Set<LightProcessDefinition> result = new HashSet<LightProcessDefinition>();
     for (final ProcessDefinition p : processes) {
       result.add(new LightProcessDefinitionImpl(p));
     }
     return result;
   }
 
+  @Override
   @SuppressWarnings({ "unchecked", "rawtypes" })
   public Set<ProcessDefinition> getProcesses(final String processId) {
     FacadeUtil.checkArgsNotNull(processId);
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
-          for (ProcessDefinitionUUID processUUID : visibleProcessUUIDs) {
+          final Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
+          for (final ProcessDefinitionUUID processUUID : visibleProcessUUIDs) {
             final ProcessDefinition definition = EnvTool.getAllQueriers(getQueryList()).getProcess(processUUID);
             if (processId.equals(definition.getName())) {
               definitionUUIDs.add(processUUID);
@@ -415,15 +449,16 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
           }
           processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(definitionUUIDs);
         }
-      }      
+      }
     } else {
       processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(processId);
     }
     return getProcessCopy((Set) processes);
   }
 
-  public ParticipantDefinitionUUID getProcessParticipantId(final ProcessDefinitionUUID processUUID, final String participantName)
-  throws ProcessNotFoundException {
+  @Override
+  public ParticipantDefinitionUUID getProcessParticipantId(final ProcessDefinitionUUID processUUID,
+      final String participantName) throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(processUUID, participantName);
     final Set<ParticipantDefinition> participants = getProcessParticipants(processUUID);
     if (participants != null) {
@@ -436,9 +471,9 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return null;
   }
 
-  public ActivityDefinitionUUID getProcessActivityId(final ProcessDefinitionUUID processUUID, 
-      final String activityName)
-  throws ProcessNotFoundException {
+  @Override
+  public ActivityDefinitionUUID getProcessActivityId(final ProcessDefinitionUUID processUUID, final String activityName)
+      throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(processUUID, activityName);
     final Set<ActivityDefinition> activities = getProcessActivities(processUUID);
     if (activities != null) {
@@ -451,18 +486,20 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return null;
   }
 
+  @Override
   @SuppressWarnings({ "unchecked", "rawtypes" })
   public Set<ProcessDefinition> getProcesses(final String processId, final ProcessDefinition.ProcessState processState) {
     FacadeUtil.checkArgsNotNull(processId, processState);
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
-          for (ProcessDefinitionUUID processUUID : visibleProcessUUIDs) {
+          final Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
+          for (final ProcessDefinitionUUID processUUID : visibleProcessUUIDs) {
             final ProcessDefinition definition = EnvTool.getAllQueriers(getQueryList()).getProcess(processUUID);
             if (processId.equals(definition.getName())) {
               definitionUUIDs.add(processUUID);
@@ -477,19 +514,21 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return getProcessCopy((Set) processes);
   }
 
+  @Override
   @SuppressWarnings({ "unchecked", "rawtypes" })
   public Set<ProcessDefinition> getProcesses(final ProcessDefinition.ProcessState processState) {
     FacadeUtil.checkArgsNotNull(processState);
 
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
-          for (ProcessDefinitionUUID processUUID : visibleProcessUUIDs) {
+          final Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
+          for (final ProcessDefinitionUUID processUUID : visibleProcessUUIDs) {
             definitionUUIDs.add(processUUID);
           }
           processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(definitionUUIDs, processState);
@@ -502,17 +541,19 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return getProcessCopy((Set) processes);
   }
 
-  public Set<LightProcessDefinition> getLightProcesses(ProcessState processState)  {
+  @Override
+  public Set<LightProcessDefinition> getLightProcesses(final ProcessState processState) {
     FacadeUtil.checkArgsNotNull(processState);
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
-          for (ProcessDefinitionUUID processUUID : visibleProcessUUIDs) {
+          final Set<ProcessDefinitionUUID> definitionUUIDs = new HashSet<ProcessDefinitionUUID>();
+          for (final ProcessDefinitionUUID processUUID : visibleProcessUUIDs) {
             definitionUUIDs.add(processUUID);
           }
           processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(definitionUUIDs, processState);
@@ -529,8 +570,9 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return result;
   }
 
-  public DataFieldDefinition getProcessDataField(final ProcessDefinitionUUID processDefinitionUUID, final String dataFieldId)
-  throws ProcessNotFoundException, DataFieldNotFoundException {
+  @Override
+  public DataFieldDefinition getProcessDataField(final ProcessDefinitionUUID processDefinitionUUID,
+      final String dataFieldId) throws ProcessNotFoundException, DataFieldNotFoundException {
     FacadeUtil.checkArgsNotNull(processDefinitionUUID, dataFieldId);
     final Set<DataFieldDefinition> datafields = getProcessDataFields(processDefinitionUUID);
     if (datafields != null) {
@@ -543,14 +585,17 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     throw new DataFieldNotFoundException("bai_QDAPII_14", dataFieldId, processDefinitionUUID);
   }
 
+  @Override
   public Set<DataFieldDefinition> getProcessDataFields(final ProcessDefinitionUUID processDefinitionUUID)
-  throws ProcessNotFoundException {
+      throws ProcessNotFoundException {
     final InternalProcessDefinition process = getInternalProcess(processDefinitionUUID);
     final Set<DataFieldDefinition> datafields = process.getDataFields();
     return getDataFieldCopy(datafields);
   }
 
-  public Set<DataFieldDefinition> getActivityDataFields(final ActivityDefinitionUUID activityDefinitionUUID) throws ActivityDefNotFoundException {
+  @Override
+  public Set<DataFieldDefinition> getActivityDataFields(final ActivityDefinitionUUID activityDefinitionUUID)
+      throws ActivityDefNotFoundException {
     FacadeUtil.checkArgsNotNull(activityDefinitionUUID);
     final ActivityDefinition activity = EnvTool.getAllQueriers(getQueryList()).getActivity(activityDefinitionUUID);
     if (activity == null) {
@@ -560,8 +605,9 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return getDataFieldCopy(datafields);
   }
 
-  public DataFieldDefinition getActivityDataField(final ActivityDefinitionUUID activityDefinitionUUID, final String dataFieldId)
-  throws ActivityDefNotFoundException, DataFieldNotFoundException {
+  @Override
+  public DataFieldDefinition getActivityDataField(final ActivityDefinitionUUID activityDefinitionUUID,
+      final String dataFieldId) throws ActivityDefNotFoundException, DataFieldNotFoundException {
     FacadeUtil.checkArgsNotNull(activityDefinitionUUID);
     final ActivityDefinition activity = EnvTool.getAllQueriers(getQueryList()).getActivity(activityDefinitionUUID);
     if (activity == null) {
@@ -578,32 +624,34 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     throw new DataFieldNotFoundException("bai_QDAPII_18", dataFieldId, activityDefinitionUUID);
   }
 
-  public String getProcessMetaData(ProcessDefinitionUUID uuid, String key)
-  throws ProcessNotFoundException {
+  @Override
+  public String getProcessMetaData(final ProcessDefinitionUUID uuid, final String key) throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(uuid, key);
-    ProcessDefinition process = EnvTool.getAllQueriers(getQueryList()).getProcess(uuid);
+    final ProcessDefinition process = EnvTool.getAllQueriers(getQueryList()).getProcess(uuid);
     if (process == null) {
       throw new ProcessNotFoundException("bai_QDAPII_19", uuid);
     }
     return process.getAMetaData(key);
   }
 
-  private InitialAttachment getProcessAttachment(DocumentationManager manager, ProcessDefinitionUUID processUUID, AttachmentDefinition attachment) {
+  private InitialAttachment getProcessAttachment(final DocumentationManager manager,
+      final ProcessDefinitionUUID processUUID, final AttachmentDefinition attachment) {
     final SearchResult result = DocumentService.getDocuments(manager, processUUID, attachment.getName());
     final List<Document> documents = result.getDocuments();
     byte[] content = null;
     if (!documents.isEmpty()) {
       try {
         content = manager.getContent(documents.get(0));
-      } catch (DocumentNotFoundException e) {
+      } catch (final DocumentNotFoundException e) {
         throw new BonitaRuntimeException(e);
       }
     }
     return new InitialAttachmentImpl(attachment, content);
   }
-  
-  public InitialAttachment getProcessAttachment(ProcessDefinitionUUID processUUID, String attachmentName)
-  throws ProcessNotFoundException {
+
+  @Override
+  public InitialAttachment getProcessAttachment(final ProcessDefinitionUUID processUUID, final String attachmentName)
+      throws ProcessNotFoundException {
     final InternalProcessDefinition process = getInternalProcess(processUUID);
     final AttachmentDefinition attachment = process.getAttachment(attachmentName);
     if (attachment == null) {
@@ -613,14 +661,15 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return getProcessAttachment(manager, processUUID, attachment);
   }
 
-  public Set<InitialAttachment> getProcessAttachments(ProcessDefinitionUUID processUUID)
-  throws ProcessNotFoundException {
+  @Override
+  public Set<InitialAttachment> getProcessAttachments(final ProcessDefinitionUUID processUUID)
+      throws ProcessNotFoundException {
     final InternalProcessDefinition process = getInternalProcess(processUUID);
     final Map<String, AttachmentDefinition> processAttachments = process.getAttachments();
     final Set<InitialAttachment> attachments = new HashSet<InitialAttachment>();
     if (!processAttachments.isEmpty()) {
       final DocumentationManager manager = EnvTool.getDocumentationManager();
-      for (AttachmentDefinition attachment : processAttachments.values()) {
+      for (final AttachmentDefinition attachment : processAttachments.values()) {
         final InitialAttachment attach = getProcessAttachment(manager, processUUID, attachment);
         attachments.add(attach);
       }
@@ -628,46 +677,50 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return attachments;
   }
 
-  public AttachmentDefinition getAttachmentDefinition(ProcessDefinitionUUID processUUID, String attachmentName)
-  throws ProcessNotFoundException {
+  @Override
+  public AttachmentDefinition getAttachmentDefinition(final ProcessDefinitionUUID processUUID,
+      final String attachmentName) throws ProcessNotFoundException {
     final InternalProcessDefinition process = getInternalProcess(processUUID);
     return process.getAttachment(attachmentName);
   }
 
-  public Set<AttachmentDefinition> getAttachmentDefinitions(ProcessDefinitionUUID processUUID)
-  throws ProcessNotFoundException {
+  @Override
+  public Set<AttachmentDefinition> getAttachmentDefinitions(final ProcessDefinitionUUID processUUID)
+      throws ProcessNotFoundException {
     final InternalProcessDefinition process = getInternalProcess(processUUID);
     final Map<String, AttachmentDefinition> processAttachments = process.getAttachments();
     final Set<AttachmentDefinition> attachments = new HashSet<AttachmentDefinition>();
     if (!processAttachments.isEmpty()) {
-      for (Entry<String, AttachmentDefinition> processAttachment : processAttachments.entrySet()) {
+      for (final Entry<String, AttachmentDefinition> processAttachment : processAttachments.entrySet()) {
         attachments.add(processAttachment.getValue());
       }
     }
     return attachments;
   }
 
-  public byte[] getResource(ProcessDefinitionUUID definitionUUID, String resourcePath)
-  throws ProcessNotFoundException {
+  @Override
+  public byte[] getResource(final ProcessDefinitionUUID definitionUUID, final String resourcePath)
+      throws ProcessNotFoundException {
     getInternalProcess(definitionUUID);
-    ClassLoader classLoader = EnvTool.getClassDataLoader().getProcessClassLoader(definitionUUID);
-    
-    InputStream in = classLoader.getResourceAsStream(resourcePath);
+    final ClassLoader classLoader = EnvTool.getClassDataLoader().getProcessClassLoader(definitionUUID);
+
+    final InputStream in = classLoader.getResourceAsStream(resourcePath);
     byte[] resource = null;
     if (in != null) {
       try {
         resource = Misc.getAllContentFrom(in);
         in.close();
-      } catch (IOException e) {
+      } catch (final IOException e) {
       }
     }
     return resource;
   }
 
-  public Set<LightProcessDefinition> getLightProcesses(Set<ProcessDefinitionUUID> processUUIDs)
-  throws ProcessNotFoundException {
+  @Override
+  public Set<LightProcessDefinition> getLightProcesses(final Set<ProcessDefinitionUUID> processUUIDs)
+      throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(processUUIDs);
-    Set<InternalProcessDefinition> processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(processUUIDs);
+    final Set<InternalProcessDefinition> processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(processUUIDs);
     final Set<LightProcessDefinition> result = new HashSet<LightProcessDefinition>();
     for (final ProcessDefinition p : processes) {
       result.add(new LightProcessDefinitionImpl(p));
@@ -675,15 +728,16 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return result;
   }
 
-  public List<LightProcessDefinition> getLightProcesses(
-      Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize,
-      ProcessDefinitionCriterion pagingCriterion) {
+  @Override
+  public List<LightProcessDefinition> getLightProcesses(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize, final ProcessDefinitionCriterion pagingCriterion) {
     FacadeUtil.checkArgsNotNull(processUUIDs);
-    if(processUUIDs.isEmpty()){
+    if (processUUIDs.isEmpty()) {
       return Collections.emptyList();
     }
-    
-    List<InternalProcessDefinition> processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(processUUIDs, fromIndex, pageSize, pagingCriterion);
+
+    final List<InternalProcessDefinition> processes = EnvTool.getAllQueriers(getQueryList()).getProcesses(processUUIDs,
+        fromIndex, pageSize, pagingCriterion);
     final List<LightProcessDefinition> result = new ArrayList<LightProcessDefinition>();
     for (final ProcessDefinition p : processes) {
       result.add(new LightProcessDefinitionImpl(p));
@@ -691,11 +745,14 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     return result;
   }
 
-  public List<LightProcessDefinition> getAllLightProcessesExcept(Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize) {
-    if(processUUIDs == null || processUUIDs.isEmpty()){
+  @Override
+  public List<LightProcessDefinition> getAllLightProcessesExcept(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize) {
+    if (processUUIDs == null || processUUIDs.isEmpty()) {
       return getLightProcesses(fromIndex, pageSize);
     } else {
-      List<InternalProcessDefinition> processes = EnvTool.getAllQueriers(getQueryList()).getProcessesExcept(processUUIDs,fromIndex,pageSize);
+      final List<InternalProcessDefinition> processes = EnvTool.getAllQueriers(getQueryList()).getProcessesExcept(
+          processUUIDs, fromIndex, pageSize);
       final List<LightProcessDefinition> result = new ArrayList<LightProcessDefinition>();
       for (final ProcessDefinition p : processes) {
         result.add(new LightProcessDefinitionImpl(p));
@@ -704,13 +761,14 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     }
   }
 
-  public List<LightProcessDefinition> getAllLightProcessesExcept(
-      Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize,
-      ProcessDefinitionCriterion pagingCriterion) {
-    if(processUUIDs == null || processUUIDs.isEmpty()){
+  @Override
+  public List<LightProcessDefinition> getAllLightProcessesExcept(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize, final ProcessDefinitionCriterion pagingCriterion) {
+    if (processUUIDs == null || processUUIDs.isEmpty()) {
       return getLightProcesses(fromIndex, pageSize, pagingCriterion);
     } else {
-      List<InternalProcessDefinition> processes = EnvTool.getAllQueriers(getQueryList()).getProcessesExcept(processUUIDs,fromIndex,pageSize, pagingCriterion);
+      final List<InternalProcessDefinition> processes = EnvTool.getAllQueriers(getQueryList()).getProcessesExcept(
+          processUUIDs, fromIndex, pageSize, pagingCriterion);
       final List<LightProcessDefinition> result = new ArrayList<LightProcessDefinition>();
       for (final ProcessDefinition p : processes) {
         result.add(new LightProcessDefinitionImpl(p));
@@ -719,12 +777,14 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     }
   }
 
-  public Set<ProcessDefinitionUUID> getProcessUUIDs(String category)  {
+  @Override
+  public Set<ProcessDefinitionUUID> getProcessUUIDs(final String category) {
     FacadeUtil.checkArgsNotNull(category);
-    if(category.trim().length()==0){
+    if (category.trim().length() == 0) {
       throw new IllegalArgumentException();
     } else {
-      Set<ProcessDefinitionUUID> processUUIDs = EnvTool.getAllQueriers(getQueryList()).getProcessUUIDsFromCategory(category);
+      final Set<ProcessDefinitionUUID> processUUIDs = EnvTool.getAllQueriers(getQueryList())
+          .getProcessUUIDsFromCategory(category);
       final Set<ProcessDefinitionUUID> result = new HashSet<ProcessDefinitionUUID>();
       for (final ProcessDefinitionUUID uuid : processUUIDs) {
         result.add(new ProcessDefinitionUUID(uuid));
@@ -733,9 +793,10 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
     }
   }
 
-  public Set<ActivityDefinitionUUID> getProcessTaskUUIDs(ProcessDefinitionUUID defintionUUID)
-  throws ProcessNotFoundException {
-    boolean exist = EnvTool.getAllQueriers(getQueryList()).processExists(defintionUUID);
+  @Override
+  public Set<ActivityDefinitionUUID> getProcessTaskUUIDs(final ProcessDefinitionUUID defintionUUID)
+      throws ProcessNotFoundException {
+    final boolean exist = EnvTool.getAllQueriers(getQueryList()).processExists(defintionUUID);
     if (!exist) {
       throw new ProcessNotFoundException("bai_QDAPII_19", defintionUUID);
     }
@@ -743,8 +804,7 @@ public class QueryDefinitionAPIImpl implements QueryDefinitionAPI {
   }
 
   @Override
-  public Date getMigrationDate(ProcessDefinitionUUID processUUID)
-      throws ProcessNotFoundException {
+  public Date getMigrationDate(final ProcessDefinitionUUID processUUID) throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(processUUID);
     final InternalProcessDefinition process = EnvTool.getAllQueriers(getQueryList()).getProcess(processUUID);
     if (process == null) {

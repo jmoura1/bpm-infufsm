@@ -1,5 +1,7 @@
 package org.ow2.bonita.cmd;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +39,7 @@ import org.ow2.bonita.util.BonitaConstants;
 import org.ow2.bonita.util.Command;
 import org.ow2.bonita.util.EnvTool;
 import org.ow2.bonita.util.Misc;
+import org.ow2.bonita.util.ServerConstants;
 
 public class DatabaseCleanerCommand implements Command<String> {
 
@@ -90,7 +93,44 @@ public class DatabaseCleanerCommand implements Command<String> {
     cleanLargeDataRepository();
     cleanRules();
     cleanCategories();
+    cleanTemporaryFolders();    
     return message.toString();
+  }
+
+  private void cleanTemporaryFolders() {
+    String temporaryClientFolder = BonitaConstants.getTemporaryFolder();
+    cleanTemporaryFiles(temporaryClientFolder);
+    String defaultTemporaryFolder = ServerConstants.getTenantTemporaryFolder("default");
+    cleanTemporaryFiles(defaultTemporaryFolder);
+  }
+
+  private void cleanTemporaryFiles(final String folderPath) {
+    File file = new File(folderPath);
+    String[] files = file.list();
+    List<String> list = getAllFilesFromDirectory(file);
+    if (!list.isEmpty()) {
+      message.append("The folder: '" + folderPath + "' is not empty. It contains: " + list);
+    }
+    Misc.deleteDir(file);
+  }
+
+  private List<String> getAllFilesFromDirectory(final File parentDirectory) {
+    final List<String> list = new ArrayList<String>();
+    final String[] files = parentDirectory.list();
+    if (files != null) {
+      for (int i = 0; i < files.length; i++) {
+        final String fileName = parentDirectory.getAbsolutePath() + File.separator + files[i];
+        final File currentFile = new File(fileName);
+        if(currentFile.isDirectory()) {
+          list.addAll(getAllFilesFromDirectory(currentFile));
+        } else {
+          if (!fileName.contains("database.jar")) {
+            list.add(fileName);
+          }
+        }
+      }
+    }
+    return list;
   }
 
   private void clearProcessDefinitions() throws ProcessNotFoundException, UndeletableProcessException, UndeletableInstanceException {

@@ -18,17 +18,17 @@ package org.ow2.bonita.connector.core.desc;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class Textarea extends Widget {
 
-  private int rows;
-  private int columns;
-  private int maxChar;
-  private int maxCharPerRow;
-  
-  public Textarea(String labelId, Setter setter, int rows,
-      int columns, int maxChar, int maxCharPerRow) {
+  private final int rows;
+  private final int columns;
+  private final int maxChar;
+  private final int maxCharPerRow;
+
+  public Textarea(final String labelId, final Setter setter, final int rows, final int columns, final int maxChar,
+      final int maxCharPerRow) {
     super(labelId, setter);
     this.rows = rows;
     this.columns = columns;
@@ -51,18 +51,43 @@ public class Textarea extends Widget {
   public int getMaxCharPerRow() {
     return maxCharPerRow;
   }
-  
+
   @Override
-  public boolean equals(Object obj) {
-    boolean equals = super.equals(obj);
-    if (equals && obj instanceof Textarea) {
-      Textarea temp = (Textarea) obj;
-      return (temp.getColumns() == this.getColumns()
-          && temp.getRows() == this.getRows()
-          && temp.getMaxChar() == this.getMaxChar()
-          && temp.getMaxCharPerRow() == this.getMaxCharPerRow());
-    } else {
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + columns;
+    result = prime * result + maxChar;
+    result = prime * result + maxCharPerRow;
+    result = prime * result + rows;
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
       return false;
     }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Textarea other = (Textarea) obj;
+    if (columns != other.columns) {
+      return false;
+    }
+    if (maxChar != other.maxChar) {
+      return false;
+    }
+    if (maxCharPerRow != other.maxCharPerRow) {
+      return false;
+    }
+    if (rows != other.rows) {
+      return false;
+    }
+    return true;
   }
+
 }

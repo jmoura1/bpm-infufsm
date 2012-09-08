@@ -41,7 +41,7 @@ import org.ow2.bonita.facade.uuid.ProcessInstanceUUID;
 public interface AbstractRemoteRepairAPI extends Remote {
 
 	/**
-	 * Starts a new execution in a process instance at a specific activity.
+	 * Starts a new execution in a process instance at a specific activity, with a map of instance’s variable values.
 	 * All connectors of specified activity will be executed normally (include connectors OnReady).
    * @param instanceUUID the process instance UUID
    * @param activityName the activity to execute

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.mail.Multipart;
 import javax.mail.internet.MimeMessage;
 
@@ -39,7 +40,6 @@ public class EmailConnectorTest extends TestCase {
   private static final String MULTIPART_MIXED = "multipart/mixed";
   private static final String TEXT_PLAIN = "text/plain";
   private static final String TEXT_HTML = "text/html";
-  private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
   private static final String SMTP_HOST = "localhost";
   private static int smtpPort = 0;
   private static final String ADDRESSJOHN = "johndoe@bonita.org";
@@ -777,7 +777,7 @@ public class EmailConnectorTest extends TestCase {
       assertEquals(imageHtml, m.getBodyPart(0).getContent());
       assertTrue(m.getBodyPart(0).getContentType().contains(TEXT_PLAIN));
       // image
-      assertEquals(APPLICATION_OCTET_STREAM, m.getBodyPart(1).getContentType());
+      assertEquals(new MimetypesFileTypeMap().getContentType(gif.getFile()), m.getBodyPart(1).getContentType());
       email = null;
     } finally {
       stopServer();
@@ -810,7 +810,7 @@ public class EmailConnectorTest extends TestCase {
       assertEquals(imageHtml, m.getBodyPart(0).getContent());
       assertTrue(m.getBodyPart(0).getContentType().contains(TEXT_HTML));
       // image
-      assertEquals(APPLICATION_OCTET_STREAM, m.getBodyPart(1).getContentType());
+      assertEquals(new MimetypesFileTypeMap().getContentType(gif.getFile()), m.getBodyPart(1).getContentType());
       String[] content = m.getBodyPart(1).getHeader("Content-ID");
       assertEquals("<first>", content[0]);
       email = null;
@@ -849,12 +849,14 @@ public class EmailConnectorTest extends TestCase {
       assertEquals(imageHtml, m.getBodyPart(0).getContent());
       assertTrue(m.getBodyPart(0).getContentType().contains(TEXT_HTML));
       // image
-      assertEquals(APPLICATION_OCTET_STREAM, m.getBodyPart(1).getContentType());
+      String contentTypeOfPng = new MimetypesFileTypeMap().getContentType(gif.getFile());
+      assertEquals(contentTypeOfPng, m.getBodyPart(1).getContentType());
       String[] content = m.getBodyPart(1).getHeader("Content-ID");
       assertEquals("<first>", content[0]);
       // attachment
       assertEquals(XML_FILE, m.getBodyPart(2).getFileName());
-      assertTrue(m.getBodyPart(2).getContentType().contains(APPLICATION_OCTET_STREAM));
+      String contentTypeOfBodyPart2 = m.getBodyPart(2).getContentType();
+      assertTrue("Expected to find "+"application/octet-stream"+" in "+contentTypeOfBodyPart2, contentTypeOfBodyPart2.contains("application/octet-stream"));
       email = null;
     } finally {
       stopServer();
@@ -869,6 +871,7 @@ public class EmailConnectorTest extends TestCase {
       final String imageHtml =
         "<img src=\"cid:first\"><br/><H1>Hello World !</H1>";
       email.setMessage(imageHtml);
+      
       URL gif = this.getClass().getResource(PNG_IMAGE);
       final HashMap<String, String> images = new HashMap<String, String>();
       images.put("<first>", gif.getPath());
@@ -893,14 +896,15 @@ public class EmailConnectorTest extends TestCase {
       assertEquals(imageHtml, m.getBodyPart(0).getContent());
       assertTrue(m.getBodyPart(0).getContentType().contains(TEXT_HTML));
       // image
-      assertEquals(APPLICATION_OCTET_STREAM, m.getBodyPart(1).getContentType());
+      String contentTypeOfPng = new MimetypesFileTypeMap().getContentType(gif.getFile());
+      assertEquals(contentTypeOfPng, m.getBodyPart(1).getContentType());
       String[] content = m.getBodyPart(1).getHeader("Content-ID");
       assertEquals("<first>", content[0]);
       // attachment
       assertEquals(XML_FILE, m.getBodyPart(2).getFileName());
       assertEquals("application/octet-stream; name=" + XML_FILE, m.getBodyPart(2).getContentType());
       assertEquals(PNG_IMAGE, m.getBodyPart(3).getFileName());
-      assertEquals("application/octet-stream; name=" + PNG_IMAGE, m.getBodyPart(3).getContentType());
+      assertEquals(contentTypeOfPng+"; name=" + PNG_IMAGE, m.getBodyPart(3).getContentType());
       email = null;
     } finally {
       stopServer();

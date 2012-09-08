@@ -37,6 +37,7 @@ public class WorkflowProcessBinding extends MajorElementBinding {
     super("WorkflowProcess");
   }
 
+  @Override
   public Object parse(final Element workflowProcessElement, final Parse parse, final Parser parser) {
     if (LOG.isLoggable(Level.FINE)) {
       LOG.fine("parsing element = " + workflowProcessElement);
@@ -48,13 +49,13 @@ public class WorkflowProcessBinding extends MajorElementBinding {
     final Element redefinableHeaderElement = XmlUtil.element(workflowProcessElement, "RedefinableHeader");
     String version = getChildTextContent(redefinableHeaderElement, "Version");
     if (version == null) {
-      //use package version
-      Element packageElement = (Element) workflowProcessElement.getParentNode().getParentNode();
+      // use package version
+      final Element packageElement = (Element) workflowProcessElement.getParentNode().getParentNode();
       final Element packageRedefinableHeaderElement = XmlUtil.element(packageElement, "RedefinableHeader");
       version = getChildTextContent(packageRedefinableHeaderElement, "Version");
     }
 
-    ProcessBuilder processBuilder = ProcessBuilder.createProcess(id, version);
+    final ProcessBuilder processBuilder = ProcessBuilder.createProcess(id, version);
     processBuilder.addDescription(description);
     processBuilder.addLabel(XmlUtil.attribute(workflowProcessElement, "Name"));
 
@@ -63,10 +64,11 @@ public class WorkflowProcessBinding extends MajorElementBinding {
     parseFormalParameters(workflowProcessElement, parse, parser, processBuilder);
 
     parseXpdlMajorElementList(workflowProcessElement, "Participants", "Participant", parse, parser);
-    Collection<Element> activityDatafields = parseXpdlMajorElementList(workflowProcessElement, "DataFields", "DataField", parse, parser);
+    final Collection<Element> activityDatafields = parseXpdlMajorElementList(workflowProcessElement, "DataFields",
+        "DataField", parse, parser);
     parse.pushObject(activityDatafields);
-    parse.pushObject(Boolean.valueOf(true));
-    parseXpdlMajorElementList(workflowProcessElement,"Activities", "Activity", parse, parser);
+    parse.pushObject(Boolean.TRUE);
+    parseXpdlMajorElementList(workflowProcessElement, "Activities", "Activity", parse, parser);
     parse.popObject();
     parse.popObject();
     parseXpdlMajorElementList(workflowProcessElement, "Transitions", "Transition", parse, parser);
@@ -78,13 +80,14 @@ public class WorkflowProcessBinding extends MajorElementBinding {
 
   /**
    * Parse iteration transitions (inherited from bonita 3)
+   * 
    * @param activityElement
    * @return
    */
   private void parseIterationElements(final Element workflowProcessElement, final ProcessBuilder processBuilder) {
-    Element activities = XmlUtil.element(workflowProcessElement, "Activities");
+    final Element activities = XmlUtil.element(workflowProcessElement, "Activities");
     if (activities != null) {
-      for (Element activity : XmlUtil.elements(activities, "Activity")) {
+      for (final Element activity : XmlUtil.elements(activities, "Activity")) {
         final Set<Element> iterationElements = this.getExtendedAttributes(activity, "Iteration");
         if (iterationElements != null) {
           for (final Element iterationElement : iterationElements) {
@@ -100,33 +103,25 @@ public class WorkflowProcessBinding extends MajorElementBinding {
   }
 
   /**
-   * returns a list of formal parameters: parameters are ordered and index attribute is not required
-   * (index attribute has been removed in Xpdl 2)
-   * TODO: check that a formal parameter in a workflow process does not hide a data field name.
+   * returns a list of formal parameters: parameters are ordered and index attribute is not required (index attribute
+   * has been removed in Xpdl 2) TODO: check that a formal parameter in a workflow process does not hide a data field
+   * name.
    */
-  protected void parseFormalParameters(Element fatherElement, Parse parse, Parser parser, final ProcessBuilder processBuilder) {
-    Element formalParametersElement = XmlUtil.element(fatherElement, "FormalParameters");
+  protected void parseFormalParameters(final Element fatherElement, final Parse parse, final Parser parser,
+      final ProcessBuilder processBuilder) {
+    final Element formalParametersElement = XmlUtil.element(fatherElement, "FormalParameters");
     if (formalParametersElement != null) {
       parse.addWarning("Process FormalParameters not yet supported.");
       /*
-      List<Element> formalParameterElements = XmlUtil.elements(formalParametersElement, "FormalParameter");
-      if (formalParameterElements != null) {
-        for (Element formalParameterElement : formalParameterElements) {
-          String parameterName = XmlUtil.attribute(formalParameterElement, "Id");
-          final String initialValue = getChildTextContent(formalParameterElement, "InitialValue");
-          addData(formalParameterElement, parameterName, initialValue, processBuilder, parse);
-
-          String mode = XmlUtil.attribute(formalParameterElement, "Mode");
-          if (mode == null || "IN".equals(mode)) {
-            processBuilder.addProcessInParameter(parameterName);
-          } else if ("OUT".equals(mode)) {
-            processBuilder.addProcessOutParameter(parameterName);  
-          } else {
-            processBuilder.addProcessInParameter(parameterName);
-            processBuilder.addProcessOutParameter(parameterName); 
-          }
-        }
-      }
+       * List<Element> formalParameterElements = XmlUtil.elements(formalParametersElement, "FormalParameter"); if
+       * (formalParameterElements != null) { for (Element formalParameterElement : formalParameterElements) { String
+       * parameterName = XmlUtil.attribute(formalParameterElement, "Id"); final String initialValue =
+       * getChildTextContent(formalParameterElement, "InitialValue"); addData(formalParameterElement, parameterName,
+       * initialValue, processBuilder, parse); String mode = XmlUtil.attribute(formalParameterElement, "Mode"); if (mode
+       * == null || "IN".equals(mode)) { processBuilder.addProcessInParameter(parameterName); } else if
+       * ("OUT".equals(mode)) { processBuilder.addProcessOutParameter(parameterName); } else {
+       * processBuilder.addProcessInParameter(parameterName); processBuilder.addProcessOutParameter(parameterName); } }
+       * }
        */
     }
   }

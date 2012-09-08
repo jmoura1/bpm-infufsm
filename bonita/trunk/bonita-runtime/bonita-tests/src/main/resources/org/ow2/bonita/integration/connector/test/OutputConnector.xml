@@ -1,7 +1,0 @@
-<connector>
-  <outputs>
-    <getter>
-      <name>output</name>
-    </getter>
-  </outputs>
-</connector>

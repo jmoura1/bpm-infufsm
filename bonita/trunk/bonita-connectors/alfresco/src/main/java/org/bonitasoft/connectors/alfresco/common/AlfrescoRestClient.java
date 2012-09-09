@@ -46,808 +46,815 @@ import org.ow2.bonita.util.AccessorUtil;
  */
 public class AlfrescoRestClient {
 
-    private static Logger LOGGER = Logger.getLogger(AlfrescoRestClient.class.getName());
+  private static Logger LOGGER = Logger.getLogger(AlfrescoRestClient.class.getName());
 
-    public static String NS_CMIS_RESTATOM = "http://docs.oasis-open.org/ns/cmis/restatom/200908/";
+  public static String NS_CMIS_RESTATOM = "http://docs.oasis-open.org/ns/cmis/restatom/200908/";
 
-    public static String NS_CMIS_CORE = "http://docs.oasis-open.org/ns/cmis/core/200908/";
+  public static String NS_CMIS_CORE = "http://docs.oasis-open.org/ns/cmis/core/200908/";
 
-    public static String CMISRA = "cmisra";
+  public static String CMISRA = "cmisra";
 
-    public static String CMIS = "cmis";
+  public static String CMIS = "cmis";
 
-    private String server; // host + port
+  private final String server; // host + port
 
-    private String username;
+  private final String username;
 
-    private String password;
+  private final String password;
 
-    public AlfrescoRestClient(String host, String port, String user, String passw) {
-        this.username = user;
-        this.password = passw;
-        this.server = "http://" + host + ":" + port;
+  public AlfrescoRestClient(final String host, final String port, final String user, final String passw) {
+    this.username = user;
+    this.password = passw;
+    this.server = "http://" + host + ":" + port;
+  }
+
+  /**
+   * STATUS 201 - Folder Created STATUS 500 - Server error (may be caused by: Folder already exists)
+   * 
+   * @param parentPath
+   * @param newFoldersName
+   * @param newFoldersDescription
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse createFolderByPath(final String parentPath, final String newFoldersName,
+      final String newFoldersDescription) throws IOException {
+
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("createFolderByPath parentPath=" + parentPath + " newFoldersName=" + newFoldersName
+          + " newFoldersDescription=" + newFoldersDescription);
     }
 
-    /**
-     * STATUS 201 - Folder Created STATUS 500 - Server error (may be caused by: Folder already exists)
-     * 
-     * @param parentPath
-     * @param newFoldersName
-     * @param newFoldersDescription
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse createFolderByPath(String parentPath, String newFoldersName, String newFoldersDescription) throws IOException {
+    // Build the input Atom Entry
+    final Abdera abdera = new Abdera();
+    final Entry entry = abdera.newEntry();
+    entry.setTitle(newFoldersName);
+    entry.setSummary(newFoldersDescription);
 
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("createFolderByPath parentPath=" + parentPath + " newFoldersName=" + newFoldersName + " newFoldersDescription=" + newFoldersDescription);
-        }
+    final ExtensibleElement objElement = (ExtensibleElement) entry.addExtension(NS_CMIS_RESTATOM, "object", CMISRA);
+    final ExtensibleElement propsElement = objElement.addExtension(NS_CMIS_CORE, "properties", CMIS);
+    final ExtensibleElement stringElement = propsElement.addExtension(NS_CMIS_CORE, "propertyId", CMIS);
+    stringElement.setAttributeValue("propertyDefinitionId", "cmis:objectTypeId");
+    final Element valueElement = stringElement.addExtension(NS_CMIS_CORE, "value", CMIS);
+    valueElement.setText("cmis:folder");
 
-        // Build the input Atom Entry
-        Abdera abdera = new Abdera();
-        Entry entry = abdera.newEntry();
-        entry.setTitle(newFoldersName);
-        entry.setSummary(newFoldersDescription);
+    final AbderaClient client = new AbderaClient();
 
-        ExtensibleElement objElement = (ExtensibleElement) entry.addExtension(NS_CMIS_RESTATOM, "object", CMISRA);
-        ExtensibleElement propsElement = objElement.addExtension(NS_CMIS_CORE, "properties", CMIS);
-        ExtensibleElement stringElement = propsElement.addExtension(NS_CMIS_CORE, "propertyId", CMIS);
-        stringElement.setAttributeValue("propertyDefinitionId", "cmis:objectTypeId");
-        Element valueElement = stringElement.addExtension(NS_CMIS_CORE, "value", CMIS);
-        valueElement.setText("cmis:folder");
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
 
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/s/cmis/p" + parentPath + "/children";
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("POST " + uri);
-        }
-
-        ClientResponse clientResponse = client.post(uri, entry, options);
-        AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
-        clientResponse.release();
-        return alfResponse;
+    final String uri = server + "/alfresco/s/cmis/p" + parentPath + "/children";
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("POST " + uri);
     }
 
-    /**
-     * STATUS 200: SUCCESS
-     * 
-     * @param folderPath
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse listFolderByPath(String folderPath) throws IOException {
+    final ClientResponse clientResponse = client.post(uri, entry, options);
+    final AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
+    clientResponse.release();
+    return alfResponse;
+  }
 
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("listFolderByPath folderPath=" + folderPath);
-        }
+  /**
+   * STATUS 200: SUCCESS
+   * 
+   * @param folderPath
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse listFolderByPath(final String folderPath) throws IOException {
 
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/s/cmis/p" + folderPath + "/children";
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("GET " + uri);
-        }
-
-        ClientResponse clientResponse = client.get(uri, options);
-        AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
-        clientResponse.release();
-        return alfResponse;
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("listFolderByPath folderPath=" + folderPath);
     }
 
-    /**
-     * STATUS 204 : SUCCESS STATUS 404 : CLIENT_ERROR - Not found
-     * 
-     * @param folderPath
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse deleteFolderByPath(String folderPath) throws IOException {
+    final AbderaClient client = new AbderaClient();
 
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("deleteFolderByPath folderPath=" + folderPath);
-        }
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
 
-        // use recursive algorithm to delete subFolder
-        AlfrescoResponse response = listFolderByPath(folderPath);
-        if (ResponseType.SUCCESS.toString().equals(response.getResponseType())) {
-            Document<Element> doc = response.getDocument();
-            Feed feed = (Feed) doc.getRoot();
-            for (Entry entry : feed.getEntries()) {
-                String title = entry.getTitle();
-                String subFolderPath = folderPath + "/" + title;
-                deleteFolderByPath(subFolderPath);
-            }
-        } else {
-            throw new IOException();
-        }
-
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/s/cmis/p" + folderPath;
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("DELETE " + uri);
-        }
-
-        ClientResponse clientResponse = client.delete(uri, options);
-        AlfrescoResponse alfResponse = parseResponse(clientResponse);
-        clientResponse.release();
-        return alfResponse;
+    final String uri = server + "/alfresco/s/cmis/p" + folderPath + "/children";
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("GET " + uri);
     }
 
-    /**
-     * STATUS 200 : SUCCESS STATUS 404 : CLIENT_ERROR - Not found
-     * 
-     * @param fileId
-     * @param outputFileFolder
-     * @param outputFileName
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse downloadFileById(String fileId, String outputFileFolder, String outputFileName) throws IOException {
+    final ClientResponse clientResponse = client.get(uri, options);
+    final AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
+    clientResponse.release();
+    return alfResponse;
+  }
 
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("downloadFileById fileId=" + fileId + " outputFileFolder=" + outputFileFolder + " outputFileName=" + outputFileName);
-        }
+  /**
+   * STATUS 204 : SUCCESS STATUS 404 : CLIENT_ERROR - Not found
+   * 
+   * @param folderPath
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse deleteFolderByPath(final String folderPath) throws IOException {
 
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/service/cmis/i/" + fileId + "/content";
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("GET " + uri);
-        }
-
-        ClientResponse clientResponse = client.get(uri, options);
-        AlfrescoResponse alfResponse = parseResponseAsOutputFile(clientResponse, outputFileFolder, outputFileName);
-        clientResponse.release();
-        return alfResponse;
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("deleteFolderByPath folderPath=" + folderPath);
     }
 
-    /**
-     * STATUS 200: SUCCESS STATUS 404 : CLIENT_ERROR - Not found
-     * 
-     * @param fileId
-     * @param outputFileFolder
-     * @param outputFileName
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse downloadFileByStoreAndId(String store, String fileId, String outputFileFolder, String outputFileName) throws IOException {
-
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("downloadFileByStoreAndId store=" + store + " fileId=" + fileId + " outputFileFolder=" + outputFileFolder + " outputFileName="
-                    + outputFileName);
-        }
-
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/service/cmis/s/" + store + "/i/" + fileId + "/content";
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("GET " + uri);
-        }
-
-        ClientResponse clientResponse = client.get(uri, options);
-        AlfrescoResponse alfResponse = parseResponseAsOutputFile(clientResponse, outputFileFolder, outputFileName);
-        clientResponse.release();
-        return alfResponse;
+    // use recursive algorithm to delete subFolder
+    final AlfrescoResponse response = listFolderByPath(folderPath);
+    if (ResponseType.SUCCESS.toString().equals(response.getResponseType())) {
+      final Document<Element> doc = response.getDocument();
+      final Feed feed = (Feed) doc.getRoot();
+      for (final Entry entry : feed.getEntries()) {
+        final String title = entry.getTitle();
+        final String subFolderPath = folderPath + "/" + title;
+        deleteFolderByPath(subFolderPath);
+      }
+    } else {
+      throw new IOException();
     }
 
-    /**
-     * Uploads the file at the given path in Alfresco
-     * STATUS 201 : Created STATUS 404 : Not found - May be caused by: Destination directory not found STATUS 500 : Internal
-     * server error - May be caused by: File already exist
-     * 
-     * @param fileAbsolutePath
-     * @param description
-     * @param mimeType
-     * @param destinationFolder
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse uploadFileByPath(String fileAbsolutePath, String fileName, String description, String mimeType, String destinationFolder)
-            throws IOException {
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("uploadFileByPath fileAbsolutePath=" + fileAbsolutePath + " fileName=" + fileName + " description=" + description + " mimeType="
-                    + mimeType + " destinationFolder=" + destinationFolder);
-        }
-        if ("text/plain".equalsIgnoreCase(mimeType)) {
-            // Get file content
-            File fileToUpload = new File(fileAbsolutePath);
-            byte[] fileBytes = getBytesFromFile(fileToUpload);
-            // Upload file
-            return uploadFile(fileBytes, fileName, description, mimeType, destinationFolder);
-        } else {
-            // Upload stream
-            FileInputStream inputStream = new FileInputStream(fileAbsolutePath);
-            return uploadFile(inputStream, fileName, description, mimeType, destinationFolder);
-        }
+    final AbderaClient client = new AbderaClient();
 
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
+
+    final String uri = server + "/alfresco/s/cmis/p" + folderPath;
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("DELETE " + uri);
     }
 
-    /**
-     * Uploads the given AttachmentInstance in Alfresco
-     * STATUS 201 : Created STATUS 404 : Not found - May be caused by: Destination directory not found STATUS 500 : Internal
-     * server error - May be caused by: File already exist
-     * 
-     * @param attachment
-     * @param description
-     * @param mimeType
-     * @param destinationFolder
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse uploadFileFromAttachment(AttachmentInstance attachment, String fileName, String description, String mimeType,
-            String destinationFolder) throws IOException {
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("uploadFileFromAttachment attachmentFileName=" + attachment.getFileName() + " fileName=" + fileName + " description=" + description
-                    + " mimeType=" + mimeType + " destinationFolder=" + destinationFolder);
-        }
+    final ClientResponse clientResponse = client.delete(uri, options);
+    final AlfrescoResponse alfResponse = parseResponse(clientResponse);
+    clientResponse.release();
+    return alfResponse;
+  }
 
-        // Get file content
-        QueryRuntimeAPI queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
-        byte[] fileBytes = queryRuntimeAPI.getAttachmentValue(attachment);
-        if ("text/plain".equalsIgnoreCase(mimeType)) {
-            // Upload file
-            return uploadFile(fileBytes, fileName, description, mimeType, destinationFolder);
-        } else {
-            // Upload stream
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(fileBytes);
-            return uploadFile(inputStream, fileName, description, mimeType, destinationFolder);
-        }
+  /**
+   * STATUS 200 : SUCCESS STATUS 404 : CLIENT_ERROR - Not found
+   * 
+   * @param fileId
+   * @param outputFileFolder
+   * @param outputFileName
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse downloadFileById(final String fileId, final String outputFileFolder,
+      final String outputFileName) throws IOException {
+
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("downloadFileById fileId=" + fileId + " outputFileFolder=" + outputFileFolder + " outputFileName="
+          + outputFileName);
     }
 
-    /**
-     * Uploads the given Document in Alfresco
-     * STATUS 201 : Created STATUS 404 : Not found - May be caused by: Destination directory not found STATUS 500 : Internal
-     * server error - May be caused by: File already exist
-     * 
-     * @param document
-     * @param description
-     * @param mimeType
-     * @param destinationFolder
-     * @return AlfrescoResponse
-     * @throws IOException
-     * @throws Exception
-     */
-    public AlfrescoResponse uploadFileFromDocument(org.ow2.bonita.facade.runtime.Document document, String fileName, String description, String mimeType,
-            String destinationFolder) throws IOException, Exception {
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("uploadFileFromDocument documentName=" + document.getName() + " fileName=" + fileName + " description=" + description + " mimeType="
-                    + mimeType + " destinationFolder=" + destinationFolder);
-        }
+    final AbderaClient client = new AbderaClient();
 
-        // Get file content
-        QueryRuntimeAPI queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
-        byte[] fileBytes = queryRuntimeAPI.getDocumentContent(document.getUUID());
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
 
-        if ("text/plain".equalsIgnoreCase(mimeType)) {
-            // Upload file
-            return uploadFile(fileBytes, fileName, description, mimeType, destinationFolder);
-        } else {
-            // Upload stream
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(fileBytes);
-            return uploadFile(inputStream, fileName, description, mimeType, destinationFolder);
-        }
-
+    final String uri = server + "/alfresco/service/cmis/i/" + fileId + "/content";
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("GET " + uri);
     }
 
-    /**
-     * upload non test/plain MimeType file
-     * 
-     * @param inputStream
-     * @param fileName
-     * @param description
-     * @param mimeType
-     * @param destinationFolder
-     * @return
-     */
-    private AlfrescoResponse uploadFile(InputStream inputStream, String fileName, String description, String mimeType, String destinationFolder) {
-        // Build the input Atom Entry
-        Abdera abdera = new Abdera();
-        Entry entry = abdera.newEntry();
-        entry.setTitle(fileName);
-        entry.setSummary(description);
-        entry.setContent(inputStream, mimeType);
+    final ClientResponse clientResponse = client.get(uri, options);
+    final AlfrescoResponse alfResponse = parseResponseAsOutputFile(clientResponse, outputFileFolder, outputFileName);
+    clientResponse.release();
+    return alfResponse;
+  }
 
-        ExtensibleElement objElement = (ExtensibleElement) entry.addExtension(NS_CMIS_CORE, "object", CMIS);
-        ExtensibleElement propsElement = objElement.addExtension(NS_CMIS_CORE, "properties", CMIS);
-        ExtensibleElement stringElement = propsElement.addExtension(NS_CMIS_CORE, "propertyId", CMIS);
-        stringElement.setAttributeValue("cmis:name", "ObjectTypeId");
-        Element valueElement = stringElement.addExtension(NS_CMIS_CORE, "value", CMIS);
-        valueElement.setText("document"); // This could be changed as an input parameter
+  /**
+   * STATUS 200: SUCCESS STATUS 404 : CLIENT_ERROR - Not found
+   * 
+   * @param fileId
+   * @param outputFileFolder
+   * @param outputFileName
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse downloadFileByStoreAndId(final String store, final String fileId,
+      final String outputFileFolder, final String outputFileName) throws IOException {
 
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/s/cmis/p" + destinationFolder + "/children";
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("POST " + uri);
-        }
-
-        ClientResponse clientResponse = client.post(uri, entry, options);
-        AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
-        clientResponse.release();
-        return alfResponse;
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("downloadFileByStoreAndId store=" + store + " fileId=" + fileId + " outputFileFolder="
+          + outputFileFolder + " outputFileName=" + outputFileName);
     }
 
-    /**
-     * Uploads the given file bytes to an Alfresco file<br/>
-     * STATUS 201 : Created STATUS 404 : Not found - May be caused by: Destination directory not found STATUS 500 : Internal
-     * server error - May be caused by: File already exist
-     * 
-     * @param fileBytes
-     * @param fileName
-     * @param description
-     * @param mimeType
-     * @param destinationFolder
-     * @return
-     * @throws IOException
-     */
-    private AlfrescoResponse uploadFile(byte[] fileBytes, String fileName, String description, String mimeType, String destinationFolder) throws IOException {
-        // String encodedFileString = new String(fileBytes);
-        String encodedFileString = null;
-        if (fileBytes != null) {
-            encodedFileString = new String(fileBytes);
-        }
-        // Build the input Atom Entry
-        Abdera abdera = new Abdera();
-        Entry entry = abdera.newEntry();
-        entry.setTitle(fileName);
-        entry.setSummary(description);
-        entry.setContent(encodedFileString, mimeType);
+    final AbderaClient client = new AbderaClient();
 
-        ExtensibleElement objElement = (ExtensibleElement) entry.addExtension(NS_CMIS_CORE, "object", CMIS);
-        ExtensibleElement propsElement = objElement.addExtension(NS_CMIS_CORE, "properties", CMIS);
-        ExtensibleElement stringElement = propsElement.addExtension(NS_CMIS_CORE, "propertyId", CMIS);
-        stringElement.setAttributeValue("cmis:name", "ObjectTypeId");
-        Element valueElement = stringElement.addExtension(NS_CMIS_CORE, "value", CMIS);
-        valueElement.setText("document"); // This could be changed as an input parameter
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
 
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/s/cmis/p" + destinationFolder + "/children";
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("POST " + uri);
-        }
-
-        ClientResponse clientResponse = client.post(uri, entry, options);
-        AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
-        clientResponse.release();
-        return alfResponse;
+    final String uri = server + "/alfresco/service/cmis/s/" + store + "/i/" + fileId + "/content";
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("GET " + uri);
     }
 
-    /**
-     * STATUS 204 : SUCCESS STATUS 404 : CLIENT_ERROR - Not found
-     * 
-     * @param itemId
-     *            if a folderId is specified it also deletes its contents
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse deleteItemById(String itemId) throws IOException {
+    final ClientResponse clientResponse = client.get(uri, options);
+    final AlfrescoResponse alfResponse = parseResponseAsOutputFile(clientResponse, outputFileFolder, outputFileName);
+    clientResponse.release();
+    return alfResponse;
+  }
 
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("deleteItemById itemId=" + itemId);
-        }
-
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/s/cmis/i/" + itemId;
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("DELETE " + uri);
-        }
-
-        ClientResponse clientResponse = client.delete(uri, options);
-        AlfrescoResponse alfResponse = parseResponse(clientResponse);
-        clientResponse.release();
-        return alfResponse;
+  /**
+   * Uploads the file at the given path in Alfresco STATUS 201 : Created STATUS 404 : Not found - May be caused by:
+   * Destination directory not found STATUS 500 : Internal server error - May be caused by: File already exist
+   * 
+   * @param fileAbsolutePath
+   * @param description
+   * @param mimeType
+   * @param destinationFolder
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse uploadFileByPath(final String fileAbsolutePath, final String fileName,
+      final String description, final String mimeType, final String destinationFolder) throws IOException {
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("uploadFileByPath fileAbsolutePath=" + fileAbsolutePath + " fileName=" + fileName + " description="
+          + description + " mimeType=" + mimeType + " destinationFolder=" + destinationFolder);
+    }
+    if ("text/plain".equalsIgnoreCase(mimeType)) {
+      // Get file content
+      final File fileToUpload = new File(fileAbsolutePath);
+      final byte[] fileBytes = getBytesFromFile(fileToUpload);
+      // Upload file
+      return uploadFile(fileBytes, fileName, description, mimeType, destinationFolder);
+    } else {
+      // Upload stream
+      final FileInputStream inputStream = new FileInputStream(fileAbsolutePath);
+      return uploadFile(inputStream, fileName, description, mimeType, destinationFolder);
     }
 
-    /**
-     * STATUS 201 : Created - (working copy created) STATUS 404 : CLIENT_ERROR - File not found STATUS 400 : CLIENT_ERROR - Bad
-     * request, file already checked-out
-     * 
-     * @param fileId
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse checkout(String fileId) throws IOException {
+  }
 
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("checkout fileId=" + fileId);
-        }
-
-        // Build the input Atom Entry
-        Abdera abdera = new Abdera();
-        Entry entry = abdera.newEntry();
-
-        ExtensibleElement objElement = (ExtensibleElement) entry.addExtension(NS_CMIS_RESTATOM, "object", CMISRA);
-        ExtensibleElement propsElement = objElement.addExtension(NS_CMIS_CORE, "properties", CMIS);
-        ExtensibleElement stringElement = propsElement.addExtension(NS_CMIS_CORE, "propertyId", CMIS);
-        stringElement.setAttributeValue("propertyDefinitionId", "cmis:objectId");
-        Element valueElement = stringElement.addExtension(NS_CMIS_CORE, "value", CMIS);
-        valueElement.setText("workspace://SpacesStore/" + fileId);
-
-        // Post it
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/s/cmis/checkedout";
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("POST " + uri);
-        }
-
-        ClientResponse clientResponse = client.post(uri, entry, options);
-        AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
-        clientResponse.release();
-        return alfResponse;
+  /**
+   * Uploads the given AttachmentInstance in Alfresco STATUS 201 : Created STATUS 404 : Not found - May be caused by:
+   * Destination directory not found STATUS 500 : Internal server error - May be caused by: File already exist
+   * 
+   * @param attachment
+   * @param description
+   * @param mimeType
+   * @param destinationFolder
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse uploadFileFromAttachment(final AttachmentInstance attachment, final String fileName,
+      final String description, final String mimeType, final String destinationFolder) throws IOException {
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("uploadFileFromAttachment attachmentFileName=" + attachment.getFileName() + " fileName=" + fileName
+          + " description=" + description + " mimeType=" + mimeType + " destinationFolder=" + destinationFolder);
     }
 
-    /**
-     * STATUS 200: SUCCESS
-     * 
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse listCheckedOutFiles() throws IOException {
+    // Get file content
+    final QueryRuntimeAPI queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
+    final byte[] fileBytes = queryRuntimeAPI.getAttachmentValue(attachment);
+    if ("text/plain".equalsIgnoreCase(mimeType)) {
+      // Upload file
+      return uploadFile(fileBytes, fileName, description, mimeType, destinationFolder);
+    } else {
+      // Upload stream
+      final ByteArrayInputStream inputStream = new ByteArrayInputStream(fileBytes);
+      return uploadFile(inputStream, fileName, description, mimeType, destinationFolder);
+    }
+  }
 
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("listCheckedOutFiles");
-        }
-
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/s/cmis/checkedout";
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("GET " + uri);
-        }
-
-        ClientResponse clientResponse = client.get(uri, options);
-        AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
-        clientResponse.release();
-        return alfResponse;
+  /**
+   * Uploads the given Document in Alfresco STATUS 201 : Created STATUS 404 : Not found - May be caused by: Destination
+   * directory not found STATUS 500 : Internal server error - May be caused by: File already exist
+   * 
+   * @param document
+   * @param description
+   * @param mimeType
+   * @param destinationFolder
+   * @return AlfrescoResponse
+   * @throws IOException
+   * @throws Exception
+   */
+  public AlfrescoResponse uploadFileFromDocument(final org.ow2.bonita.facade.runtime.Document document,
+      final String fileName, final String description, final String mimeType, final String destinationFolder)
+      throws IOException, Exception {
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("uploadFileFromDocument documentName=" + document.getName() + " fileName=" + fileName
+          + " description=" + description + " mimeType=" + mimeType + " destinationFolder=" + destinationFolder);
     }
 
-    /**
-     * STATUS 204 : SUCCESS STATUS 404 : CLIENT_ERROR - File not found STATUS 500 : SERVER_ERROR - (may be caused because the
-     * file is not checked-out)
-     * 
-     * @param fileId
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse cancelCheckout(String fileId) throws IOException {
+    // Get file content
+    final QueryRuntimeAPI queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
+    final byte[] fileBytes = queryRuntimeAPI.getDocumentContent(document.getUUID());
 
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("cancelCheckout fileId=" + fileId);
-        }
-
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/s/cmis/pwc/i/" + fileId;
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("DELETE " + uri);
-        }
-
-        ClientResponse clientResponse = client.delete(uri, options);
-        AlfrescoResponse alfResponse = parseResponse(clientResponse);
-        clientResponse.release();
-        return alfResponse;
+    if ("text/plain".equalsIgnoreCase(mimeType)) {
+      // Upload file
+      return uploadFile(fileBytes, fileName, description, mimeType, destinationFolder);
+    } else {
+      // Upload stream
+      final ByteArrayInputStream inputStream = new ByteArrayInputStream(fileBytes);
+      return uploadFile(inputStream, fileName, description, mimeType, destinationFolder);
     }
 
-    /**
-     * STATUS 200 : SUCCESS STATUS 500 : Internal server error - May be caused by: Duplicate child name not allowed (you are
-     * trying to use the original file name instead of the checked-out file name) Example: original file name: demo.txt
-     * checked-out file name: demo (Working copy).txt
-     * 
-     * @param fileAbsolutePath
-     * @param description
-     * @param mimeType
-     * @param checkedOutFileId
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse updateCheckedOutFile(String fileAbsolutePath, String description, String mimeType, String checkedOutFileId) throws IOException {
+  }
 
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("updateCheckedOutFile fileAbsolutePath=" + fileAbsolutePath + " description=" + description + " mimeType=" + mimeType
-                    + " checkedOutFileId=" + checkedOutFileId);
-        }
+  /**
+   * upload non test/plain MimeType file
+   * 
+   * @param inputStream
+   * @param fileName
+   * @param description
+   * @param mimeType
+   * @param destinationFolder
+   * @return
+   */
+  private AlfrescoResponse uploadFile(final InputStream inputStream, final String fileName, final String description,
+      final String mimeType, final String destinationFolder) {
+    // Build the input Atom Entry
+    final Abdera abdera = new Abdera();
+    final Entry entry = abdera.newEntry();
+    entry.setTitle(fileName);
+    entry.setSummary(description);
+    entry.setContent(inputStream, mimeType);
 
-        File fileToUpload = new File(fileAbsolutePath);
+    final ExtensibleElement objElement = (ExtensibleElement) entry.addExtension(NS_CMIS_CORE, "object", CMIS);
+    final ExtensibleElement propsElement = objElement.addExtension(NS_CMIS_CORE, "properties", CMIS);
+    final ExtensibleElement stringElement = propsElement.addExtension(NS_CMIS_CORE, "propertyId", CMIS);
+    stringElement.setAttributeValue("cmis:name", "ObjectTypeId");
+    final Element valueElement = stringElement.addExtension(NS_CMIS_CORE, "value", CMIS);
+    valueElement.setText("document"); // This could be changed as an input parameter
 
-        byte[] fileBytes = getBytesFromFile(fileToUpload);
-        // char[] encodedFile = Base64Coder.encode(fileBytes); This will cause messy code issue.
-        String encodedFileString = new String(fileBytes);
+    final AbderaClient client = new AbderaClient();
 
-        String fileName = fileToUpload.getName();
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
 
-        // Build the input Atom Entry
-        Abdera abdera = new Abdera();
-        Entry entry = abdera.newEntry();
-        entry.setTitle(fileName);
-        entry.setSummary(description);
-        entry.setContent(encodedFileString, mimeType);
-
-        ExtensibleElement objElement = (ExtensibleElement) entry.addExtension(NS_CMIS_CORE, "object", CMIS);
-        ExtensibleElement propsElement = objElement.addExtension(NS_CMIS_CORE, "properties", CMIS);
-        ExtensibleElement stringElement = propsElement.addExtension(NS_CMIS_CORE, "propertyId", CMIS);
-        stringElement.setAttributeValue("cmis:name", "ObjectTypeId");
-        Element valueElement = stringElement.addExtension(NS_CMIS_CORE, "value", CMIS);
-        valueElement.setText("document"); // This could be changed as an input parameter
-
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/s/cmis/i/" + checkedOutFileId;
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("PUT " + uri);
-        }
-
-        ClientResponse clientResponse = client.put(uri, entry, options);
-        AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
-        clientResponse.release();
-        return alfResponse;
+    final String uri = server + "/alfresco/s/cmis/p" + destinationFolder + "/children";
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("POST " + uri);
     }
 
-    /**
-     * STATUS 200 : SUCCESS STATUS 404 : CLIENT_ERROR - File not found
-     * 
-     * @param checkedOutFileId
-     * @param isMajorVersion
-     * @param checkinComments
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse checkin(String checkedOutFileId, boolean isMajorVersion, String checkinComments) throws IOException {
+    final ClientResponse clientResponse = client.post(uri, entry, options);
+    final AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
+    clientResponse.release();
+    return alfResponse;
+  }
 
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("checkin checkedOutFileId=" + checkedOutFileId + " isMajorVersion=" + isMajorVersion + " checkinComments=" + checkinComments);
-        }
+  /**
+   * Uploads the given file bytes to an Alfresco file<br/>
+   * STATUS 201 : Created STATUS 404 : Not found - May be caused by: Destination directory not found STATUS 500 :
+   * Internal server error - May be caused by: File already exist
+   * 
+   * @param fileBytes
+   * @param fileName
+   * @param description
+   * @param mimeType
+   * @param destinationFolder
+   * @return
+   * @throws IOException
+   */
+  private AlfrescoResponse uploadFile(final byte[] fileBytes, final String fileName, final String description,
+      final String mimeType, final String destinationFolder) throws IOException {
+    // String encodedFileString = new String(fileBytes);
+    String encodedFileString = null;
+    if (fileBytes != null) {
+      encodedFileString = new String(fileBytes);
+    }
+    // Build the input Atom Entry
+    final Abdera abdera = new Abdera();
+    final Entry entry = abdera.newEntry();
+    entry.setTitle(fileName);
+    entry.setSummary(description);
+    entry.setContent(encodedFileString, mimeType);
 
-        // Replace white spaces from the URI
-        checkinComments = checkinComments.replace(" ", "%20");
+    final ExtensibleElement objElement = (ExtensibleElement) entry.addExtension(NS_CMIS_CORE, "object", CMIS);
+    final ExtensibleElement propsElement = objElement.addExtension(NS_CMIS_CORE, "properties", CMIS);
+    final ExtensibleElement stringElement = propsElement.addExtension(NS_CMIS_CORE, "propertyId", CMIS);
+    stringElement.setAttributeValue("cmis:name", "ObjectTypeId");
+    final Element valueElement = stringElement.addExtension(NS_CMIS_CORE, "value", CMIS);
+    valueElement.setText("document"); // This could be changed as an input parameter
 
-        // Create an empty Atom Entry
-        Abdera abdera = new Abdera();
-        Entry entry = abdera.newEntry();
+    final AbderaClient client = new AbderaClient();
 
-        AbderaClient client = new AbderaClient();
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
 
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/s/cmis/pwc/i/" + checkedOutFileId + "?checkin=true&major=" + isMajorVersion + "&checkinComment=" + checkinComments;
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("PUT " + uri);
-        }
-
-        ClientResponse clientResponse = client.put(uri, entry, options);
-        AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
-        clientResponse.release();
-        return alfResponse;
+    final String uri = server + "/alfresco/s/cmis/p" + destinationFolder + "/children";
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("POST " + uri);
     }
 
-    /**
-     * STATUS 200: SUCCESS STATUS 404 : CLIENT_ERROR - File not found
-     * 
-     * @param fileId
-     * @return AlfrescoResponse
-     * @throws IOException
-     */
-    public AlfrescoResponse fileVersions(String fileId) throws IOException {
+    final ClientResponse clientResponse = client.post(uri, entry, options);
+    final AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
+    clientResponse.release();
+    return alfResponse;
+  }
 
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("fileVersions fileId=" + fileId);
-        }
+  /**
+   * STATUS 204 : SUCCESS STATUS 404 : CLIENT_ERROR - Not found
+   * 
+   * @param itemId if a folderId is specified it also deletes its contents
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse deleteItemById(final String itemId) throws IOException {
 
-        AbderaClient client = new AbderaClient();
-
-        // Authentication header
-        String encodedCredential = Base64Coder.encodeString((username + ":" + password));
-        RequestOptions options = new RequestOptions();
-        options.setHeader("Authorization", "Basic " + encodedCredential);
-
-        String uri = server + "/alfresco/s/cmis/i/" + fileId + "/versions";
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("GET " + uri);
-        }
-
-        ClientResponse clientResponse = client.get(uri, options);
-        AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
-        clientResponse.release();
-        return alfResponse;
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("deleteItemById itemId=" + itemId);
     }
 
-    /**
-     * Parse ClientResponse
-     * 
-     * @param response
-     * @return AlfrescoResponse
-     */
-    private AlfrescoResponse parseResponse(ClientResponse response) {
+    final AbderaClient client = new AbderaClient();
 
-        AlfrescoResponse alfResponse;
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
 
-        String responseType = "";
-        if (response.getType() != null) {
-            responseType = response.getType().toString();
-        }
-        String statusCode = String.valueOf(response.getStatus());
-        String statusText = response.getStatusText();
-
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("Response type : " + responseType);
-            LOGGER.info("Status code is: " + statusCode);
-            LOGGER.info("Status text is: " + statusText);
-        }
-
-        alfResponse = new AlfrescoResponse(responseType, statusCode, statusText);
-
-        if (ResponseType.SUCCESS == response.getType()) {
-            // Do nothing
-        } else {
-            // printStackTrace
-            InputStream inputStream;
-            try {
-                inputStream = response.getInputStream();
-
-                final char[] buffer = new char[0x10000];
-                StringBuilder stackTrace = new StringBuilder();
-                Reader in = new InputStreamReader(inputStream, "UTF-8");
-                int read;
-                do {
-                    read = in.read(buffer, 0, buffer.length);
-                    if (read > 0) {
-                        stackTrace.append(buffer, 0, read);
-                    }
-                } while (read >= 0);
-                inputStream.close();
-
-                alfResponse.setStackTrace(stackTrace.toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return alfResponse;
+    final String uri = server + "/alfresco/s/cmis/i/" + itemId;
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("DELETE " + uri);
     }
 
-    /**
-     * Parse ClientResponse
-     * 
-     * @param response
-     * @return AlfrescoResponse
-     */
-    @SuppressWarnings("unchecked")
-    private AlfrescoResponse parseResponseWithDocument(ClientResponse response) {
+    final ClientResponse clientResponse = client.delete(uri, options);
+    final AlfrescoResponse alfResponse = parseResponse(clientResponse);
+    clientResponse.release();
+    return alfResponse;
+  }
 
-        AlfrescoResponse alfResponse = parseResponse(response);
+  /**
+   * STATUS 201 : Created - (working copy created) STATUS 404 : CLIENT_ERROR - File not found STATUS 400 : CLIENT_ERROR
+   * - Bad request, file already checked-out
+   * 
+   * @param fileId
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse checkout(final String fileId) throws IOException {
 
-        if (ResponseType.SUCCESS == response.getType()) {
-            Document<Element> document = response.getDocument();
-            if (document != null) {
-                alfResponse.setDocument((Document<Element>) document.clone());
-            }
-        }
-        return alfResponse;
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("checkout fileId=" + fileId);
     }
 
-    /**
-     * Parse ClientResponse
-     * 
-     * @param response
-     * @return
-     * @throws IOException
-     */
-    private AlfrescoResponse parseResponseAsOutputFile(ClientResponse response, String outputFileFolder, String outputFileName) throws IOException {
+    // Build the input Atom Entry
+    final Abdera abdera = new Abdera();
+    final Entry entry = abdera.newEntry();
 
-        AlfrescoResponse alfResponse = parseResponse(response);
+    final ExtensibleElement objElement = (ExtensibleElement) entry.addExtension(NS_CMIS_RESTATOM, "object", CMISRA);
+    final ExtensibleElement propsElement = objElement.addExtension(NS_CMIS_CORE, "properties", CMIS);
+    final ExtensibleElement stringElement = propsElement.addExtension(NS_CMIS_CORE, "propertyId", CMIS);
+    stringElement.setAttributeValue("propertyDefinitionId", "cmis:objectId");
+    final Element valueElement = stringElement.addExtension(NS_CMIS_CORE, "value", CMIS);
+    valueElement.setText("workspace://SpacesStore/" + fileId);
 
-        if (ResponseType.SUCCESS == response.getType()) {
-            if (response.getContentLength() > 0) {
-                InputStream inputStream = response.getInputStream();
-                File responseFile = new File(outputFileFolder + outputFileName);
-                OutputStream outputStream = new FileOutputStream(responseFile);
-                byte buf[] = new byte[1024];
-                int len;
-                while ((len = inputStream.read(buf)) > 0) {
-                    outputStream.write(buf, 0, len);
-                }
-                outputStream.close();
-                inputStream.close();
-            }
-        }
-        return alfResponse;
+    // Post it
+    final AbderaClient client = new AbderaClient();
+
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
+
+    final String uri = server + "/alfresco/s/cmis/checkedout";
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("POST " + uri);
     }
 
-    private static byte[] getBytesFromFile(File file) throws IOException {
-        InputStream is = new FileInputStream(file);
+    final ClientResponse clientResponse = client.post(uri, entry, options);
+    final AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
+    clientResponse.release();
+    return alfResponse;
+  }
 
-        // Get the size of the file
-        long length = file.length();
+  /**
+   * STATUS 200: SUCCESS
+   * 
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse listCheckedOutFiles() throws IOException {
 
-        if (length > Integer.MAX_VALUE) {
-            // File is too large
-            throw new IOException("File too long");
-        }
-
-        // Create the byte array to hold the data
-        byte[] bytes = new byte[(int) length];
-
-        // Read in the bytes
-        int offset = 0;
-        int numRead = 0;
-        while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-            offset += numRead;
-        }
-
-        // Ensure all the bytes have been read in
-        if (offset < bytes.length) {
-            throw new IOException("Could not completely read file " + file.getName());
-        }
-
-        // Close the input stream and return bytes
-        is.close();
-        return bytes;
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("listCheckedOutFiles");
     }
+
+    final AbderaClient client = new AbderaClient();
+
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
+
+    final String uri = server + "/alfresco/s/cmis/checkedout";
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("GET " + uri);
+    }
+
+    final ClientResponse clientResponse = client.get(uri, options);
+    final AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
+    clientResponse.release();
+    return alfResponse;
+  }
+
+  /**
+   * STATUS 204 : SUCCESS STATUS 404 : CLIENT_ERROR - File not found STATUS 500 : SERVER_ERROR - (may be caused because
+   * the file is not checked-out)
+   * 
+   * @param fileId
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse cancelCheckout(final String fileId) throws IOException {
+
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("cancelCheckout fileId=" + fileId);
+    }
+
+    final AbderaClient client = new AbderaClient();
+
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
+
+    final String uri = server + "/alfresco/s/cmis/pwc/i/" + fileId;
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("DELETE " + uri);
+    }
+
+    final ClientResponse clientResponse = client.delete(uri, options);
+    final AlfrescoResponse alfResponse = parseResponse(clientResponse);
+    clientResponse.release();
+    return alfResponse;
+  }
+
+  /**
+   * STATUS 200 : SUCCESS STATUS 500 : Internal server error - May be caused by: Duplicate child name not allowed (you
+   * are trying to use the original file name instead of the checked-out file name) Example: original file name:
+   * demo.txt checked-out file name: demo (Working copy).txt
+   * 
+   * @param fileAbsolutePath
+   * @param description
+   * @param mimeType
+   * @param checkedOutFileId
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse updateCheckedOutFile(final String fileAbsolutePath, final String description,
+      final String mimeType, final String checkedOutFileId) throws IOException {
+
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("updateCheckedOutFile fileAbsolutePath=" + fileAbsolutePath + " description=" + description
+          + " mimeType=" + mimeType + " checkedOutFileId=" + checkedOutFileId);
+    }
+
+    final File fileToUpload = new File(fileAbsolutePath);
+
+    final byte[] fileBytes = getBytesFromFile(fileToUpload);
+    // char[] encodedFile = Base64Coder.encode(fileBytes); This will cause messy code issue.
+    final String encodedFileString = new String(fileBytes);
+
+    final String fileName = fileToUpload.getName();
+
+    // Build the input Atom Entry
+    final Abdera abdera = new Abdera();
+    final Entry entry = abdera.newEntry();
+    entry.setTitle(fileName);
+    entry.setSummary(description);
+    entry.setContent(encodedFileString, mimeType);
+
+    final ExtensibleElement objElement = (ExtensibleElement) entry.addExtension(NS_CMIS_CORE, "object", CMIS);
+    final ExtensibleElement propsElement = objElement.addExtension(NS_CMIS_CORE, "properties", CMIS);
+    final ExtensibleElement stringElement = propsElement.addExtension(NS_CMIS_CORE, "propertyId", CMIS);
+    stringElement.setAttributeValue("cmis:name", "ObjectTypeId");
+    final Element valueElement = stringElement.addExtension(NS_CMIS_CORE, "value", CMIS);
+    valueElement.setText("document"); // This could be changed as an input parameter
+
+    final AbderaClient client = new AbderaClient();
+
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
+
+    final String uri = server + "/alfresco/s/cmis/i/" + checkedOutFileId;
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("PUT " + uri);
+    }
+
+    final ClientResponse clientResponse = client.put(uri, entry, options);
+    final AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
+    clientResponse.release();
+    return alfResponse;
+  }
+
+  /**
+   * STATUS 200 : SUCCESS STATUS 404 : CLIENT_ERROR - File not found
+   * 
+   * @param checkedOutFileId
+   * @param isMajorVersion
+   * @param checkinComments
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse checkin(final String checkedOutFileId, final boolean isMajorVersion, String checkinComments)
+      throws IOException {
+
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("checkin checkedOutFileId=" + checkedOutFileId + " isMajorVersion=" + isMajorVersion
+          + " checkinComments=" + checkinComments);
+    }
+
+    // Replace white spaces from the URI
+    checkinComments = checkinComments.replace(" ", "%20");
+
+    // Create an empty Atom Entry
+    final Abdera abdera = new Abdera();
+    final Entry entry = abdera.newEntry();
+
+    final AbderaClient client = new AbderaClient();
+
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
+
+    final String uri = server + "/alfresco/s/cmis/pwc/i/" + checkedOutFileId + "?checkin=true&major=" + isMajorVersion
+        + "&checkinComment=" + checkinComments;
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("PUT " + uri);
+    }
+
+    final ClientResponse clientResponse = client.put(uri, entry, options);
+    final AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
+    clientResponse.release();
+    return alfResponse;
+  }
+
+  /**
+   * STATUS 200: SUCCESS STATUS 404 : CLIENT_ERROR - File not found
+   * 
+   * @param fileId
+   * @return AlfrescoResponse
+   * @throws IOException
+   */
+  public AlfrescoResponse fileVersions(final String fileId) throws IOException {
+
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("fileVersions fileId=" + fileId);
+    }
+
+    final AbderaClient client = new AbderaClient();
+
+    // Authentication header
+    final String encodedCredential = Base64Coder.encodeString(username + ":" + password);
+    final RequestOptions options = new RequestOptions();
+    options.setHeader("Authorization", "Basic " + encodedCredential);
+
+    final String uri = server + "/alfresco/s/cmis/i/" + fileId + "/versions";
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("GET " + uri);
+    }
+
+    final ClientResponse clientResponse = client.get(uri, options);
+    final AlfrescoResponse alfResponse = parseResponseWithDocument(clientResponse);
+    clientResponse.release();
+    return alfResponse;
+  }
+
+  /**
+   * Parse ClientResponse
+   * 
+   * @param response
+   * @return AlfrescoResponse
+   */
+  private AlfrescoResponse parseResponse(final ClientResponse response) {
+
+    AlfrescoResponse alfResponse;
+
+    String responseType = "";
+    if (response.getType() != null) {
+      responseType = response.getType().toString();
+    }
+    final String statusCode = String.valueOf(response.getStatus());
+    final String statusText = response.getStatusText();
+
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("Response type : " + responseType);
+      LOGGER.info("Status code is: " + statusCode);
+      LOGGER.info("Status text is: " + statusText);
+    }
+
+    alfResponse = new AlfrescoResponse(responseType, statusCode, statusText);
+
+    if (ResponseType.SUCCESS != response.getType()) {
+      // printStackTrace
+      InputStream inputStream;
+      try {
+        inputStream = response.getInputStream();
+
+        final char[] buffer = new char[0x10000];
+        final StringBuilder stackTrace = new StringBuilder();
+        final Reader in = new InputStreamReader(inputStream, "UTF-8");
+        int read;
+        do {
+          read = in.read(buffer, 0, buffer.length);
+          if (read > 0) {
+            stackTrace.append(buffer, 0, read);
+          }
+        } while (read >= 0);
+        in.close();
+
+        alfResponse.setStackTrace(stackTrace.toString());
+      } catch (final IOException e) {
+        e.printStackTrace();
+      }
+    }
+    return alfResponse;
+  }
+
+  /**
+   * Parse ClientResponse
+   * 
+   * @param response
+   * @return AlfrescoResponse
+   */
+  @SuppressWarnings("unchecked")
+  private AlfrescoResponse parseResponseWithDocument(final ClientResponse response) {
+
+    final AlfrescoResponse alfResponse = parseResponse(response);
+
+    if (ResponseType.SUCCESS == response.getType()) {
+      final Document<Element> document = response.getDocument();
+      if (document != null) {
+        alfResponse.setDocument((Document<Element>) document.clone());
+      }
+    }
+    return alfResponse;
+  }
+
+  /**
+   * Parse ClientResponse
+   * 
+   * @param response
+   * @return
+   * @throws IOException
+   */
+  private AlfrescoResponse parseResponseAsOutputFile(final ClientResponse response, final String outputFileFolder,
+      final String outputFileName) throws IOException {
+
+    final AlfrescoResponse alfResponse = parseResponse(response);
+
+    if (ResponseType.SUCCESS == response.getType()) {
+      if (response.getContentLength() > 0) {
+        final InputStream inputStream = response.getInputStream();
+        final File responseFile = new File(outputFileFolder + outputFileName);
+        final OutputStream outputStream = new FileOutputStream(responseFile);
+        final byte buf[] = new byte[1024];
+        int len;
+        while ((len = inputStream.read(buf)) > 0) {
+          outputStream.write(buf, 0, len);
+        }
+        outputStream.close();
+        inputStream.close();
+      }
+    }
+    return alfResponse;
+  }
+
+  private static byte[] getBytesFromFile(final File file) throws IOException {
+    final InputStream is = new FileInputStream(file);
+
+    // Get the size of the file
+    final long length = file.length();
+
+    if (length > Integer.MAX_VALUE) {
+      // File is too large
+      throw new IOException("File too long");
+    }
+
+    // Create the byte array to hold the data
+    final byte[] bytes = new byte[(int) length];
+
+    // Read in the bytes
+    int offset = 0;
+    int numRead = 0;
+    while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+      offset += numRead;
+    }
+
+    // Ensure all the bytes have been read in
+    if (offset < bytes.length) {
+      throw new IOException("Could not completely read file " + file.getName());
+    }
+
+    // Close the input stream and return bytes
+    is.close();
+    return bytes;
+  }
 
 }

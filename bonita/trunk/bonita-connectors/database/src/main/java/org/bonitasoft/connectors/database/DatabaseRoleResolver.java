@@ -21,14 +21,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.bonitasoft.connectors.database.Database;
 import org.ow2.bonita.connector.core.ConnectorError;
 import org.ow2.bonita.connector.core.RoleResolver;
 
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public abstract class DatabaseRoleResolver extends RoleResolver {
 
@@ -38,15 +37,15 @@ public abstract class DatabaseRoleResolver extends RoleResolver {
 
   @Override
   protected List<ConnectorError> validateValues() {
-    List<ConnectorError> errors = super.validateValues();
-    String select = query.trim().toLowerCase();
+    final List<ConnectorError> errors = super.validateValues();
+    final String select = query.trim().toLowerCase();
     ConnectorError error = null;
     if (select.length() == 0) {
       error = new ConnectorError("query", new IllegalArgumentException("is empty"));
     } else if (!select.startsWith("select")) {
       error = new ConnectorError("query", new IllegalArgumentException("must begin with SELECT"));
     } else {
-      int fromIndex = select.indexOf("from");
+      final int fromIndex = select.indexOf("from");
       if (fromIndex == 8) {
         error = new ConnectorError("query", new IllegalArgumentException("must contain a column in the selection"));
       }
@@ -58,15 +57,15 @@ public abstract class DatabaseRoleResolver extends RoleResolver {
   }
 
   @Override
-  protected Set<String> getMembersSet(String arg0) throws Exception {
-    Database database = new Database(this.getDriver());
-    Set<String> members = new HashSet<String>();
+  protected Set<String> getMembersSet(final String arg0) throws Exception {
+    final Database database = new Database(this.getDriver());
+    final Set<String> members = new HashSet<String>();
     try {
       database.connect(this.getUrl(), username, password);
-      ResultSet data = database.select(query);
+      final ResultSet data = database.select(query);
       if (data != null) {
         while (data.next()) {
-          String member = data.getString(1);
+          final String member = data.getString(1);
           members.add(member);
         }
       }
@@ -78,22 +77,22 @@ public abstract class DatabaseRoleResolver extends RoleResolver {
     return members;
   }
 
-  public void setQuery(String query) {
+  public void setQuery(final String query) {
     this.query = query;
   }
 
-  public void setUsername(String username) {
+  public void setUsername(final String username) {
     this.username = username;
   }
 
-  public void setPassword(String password) {
+  public void setPassword(final String password) {
     if (password != null && "".equals(password)) {
       this.password = null;
     } else {
       this.password = password;
     }
   }
-  
+
   public abstract String getUrl();
 
   public abstract String getDriver();

@@ -33,69 +33,59 @@ import org.ow2.bonita.connector.core.ConnectorError;
  */
 public class CheckOut extends AbstractCmisConnector {
 
-    private String documentID;
-    private String pWCDocumentID;
+  private String documentID;
+  private String pWCDocumentID;
 
-    private static final Log logger = LogFactory.getLog(CheckOut.class.getClass());
+  private static final Log LOGGER = LogFactory.getLog(CheckOut.class.getClass());
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#executeConnector()
-     */
-    @Override
-    protected void executeConnector() throws Exception {
-        pWCDocumentID = this.checkOutDocument();
+  @Override
+  protected void executeConnector() throws Exception {
+    pWCDocumentID = this.checkOutDocument();
+  }
+
+  @Override
+  protected List<ConnectorError> validateValues() {
+    return null;
+  }
+
+  /**
+   * check out the documentID specified document
+   * 
+   * @return pWCDocumentID
+   * @throws Exception
+   */
+  private String checkOutDocument() throws Exception {
+    final Session s = this.createSessionByName(username, password, url, binding_type, repositoryName);
+    Document document = null;
+    try {
+      document = (Document) s.getObject(s.createObjectId(documentID));
+    } catch (final CmisObjectNotFoundException e1) {
+      if (LOGGER.isErrorEnabled()) {
+        LOGGER.error(e1.getMessage());
+      }
+      throw e1;
+    } catch (final Exception e) {
+      if (LOGGER.isErrorEnabled()) {
+        LOGGER.error(e.getMessage());
+      }
+      throw e;
     }
+    final ObjectId objectId = document.checkOut();
+    return objectId.getId();
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#validateValues()
-     */
-    @Override
-    protected List<ConnectorError> validateValues() {
-        return null;
-    }
+  /**
+   * get Private Work Copy documentId
+   */
+  public String getPWCdocumentId() {
+    return pWCDocumentID;
+  }
 
-    /**
-     * check out the documentID specified document
-     * 
-     * @return pWCDocumentID
-     * @throws Exception
-     */
-    private String checkOutDocument() throws Exception {
-        final Session s = this.createSessionByName(username, password, url, binding_type, repositoryName);
-        Document document = null;
-        try {
-            document = (Document) s.getObject(s.createObjectId(documentID));
-        } catch (final CmisObjectNotFoundException e1) {
-            if (logger.isErrorEnabled()) {
-                logger.error(e1.getMessage());
-            }
-            throw e1;
-        } catch (final Exception e) {
-            if (logger.isErrorEnabled()) {
-                logger.error(e.getMessage());
-            }
-            throw e;
-        }
-        final ObjectId objectId = document.checkOut();
-        return objectId.getId();
-    }
-
-    /**
-     * get Private Work Copy documentId
-     */
-    public String getPWCdocumentId() {
-        return pWCDocumentID;
-    }
-
-    /**
-     * set document id
-     */
-    public void setDocumentID(final String documentID) {
-        this.documentID = documentID;
-    }
+  /**
+   * set document id
+   */
+  public void setDocumentID(final String documentID) {
+    this.documentID = documentID;
+  }
 
 }

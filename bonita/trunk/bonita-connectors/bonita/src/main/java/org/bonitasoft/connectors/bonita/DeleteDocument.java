@@ -30,58 +30,38 @@ import org.ow2.bonita.facade.uuid.DocumentUUID;
  */
 public class DeleteDocument extends ProcessConnector {
 
-    private boolean success = false;
-    private String documentUUID;
-    private boolean deleteAllVersion;
+  private boolean success = false;
+  private String documentUUID;
+  private boolean deleteAllVersion;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#executeConnector()
-     */
-    @Override
-    protected void executeConnector() throws Exception {
-        final RuntimeAPI runTimeAPI = getApiAccessor().getRuntimeAPI();
-        runTimeAPI.deleteDocuments(deleteAllVersion, new DocumentUUID(documentUUID));
-        success = true;
-    }
+  @Override
+  protected void executeConnector() throws Exception {
+    final RuntimeAPI runtimeAPI = getApiAccessor().getRuntimeAPI();
+    runtimeAPI.deleteDocuments(deleteAllVersion, new DocumentUUID(documentUUID));
+    success = true;
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#validateValues()
-     */
-    @Override
-    protected List<ConnectorError> validateValues() {
-        final List<ConnectorError> errors = new ArrayList<ConnectorError>();
-        ConnectorError error = null;
-        if (documentUUID.length() != 32) {
-            error = new ConnectorError("documentUUID Error", new Exception("length of documentUUID should be 32"));
-            errors.add(error);
-        }
-        return errors;
+  @Override
+  protected List<ConnectorError> validateValues() {
+    final List<ConnectorError> errors = new ArrayList<ConnectorError>();
+    ConnectorError error = null;
+    if (documentUUID.length() != 32) {
+      error = new ConnectorError("documentUUID Error", new Exception("length of documentUUID should be 32"));
+      errors.add(error);
     }
+    return errors;
+  }
 
-    /**
-     * set document UUID
-     * 
-     * @param documentUUID
-     */
-    public void setDocumentUUID(String documentUUID) {
-        this.documentUUID = documentUUID;
-    }
+  public void setDocumentUUID(final String documentUUID) {
+    this.documentUUID = documentUUID;
+  }
 
-    public void setDeleteAllVersion(boolean deleteAllVersion) {
-        this.deleteAllVersion = deleteAllVersion;
-    }
+  public void setDeleteAllVersion(final boolean deleteAllVersion) {
+    this.deleteAllVersion = deleteAllVersion;
+  }
 
-    /**
-     * get success
-     * 
-     * @return Boolean
-     */
-    public boolean getSuccess() {
-        return success;
-    }
+  public boolean getSuccess() {
+    return success;
+  }
 
 }

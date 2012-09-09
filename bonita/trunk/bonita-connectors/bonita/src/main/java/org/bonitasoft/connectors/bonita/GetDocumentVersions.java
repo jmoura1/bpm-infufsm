@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 BonitaSoft S.A.
+ * Copyright (C) 2011-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@ package org.bonitasoft.connectors.bonita;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ow2.bonita.connector.core.ConnectorError;
 import org.ow2.bonita.connector.core.ProcessConnector;
 import org.ow2.bonita.facade.QueryRuntimeAPI;
@@ -34,66 +34,59 @@ import org.ow2.bonita.facade.uuid.DocumentUUID;
  */
 public class GetDocumentVersions extends ProcessConnector {
 
-    private String documentUUID;
-    private List<Document> documentList = new ArrayList<Document>();
-    private static final Log logger = LogFactory.getLog(GetDocumentVersions.class.getClass());
+  private static final Logger LOGGER = Logger.getLogger(GetDocumentVersions.class.getName());
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#executeConnector()
-     */
-    @Override
-    protected void executeConnector() throws Exception {
-        final QueryRuntimeAPI queryTimeAPI = getApiAccessor().getQueryRuntimeAPI();
-        try {
-            documentList = queryTimeAPI.getDocumentVersions(new DocumentUUID(documentUUID));// .getDocument(new
-        } catch (final DocumentNotFoundException e) {
-            if (logger.isWarnEnabled()) {
-                logger.warn("document not found with UUID " + documentUUID);
-            }
-            throw e;
-        }
-    }
+  private String documentUUID;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#validateValues()
-     */
-    @Override
-    protected List<ConnectorError> validateValues() {
-        final List<ConnectorError> errors = new ArrayList<ConnectorError>();
-        final QueryRuntimeAPI queryTimeAPI = getApiAccessor().getQueryRuntimeAPI();
-        ConnectorError error = null;
-        if (documentUUID.length() != 32) {
-            error = new ConnectorError("documentUUID Error", new Exception("length of documentUUID should be 32"));
-            errors.add(error);
-        }
-        try {
-            queryTimeAPI.getDocument(new DocumentUUID(documentUUID));
-        } catch (final DocumentNotFoundException e) {
-            error = new ConnectorError("document not found with UUID " + documentUUID, e);
-            errors.add(error);
-        }
-        return errors;
-    }
+  private List<Document> documentList = new ArrayList<Document>();
 
-    /**
-     * set document UUIDs
-     * 
-     * @param documentUUIDs
-     */
-    public void setDocumentUUID(final String documentUUID) {
-        this.documentUUID = documentUUID;
+  @Override
+  protected void executeConnector() throws Exception {
+    final QueryRuntimeAPI queryTimeAPI = getApiAccessor().getQueryRuntimeAPI();
+    try {
+      documentList = queryTimeAPI.getDocumentVersions(new DocumentUUID(documentUUID));// .getDocument(new
+    } catch (final DocumentNotFoundException e) {
+      if (LOGGER.isLoggable(Level.SEVERE)) {
+        LOGGER.severe("Document not found with UUID " + documentUUID);
+      }
+      throw e;
     }
+  }
 
-    /**
-     * get document list
-     * 
-     * @return List<Document>
-     */
-    public List<Document> getDocumentList() {
-        return documentList;
+  @Override
+  protected List<ConnectorError> validateValues() {
+    final List<ConnectorError> errors = new ArrayList<ConnectorError>();
+    final QueryRuntimeAPI queryTimeAPI = getApiAccessor().getQueryRuntimeAPI();
+    ConnectorError error = null;
+    if (documentUUID.length() != 32) {
+      error = new ConnectorError("documentUUID Error", new Exception("length of documentUUID should be 32"));
+      errors.add(error);
     }
+    try {
+      queryTimeAPI.getDocument(new DocumentUUID(documentUUID));
+    } catch (final DocumentNotFoundException e) {
+      error = new ConnectorError("document not found with UUID " + documentUUID, e);
+      errors.add(error);
+    }
+    return errors;
+  }
+
+  /**
+   * set document UUIDs
+   * 
+   * @param documentUUIDs
+   */
+  public void setDocumentUUID(final String documentUUID) {
+    this.documentUUID = documentUUID;
+  }
+
+  /**
+   * get document list
+   * 
+   * @return List<Document>
+   */
+  public List<Document> getDocumentList() {
+    return documentList;
+  }
+
 }

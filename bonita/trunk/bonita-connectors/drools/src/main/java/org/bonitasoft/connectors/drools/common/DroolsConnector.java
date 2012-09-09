@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 BonitaSoft S.A.
+ * Copyright (C) 2011-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,67 +51,61 @@ public abstract class DroolsConnector extends Connector {
   private String status;
   private String response;
 
-  private static final Log logger = LogFactory.getLog(DroolsConnector.class.getClass());
+  private static final Log LOGGER = LogFactory.getLog(DroolsConnector.class.getClass());
 
   @Override
   protected void executeConnector() throws Exception {
-    String request = getRequest();
-    if (logger.isDebugEnabled()) {
-      logger.debug("request = " + request);
+    final String request = getRequest();
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("request = " + request);
     }
-    HttpClient httpClient = getHttpClient();
-    PostMethod postMethod = new PostMethod(apiUrl);
+    final HttpClient httpClient = getHttpClient();
+    final PostMethod postMethod = new PostMethod(apiUrl);
     try {
-      if(request == null){
+      if (request == null) {
         throw new Exception("Request can not be empty!");
       }
       postMethod.setRequestEntity(new StringRequestEntity(request, "text/plain", "UTF-8"));
       httpClient.executeMethod(postMethod);
       status = String.valueOf(postMethod.getStatusCode());
       response = postMethod.getResponseBodyAsString();
-      if (logger.isDebugEnabled()) {
-        logger.debug("status = " + status);
-        logger.debug("response = " + response);
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("status = " + status);
+        LOGGER.debug("response = " + response);
       }
     } catch (final Exception e) {
-      if (logger.isWarnEnabled()) {
-        logger.warn(e.getMessage());
+      if (LOGGER.isWarnEnabled()) {
+        LOGGER.warn(e.getMessage());
       }
       throw e;
     } finally {
       // release connection
-      if(postMethod != null){
+      if (postMethod != null) {
         postMethod.releaseConnection();
       }
     }
   }
 
-  /**
-   * @return
-   */
   protected abstract String getRequest();
 
-  /**
-   * @return
-   */
   private HttpClient getHttpClient() {
-    HttpClient httpClient = new HttpClient();
+    final HttpClient httpClient = new HttpClient();
     // set proxy
     if (proxyHost != null && proxyPort != 0) {
       httpClient.getHostConfiguration().setProxy(proxyHost, proxyPort);
     }
     // set proxy username & password
-    if (proxyPassword != null && proxyUsername != null){
-      final Credentials creds = new UsernamePasswordCredentials(proxyUsername, proxyPassword); 
+    if (proxyPassword != null && proxyUsername != null) {
+      final Credentials creds = new UsernamePasswordCredentials(proxyUsername, proxyPassword);
       httpClient.getState().setProxyCredentials(AuthScope.ANY, creds);
     }
     // set username & password
-    if(username != null && password != null){
+    if (username != null && password != null) {
       final Credentials creds = new UsernamePasswordCredentials(username, password);
       httpClient.getState().setCredentials(AuthScope.ANY, creds);
     }
     // set connection/read timeout
-    HttpConnectionManagerParams managerParams = httpClient.getHttpConnectionManager().getParams();
+    final HttpConnectionManagerParams managerParams = httpClient.getHttpConnectionManager().getParams();
     if (connectionTimeout != 0) {
       managerParams.setConnectionTimeout(connectionTimeout);
     }
@@ -125,8 +119,8 @@ public abstract class DroolsConnector extends Connector {
   protected List<ConnectorError> validateValues() {
     final List<ConnectorError> errors = new ArrayList<ConnectorError>();
     // validate apiUrl and ksessionName
-    ConnectorError emptyApiUrlError = this.getErrorIfNullOrEmptyParam(apiUrl, "apiURL");
-    if(emptyApiUrlError != null){
+    final ConnectorError emptyApiUrlError = this.getErrorIfNullOrEmptyParam(apiUrl, "apiURL");
+    if (emptyApiUrlError != null) {
       errors.add(emptyApiUrlError);
       return errors;
     }
@@ -138,16 +132,16 @@ public abstract class DroolsConnector extends Connector {
       errors.add(new ConnectorError("proxyPort", new IllegalArgumentException("cannot be greater than 65535!")));
       return errors;
     }
-    if(connectionTimeout < 0){
+    if (connectionTimeout < 0) {
       errors.add(new ConnectorError("connectionTimeout", new IllegalArgumentException("cannot be less than 0!")));
       return errors;
     }
-    if(readTimeout < 0){
+    if (readTimeout < 0) {
       errors.add(new ConnectorError("readTimeout", new IllegalArgumentException("cannot be less than 0!")));
       return errors;
     }
     // validate extra parameters
-    List<ConnectorError> extraErrors = validateExtraParams();
+    final List<ConnectorError> extraErrors = validateExtraParams();
     // add extra error to error list
     if (extraErrors != null) {
       errors.addAll(extraErrors);
@@ -155,9 +149,6 @@ public abstract class DroolsConnector extends Connector {
     return errors;
   }
 
-  /**
-   * @param errors
-   */
   protected abstract List<ConnectorError> validateExtraParams();
 
   /**
@@ -208,27 +199,28 @@ public abstract class DroolsConnector extends Connector {
     this.apiUrl = apiUrl;
   }
 
-  public void setProxyHost(String proxyHost) {
+  public void setProxyHost(final String proxyHost) {
     this.proxyHost = proxyHost;
   }
 
-  public void setProxyPort(int proxyPort) {
+  public void setProxyPort(final int proxyPort) {
     this.proxyPort = proxyPort;
   }
 
-  public void setProxyUsername(String proxyUsername) {
+  public void setProxyUsername(final String proxyUsername) {
     this.proxyUsername = proxyUsername;
   }
 
-  public void setProxyPassword(String proxyPassword) {
+  public void setProxyPassword(final String proxyPassword) {
     this.proxyPassword = proxyPassword;
   }
 
-  public void setConnectionTimeout(int connectionTimeout) {
+  public void setConnectionTimeout(final int connectionTimeout) {
     this.connectionTimeout = connectionTimeout;
   }
 
-  public void setReadTimeout(int readTimeout) {
+  public void setReadTimeout(final int readTimeout) {
     this.readTimeout = readTimeout;
   }
+
 }

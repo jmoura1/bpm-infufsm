@@ -48,29 +48,27 @@ public class AddAttachments extends ProcessConnector {
 
   private Map<String, String> attachments;
 
-  public void setAttachments(List<List<Object>> attachments) {
-    this.attachments = this.bonitaListToMap(attachments, String.class,
-        String.class);
+  public void setAttachments(final List<List<Object>> attachments) {
+    this.attachments = this.bonitaListToMap(attachments, String.class, String.class);
   }
 
   @Override
   protected void executeConnector() throws Exception {
     final RuntimeAPI runtimeAPI = getApiAccessor().getRuntimeAPI();
-    for (Entry<String, String> attachment : attachments.entrySet()) {
+    for (final Entry<String, String> attachment : attachments.entrySet()) {
       final String name = attachment.getKey();
       final File file = new File(attachment.getValue());
-      byte[] content = getContent(file);
-      String mimeType = getType(file);
-      try{
-        runtimeAPI.createDocument(name, getProcessInstanceUUID(),
-            file.getName(), getType(file), content);
-      } catch (final DocumentationCreationException e){
+      final byte[] content = getContent(file);
+      final String mimeType = getType(file);
+      try {
+        runtimeAPI.createDocument(name, getProcessInstanceUUID(), file.getName(), getType(file), content);
+      } catch (final DocumentationCreationException e) {
         final DocumentationManager manager = EnvTool.getDocumentationManager();
-        final SearchResult result = DocumentService.getDocuments(manager, this.getProcessInstanceUUID(), name);
+        final SearchResult result = DocumentService.getDocuments(manager, getProcessInstanceUUID(), name);
         try {
-          DocumentUUID documentUUID = new DocumentUUID(result.getDocuments().get(0).getId());
+          final DocumentUUID documentUUID = new DocumentUUID(result.getDocuments().get(0).getId());
           runtimeAPI.addDocumentVersion(documentUUID, true, file.getName(), mimeType, content);
-        } catch (DocumentationCreationException e1) {
+        } catch (final DocumentationCreationException e1) {
           throw new BonitaRuntimeException(e);
         }
       }
@@ -80,9 +78,8 @@ public class AddAttachments extends ProcessConnector {
   @Override
   protected List<ConnectorError> validateValues() {
     final List<ConnectorError> errors = new ArrayList<ConnectorError>();
-    for (Entry<String, String> attachment : attachments.entrySet()) {
-      final ConnectorError error = checkFile(attachment.getKey(),
-          attachment.getValue());
+    for (final Entry<String, String> attachment : attachments.entrySet()) {
+      final ConnectorError error = checkFile(attachment.getKey(), attachment.getValue());
       if (error != null) {
         errors.add(error);
       }
@@ -90,11 +87,11 @@ public class AddAttachments extends ProcessConnector {
     return errors;
   }
 
-  private byte[] getContent(File file) throws IOException {
+  private byte[] getContent(final File file) throws IOException {
     final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-    try { 
+    try {
       final int length = (int) file.length();
-      byte[] content = new byte[length];
+      final byte[] content = new byte[length];
       bis.read(content, 0, length);
       return content;
     } finally {
@@ -104,25 +101,23 @@ public class AddAttachments extends ProcessConnector {
     }
   }
 
-  private ConnectorError checkFile(String fileName, String filePath) {
+  private ConnectorError checkFile(final String fileName, final String filePath) {
     ConnectorError error = null;
     final File file = new File(filePath);
     if (!file.exists()) {
-      error = new ConnectorError(fileName, new FileNotFoundException(
-          "Cannot access to " + filePath));
+      error = new ConnectorError(fileName, new FileNotFoundException("Cannot access to " + filePath));
     } else if (!file.isFile()) {
-      error = new ConnectorError(fileName, new FileNotFoundException(filePath
-          + " is not a file"));
+      error = new ConnectorError(fileName, new FileNotFoundException(filePath + " is not a file"));
     } else if (!file.canRead()) {
-      error = new ConnectorError(fileName, new FileNotFoundException(
-          "Cannot read " + filePath));
+      error = new ConnectorError(fileName, new FileNotFoundException("Cannot read " + filePath));
     }
     return error;
   }
 
-  private String getType(File file) {
-    MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
-    String mimeType = mimeTypesMap.getContentType(file);
+  private String getType(final File file) {
+    final MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
+    final String mimeType = mimeTypesMap.getContentType(file);
     return mimeType;
   }
+
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2011 BonitaSoft S.A.
+ * Copyright (C) 2009-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@ package org.bonitasoft.connectors.email;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,6 +39,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.ow2.bonita.connector.core.ConnectorError;
@@ -49,7 +51,8 @@ import org.ow2.bonita.facade.runtime.AttachmentInstance;
 /**
  * This connector provides an email sending service.
  * 
- * @author Matthieu Chaffotte, Yanyan Liu
+ * @author Matthieu Chaffotte
+ * @author Yanyan Liu
  */
 public class EmailConnector extends ProcessConnector {
 
@@ -91,7 +94,7 @@ public class EmailConnector extends ProcessConnector {
   /**
    * The reply address.
    */
-  private String replyTo ="";
+  private String replyTo = "";
 
   /**
    * The "to" recipient(s) email address(es).
@@ -500,7 +503,11 @@ public class EmailConnector extends ProcessConnector {
    * @param headers
    */
   public void setHeaders(final List<List<Object>> headers) {
-    setHeaders(bonitaListToMap(headers, String.class, String.class));
+    try {
+      setHeaders(bonitaListToMap(headers, String.class, String.class));
+    } catch (final IllegalArgumentException e) {
+      throw new IllegalArgumentException("Unable to set the email headers", e);
+    }
   }
 
   /**
@@ -531,14 +538,14 @@ public class EmailConnector extends ProcessConnector {
 
   @Override
   protected void executeConnector() throws Exception {
-    Session session = this.getSession();
-    Message email = this.getEmail(session);
+    final Session session = this.getSession();
+    final Message email = this.getEmail(session);
     Transport.send(email);
   }
 
   @Override
   protected List<ConnectorError> validateValues() {
-    List<ConnectorError> errors = new ArrayList<ConnectorError>();
+    final List<ConnectorError> errors = new ArrayList<ConnectorError>();
     ConnectorError error = null;
 
     if (this.getSmtpPort() < 0) {
@@ -583,7 +590,7 @@ public class EmailConnector extends ProcessConnector {
   private ConnectorError checkAddress(final String address) {
     try {
       new InternetAddress(address);
-    } catch (AddressException e) {
+    } catch (final AddressException e) {
       return new ConnectorError("from", e);
     }
     return null;
@@ -599,7 +606,7 @@ public class EmailConnector extends ProcessConnector {
   private ConnectorError checkAddresses(final String fieldName, final String addresses) {
     try {
       InternetAddress.parse(addresses);
-    } catch (AddressException e) {
+    } catch (final AddressException e) {
       return new ConnectorError(fieldName, e);
     }
     return null;
@@ -662,7 +669,7 @@ public class EmailConnector extends ProcessConnector {
     mimeMessage.setSubject(getSubject(), charset);
     // Headers
     if (getHeaders() != null) {
-      for (Map.Entry<String, String> h : getHeaders().entrySet()) {
+      for (final Map.Entry<String, String> h : getHeaders().entrySet()) {
         if (h.getKey() != null && h.getValue() != null) {
           if (!h.getKey().equals("Content-ID")) {
             mimeMessage.setHeader(h.getKey(), h.getValue());
@@ -680,11 +687,11 @@ public class EmailConnector extends ProcessConnector {
         }
       } else {
         // simple message with attachments
-        Multipart multipart = getMultipart();
+        final Multipart multipart = getMultipart();
         mimeMessage.setContent(multipart);
       }
     } else {
-      Multipart multipart = getMultipart();
+      final Multipart multipart = getMultipart();
       mimeMessage.setContent(multipart);
     }
     mimeMessage.setSentDate(new Date());
@@ -700,7 +707,7 @@ public class EmailConnector extends ProcessConnector {
    * @throws DocumentNotFoundException
    */
   private Multipart getMultipart() throws MessagingException, IOException, DocumentNotFoundException {
-    Multipart multipart = new MimeMultipart();
+    final Multipart multipart = new MimeMultipart();
     MimeBodyPart messageBodyPart = new MimeBodyPart();
     if (isHtml()) {
       messageBodyPart.setText(getMessage(), charset, "html");
@@ -710,14 +717,14 @@ public class EmailConnector extends ProcessConnector {
     multipart.addBodyPart(messageBodyPart);
     // Part two is embedded images with HTML message
     if (getImages() != null) {
-      for (Map.Entry<String, String> image : getImages().entrySet()) {
-        String alias = image.getKey();
-        String imagePath = image.getValue();
+      for (final Map.Entry<String, String> image : getImages().entrySet()) {
+        final String alias = image.getKey();
+        final String imagePath = image.getValue();
         if (alias != null && imagePath != null) {
-          File img = new File(imagePath);
+          final File img = new File(imagePath);
           if (!img.isDirectory() && img.exists()) {
             messageBodyPart = new MimeBodyPart();
-            DataSource fds = new FileDataSource(img);
+            final DataSource fds = new FileDataSource(img);
             messageBodyPart.setDataHandler(new DataHandler(fds));
             if (isHtml()) {
               messageBodyPart.setHeader("Content-ID", alias);
@@ -728,12 +735,12 @@ public class EmailConnector extends ProcessConnector {
       }
     }
     // Part three is attachments
-    for (Object attachment : getAttachments()) {
+    for (final Object attachment : getAttachments()) {
       DataSource source = null;
       if (attachment instanceof AttachmentInstance) {
-        AttachmentInstance attachmentInstance = (AttachmentInstance) attachment;
+        final AttachmentInstance attachmentInstance = (AttachmentInstance) attachment;
         final MimeBodyPart attachmentPart = getAttachmentPart(attachmentInstance);
-		multipart.addBodyPart(attachmentPart);
+        multipart.addBodyPart(attachmentPart);
       } else if (attachment instanceof String) {
         final String filePath = (String) attachment;
         final File file = new File(filePath);
@@ -743,29 +750,31 @@ public class EmailConnector extends ProcessConnector {
           multipart.addBodyPart(attachmentPart);
         }
       } else if (attachment instanceof List) {
-    	  List<AttachmentInstance> attachmentInstances = (List<AttachmentInstance>) attachment;
-    	for (AttachmentInstance attachmentInstance : attachmentInstances) {
-		  final MimeBodyPart attachmentPart = getAttachmentPart(attachmentInstance);
-		  multipart.addBodyPart(attachmentPart);
-		}
+        final List<AttachmentInstance> attachmentInstances = (List<AttachmentInstance>) attachment;
+        for (final AttachmentInstance attachmentInstance : attachmentInstances) {
+          final MimeBodyPart attachmentPart = getAttachmentPart(attachmentInstance);
+          multipart.addBodyPart(attachmentPart);
+        }
       }
     }
     return multipart;
   }
 
-  private MimeBodyPart getAttachmentPart(final AttachmentInstance attachmentInstance) throws DocumentNotFoundException, MessagingException {
-	final QueryRuntimeAPI queryRuntimeAPI = getApiAccessor().getQueryRuntimeAPI();
+  private MimeBodyPart getAttachmentPart(final AttachmentInstance attachmentInstance) throws DocumentNotFoundException,
+      MessagingException, UnsupportedEncodingException {
+    final QueryRuntimeAPI queryRuntimeAPI = getApiAccessor().getQueryRuntimeAPI();
     final byte[] content = queryRuntimeAPI.getDocumentContent(attachmentInstance.getUUID());
     final String mimeType = attachmentInstance.getMetaData().get("content-type");
     final DataSource source = new ByteArrayDataSource(content, mimeType);
     return getAttachmentPart(source, attachmentInstance.getFileName());
   }
 
-  private MimeBodyPart getAttachmentPart(final DataSource source, final String fileName) throws MessagingException {
-	final MimeBodyPart attachmentBodyPart = new MimeBodyPart();
-	final DataHandler dataHandler = new DataHandler(source);
+  private MimeBodyPart getAttachmentPart(final DataSource source, final String fileName) throws MessagingException,
+      UnsupportedEncodingException {
+    final MimeBodyPart attachmentBodyPart = new MimeBodyPart();
+    final DataHandler dataHandler = new DataHandler(source);
     attachmentBodyPart.setDataHandler(dataHandler);
-    attachmentBodyPart.setFileName(fileName);
+    attachmentBodyPart.setFileName(MimeUtility.encodeText(fileName, charset, "B"));
     return attachmentBodyPart;
   }
 

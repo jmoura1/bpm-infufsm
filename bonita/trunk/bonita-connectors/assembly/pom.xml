@@ -5,7 +5,7 @@
   <parent>
     <artifactId>bonita-connectors</artifactId>
     <groupId>org.bonitasoft.connectors</groupId>
-    <version>5.6.1</version>
+    <version>5.7.2</version>
   </parent>
 
   <groupId>org.bonitasoft.connectors</groupId>

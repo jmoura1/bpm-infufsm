@@ -152,7 +152,7 @@ public class StepEditor extends BonitaPanel implements ModelChangeListener {
 
         myInnerPanel.add(myFirstRowPanel);
         myInnerPanel.add(mySecondRowPanel);
-        myInnerPanel.add(myThirdRowPanel);
+        //myInnerPanel.add(myThirdRowPanel);
         myOuterPanel.add(myInnerPanel);
         myOuterPanel.setStylePrimaryName("step_editor");
         myOuterPanel.addStyleName(CSSClassManager.ROUNDED_PANEL);

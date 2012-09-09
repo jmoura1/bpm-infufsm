@@ -25,6 +25,7 @@ import org.ow2.bonita.connector.core.desc.Checkbox;
 import org.ow2.bonita.connector.core.desc.Component;
 import org.ow2.bonita.connector.core.desc.ConnectorDescriptor;
 import org.ow2.bonita.connector.core.desc.Enumeration;
+import org.ow2.bonita.connector.core.desc.Enumeration.Selection;
 import org.ow2.bonita.connector.core.desc.Group;
 import org.ow2.bonita.connector.core.desc.Option;
 import org.ow2.bonita.connector.core.desc.Page;
@@ -36,7 +37,6 @@ import org.ow2.bonita.connector.core.desc.SimpleList;
 import org.ow2.bonita.connector.core.desc.Text;
 import org.ow2.bonita.connector.core.desc.Textarea;
 import org.ow2.bonita.connector.core.desc.WidgetComponent;
-import org.ow2.bonita.connector.core.desc.Enumeration.Selection;
 import org.ow2.bonita.parsing.def.binding.ElementBinding;
 import org.ow2.bonita.util.xml.Parse;
 import org.ow2.bonita.util.xml.Parser;
@@ -46,45 +46,46 @@ import org.w3c.dom.Element;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class PageBinding extends ElementBinding {
 
-  private static final Set<String> allowedWidgets = new HashSet<String>();
+  private static final Set<String> ALLOWED_WIDGETS = new HashSet<String>(10);
 
   static {
-    allowedWidgets.add("text");
-    allowedWidgets.add("password");
-    allowedWidgets.add("textarea");
-    allowedWidgets.add("array");
-    allowedWidgets.add("list");
-    allowedWidgets.add("checkbox");
-    allowedWidgets.add("radio");
-    allowedWidgets.add("select");
-    allowedWidgets.add("enumeration");
-    allowedWidgets.add("group");
+    ALLOWED_WIDGETS.add("text");
+    ALLOWED_WIDGETS.add("password");
+    ALLOWED_WIDGETS.add("textarea");
+    ALLOWED_WIDGETS.add("array");
+    ALLOWED_WIDGETS.add("list");
+    ALLOWED_WIDGETS.add("checkbox");
+    ALLOWED_WIDGETS.add("radio");
+    ALLOWED_WIDGETS.add("select");
+    ALLOWED_WIDGETS.add("enumeration");
+    ALLOWED_WIDGETS.add("group");
   }
 
   public PageBinding() {
     super("page");
   }
 
-  public Object parse(Element pageElement, Parse parse, Parser parser) {
-    ConnectorDescriptor descriptor = parse.findObject(ConnectorDescriptor.class);
-    List<Setter> inputs = descriptor.getInputs();
+  @Override
+  public Object parse(final Element pageElement, final Parse parse, final Parser parser) {
+    final ConnectorDescriptor descriptor = parse.findObject(ConnectorDescriptor.class);
+    final List<Setter> inputs = descriptor.getInputs();
     final String pageId = getChildTextContent(pageElement, "pageId");
     final List<Component> widgets = getWidgets(pageElement, inputs);
-    Page page = new Page(pageId, widgets);
+    final Page page = new Page(pageId, widgets);
     descriptor.addPage(page);
     return null;
   }
 
-  private List<Component> getWidgets(Element page, List<Setter> inputs) {
-    Element widgetsElement = XmlUtil.element(page, "widgets");
+  private List<Component> getWidgets(final Element page, final List<Setter> inputs) {
+    final Element widgetsElement = XmlUtil.element(page, "widgets");
     if (widgetsElement != null) {
-      List<Component> widgets = new ArrayList<Component>();
-      List<Element> elements = XmlUtil.elements(widgetsElement, allowedWidgets);
-      for (Element element : elements) {
+      final List<Component> widgets = new ArrayList<Component>();
+      final List<Element> elements = XmlUtil.elements(widgetsElement, ALLOWED_WIDGETS);
+      for (final Element element : elements) {
         widgets.add(getComponent(element, inputs));
       }
       return widgets;
@@ -92,19 +93,19 @@ public class PageBinding extends ElementBinding {
       return null;
     }
   }
-  
-  private Component getComponent(Element componentElement, List<Setter> inputs) {
+
+  private Component getComponent(final Element componentElement, final List<Setter> inputs) {
     if ("group".equals(componentElement.getNodeName())) {
-      String labelId = getChildTextContent(componentElement, "labelId");
-      String optionalValue = XmlUtil.attribute(componentElement, "optional");
-      boolean optional = Boolean.parseBoolean(optionalValue);
-      Element widgetsElement = XmlUtil.element(componentElement, "widgets");
+      final String labelId = getChildTextContent(componentElement, "labelId");
+      final String optionalValue = XmlUtil.attribute(componentElement, "optional");
+      final boolean optional = Boolean.parseBoolean(optionalValue);
+      final Element widgetsElement = XmlUtil.element(componentElement, "widgets");
       List<WidgetComponent> widgets = null;
       if (widgetsElement != null) {
         widgets = new ArrayList<WidgetComponent>();
-        List<Element> widgetsElem = XmlUtil.elements(widgetsElement, allowedWidgets);
+        final List<Element> widgetsElem = XmlUtil.elements(widgetsElement, ALLOWED_WIDGETS);
         if (widgetsElem != null) {
-          for (Element widgetElement : widgetsElem) {
+          for (final Element widgetElement : widgetsElem) {
             widgets.add(getWidget(widgetElement, inputs));
           }
         }
@@ -115,11 +116,11 @@ public class PageBinding extends ElementBinding {
     }
   }
 
-  private WidgetComponent getWidget(Element widgetElement, List<Setter> inputs) {
+  private WidgetComponent getWidget(final Element widgetElement, final List<Setter> inputs) {
     WidgetComponent component = null;
     Setter setter = null;
-    String labelId = getChildTextContent(widgetElement, "labelId");
-    Element setterElement = XmlUtil.element(widgetElement, "setter");
+    final String labelId = getChildTextContent(widgetElement, "labelId");
+    final Element setterElement = XmlUtil.element(widgetElement, "setter");
     if (setterElement != null) {
       String reference = XmlUtil.attribute(setterElement, "reference");
       if (reference != null) {
@@ -135,24 +136,24 @@ public class PageBinding extends ElementBinding {
     }
 
     if ("text".equals(widgetElement.getNodeName())) {
-      String sizeValue = getChildTextContent(widgetElement, "size");
+      final String sizeValue = getChildTextContent(widgetElement, "size");
       int size = 20;
       if (sizeValue != null) {
         size = Integer.parseInt(sizeValue);
       }
-      String maxCharValue = getChildTextContent(widgetElement, "maxChar");
+      final String maxCharValue = getChildTextContent(widgetElement, "maxChar");
       int maxChar = 100;
       if (maxCharValue != null) {
         maxChar = Integer.parseInt(maxCharValue);
       }
       component = new Text(labelId, setter, size, maxChar);
     } else if ("password".equals(widgetElement.getNodeName())) {
-      String sizeValue = getChildTextContent(widgetElement, "size");
+      final String sizeValue = getChildTextContent(widgetElement, "size");
       int size = 20;
       if (sizeValue != null) {
         size = Integer.parseInt(sizeValue);
       }
-      String maxCharValue = getChildTextContent(widgetElement, "maxChar");
+      final String maxCharValue = getChildTextContent(widgetElement, "maxChar");
       int maxChar = 100;
       if (maxCharValue != null) {
         maxChar = Integer.parseInt(maxCharValue);
@@ -160,79 +161,79 @@ public class PageBinding extends ElementBinding {
       component = new Password(labelId, setter, size, maxChar);
     } else if ("textarea".equals(widgetElement.getNodeName())) {
       int rows = 10;
-      String rowsValue = getChildTextContent(widgetElement, "rows");
+      final String rowsValue = getChildTextContent(widgetElement, "rows");
       if (rowsValue != null) {
         rows = Integer.parseInt(rowsValue);
       }
       int columns = 60;
-      String columnsValue = getChildTextContent(widgetElement, "columns");
+      final String columnsValue = getChildTextContent(widgetElement, "columns");
       if (columnsValue != null) {
         columns = Integer.parseInt(columnsValue);
       }
       int maxChar = 100;
-      String maxCharValue = getChildTextContent(widgetElement, "maxChar");
+      final String maxCharValue = getChildTextContent(widgetElement, "maxChar");
       if (maxCharValue != null) {
         maxChar = Integer.parseInt(maxCharValue);
       }
       int maxCharPerRow = 600;
-      String maxCharPerRowValue = getChildTextContent(widgetElement, "maxCharPerRow");
+      final String maxCharPerRowValue = getChildTextContent(widgetElement, "maxCharPerRow");
       if (maxCharPerRowValue != null) {
         maxCharPerRow = Integer.parseInt(maxCharPerRowValue);
       }
       component = new Textarea(labelId, setter, rows, columns, maxChar, maxCharPerRow);
     } else if ("checkbox".equals(widgetElement.getNodeName())) {
-      String name = getChildTextContent(widgetElement, "name");
-      String value = getChildTextContent(widgetElement, "value");
+      final String name = getChildTextContent(widgetElement, "name");
+      final String value = getChildTextContent(widgetElement, "value");
       component = new Checkbox(labelId, setter, name, value);
     } else if ("radio".equals(widgetElement.getNodeName())) {
-      String name = getChildTextContent(widgetElement, "name");
-      String value = getChildTextContent(widgetElement, "value");
+      final String name = getChildTextContent(widgetElement, "name");
+      final String value = getChildTextContent(widgetElement, "value");
       component = new Radio(labelId, setter, name, value);
     } else if ("select".equals(widgetElement.getNodeName())) {
-      String editableElement = getChildTextContent(widgetElement, "editable");
+      final String editableElement = getChildTextContent(widgetElement, "editable");
       boolean editable = false;
       if (editableElement != null) {
         editable = Boolean.parseBoolean(editableElement);
       }
-      Element valuesElement = XmlUtil.element(widgetElement, "values");
+      final Element valuesElement = XmlUtil.element(widgetElement, "values");
       Map<String, String> values = null;
       if (valuesElement != null) {
         values = new HashMap<String, String>();
-        List<Element> entries = XmlUtil.elements(valuesElement, "entry");
+        final List<Element> entries = XmlUtil.elements(valuesElement, "entry");
         if (entries != null) {
-          for (Element entryElement : entries) {
-            List<Element> entry = XmlUtil.elements(entryElement, "string");
+          for (final Element entryElement : entries) {
+            final List<Element> entry = XmlUtil.elements(entryElement, "string");
             values.put(entry.get(0).getTextContent(), entry.get(1).getTextContent());
           }
         }
       }
       Option top = null;
-      Element topElement = XmlUtil.element(widgetElement, "top");
+      final Element topElement = XmlUtil.element(widgetElement, "top");
       if (topElement != null) {
-        String label = getChildTextContent(topElement, "label");
-        String value = getChildTextContent(topElement, "value");
+        final String label = getChildTextContent(topElement, "label");
+        final String value = getChildTextContent(topElement, "value");
         top = new Option(label, value);
       }
       component = new Select(labelId, setter, values, editable, top);
     } else if ("enumeration".equals(widgetElement.getNodeName())) {
-      Element valuesElement = XmlUtil.element(widgetElement, "values");
+      final Element valuesElement = XmlUtil.element(widgetElement, "values");
       Map<String, String> values = null;
       if (valuesElement != null) {
         values = new HashMap<String, String>();
-        List<Element> entries = XmlUtil.elements(valuesElement, "entry");
+        final List<Element> entries = XmlUtil.elements(valuesElement, "entry");
         if (entries != null) {
-          for (Element entryElement : entries) {
-            List<Element> entry = XmlUtil.elements(entryElement, "string");
+          for (final Element entryElement : entries) {
+            final List<Element> entry = XmlUtil.elements(entryElement, "string");
             values.put(entry.get(0).getTextContent(), entry.get(1).getTextContent());
           }
         }
       }
-      String linesValue = getChildTextContent(widgetElement, "lines");
+      final String linesValue = getChildTextContent(widgetElement, "lines");
       int lines = 1;
       if (linesValue != null) {
         lines = Integer.parseInt(linesValue);
       }
-      String selectionValue = getChildTextContent(widgetElement, "selection");
+      final String selectionValue = getChildTextContent(widgetElement, "selection");
       Selection selection = null;
       if (selectionValue != null) {
         if (selectionValue.equals(Selection.SINGLE.toString())) {
@@ -242,9 +243,9 @@ public class PageBinding extends ElementBinding {
         }
       }
       int[] selectedIndices = null;
-      Element selectedIndicesElement = XmlUtil.element(widgetElement, "selectedIndices");
+      final Element selectedIndicesElement = XmlUtil.element(widgetElement, "selectedIndices");
       if (selectedIndicesElement != null) {
-        List<Element> entries = XmlUtil.elements(selectedIndicesElement, "int");
+        final List<Element> entries = XmlUtil.elements(selectedIndicesElement, "int");
         if (entries != null) {
           selectedIndices = new int[entries.size()];
           for (int i = 0; i < entries.size(); i++) {
@@ -254,40 +255,40 @@ public class PageBinding extends ElementBinding {
       }
       component = new Enumeration(labelId, setter, values, selectedIndices, lines, selection);
     } else if ("array".equals(widgetElement.getNodeName())) {
-      String colsValue = getChildTextContent(widgetElement, "cols");
+      final String colsValue = getChildTextContent(widgetElement, "cols");
       int cols = 2;
       if (colsValue != null) {
         cols = Integer.parseInt(colsValue);
       }
-      String rowsValue = getChildTextContent(widgetElement, "rows");
+      final String rowsValue = getChildTextContent(widgetElement, "rows");
       int rows = 0;
       if (rowsValue != null) {
         rows = Integer.parseInt(rowsValue);
       }
-      String fixedColsValue = getChildTextContent(widgetElement, "fixedCols");
+      final String fixedColsValue = getChildTextContent(widgetElement, "fixedCols");
       boolean fixedCols = true;
       if (fixedColsValue != null) {
         fixedCols = Boolean.parseBoolean(fixedColsValue);
       }
-      String fixedRowsValue = getChildTextContent(widgetElement, "fixedRows");
+      final String fixedRowsValue = getChildTextContent(widgetElement, "fixedRows");
       boolean fixedRows = false;
       if (fixedRowsValue != null) {
         fixedRows = Boolean.parseBoolean(fixedRowsValue);
       }
-      Element colsCaptionsElement = XmlUtil.element(widgetElement, "colsCaptions");
+      final Element colsCaptionsElement = XmlUtil.element(widgetElement, "colsCaptions");
       List<String> colsCaptions = null;
       if (colsCaptionsElement != null) {
-        List<Element> captionsElement = XmlUtil.elements(colsCaptionsElement, "string");
+        final List<Element> captionsElement = XmlUtil.elements(colsCaptionsElement, "string");
         if (captionsElement != null) {
           colsCaptions = new ArrayList<String>();
-          for (Element element : captionsElement) {
+          for (final Element element : captionsElement) {
             colsCaptions.add(element.getTextContent());
           }
         }
       }
       component = new Array(labelId, setter, cols, rows, fixedCols, fixedRows, colsCaptions);
-    } else if ("list".equals(widgetElement.getNodeName())){
-      String maxRowsValue = getChildTextContent(widgetElement, "maxRows");
+    } else if ("list".equals(widgetElement.getNodeName())) {
+      final String maxRowsValue = getChildTextContent(widgetElement, "maxRows");
       int maxRows = 0;
       if (maxRowsValue != null) {
         maxRows = Integer.parseInt(maxRowsValue);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2010  BonitaSoft S.A.
+ * Copyright (C) 2009-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -25,12 +25,10 @@ import org.ow2.bonita.util.Command;
 import org.ow2.bonita.util.EnvTool;
 import org.ow2.bonita.util.ProcessUtil;
 
-
-/** 
+/**
  * @author Charles Souillard, Guillaume Holler
  */
 public class HiloDbUUIDService implements UUIDService {
-
 
   static final Logger LOG = Logger.getLogger(ProcessUtil.class.getName());
 
@@ -43,7 +41,7 @@ public class HiloDbUUIDService implements UUIDService {
     this(1);
   }
 
-  public HiloDbUUIDService(int increment) {
+  public HiloDbUUIDService(final int increment) {
     this.increment = increment;
   }
 
@@ -51,19 +49,21 @@ public class HiloDbUUIDService implements UUIDService {
     return "*****" + processUUID + "*****instance-nb*****";
   }
 
-  public long getNewProcessInstanceNb(ProcessDefinitionUUID processUUID) {
+  @Override
+  public long getNewProcessInstanceNb(final ProcessDefinitionUUID processUUID) {
     final String metaName = getMetadataName(processUUID);
     // look for sequence object
-    Sequence sequence = getSequence(processUUID);
+    final Sequence sequence = getSequence(processUUID);
 
     long processInstanceNb;
-    //noinspection SynchronizationOnLocalVariableOrMethodParameter
+    // noinspection SynchronizationOnLocalVariableOrMethodParameter
     synchronized (sequence) {
       if (sequence.shouldReset()) {
-        long nextHi = EnvTool.getCommandService().execute(new Command<Long>() {
+        final long nextHi = EnvTool.getCommandService().execute(new Command<Long>() {
           private static final long serialVersionUID = 1L;
 
-          public Long execute(Environment environment) throws Exception {
+          @Override
+          public Long execute(final Environment environment) throws Exception {
             final Journal journal = EnvTool.getJournal();
 
             journal.lockMetadata(metaName);
@@ -82,20 +82,21 @@ public class HiloDbUUIDService implements UUIDService {
     return processInstanceNb;
   }
 
-  public void archiveOrDeleteProcess(ProcessDefinitionUUID processUUID) {
+  @Override
+  public void archiveOrDeleteProcess(final ProcessDefinitionUUID processUUID) {
     final String metaName = getMetadataName(processUUID);
     // look for sequence object
-    Sequence sequence = getSequence(processUUID);
+    final Sequence sequence = getSequence(processUUID);
     synchronized (sequence) {
-      EnvTool.getJournal().removeLockedMetadata(metaName);      
+      EnvTool.getJournal().removeLockedMetadata(metaName);
     }
   }
 
-  private Sequence getSequence(ProcessDefinitionUUID processUUID) {
+  private Sequence getSequence(final ProcessDefinitionUUID processUUID) {
     Sequence sequence = sequences.get(processUUID);
     if (sequence == null) {
       sequence = new Sequence();
-      Sequence old = sequences.putIfAbsent(processUUID, sequence);
+      final Sequence old = sequences.putIfAbsent(processUUID, sequence);
       if (old != null) {
         // ok, some other thread already put one: just use it
         sequence = old;
@@ -105,26 +106,27 @@ public class HiloDbUUIDService implements UUIDService {
     return sequence;
   }
 
-  private static class Sequence {
+  private static final class Sequence {
     private long hi = -1;
     private long low = -1;
 
-    private Sequence() { }
+    private Sequence() {
+    }
 
     boolean shouldReset() {
       return low < 0 || low >= hi;
     }
 
-    void reset(long nextHi, long increment) {
-      assert nextHi>=0:"nextHi is negative: "+nextHi;
-      assert increment>0:"increment is negative or null";
+    void reset(final long nextHi, final long increment) {
+      assert nextHi >= 0 : "nextHi is negative: " + nextHi;
+      assert increment > 0 : "increment is negative or null";
 
       hi = nextHi;
       low = nextHi - increment;
     }
 
     public long inc() {
-      assert !shouldReset():"inc() should not be called in a context where reset is needed";
+      assert !shouldReset() : "inc() should not be called in a context where reset is needed";
       low++;
       return low;
     }

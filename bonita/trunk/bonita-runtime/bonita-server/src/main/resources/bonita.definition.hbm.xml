@@ -201,9 +201,9 @@
         </param>
       </type>
     </property>
-    <property name="name" column="NAME_" />
+    <property name="name" column="NAME_" index="IDX_BN_PROC_DEF_NAME_" />
     <property name="label" column="LABEL_" />
-    <property name="labelOrName" column="LABEL_OR_NAME_" />
+    <property name="labelOrName" column="LABEL_OR_NAME_" index="IDX_BN_PROC_DEF_LABELORNAME" />
     <property name="nbOfAttachments" column="NB_OF_ATTACHMENTS_" />
     <property name="description" column="DESCRIPTION_" type="text" />
     <property name="version" column="VERSION_" />

@@ -65,6 +65,7 @@ import org.ow2.bonita.facade.impl.StandardQueryAPIAccessorImpl;
 import org.ow2.bonita.facade.runtime.ActivityInstance;
 import org.ow2.bonita.facade.runtime.ActivityState;
 import org.ow2.bonita.facade.runtime.ProcessInstance;
+import org.ow2.bonita.facade.runtime.TaskInstance;
 import org.ow2.bonita.facade.runtime.impl.InternalActivityInstance;
 import org.ow2.bonita.facade.runtime.impl.InternalProcessInstance;
 import org.ow2.bonita.facade.uuid.ActivityDefinitionUUID;
@@ -93,9 +94,13 @@ public final class ConnectorExecutor {
 
   private static final Logger LOG = Logger.getLogger(ConnectorExecutor.class.getName());
 
-  private ConnectorExecutor() { }
+  private ConnectorExecutor() {
+  }
 
-  private static Binding getBinding(final Map<String, Object> extraParameters, final ProcessDefinitionUUID processUUID, final ActivityInstanceUUID activityInstanceUUID, final ProcessInstanceUUID instanceUUID, final boolean useCurrentVariableValue) throws ActivityNotFoundException, GroovyException, InstanceNotFoundException {
+  private static Binding getBinding(final Map<String, Object> extraParameters, final ProcessDefinitionUUID processUUID,
+      final ActivityInstanceUUID activityInstanceUUID, final ProcessInstanceUUID instanceUUID,
+      final boolean useCurrentVariableValue) throws ActivityNotFoundException, GroovyException,
+      InstanceNotFoundException {
     boolean useActivityScope = false;
     boolean useInitValues = false;
 
@@ -104,19 +109,22 @@ public final class ConnectorExecutor {
     } else if (activityInstanceUUID != null) {
       useActivityScope = !useCurrentVariableValue;
     }
-    final Map<String, Object> allVariables = GroovyBindingBuilder.getContext(extraParameters, processUUID, activityInstanceUUID, instanceUUID, useActivityScope, useInitValues);
+    final Map<String, Object> allVariables = GroovyBindingBuilder.getContext(extraParameters, processUUID,
+        activityInstanceUUID, instanceUUID, useActivityScope, useInitValues);
     Binding binding = null;
     try {
       binding = GroovyBindingBuilder.getSimpleBinding(allVariables, processUUID, instanceUUID, activityInstanceUUID);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new BonitaRuntimeException(e);
     }
     return binding;
   }
 
-  public static void executeConnector(final TxHook connector, Map<String, Object[]> connectorParameters, ProcessInstanceUUID instanceUUID, ActivityInstance activityInst, Map<String, Object> extraParameters) throws Exception {
+  public static void executeConnector(final TxHook connector, final Map<String, Object[]> connectorParameters,
+      final ProcessInstanceUUID instanceUUID, final ActivityInstance activityInst,
+      final Map<String, Object> extraParameters) throws Exception {
     final ProcessInstance instance = EnvTool.getJournalQueriers().getProcessInstance(instanceUUID);
-    ProcessDefinitionUUID processUUID = instance.getProcessDefinitionUUID();
+    final ProcessDefinitionUUID processUUID = instance.getProcessDefinitionUUID();
     ActivityInstanceUUID activityInstanceUUID = null;
     if (activityInst != null) {
       activityInstanceUUID = activityInst.getUUID();
@@ -125,7 +133,7 @@ public final class ConnectorExecutor {
     if (connectorParameters != null) {
       inputs = getInputs(connectorParameters);
     }
-    APIAccessor accessor = new StandardAPIAccessorImpl();
+    final APIAccessor accessor = new StandardAPIAccessorImpl();
     if (connector instanceof ProcessConnector) {
       ((ProcessConnector) connector).setApiAccessor(accessor);
       ((ProcessConnector) connector).setProcessDefinitionUUID(processUUID);
@@ -134,9 +142,9 @@ public final class ConnectorExecutor {
         ((ProcessConnector) connector).setActivityInstanceUUID(activityInstanceUUID);
       }
     }
-    ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
+    final ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
     try {
-      ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processUUID);
+      final ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processUUID);
       Thread.currentThread().setContextClassLoader(processClassLoader);
 
       final Binding binding = getBinding(extraParameters, processUUID, activityInstanceUUID, instanceUUID, true);
@@ -150,7 +158,7 @@ public final class ConnectorExecutor {
       }
       connector.execute(accessor, activityInst);
       if (connectorParameters != null) {
-        Map<String, Object[]> outputs = getOuputs(connectorParameters);
+        final Map<String, Object[]> outputs = getOuputs(connectorParameters);
         if (activityInst != null) {
           setProcessOrActivityVariables(binding, outputs, connector, activityInstanceUUID, instanceUUID);
         } else {
@@ -162,20 +170,22 @@ public final class ConnectorExecutor {
     }
   }
 
-  public static Map<String, Object> executeConnector(final TxHook connector, Map<String, Object[]> connectorParameters, ProcessDefinitionUUID processDefinitionUUID, Map<String, Object> extraParameters) throws Exception {
+  public static Map<String, Object> executeConnector(final TxHook connector,
+      final Map<String, Object[]> connectorParameters, final ProcessDefinitionUUID processDefinitionUUID,
+      final Map<String, Object> extraParameters) throws Exception {
     Map<String, Object[]> inputs = new HashMap<String, Object[]>();
     if (connectorParameters != null) {
       inputs = getInputs(connectorParameters);
     }
-    APIAccessor accessor = new StandardAPIAccessorImpl();
+    final APIAccessor accessor = new StandardAPIAccessorImpl();
     if (connector instanceof ProcessConnector) {
       ((ProcessConnector) connector).setApiAccessor(accessor);
       ((ProcessConnector) connector).setProcessDefinitionUUID(processDefinitionUUID);
     }
-    ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
+    final ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
     Map<String, Object> newVariableValues = new HashMap<String, Object>();
     try {
-      ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processDefinitionUUID);
+      final ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processDefinitionUUID);
       Thread.currentThread().setContextClassLoader(processClassLoader);
       if (!inputs.isEmpty()) {
         final Binding binding = getBinding(extraParameters, processDefinitionUUID, null, null, true);
@@ -183,7 +193,7 @@ public final class ConnectorExecutor {
       }
       connector.execute(accessor, null);
       if (connectorParameters != null) {
-        Map<String, Object[]> outputs = getOuputs(connectorParameters);
+        final Map<String, Object[]> outputs = getOuputs(connectorParameters);
         newVariableValues = getProcessVariables(outputs, connector, processDefinitionUUID);
       }
     } finally {
@@ -192,17 +202,17 @@ public final class ConnectorExecutor {
     return newVariableValues;
   }
 
-  private static Map<String, Object> getGetterValues(Connector connector) {
-    List<Getter> getters = connector.getGetters();
-    Map<String, Object> values = new HashMap<String, Object>();
+  private static Map<String, Object> getGetterValues(final Connector connector) {
+    final List<Getter> getters = connector.getGetters();
+    final Map<String, Object> values = new HashMap<String, Object>();
     if (getters != null) {
-      for (Getter getter : getters) {
+      for (final Getter getter : getters) {
         try {
-          String getterName = Connector.getGetterName(getter.getName());
-          Method m = connector.getClass().getMethod(getterName, new Class[0]);
-          Object variableValue = m.invoke(connector, new Object[0]);
+          final String getterName = Connector.getGetterName(getter.getName());
+          final Method m = connector.getClass().getMethod(getterName, new Class[0]);
+          final Object variableValue = m.invoke(connector, new Object[0]);
           values.put(getter.getName(), variableValue);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           throw new BonitaRuntimeException(e.getMessage(), e);
         }
       }
@@ -211,41 +221,43 @@ public final class ConnectorExecutor {
   }
 
   @SuppressWarnings("deprecation")
-  private static void setProcessOrActivityVariables(Binding binding, Map<String, Object[]> outputs, Object connector,
-      ActivityInstanceUUID activityInstanceUUID, ProcessInstanceUUID instanceUUID) throws BonitaException {
+  private static void setProcessOrActivityVariables(final Binding binding, final Map<String, Object[]> outputs,
+      final Object connector, final ActivityInstanceUUID activityInstanceUUID, final ProcessInstanceUUID instanceUUID)
+      throws BonitaException {
     if (connector instanceof Connector) {
-      Map<String, Object> values = getGetterValues((Connector)connector);
+      final Map<String, Object> values = getGetterValues((Connector) connector);
 
       if (values != null) {
-        for (Map.Entry<String, Object> value : values.entrySet()) {
-          binding.setVariable(value.getKey(), value.getValue());   
+        for (final Map.Entry<String, Object> value : values.entrySet()) {
+          binding.setVariable(value.getKey(), value.getValue());
         }
       }
 
       if (outputs.size() > 0) {
         final StandardAPIAccessorImpl accessor = new StandardAPIAccessorImpl();
         final RuntimeAPI runtime = accessor.getRuntimeAPI();
-        for (Entry<String, Object[]> output : outputs.entrySet()) {
-          String expression = (String) output.getValue()[0];
-          String variableName = output.getKey();
+        for (final Entry<String, Object[]> output : outputs.entrySet()) {
+          final String expression = (String) output.getValue()[0];
+          final String variableName = output.getKey();
           Object variableValue;
           try {
             variableValue = GroovyUtil.evaluate(expression, binding);
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new BonitaRuntimeException(e);
           }
           String dataTypeClassName = null;
           try {
             dataTypeClassName = getDataTypeClassName(variableName, instanceUUID, activityInstanceUUID);
-          } catch (BonitaRuntimeException e) {
-            ProcessDefinition process = accessor.getQueryDefinitionAPI().getProcess(instanceUUID.getProcessDefinitionUUID());
+          } catch (final BonitaRuntimeException e) {
+            final ProcessDefinition process = accessor.getQueryDefinitionAPI().getProcess(
+                instanceUUID.getProcessDefinitionUUID());
             if (ProcessType.EVENT_SUB_PROCESS == process.getType()) {
               final QueryRuntimeAPI queryRuntimeAPI = accessor.getQueryRuntimeAPI();
-              LightProcessInstance processInstance = queryRuntimeAPI.getLightProcessInstance(instanceUUID);
+              final LightProcessInstance processInstance = queryRuntimeAPI.getLightProcessInstance(instanceUUID);
               dataTypeClassName = getDataTypeClassName(variableName, processInstance.getParentInstanceUUID(), null);
             }
           }
-          Object newValue = convertIfPossible(variableValue, dataTypeClassName);
+          final Object newValue = convertIfPossible(variableValue, dataTypeClassName);
           if (activityInstanceUUID != null) {
             runtime.setVariable(activityInstanceUUID, variableName, newValue);
           } else {
@@ -256,34 +268,36 @@ public final class ConnectorExecutor {
     }
   }
 
-  private static Map<String, Object> getProcessVariables(Map<String, Object[]> outputs,
-      Object connector, ProcessDefinitionUUID processDefinitionUUID) throws BonitaException {
-    Map<String, Object> newVariableValues = new HashMap<String, Object>();
+  private static Map<String, Object> getProcessVariables(final Map<String, Object[]> outputs, final Object connector,
+      final ProcessDefinitionUUID processDefinitionUUID) throws BonitaException {
+    final Map<String, Object> newVariableValues = new HashMap<String, Object>();
     if (connector instanceof Connector) {
-      Map<String, Object> values = getGetterValues((Connector)connector);
-      for (Entry<String, Object[]> output : outputs.entrySet()) {
-        String expression = (String) output.getValue()[0];
-        String variableName = output.getKey();
-        Object variableValue = GroovyUtil.evaluate(expression, values, processDefinitionUUID, false);
-        Object newValue = convertIfPossible(variableValue, getDataTypeClassName(variableName, processDefinitionUUID));
+      final Map<String, Object> values = getGetterValues((Connector) connector);
+      for (final Entry<String, Object[]> output : outputs.entrySet()) {
+        final String expression = (String) output.getValue()[0];
+        final String variableName = output.getKey();
+        final Object variableValue = GroovyUtil.evaluate(expression, values, processDefinitionUUID, false);
+        final Object newValue = convertIfPossible(variableValue,
+            getDataTypeClassName(variableName, processDefinitionUUID));
         newVariableValues.put(variableName, newValue);
       }
     }
     return newVariableValues;
   }
 
-  private static String getDataTypeClassName(String variableName, ProcessInstanceUUID instanceUUID, ActivityInstanceUUID activityUUID) {
+  private static String getDataTypeClassName(String variableName, final ProcessInstanceUUID instanceUUID,
+      final ActivityInstanceUUID activityUUID) {
     if (isXPathVariableReference(variableName)) {
       return String.class.getName();
     }
     variableName = Misc.getVariableName(variableName);
-    StandardQueryAPIAccessorImpl accessor = new StandardQueryAPIAccessorImpl();
-    QueryDefinitionAPI queryDefinitionAPI = accessor.getQueryDefinitionAPI(AccessorUtil.QUERYLIST_JOURNAL_KEY);
+    final StandardQueryAPIAccessorImpl accessor = new StandardQueryAPIAccessorImpl();
+    final QueryDefinitionAPI queryDefinitionAPI = accessor.getQueryDefinitionAPI(AccessorUtil.QUERYLIST_JOURNAL_KEY);
     if (activityUUID != null) {
       try {
         final ActivityInstance activity = EnvTool.getJournalQueriers().getActivityInstance(activityUUID);
         return getActivityDataTypeClassName(queryDefinitionAPI, activity.getActivityDefinitionUUID(), variableName);
-      } catch(Exception e) {
+      } catch (final Exception e) {
         final ProcessInstance instance = EnvTool.getJournalQueriers().getProcessInstance(instanceUUID);
         return getProcessDataTypeClassName(queryDefinitionAPI, instance.getProcessDefinitionUUID(), variableName);
       }
@@ -293,47 +307,49 @@ public final class ConnectorExecutor {
     }
   }
 
-  private static String getActivityDataTypeClassName(final QueryDefinitionAPI queryDefinitionAPI, final ActivityDefinitionUUID activityDefinitionUUID, final String variableName) {
+  private static String getActivityDataTypeClassName(final QueryDefinitionAPI queryDefinitionAPI,
+      final ActivityDefinitionUUID activityDefinitionUUID, final String variableName) {
     try {
-      DataFieldDefinition data = queryDefinitionAPI.getActivityDataField(activityDefinitionUUID, variableName);
+      final DataFieldDefinition data = queryDefinitionAPI.getActivityDataField(activityDefinitionUUID, variableName);
       return data.getDataTypeClassName();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new BonitaRuntimeException(e.getMessage(), e);
     }
   }
 
-  private static String getProcessDataTypeClassName(final QueryDefinitionAPI queryDefinitionAPI, final ProcessDefinitionUUID processDefinitionUUID, final String variableName) {
+  private static String getProcessDataTypeClassName(final QueryDefinitionAPI queryDefinitionAPI,
+      final ProcessDefinitionUUID processDefinitionUUID, final String variableName) {
     try {
-      DataFieldDefinition data = queryDefinitionAPI.getProcessDataField(processDefinitionUUID, variableName);
+      final DataFieldDefinition data = queryDefinitionAPI.getProcessDataField(processDefinitionUUID, variableName);
       return data.getDataTypeClassName();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new BonitaRuntimeException(e.getMessage(), e);
     }
   }
 
-  private static String getDataTypeClassName(String variableName, ProcessDefinitionUUID processDefinitionUUID) {
+  private static String getDataTypeClassName(String variableName, final ProcessDefinitionUUID processDefinitionUUID) {
     if (isXPathVariableReference(variableName)) {
       return String.class.getName();
     }
     variableName = Misc.getVariableName(variableName);
-    StandardQueryAPIAccessorImpl accessor = new StandardQueryAPIAccessorImpl();
-    QueryDefinitionAPI queryDefinitionAPI = accessor.getQueryDefinitionAPI(AccessorUtil.QUERYLIST_JOURNAL_KEY);
+    final StandardQueryAPIAccessorImpl accessor = new StandardQueryAPIAccessorImpl();
+    final QueryDefinitionAPI queryDefinitionAPI = accessor.getQueryDefinitionAPI(AccessorUtil.QUERYLIST_JOURNAL_KEY);
     try {
-      DataFieldDefinition data = queryDefinitionAPI.getProcessDataField(processDefinitionUUID, variableName);
+      final DataFieldDefinition data = queryDefinitionAPI.getProcessDataField(processDefinitionUUID, variableName);
       return data.getDataTypeClassName();
-    } catch (Exception a) {
+    } catch (final Exception a) {
       throw new BonitaRuntimeException(a.getMessage(), a);
     }
   }
 
-  private static boolean isXPathVariableReference(String variableName) {
+  private static boolean isXPathVariableReference(final String variableName) {
     return variableName.contains(BonitaConstants.XPATH_VAR_SEPARATOR);
   }
 
-  private static Map<String, Object[]> getOuputs(Map<String, Object[]> connectorParameters) {
-    Map<String, Object[]> outputs = new HashMap<String, Object[]>();
-    for (Entry<String, Object[]> parameter : connectorParameters.entrySet()) {
-      String methodName = parameter.getKey();
+  private static Map<String, Object[]> getOuputs(final Map<String, Object[]> connectorParameters) {
+    final Map<String, Object[]> outputs = new HashMap<String, Object[]>();
+    for (final Entry<String, Object[]> parameter : connectorParameters.entrySet()) {
+      final String methodName = parameter.getKey();
       if (!Misc.isSetter(methodName)) {
         outputs.put(methodName, parameter.getValue());
       }
@@ -341,10 +357,10 @@ public final class ConnectorExecutor {
     return outputs;
   }
 
-  private static Map<String, Object[]> getInputs(Map<String, Object[]> connectorParameters) {
-    Map<String, Object[]> inputs = new HashMap<String, Object[]>();
-    for (Entry<String, Object[]> parameter : connectorParameters.entrySet()) {
-      String methodName = parameter.getKey();
+  private static Map<String, Object[]> getInputs(final Map<String, Object[]> connectorParameters) {
+    final Map<String, Object[]> inputs = new HashMap<String, Object[]>();
+    for (final Entry<String, Object[]> parameter : connectorParameters.entrySet()) {
+      final String methodName = parameter.getKey();
       if (Misc.isSetter(methodName)) {
         inputs.put(methodName, parameter.getValue());
       }
@@ -352,9 +368,9 @@ public final class ConnectorExecutor {
     return inputs;
   }
 
-  private static Setter getSetter(List<Setter> inputs, String parameterName) {
+  private static Setter getSetter(final List<Setter> inputs, final String parameterName) {
     if (inputs != null) {
-      for (Setter setter : inputs) {
+      for (final Setter setter : inputs) {
         if (setter.getSetterName().equals(parameterName)) {
           return setter;
         }
@@ -363,38 +379,39 @@ public final class ConnectorExecutor {
     return null;
   }
 
-  private static Object convertIfPossible(Object variableValue, String dataTypeClassName) {
+  private static Object convertIfPossible(final Object variableValue, final String dataTypeClassName) {
     try {
       return Misc.convertIfPossible("", variableValue, dataTypeClassName);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return variableValue;
     }
   }
 
-  private static void setParameters(final Binding binding, Map<String, Object[]> parameters, Object connector, ActivityInstanceUUID activityInstanceUUID, ProcessInstanceUUID processInstanceUUID, ProcessDefinitionUUID processDefinitionUUID, Map<String, Object> extraParameters, boolean useCurrentVariableValue) throws BonitaException {
-    if (parameters != null) {      
-      for (Entry<String, Object[]> parameter : parameters.entrySet()) {
-        String methodName = parameter.getKey();
-        Object[] methodParameters = evaluateParametersWithGroovy(binding, parameter.getValue(), 
-            activityInstanceUUID, processInstanceUUID, processDefinitionUUID, extraParameters, 
-            useCurrentVariableValue, connector);
+  private static void setParameters(final Binding binding, final Map<String, Object[]> parameters,
+      final Object connector, final ActivityInstanceUUID activityInstanceUUID,
+      final ProcessInstanceUUID processInstanceUUID, final ProcessDefinitionUUID processDefinitionUUID,
+      final Map<String, Object> extraParameters, final boolean useCurrentVariableValue) throws BonitaException {
+    if (parameters != null) {
+      for (final Entry<String, Object[]> parameter : parameters.entrySet()) {
+        final String methodName = parameter.getKey();
+        final Object[] methodParameters = evaluateParametersWithGroovy(binding, parameter.getValue(), connector);
 
         Setter setter = null;
         if (connector instanceof Connector) {
-          List<Setter> setters = ((Connector)connector).getSetters();
+          final List<Setter> setters = ((Connector) connector).getSetters();
           if (setters != null) {
             setter = getSetter(setters, methodName);
             if (setter != null) {
-              Object[] setterParameters = setter.getParameters();
+              final Object[] setterParameters = setter.getParameters();
               for (int i = 0; i < setterParameters.length; i++) {
-                Object setterParameter = setterParameters[i];
-                Class<?> setterParameterClass = setterParameter.getClass();
-                if (setterParameterClass != null && methodParameters[i] != null &&
-                    !setterParameterClass.equals(methodParameters[i].getClass())) {
-                  Class<?> methodParameterClass = methodParameters[i].getClass();
-                  if (methodParameterClass.equals(BigDecimal.class)
-                      || methodParameterClass.equals(BigInteger.class)) {
-                    methodParameters[i] = convertIfPossible(methodParameters[i].toString(), setterParameterClass.getName());
+                final Object setterParameter = setterParameters[i];
+                final Class<?> setterParameterClass = setterParameter.getClass();
+                if (setterParameterClass != null && methodParameters[i] != null
+                    && !setterParameterClass.equals(methodParameters[i].getClass())) {
+                  final Class<?> methodParameterClass = methodParameters[i].getClass();
+                  if (methodParameterClass.equals(BigDecimal.class) || methodParameterClass.equals(BigInteger.class)) {
+                    methodParameters[i] = convertIfPossible(methodParameters[i].toString(),
+                        setterParameterClass.getName());
                   } else if (methodParameterClass.equals(String.class)) {
                     methodParameters[i] = convertIfPossible(methodParameters[i], setterParameterClass.getName());
                   }
@@ -408,7 +425,7 @@ public final class ConnectorExecutor {
         if (setter != null) {
           setterParameters = setter.getParameters();
         }
-        Class<?>[] parameterClasses = new Class[methodParameters.length];
+        final Class<?>[] parameterClasses = new Class[methodParameters.length];
         for (int i = 0; i < parameterClasses.length; i++) {
           if (methodParameters[i] == null) {
             parameterClasses[i] = setterParameters[i].getClass();
@@ -418,13 +435,13 @@ public final class ConnectorExecutor {
         }
 
         try {
-          Method m = Connector.getMethod(connector.getClass(), methodName, parameterClasses);
+          final Method m = Connector.getMethod(connector.getClass(), methodName, parameterClasses);
           if (m == null) {
-            StringBuilder parambuilder = new StringBuilder();
+            final StringBuilder parambuilder = new StringBuilder();
             if (parameterClasses != null) {
               parambuilder.append("[");
               for (int i = 0; i < parameterClasses.length; i++) {
-                Class<?> class1 = parameterClasses[i];
+                final Class<?> class1 = parameterClasses[i];
                 parambuilder.append(class1);
                 parambuilder.append("=");
                 final Object parameterValue = methodParameters[i];
@@ -437,13 +454,11 @@ public final class ConnectorExecutor {
               }
               parambuilder.insert(parambuilder.length() - 1, "").append("]");
             }
-            throw new BonitaRuntimeException(
-                "Unable to find a method with name: " + methodName
-                + " and parameters: " + parambuilder.toString()
-                + " in connector: " + connector.getClass());
+            throw new BonitaRuntimeException("Unable to find a method with name: " + methodName + " and parameters: "
+                + parambuilder.toString() + " in connector: " + connector.getClass());
           }
           m.invoke(connector, methodParameters);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           throw new BonitaRuntimeException(e.getMessage(), e);
         }
       }
@@ -451,18 +466,17 @@ public final class ConnectorExecutor {
   }
 
   @SuppressWarnings("unchecked")
-  private static Object[] evaluateParametersWithGroovy(final Binding binding, Object[] parameters, ActivityInstanceUUID activityInstanceUUID, 
-      ProcessInstanceUUID processInstanceUUID, ProcessDefinitionUUID processDefinitionUUID, 
-      Map<String, Object> extraParameters, boolean useCurrentVariableValue, Object connector) {
+  private static Object[] evaluateParametersWithGroovy(final Binding binding, final Object[] parameters,
+      final Object connector) {
     final Object[] methodParameters = parameters;
     for (int i = 0; i < parameters.length; i++) {
       final Object methodParameter = methodParameters[i];
       if (methodParameter instanceof List<?>) {
-        List<Object> temp = (List<Object>) methodParameter;
+        final List<Object> temp = (List<Object>) methodParameter;
         for (int j = 0; j < temp.size(); j++) {
-          Object tempRow = temp.get(j);
+          final Object tempRow = temp.get(j);
           if (tempRow instanceof List<?>) {
-            List<Object> row = (List<Object>) tempRow;
+            final List<Object> row = (List<Object>) tempRow;
             for (int k = 0; k < row.size(); k++) {
               row.set(k, getEvaluatedExpression(binding, row.get(k), connector));
             }
@@ -479,13 +493,14 @@ public final class ConnectorExecutor {
     return methodParameters;
   }
 
-  private static Object getEvaluatedExpression(final Binding binding, Object parameterMethod, Object connector) {
+  private static Object getEvaluatedExpression(final Binding binding, final Object parameterMethod,
+      final Object connector) {
     if (parameterMethod instanceof String) {
-      String expression = (String) parameterMethod;
+      final String expression = (String) parameterMethod;
       if (GroovyExpression.isGroovyExpression(expression)) {
         try {
           return GroovyUtil.evaluate(expression, binding);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           final StringBuilder stb = new StringBuilder("Error while executing connector: '");
           stb.append(connector.getClass().getName());
           stb.append("'. ");
@@ -496,7 +511,8 @@ public final class ConnectorExecutor {
     return parameterMethod;
   }
 
-  private static void executeConnector(final Execution execution, final String activityName, final ConnectorDefinition connector, final Map<String, Object> parameters) {
+  private static void executeConnector(final Execution execution, final String activityName,
+      final ConnectorDefinition connector, final Map<String, Object> parameters) {
     if (connector != null) {
       final InternalProcessInstance instance = execution.getInstance();
       final ProcessInstanceUUID instanceUUID = instance.getUUID();
@@ -504,16 +520,18 @@ public final class ConnectorExecutor {
       final ProcessDefinitionUUID processUUID = instance.getProcessDefinitionUUID();
       final boolean throwException = connector.isThrowingException();
       try {
-        final Object hookInstance = EnvTool.getClassDataLoader().getInstance(Hook.class, instance.getProcessDefinitionUUID(), connector);
+        final Object hookInstance = EnvTool.getClassDataLoader().getInstance(Hook.class,
+            instance.getProcessDefinitionUUID(), connector);
         if (LOG.isLoggable(Level.FINE)) {
           if (activityInstanceUUID != null) {
-            LOG.fine("Starting connector (instance=" + instanceUUID + ", process=" + processUUID + ", activityId=" + activityName + ") : " + connector);
+            LOG.fine("Starting connector (instance=" + instanceUUID + ", process=" + processUUID + ", activityId="
+                + activityName + ") : " + connector);
           } else {
-            LOG.fine("Starting connector (instance=" + instanceUUID + ", process=" + processUUID + ") : "  + connector);
+            LOG.fine("Starting connector (instance=" + instanceUUID + ", process=" + processUUID + ") : " + connector);
           }
         }
         if (activityInstanceUUID == null) {
-          executeConnector((TxHook)hookInstance, connector.getParameters(), instanceUUID, null, parameters);
+          executeConnector((TxHook) hookInstance, connector.getParameters(), instanceUUID, null, parameters);
         } else {
           final ActivityInstance activityInst = EnvTool.getJournalQueriers().getActivityInstance(activityInstanceUUID);
           if (hookInstance instanceof Hook) {
@@ -523,11 +541,13 @@ public final class ConnectorExecutor {
             final TxHook txHook = (TxHook) hookInstance;
             executeConnector(txHook, connector.getParameters(), instanceUUID, activityInst, parameters);
           } else {
-            String message = ExceptionManager.getInstance().getFullMessage("bsi_HEI_2", Hook.class.getName(), TxHook.class.getName());
+            final String message = ExceptionManager.getInstance().getFullMessage("bsi_HEI_2", Hook.class.getName(),
+                TxHook.class.getName());
             throw new BonitaRuntimeException(message);
           }
           if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Finished connector (instance=" + instanceUUID + ", process=" + processUUID + ", activityId=" + activityName + ") : " + connector);
+            LOG.fine("Finished connector (instance=" + instanceUUID + ", process=" + processUUID + ", activityId="
+                + activityName + ") : " + connector);
           }
         }
       } catch (final Exception e) {
@@ -536,9 +556,9 @@ public final class ConnectorExecutor {
           message = e.getMessage();
         }
         if (LOG.isLoggable(Level.SEVERE)) {
-          LOG.severe("Exception caught while executing connector (instance=" + instanceUUID
-              + ", process=" + processUUID + ", activityId=" + activityName + ") : " + connector.getClassName()
-              + " - Exception : " + message + " " + Misc.getStackTraceFrom(e));
+          LOG.severe("Exception caught while executing connector (instance=" + instanceUUID + ", process="
+              + processUUID + ", activityId=" + activityName + ") : " + connector.getClassName() + " - Exception : "
+              + message + " " + Misc.getStackTraceFrom(e));
         }
 
         final String errorCode = connector.getErrorCode();
@@ -546,21 +566,25 @@ public final class ConnectorExecutor {
           if (LOG.isLoggable(Level.SEVERE)) {
             LOG.severe("This exception raised an error event with code: " + errorCode);
           }
-          ActivityDefinition activityDefinition = execution.getNode();
+          final ActivityDefinition activityDefinition = execution.getNode();
           String eventName = ActivityUtil.getErrorEventName(activityDefinition, errorCode);
           final Recorder recorder = EnvTool.getRecorder();
           if (eventName != null) {
             recorder.recordBodyAborted(execution.getActivityInstance());
             TransientData.removeTransientData(execution.getActivityInstanceUUID());
-            OutgoingEventInstance outgoing = new OutgoingEventInstance(eventName, execution.getProcessDefinition().getName(), activityName, null, instanceUUID, activityInstanceUUID, -1);
+            final OutgoingEventInstance outgoing = new OutgoingEventInstance(eventName, execution
+                .getProcessDefinition().getName(), activityName, null, instanceUUID, activityInstanceUUID, -1);
             EnvTool.getEventService().fire(outgoing);
           } else {
-            final ActivityDefinition eventSubProcessActivity = ActivityUtil.getMatchingErrorEvenSubProcessActivity(execution, errorCode);
+            final ActivityDefinition eventSubProcessActivity = ActivityUtil.getMatchingErrorEvenSubProcessActivity(
+                execution, errorCode);
             if (eventSubProcessActivity != null) {
               final String targetActivityName = eventSubProcessActivity.getName();
-              final ProcessDefinition targetProcess = EnvTool.getJournalQueriers().getProcess(eventSubProcessActivity.getProcessDefinitionUUID());
+              final ProcessDefinition targetProcess = EnvTool.getJournalQueriers().getProcess(
+                  eventSubProcessActivity.getProcessDefinitionUUID());
               final String targetProcessName = targetProcess.getName();
-              final OutgoingEventInstance outgoing = new OutgoingEventInstance(ActivityUtil.getErrorEventName(eventSubProcessActivity, errorCode), targetProcessName, targetActivityName, null, null, null, -1);
+              final OutgoingEventInstance outgoing = new OutgoingEventInstance(ActivityUtil.getErrorEventName(
+                  eventSubProcessActivity, errorCode), targetProcessName, targetActivityName, null, null, null, -1);
               EnvTool.getEventService().fire(outgoing);
               execution.abort();
               recorder.recordInstanceAborted(instance.getUUID(), EnvTool.getUserId());
@@ -568,23 +592,27 @@ public final class ConnectorExecutor {
               final ActivityInstanceUUID parentActivityUUID = instance.getParentActivityUUID();
               if (parentActivityUUID != null) {
                 recorder.recordBodyAborted(execution.getActivityInstance());
-                final ActivityInstance parentActivity = EnvTool.getJournalQueriers().getActivityInstance(parentActivityUUID);
-                final ActivityDefinition parentActivityDefinition = EnvTool.getJournalQueriers().getActivity(parentActivity.getActivityDefinitionUUID());
+                final ActivityInstance parentActivity = EnvTool.getJournalQueriers().getActivityInstance(
+                    parentActivityUUID);
+                final ActivityDefinition parentActivityDefinition = EnvTool.getJournalQueriers().getActivity(
+                    parentActivity.getActivityDefinitionUUID());
                 eventName = ActivityUtil.getErrorEventName(parentActivityDefinition, errorCode);
                 final String parentActivityName = parentActivityDefinition.getName();
                 final ProcessInstanceUUID parentInstanceUUID = parentActivity.getProcessInstanceUUID();
-                final ProcessDefinition parentDefinition = EnvTool.getJournalQueriers().getProcess(parentActivity.getProcessDefinitionUUID());
-                String parentProcessName = parentDefinition.getName();
-                OutgoingEventInstance outgoing = new OutgoingEventInstance(eventName, parentProcessName, parentActivityName, null, parentInstanceUUID, parentActivityUUID, -1);
+                final ProcessDefinition parentDefinition = EnvTool.getJournalQueriers().getProcess(
+                    parentActivity.getProcessDefinitionUUID());
+                final String parentProcessName = parentDefinition.getName();
+                final OutgoingEventInstance outgoing = new OutgoingEventInstance(eventName, parentProcessName,
+                    parentActivityName, null, parentInstanceUUID, parentActivityUUID, -1);
 
                 EnvTool.getEventService().fire(outgoing);
-                Set<Execution> executions = EnvTool.getJournal().getExecutions(instanceUUID);
+                final Set<Execution> executions = EnvTool.getJournal().getExecutions(instanceUUID);
                 executions.iterator().next().abort();
               } else {
                 final InternalActivityInstance activityInstance = execution.getActivityInstance();
                 if (activityInstance != null) {
                   recorder.recordActivityFailed(activityInstance);
-                } else { //if don't find activity instance abort it
+                } else { // if don't find activity instance abort it
                   execution.abort();
                   recorder.recordInstanceAborted(instanceUUID, BonitaConstants.SYSTEM_USER);
                   instance.finish();
@@ -593,7 +621,8 @@ public final class ConnectorExecutor {
             }
           }
         } else if (throwException) {
-          throw new BonitaWrapperException(new HookInvocationException("bsi_HEI_3", connector.getClassName() + " because " + message, e));
+          throw new BonitaWrapperException(new HookInvocationException("bsi_HEI_3", connector.getClassName()
+              + " because " + message, e));
         } else if (LOG.isLoggable(Level.SEVERE)) {
           LOG.severe("This exception was ignored in order to continue the process execution");
         }
@@ -601,8 +630,9 @@ public final class ConnectorExecutor {
     }
   }
 
-  public static void executeConnectors(final ActivityDefinition activityDef, final Execution execution, final Event event, final Map<String, Object> parameters) {
-    List<HookDefinition> hooks = activityDef.getConnectors(); 
+  public static void executeConnectors(final ActivityDefinition activityDef, final Execution execution,
+      final Event event, final Map<String, Object> parameters) {
+    final List<HookDefinition> hooks = activityDef.getConnectors();
     if (hooks != null) {
       for (final HookDefinition hook : hooks) {
         if (hook.getEvent() != null && hook.getEvent().equals(event)) {
@@ -614,17 +644,18 @@ public final class ConnectorExecutor {
     }
   }
 
-  public static void executeConnector(final Execution execution, final String activityName, final ConnectorDefinition connector) {
+  public static void executeConnector(final Execution execution, final String activityName,
+      final ConnectorDefinition connector) {
     executeConnector(execution, activityName, connector, null);
   }
 
   public static void executeConnectors(final Execution execution, final Event event) {
     final InternalProcessInstance instance = execution.getInstance();
     final ProcessDefinitionUUID processUUID = instance.getProcessDefinitionUUID();
-    ProcessDefinition definition = EnvTool.getJournalQueriers().getProcess(processUUID);
-    List<HookDefinition> connectors = definition.getConnectors();
+    final ProcessDefinition definition = EnvTool.getJournalQueriers().getProcess(processUUID);
+    final List<HookDefinition> connectors = definition.getConnectors();
     if (connectors != null) {
-      for(HookDefinition connector : connectors) {
+      for (final HookDefinition connector : connectors) {
         if (connector.getEvent() != null && event.equals(connector.getEvent())) {
           executeConnector(execution, null, connector);
         }
@@ -632,13 +663,13 @@ public final class ConnectorExecutor {
     }
   }
 
-  private static Map<String, Object[]> formatParameters(Map<String, Object[]> parameters) {
-    Map<String, Object[]> formattedParameters = new HashMap<String, Object[]>();
+  private static Map<String, Object[]> formatParameters(final Map<String, Object[]> parameters) {
+    final Map<String, Object[]> formattedParameters = new HashMap<String, Object[]>();
     if (parameters != null) {
-      for (Entry<String, Object[]> parameter : parameters.entrySet()) {
+      for (final Entry<String, Object[]> parameter : parameters.entrySet()) {
         String parameterName = parameter.getKey();
         if (!parameterName.startsWith("set")) {
-          StringBuilder builder = new StringBuilder("set");
+          final StringBuilder builder = new StringBuilder("set");
           builder.append(String.valueOf(parameterName.charAt(0)).toUpperCase());
           builder.append(parameterName.substring(1));
           parameterName = builder.toString();
@@ -649,30 +680,35 @@ public final class ConnectorExecutor {
     return formattedParameters;
   }
 
-  public static Map<String, Object> executeConnector(final Connector connector, Map<String, Object[]> parameters) throws Exception {
+  public static Map<String, Object> executeConnector(final Connector connector, final Map<String, Object[]> parameters)
+      throws Exception {
     final Binding binding = getBinding(null, null, null, null, true);
     setParameters(binding, formatParameters(parameters), connector, null, null, null, null, true);
     connector.execute();
-    Map<String, Object> results = getGetterValues(connector);
-    return results;
+    return getGetterValues(connector);
   }
 
-  public static Map<String, Object> executeConnector(final Connector connector, ProcessDefinitionUUID processUUID, ProcessInstanceUUID instanceUUID, ActivityInstanceUUID activityInstanceUUID, Map<String, Object[]> parameters, Map<String, Object> extraParameters, boolean useCurrentVariableValue) throws Exception {
-    Map<String, Object[]> inputs = formatParameters(parameters);
+  public static Map<String, Object> executeConnector(final Connector connector,
+      final ProcessDefinitionUUID processUUID, final ProcessInstanceUUID instanceUUID,
+      final ActivityInstanceUUID activityInstanceUUID, final Map<String, Object[]> parameters,
+      final Map<String, Object> extraParameters, final boolean useCurrentVariableValue) throws Exception {
+    final Map<String, Object[]> inputs = formatParameters(parameters);
     if (connector instanceof ProcessConnector) {
       ((ProcessConnector) connector).setApiAccessor(new StandardAPIAccessorImpl());
       ((ProcessConnector) connector).setActivityInstanceUUID(activityInstanceUUID);
       ((ProcessConnector) connector).setProcessInstanceUUID(instanceUUID);
       ((ProcessConnector) connector).setProcessDefinitionUUID(processUUID);
     }
-    final Binding binding = getBinding(extraParameters, processUUID, activityInstanceUUID, instanceUUID, useCurrentVariableValue);
-    setParameters(binding, inputs, connector, activityInstanceUUID, instanceUUID, processUUID, extraParameters, useCurrentVariableValue);
+    final Binding binding = getBinding(extraParameters, processUUID, activityInstanceUUID, instanceUUID,
+        useCurrentVariableValue);
+    setParameters(binding, inputs, connector, activityInstanceUUID, instanceUUID, processUUID, extraParameters,
+        useCurrentVariableValue);
     connector.execute();
-    Map<String, Object> results = getGetterValues(connector);
-    return results;
+    return getGetterValues(connector);
   }
 
-  public static Set<String> executeFilter(final Filter filter, Map<String, Object[]> parameters, Set<String> members) throws Exception {
+  public static Set<String> executeFilter(final Filter filter, Map<String, Object[]> parameters,
+      final Set<String> members) throws Exception {
     Misc.checkArgsNotNull(members);
     if (parameters == null) {
       parameters = new HashMap<String, Object[]>();
@@ -685,43 +721,50 @@ public final class ConnectorExecutor {
     return filter.getCandidates();
   }
 
-  public static Set<String> executeRoleResolver(final RoleResolver resolver, Map<String, Object[]> parameters) throws Exception {
+  public static Set<String> executeRoleResolver(final RoleResolver resolver, final Map<String, Object[]> parameters)
+      throws Exception {
     final Binding binding = getBinding(null, null, null, null, true);
     setParameters(binding, formatParameters(parameters), resolver, null, null, null, null, true);
     return resolver.searchMembers(null, null, "test");
   }
 
-  public static void executeConnectors(final ActivityDefinition activityDef, final Execution execution, final Event event) {
+  public static void executeConnectors(final ActivityDefinition activityDef, final Execution execution,
+      final Event event) {
     executeConnectors(activityDef, execution, event, null);
   }
 
-  public static MultiInstantiatorDescriptor executeMultiInstantiator(final Execution execution, final String activityId,
-      final MultiInstantiator actInstantiator, final Map<String, Object[]> parameters) throws Exception {
-    ProcessInstanceUUID instanceUUID = execution.getInstance().getUUID();
+  public static MultiInstantiatorDescriptor executeMultiInstantiator(final Execution execution,
+      final String activityId, final MultiInstantiator actInstantiator, final Map<String, Object[]> parameters)
+      throws Exception {
+    final ProcessInstanceUUID instanceUUID = execution.getInstance().getUUID();
     if (parameters != null) {
-      Map<String, Object[]> inputs = getInputs(parameters);
+      final Map<String, Object[]> inputs = getInputs(parameters);
       final Binding binding = getBinding(null, null, null, instanceUUID, true);
       setParameters(binding, inputs, actInstantiator, null, instanceUUID, null, null, true);
     }
-    return actInstantiator.execute(new StandardQueryAPIAccessorImpl(), instanceUUID, activityId, execution.getIterationId());
+    return actInstantiator.execute(new StandardQueryAPIAccessorImpl(), instanceUUID, activityId,
+        execution.getIterationId());
   }
 
-  public static Set<String> executeRoleMapper(final RoleMapper roleMapper, final ProcessInstanceUUID instanceUUID,
-      final String roleId, Map<String, Object[]> parameters) throws Exception {
+  public static Set<String> executeRoleMapper(final RoleMapper roleMapper, final TaskInstance task,
+      final String roleId, final Map<String, Object[]> parameters) throws Exception {
+    final ProcessInstanceUUID processInstanceUUID = task.getProcessInstanceUUID();
     if (parameters != null) {
-      Map<String, Object[]> inputs = getInputs(parameters);
-      final Binding binding = getBinding(null, null, null, instanceUUID, true);
-      setParameters(binding, inputs, roleMapper, null, instanceUUID, null, null, true);
+      final Map<String, Object[]> inputs = getInputs(parameters);
+      final ActivityInstanceUUID activityInstanceUUID = task.getUUID();
+      final Binding binding = getBinding(null, null, activityInstanceUUID, processInstanceUUID, true);
+      setParameters(binding, inputs, roleMapper, activityInstanceUUID, processInstanceUUID, null, null, true);
     }
-    return roleMapper.searchMembers(new StandardQueryAPIAccessorImpl(), instanceUUID, roleId);
+    return roleMapper.searchMembers(new StandardQueryAPIAccessorImpl(), processInstanceUUID, roleId);
   }
 
-  public static Set<String> executeFilter(final Filter filter, final PerformerAssign performerAssign, final ActivityInstance activityInstance, final Set<String> candidates,
-      final Map<String, Object[]> parameters) throws Exception {
-
-    ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
+  public static Set<String> executeFilter(final Filter filter, final PerformerAssign performerAssign,
+      final ActivityInstance activityInstance, final Set<String> candidates, final Map<String, Object[]> parameters)
+      throws Exception {
+    final ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
     try {
-      ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(activityInstance.getProcessDefinitionUUID());
+      final ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(
+          activityInstance.getProcessDefinitionUUID());
       Thread.currentThread().setContextClassLoader(processClassLoader);
       Map<String, Object[]> inputs = new HashMap<String, Object[]>();
       if (filter instanceof PerformerAssignFilter) {
@@ -750,19 +793,20 @@ public final class ConnectorExecutor {
     }
   }
 
-  public static List<Map<String, Object>> executeMultipleInstancesInstantiatior(final MultiInstantiationDefinition instantiator, 
-      final ProcessInstanceUUID instanceUUID, final String activityName, final String iterationId) throws Exception {
+  public static List<Map<String, Object>> executeMultipleInstancesInstantiatior(
+      final MultiInstantiationDefinition instantiator, final ProcessInstanceUUID instanceUUID,
+      final String activityName, final String iterationId) throws Exception {
     final ProcessInstance instance = EnvTool.getJournalQueriers().getProcessInstance(instanceUUID);
-    ProcessDefinitionUUID definitionUUID = instance.getProcessDefinitionUUID();
+    final ProcessDefinitionUUID definitionUUID = instance.getProcessDefinitionUUID();
 
-    ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
+    final ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
     try {
-      ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(definitionUUID);
+      final ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(definitionUUID);
       Thread.currentThread().setContextClassLoader(processClassLoader);
-      MultipleInstancesInstantiator activityinstantiator =
-        EnvTool.getClassDataLoader().getInstance(MultipleInstancesInstantiator.class, definitionUUID, instantiator);
+      final MultipleInstancesInstantiator activityinstantiator = EnvTool.getClassDataLoader().getInstance(
+          MultipleInstancesInstantiator.class, definitionUUID, instantiator);
 
-      Map<String, Object[]> parameters = instantiator.getParameters();
+      final Map<String, Object[]> parameters = instantiator.getParameters();
       Map<String, Object[]> inputs = new HashMap<String, Object[]>();
 
       if (parameters != null) {
@@ -779,10 +823,11 @@ public final class ConnectorExecutor {
       setParameters(binding, inputs, activityinstantiator, null, instanceUUID, null, null, true);
 
       if (activityinstantiator.getClass().getName().equals(MultiInstantiatorInstantiator.class.getName())) {
-        String className = ((MultiInstantiatorInstantiator) activityinstantiator).getClassName();
-        org.ow2.bonita.connector.core.MultiInstantiator multiInstantiator = (org.ow2.bonita.connector.core.MultiInstantiator)
-          EnvTool.getClassDataLoader().getInstance(definitionUUID, className);
-        Map<String, Object[]> temp = ((MultiInstantiatorInstantiator) activityinstantiator).getInstantiatorParameters();
+        final String className = ((MultiInstantiatorInstantiator) activityinstantiator).getClassName();
+        final org.ow2.bonita.connector.core.MultiInstantiator multiInstantiator = (org.ow2.bonita.connector.core.MultiInstantiator) EnvTool
+            .getClassDataLoader().getInstance(definitionUUID, className);
+        final Map<String, Object[]> temp = ((MultiInstantiatorInstantiator) activityinstantiator)
+            .getInstantiatorParameters();
         if (temp != null) {
           ((MultiInstantiatorInstantiator) activityinstantiator).setActivityName(activityName);
           ((MultiInstantiatorInstantiator) activityinstantiator).setIterationId(iterationId);
@@ -799,19 +844,19 @@ public final class ConnectorExecutor {
     }
   }
 
-  public static boolean executeMultipleInstancesJoinChecker(final MultiInstantiationDefinition joinChecker, final ActivityInstanceUUID activityUUID)
-  throws Exception {
+  public static boolean executeMultipleInstancesJoinChecker(final MultiInstantiationDefinition joinChecker,
+      final ActivityInstanceUUID activityUUID) throws Exception {
     final ActivityInstance activity = EnvTool.getJournalQueriers().getActivityInstance(activityUUID);
     final ProcessInstanceUUID instanceUUID = activity.getProcessInstanceUUID();
     final ProcessDefinitionUUID definitionUUID = activity.getProcessDefinitionUUID();
 
-    ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
+    final ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
     try {
-      ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(definitionUUID);
+      final ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(definitionUUID);
       Thread.currentThread().setContextClassLoader(processClassLoader);
-      MultipleInstancesJoinChecker checker =
-        EnvTool.getClassDataLoader().getInstance(MultipleInstancesJoinChecker.class, definitionUUID, joinChecker);
-      Map<String, Object[]> parameters = joinChecker.getParameters();
+      final MultipleInstancesJoinChecker checker = EnvTool.getClassDataLoader().getInstance(
+          MultipleInstancesJoinChecker.class, definitionUUID, joinChecker);
+      final Map<String, Object[]> parameters = joinChecker.getParameters();
       Map<String, Object[]> inputs = new HashMap<String, Object[]>();
       if (parameters != null) {
         inputs = getInputs(parameters);
@@ -827,10 +872,10 @@ public final class ConnectorExecutor {
       setParameters(binding, inputs, checker, null, instanceUUID, null, null, true);
 
       if (checker.getClass().getName().equals(MultiInstantiatorJoinChecker.class.getName())) {
-        String className = ((MultiInstantiatorJoinChecker) checker).getClassName();
-        org.ow2.bonita.connector.core.MultiInstantiator multiInstantiator = (org.ow2.bonita.connector.core.MultiInstantiator)
-        EnvTool.getClassDataLoader().getInstance(definitionUUID, className);
-        Map<String, Object[]> temp = ((MultiInstantiatorJoinChecker) checker).getInstantiatorParameters();
+        final String className = ((MultiInstantiatorJoinChecker) checker).getClassName();
+        final org.ow2.bonita.connector.core.MultiInstantiator multiInstantiator = (org.ow2.bonita.connector.core.MultiInstantiator) EnvTool
+            .getClassDataLoader().getInstance(definitionUUID, className);
+        final Map<String, Object[]> temp = ((MultiInstantiatorJoinChecker) checker).getInstantiatorParameters();
         if (temp != null) {
           multiInstantiator.setActivityId(activity.getActivityName());
           multiInstantiator.setIterationId(activity.getIterationId());
@@ -842,10 +887,11 @@ public final class ConnectorExecutor {
 
       checker.execute();
       return checker.isJoinable();
-    } catch (Exception e) {
-      final StringBuilder builder = new StringBuilder("An Exception occurs during join checking of mutliple instances activity: '");
-      builder.append(activity.getActivityName()).append("' of instance: ").append(instanceUUID)
-      .append(" of process: ").append(definitionUUID).append(".\r\n Exception : ").append(e.getMessage());
+    } catch (final Exception e) {
+      final StringBuilder builder = new StringBuilder(
+          "An Exception occurs during join checking of mutliple instances activity: '");
+      builder.append(activity.getActivityName()).append("' of instance: ").append(instanceUUID).append(" of process: ")
+          .append(definitionUUID).append(".\r\n Exception : ").append(e.getMessage());
       throw new BonitaRuntimeException(builder.toString());
     } finally {
       Thread.currentThread().setContextClassLoader(baseClassLoader);

@@ -7,8 +7,6 @@ import java.util.HashSet;
 
 import org.ow2.bonita.APITestCase;
 import org.ow2.bonita.command.InstanceOfStringVariableCommand;
-import org.ow2.bonita.command.InstanceOfUnpersistableVariableCommand;
-import org.ow2.bonita.command.UnsupportedVariable;
 
 public class ToolTest extends APITestCase implements Serializable {
 
@@ -23,7 +21,7 @@ public class ToolTest extends APITestCase implements Serializable {
   public void testGetClasses() throws IOException {
     assertEquals(new HashSet<byte[]>(), ClassDataTool.getClasses());
 
-    final Class< ? > nullClass = null;
+    final Class<?> nullClass = null;
     try {
       ClassDataTool.getClasses(nullClass);
       fail("Exception should be throw when calling getClasses with a null class");
@@ -34,7 +32,7 @@ public class ToolTest extends APITestCase implements Serializable {
 
   public void testGetClassData() throws IOException {
     try {
-      ClassDataTool.getClassData((Class < ? >)null);
+      ClassDataTool.getClassData((Class<?>) null);
       fail("BonitaRuntimeException should be thrown when calling getClassData with null parameter");
     } catch (final IOException e) {
       // Test passed
@@ -46,17 +44,9 @@ public class ToolTest extends APITestCase implements Serializable {
     }
   }
 
-  public void testCreateVariableIncorrect() throws Exception {
-    byte[] jar = Misc.generateJar(InstanceOfUnpersistableVariableCommand.class, UnsupportedVariable.class);
-    getManagementAPI().deployJar("toolc1.jar", jar);
-    Boolean actual = getCommandAPI().execute(new InstanceOfUnpersistableVariableCommand());
-    assertTrue(actual);
-    getManagementAPI().removeJar("toolc1.jar");
-  }
-
   public void testCreateVariableString() throws Exception {
     getManagementAPI().deployJar("toolc2.jar", Misc.generateJar(InstanceOfStringVariableCommand.class));
-    Boolean actual = getCommandAPI().execute(new InstanceOfStringVariableCommand());
+    final Boolean actual = getCommandAPI().execute(new InstanceOfStringVariableCommand());
     assertTrue(actual);
     getManagementAPI().removeJar("toolc2.jar");
   }

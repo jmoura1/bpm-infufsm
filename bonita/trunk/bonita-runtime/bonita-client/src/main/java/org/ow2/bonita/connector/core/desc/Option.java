@@ -18,32 +18,62 @@ package org.ow2.bonita.connector.core.desc;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class Option {
 
-  private String label;
-  private String value;
-  
-  public Option(String label, String value) {
+  private final String label;
+  private final String value;
+
+  public Option(final String label, final String value) {
     this.label = label;
     this.value = value;
   }
+
   public String getLabel() {
     return label;
   }
+
   public String getValue() {
     return value;
   }
-  
+
   @Override
-  public boolean equals(Object obj) {
-    if (obj != null && obj instanceof Option) {
-      Option temp = (Option) obj;
-      return (temp.getLabel().equals(this.getLabel())
-          && temp.getValue().equals(this.getValue()));
-    } else {
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (label == null ? 0 : label.hashCode());
+    result = prime * result + (value == null ? 0 : value.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
       return false;
     }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Option other = (Option) obj;
+    if (label == null) {
+      if (other.label != null) {
+        return false;
+      }
+    } else if (!label.equals(other.label)) {
+      return false;
+    }
+    if (value == null) {
+      if (other.value != null) {
+        return false;
+      }
+    } else if (!value.equals(other.value)) {
+      return false;
+    }
+    return true;
   }
+
 }

@@ -1575,9 +1575,9 @@
   </query>
   
   <query name="getUsersByMembership">
-    SELECT distinct user
-    FROM org.ow2.bonita.facade.identity.impl.UserImpl as user
-    INNER JOIN FETCH user.memberships as membership
+    SELECT DISTINCT user
+    FROM org.ow2.bonita.facade.identity.impl.UserImpl AS user
+    INNER JOIN user.memberships as membership
     WHERE membership.uuid = :membershipUUID
     ORDER BY user.username
   </query>
@@ -1967,7 +1967,7 @@
   </query>
 
   <query name="getNextDueDate">
-    SELECT  incoming.enableTime
+    SELECT  MIN(incoming.enableTime)
     FROM    org.ow2.bonita.runtime.event.IncomingEventInstance as incoming,
             org.ow2.bonita.runtime.event.OutgoingEventInstance as outgoing
     WHERE   incoming.name = outgoing.name
@@ -1984,7 +1984,6 @@
     AND     (outgoing.processName IS NULL OR outgoing.processName = incoming.processName)
     AND     (outgoing.activityName IS NULL OR outgoing.activityName = incoming.activityName)
     AND     (outgoing.id NOT IN elements(incoming.incompatibleEvents))
-    ORDER BY incoming.enableTime
   </query>
 
 

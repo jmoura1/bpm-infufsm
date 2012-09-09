@@ -10,6 +10,8 @@
  * You should have received a copy of the GNU Lesser General Public License along with this
  * program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth
  * Floor, Boston, MA  02110-1301, USA.
+ * 
+ * Modified by Matthieu Chaffotte - BonitaSoft
  **/
 package org.ow2.bonita.util;
 
@@ -24,20 +26,17 @@ import java.util.List;
 /**
  * Generic chainer.
  * 
- * This {@link InvocationHandler} allows chaining of <strong>void only</strong> 
- * method invocations.
+ * This {@link InvocationHandler} allows chaining of <strong>void only</strong> method invocations.
  * 
- * If an exception is raised during the invocation of a <strong>void</strong> 
- * method in the chain, then the forwarding is stopped, and the exception will 
- * be raised up.
+ * If an exception is raised during the invocation of a <strong>void</strong> method in the chain, then the forwarding
+ * is stopped, and the exception will be raised up.
  * 
- * Note that if a non-void method is invoked, an 
- * {@link IllegalArgumentException} is thrown.
+ * Note that if a non-void method is invoked, an {@link IllegalArgumentException} is thrown.
  * 
  * @author Pierre Vigneras
  */
 public class Chainer<T> implements InvocationHandler {
-  // Object methods, should be handled specially here! We don't want 
+  // Object methods, should be handled specially here! We don't want
   // them to be forwarded, but still, we want to reply to them!.
   // See Proxy javadoc for details for list of Object methods that are
   // normally forwarded.
@@ -53,8 +52,8 @@ public class Chainer<T> implements InvocationHandler {
       tostringMethodTmp = Object.class.getMethod("toString");
       equalsMethodTmp = Object.class.getMethod("equals", Object.class);
       hashcodeMethodTmp = Object.class.getMethod("hashCode");
-    } catch (NoSuchMethodException nsme) {
-    	String message = ExceptionManager.getInstance().getFullMessage("buc_C_1");
+    } catch (final NoSuchMethodException nsme) {
+      final String message = ExceptionManager.getInstance().getFullMessage("buc_C_1");
       throw new ExceptionInInitializerError(message);
     }
     TOSTRING_METHOD = tostringMethodTmp;
@@ -62,9 +61,8 @@ public class Chainer<T> implements InvocationHandler {
     HASHCODE_METHOD = hashcodeMethodTmp;
   }
 
-
-
   private final List<T> chain = Collections.synchronizedList(new LinkedList<T>());
+
   public void add(final T element) {
     chain.add(element);
   }
@@ -89,32 +87,28 @@ public class Chainer<T> implements InvocationHandler {
     return new LinkedList<T>(chain);
   }
 
-
-  /* (non-Javadoc)
-   * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
-   */
-  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+  @Override
+  public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
     if (method.getReturnType().equals(Void.TYPE)) {
-      for (T t : chain) {
+      for (final T t : chain) {
         try {
           method.invoke(t, args);
-        } catch (InvocationTargetException e) {
+        } catch (final InvocationTargetException e) {
           throw e.getCause();
         }
       }
       return null;
     }
     if (method.equals(TOSTRING_METHOD)) {
-      return "ChainerProxy: " + chain; 
+      return "ChainerProxy: " + chain;
     } else if (method.equals(HASHCODE_METHOD)) {
       return this.hashCode() + chain.hashCode();
-    } else if (method.equals(EQUALS_METHOD)) {
-      if (Proxy.isProxyClass(proxy.getClass())) {
-        final InvocationHandler invocationHandler = Proxy.getInvocationHandler(proxy);
-        return this.equals(invocationHandler);
-      }
+    } else if (method.equals(EQUALS_METHOD) && Proxy.isProxyClass(proxy.getClass())) {
+      final InvocationHandler invocationHandler = Proxy.getInvocationHandler(proxy);
+      return this.equals(invocationHandler);
     }
-    String message = ExceptionManager.getInstance().getFullMessage("buc_C_2");
+    final String message = ExceptionManager.getInstance().getFullMessage("buc_C_2");
     throw new IllegalArgumentException(message);
   }
+
 }

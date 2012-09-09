@@ -80,7 +80,7 @@ public interface RepairAPI {
   ProcessInstanceUUID copyProcessInstance(ProcessInstanceUUID instanceUUID, Map<String, Object> processVariables, Collection<InitialAttachment> attachments, Date restoreVariableValuesAtDate) throws InstanceNotFoundException, VariableNotFoundException;
 
   /**
-   * Starts a new process instance, positioned at specific activities, with a map of instance’s variable values. The activities located before the start activities are not executed.
+   * Starts a new process instance, positioned at specific activities, with a map of instance's variable values. The activities located before the start activities are not executed.
    * All connectors of specified activities will be executed normally (include connectors OnReady).
    * @param processDefinitionUUID the process definition UUID
    * @param processVariables the process variables in this Map will override the current process variable values
@@ -94,7 +94,7 @@ public interface RepairAPI {
   ProcessInstanceUUID instantiateProcess(ProcessDefinitionUUID processDefinitionUUID, Map<String, Object> processVariables, Collection<InitialAttachment> attachments, List<String> startActivitiesNames) throws ProcessNotFoundException, VariableNotFoundException, ActivityNotFoundException;
 
   /**
-   * Starts a new process instance, positioned at specific activities, with a map of instance’s variable values. The activities located before the start activities are not executed.
+   * Starts a new process instance, positioned at specific activities, with a map of instance's variable values. The activities located before the start activities are not executed.
    * All connectors of specified activities will be executed normally (include connectors OnReady).
    * @param processDefinitionUUID the process definition UUID
    * @param processVariables the process variables in this Map will override the current process variable values

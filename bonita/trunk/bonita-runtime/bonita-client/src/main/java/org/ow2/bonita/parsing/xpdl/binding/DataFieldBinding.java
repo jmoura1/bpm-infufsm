@@ -30,7 +30,7 @@ public class DataFieldBinding extends MajorElementBinding {
 
   private static final Logger LOG = Logger.getLogger(DataFieldBinding.class.getName());
 
-  private static final String[] javaKeywords = new String[]{"abstract", "continue", "for", "new", "switch",
+  private static final String[] JAVA_KEYWORDS = new String[]{"abstract", "continue", "for", "new", "switch",
     "assert", "default", "goto", "package", "synchronized", "boolean", "do", "if", "private", "this", "break",
     "double", "implements", "protected", "throw", "byte", "else", "import", "public", "throws", "case", "enum",
     "instanceof", "return", "transient", "catch", "extends", "int", "short", "try", "char", "final", "interface",
@@ -47,7 +47,7 @@ public class DataFieldBinding extends MajorElementBinding {
 
     Boolean isParsingActivity = parse.findObject(Boolean.class);
     final String name = getId(datafieldElement);
-    for (final String javaKeyword : javaKeywords) {
+    for (final String javaKeyword : JAVA_KEYWORDS) {
       if (javaKeyword.equals(name)) {
         parse.addProblem("A datafield is declared with id : " + name + ", it is forbidden as it is a java Keyword");
       }

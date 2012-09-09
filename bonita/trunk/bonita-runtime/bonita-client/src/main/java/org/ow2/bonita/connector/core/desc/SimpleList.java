@@ -16,13 +16,13 @@ package org.ow2.bonita.connector.core.desc;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class SimpleList extends Widget {
 
-  private int maxRows;
+  private final int maxRows;
 
-  public SimpleList(String labelId, Setter setter, int maxRows) {
+  public SimpleList(final String labelId, final Setter setter, final int maxRows) {
     super(labelId, setter);
     this.maxRows = maxRows;
   }
@@ -32,14 +32,29 @@ public class SimpleList extends Widget {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    boolean equals = super.equals(obj);
-    if (equals && obj instanceof SimpleList) {
-      SimpleList temp = (SimpleList) obj;
-      return temp.getMaxRows() == this.getMaxRows();
-    } else {
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + maxRows;
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
       return false;
     }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final SimpleList other = (SimpleList) obj;
+    if (maxRows != other.maxRows) {
+      return false;
+    }
+    return true;
   }
 
 }

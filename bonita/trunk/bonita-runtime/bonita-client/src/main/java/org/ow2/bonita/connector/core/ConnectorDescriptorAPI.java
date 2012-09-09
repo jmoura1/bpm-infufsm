@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2010  BonitaSoft S.A.
+ * Copyright (C) 2009-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -47,7 +47,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public final class ConnectorDescriptorAPI {
 
@@ -89,28 +89,28 @@ public final class ConnectorDescriptorAPI {
 
   /**
    * Load the connector descriptor
+   * 
    * @param c the connector class
    * @return the connector descriptor
    */
-  public final static ConnectorDescriptor load(Class<? extends Connector> c) {
-    String descriptorPath = c.getSimpleName() + ".xml";
+  public final static ConnectorDescriptor load(final Class<? extends Connector> c) {
+    final String descriptorPath = c.getSimpleName() + ".xml";
     InputStream input = null;
     try {
-    	final ConnectorDescriptorParser parser = new ConnectorDescriptorParser();
-    	final Parse parse = parser.createParse();
-    	input = c.getResourceAsStream(descriptorPath);
-    	parse.setInputStream(input);
-    	parse.setClassLoader(c.getClassLoader());
-    	ConnectorDescriptor descriptor = (ConnectorDescriptor) parse.execute().getDocumentObject();
-      return descriptor;
-    } catch (Throwable e) {
+      final ConnectorDescriptorParser parser = new ConnectorDescriptorParser();
+      final Parse parse = parser.createParse();
+      input = c.getResourceAsStream(descriptorPath);
+      parse.setInputStream(input);
+      parse.setClassLoader(c.getClassLoader());
+      return (ConnectorDescriptor) parse.execute().getDocumentObject();
+    } catch (final Throwable e) {
       return null;
     } finally {
       try {
         if (input != null) {
           input.close();
         }
-      } catch (IOException e) {
+      } catch (final IOException e) {
         if (LOG.isLoggable(Level.SEVERE)) {
           LOG.severe(e.getMessage());
         }
@@ -118,11 +118,12 @@ public final class ConnectorDescriptorAPI {
     }
   }
 
-  public static void save(ConnectorDescriptor descriptor, OutputStream output) {
-    String version = descriptor.getVersion();
+  public static void save(final ConnectorDescriptor descriptor, final OutputStream output) {
+    final String version = descriptor.getVersion();
     if (!CURRENT_VERSION.equals(version)) {
       descriptor.setVersion(CURRENT_VERSION);
     }
     xstream.toXML(descriptor, output);
   }
+
 }

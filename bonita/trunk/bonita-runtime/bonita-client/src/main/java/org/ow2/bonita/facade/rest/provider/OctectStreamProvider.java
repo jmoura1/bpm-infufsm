@@ -47,16 +47,16 @@ MessageBodyWriter<BusinessArchive>{
 
   private static Logger LOG = Logger.getLogger(OctectStreamProvider.class.getName());
   static final int BUFF_SIZE = 100000;
-  static final byte[] buffer = new byte[BUFF_SIZE];
+  static final byte[] BUFFER = new byte[BUFF_SIZE];
   
   private static void readFromInputStream (InputStream in, OutputStream out) throws IOException{
     while (true) {
-      synchronized (buffer) {
-        int amountRead = in.read(buffer);
+      synchronized (BUFFER) {
+        int amountRead = in.read(BUFFER);
         if (amountRead == -1) {
           break;
         }
-        out.write(buffer, 0, amountRead);
+        out.write(BUFFER, 0, amountRead);
       }
     }
   }

@@ -14,6 +14,7 @@
 package org.ow2.bonita.util;
 
 import groovy.lang.Binding;
+import groovy.lang.MissingPropertyException;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
@@ -215,11 +216,9 @@ public class GroovyBindingBuilder {
     final Map<String, Object> allVariables = new HashMap<String, Object>();
     final Map<String, Object> processInstanceVariables = getProcessInstanceVariables(instanceUUID, activityUUID, useInitialVariableValues, useActivityScope);
     final Map<String, Object> activityInstanceVariables = getActivityInstanceVariables(activityUUID);
-    final Map<String, AttachmentInstance> processInstanceAttachments = getProcessInstanceAttachments(instanceUUID, activityUUID);
 
     allVariables.putAll(processInstanceVariables);
     allVariables.putAll(activityInstanceVariables);
-    allVariables.putAll(processInstanceAttachments);
 
     final Map<String, Object> processDatafieldsVariables = getProcessDatafieldsVariables(processUUID, allVariables.keySet());
     allVariables.putAll(processDatafieldsVariables);
@@ -291,10 +290,12 @@ public class GroovyBindingBuilder {
     private ActivityInstance clientActivityInstance;
     private APIAccessor apiAccessor;
     private String initiator;
+    private boolean attachmentsWasLoaded;
 
     public SimpleBinding(final Map<String, Object> variables, final ProcessDefinitionUUID processUUID, final ProcessInstanceUUID instanceUUID, final ActivityInstanceUUID activityInstanceUUID)
     throws IOException, ClassNotFoundException {
       super();
+      attachmentsWasLoaded = false;
       if (variables != null) {
         for (Map.Entry<String, Object> variable : variables.entrySet()) {
           Object value = variable.getValue();
@@ -365,7 +366,23 @@ public class GroovyBindingBuilder {
       if (allVariables.containsKey(name)) {
         return allVariables.get(name);
       }
-      return super.getVariable(name);
+      try {
+        return super.getVariable(name);
+      } catch (MissingPropertyException e) {
+        if (!attachmentsWasLoaded) {
+          Map<String, AttachmentInstance> attachments = getProcessInstanceAttachments(instanceUUID, activityInstanceUUID);
+          allVariables.putAll(attachments);
+          attachmentsWasLoaded = true;
+          if (allVariables.containsKey(name)) {
+            return allVariables.get(name);
+          } else {
+            throw e;
+          }
+        } else {
+          throw e;
+        }
+        
+      }
     }
 
     @Override

@@ -15,7 +15,6 @@
 package org.ow2.bonita.services.impl;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -49,8 +48,10 @@ import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
+import org.apache.chemistry.opencmis.commons.enums.UnfileObject;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisContentAlreadyExistsException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
@@ -69,6 +70,7 @@ import org.ow2.bonita.services.DocumentationManager;
 import org.ow2.bonita.util.BonitaConstants;
 import org.ow2.bonita.util.BonitaRuntimeException;
 import org.ow2.bonita.util.EnvTool;
+import org.ow2.bonita.util.Misc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,8 +81,45 @@ import org.slf4j.LoggerFactory;
  */
 public class CMISDocumentManager implements DocumentationManager {
 
+    
+    /**
+     * @author Baptiste Mesta
+     *
+     */
+    protected abstract class CacheErrorRetrier<T> {
+
+        /**
+         * @param subFolder
+         * @return
+         * @throws DocumentationCreationException
+         */
+        public abstract T doIt(String subFolder) throws DocumentationCreationException;
+
+        /**
+         * @param session
+         * @param definitionUUID
+         * @param object
+         * @return
+         * @throws DocumentationCreationException 
+         */
+        public T execute(Session session, ProcessDefinitionUUID definitionUUID, String subFolderName) throws DocumentationCreationException {
+            try {
+                String subFolderId = createPath(session, definitionUUID, subFolderName);
+                return doIt(subFolderId);
+            } catch (DocumentAlreadyExistsException e) {
+                throw e;
+            } catch (Exception e) {
+                clearCache();
+                String subFolderId = createPath(session, definitionUUID, subFolderName);
+                return doIt(subFolderId);
+            }
+        }
+
+    }
+
     private static ThreadLocal<SimpleDateFormat> CMIS_DATE_FORMAT = new ThreadLocal<SimpleDateFormat>() {
 
+        @Override
         protected synchronized SimpleDateFormat initialValue() {
             final SimpleDateFormat gmtTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
             gmtTime.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -195,6 +234,7 @@ public class CMISDocumentManager implements DocumentationManager {
         return parameter;
     }
 
+    @Override
     public org.ow2.bonita.services.Folder createFolder(final String folderName) throws FolderAlreadyExistsException {
         try {
             return createFolder(getSession(), folderName);
@@ -211,79 +251,67 @@ public class CMISDocumentManager implements DocumentationManager {
             // cmis server and because of bonita was not restarted)
             rootFolderId = session.getObjectByPath(pathOfRootFolder).getId();
         }
-        return createFolder(session, folderName, rootFolderId);
+        ObjectId createFolder = createFolder(session, folderName, rootFolderId);
+        return convertFolder((Folder) session.getObject(createFolder));
     }
 
-    private org.ow2.bonita.services.Folder createFolder(final Session session, final String folderName, final String parentFolderId)
+    private ObjectId createFolder(final Session session, final String folderName, final String parentFolderId)
             throws FolderAlreadyExistsException {
-        final Folder folder;
-        try {
-            folder = (Folder) session.getObject(session.createObjectId(parentFolderId));
-        } catch (final CmisRuntimeException e) {
-            throw new FolderAlreadyExistsException(folderName, e);
-        }
         final HashMap<String, Object> properties = new HashMap<String, Object>();
         properties.put(PropertyIds.NAME, folderName);
         properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:folder");
-        properties.put(PropertyIds.PARENT_ID, parentFolderId);
-        final ItemIterable<CmisObject> children = folder.getChildren();
-        for (final CmisObject cmisObject : children) {
-            if (folderName.equals(cmisObject.getName())) {
-                throw new FolderAlreadyExistsException(folderName);
-            }
-        }
         try {
-            final Folder child = folder.createFolder(properties, null, null, null, session.getDefaultContext());
-            return convertFolder(child);
+            ObjectId createFolder = session.createFolder(properties, session.createObjectId(parentFolderId));
+            return createFolder;
         } catch (final CmisRuntimeException e) {
             LOGGER.error("Can't create folder", e);
             throw new FolderAlreadyExistsException(folderName);
         }
     }
 
+    @Override
     public org.ow2.bonita.services.Folder createFolder(final String folderName, final String parentFolderId) throws FolderAlreadyExistsException {
-        return createFolder(getSession(), folderName, parentFolderId);
+        Session session = getSession();
+        ObjectId folderId = createFolder(session, folderName, parentFolderId);
+        CmisObject object = session.getObject(folderId);
+        return convertFolder((Folder) object);
     }
 
     private Document createDocument(final Session session, final String name, final String parentFolderId) throws DocumentationCreationException {
         try {
-            final Folder folder = (Folder) session.getObject(session.createObjectId(parentFolderId));
             final Map<String, String> newDocProps = new HashMap<String, String>();
             newDocProps.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
             newDocProps.put(PropertyIds.NAME, name);
-            for (final CmisObject object : folder.getChildren()) {
-                if (name.equals(object.getName())) {
-                    throw new DocumentAlreadyExistsException(object.getId(), name);
-                }
-            }
-            final org.apache.chemistry.opencmis.client.api.Document doc = folder.createDocument(newDocProps, null, null, null, null, null,
-                    session.getDefaultContext());
-            return convertDocument(doc);
+            final ObjectId docId = session.createDocument(newDocProps, session.createObjectId(parentFolderId), null, null);
+            return convertDocument((org.apache.chemistry.opencmis.client.api.Document) session.getObject(docId), null, null, null);
+        } catch (final CmisConstraintException e) {
+            throw new DocumentAlreadyExistsException(name, name);
         } catch (final CmisBaseException e) {
-            LOGGER.error("Can't create a document", e);
-            throw new DocumentationCreationException("Can't create a document named: " + name + "\n" + e.getMessage());
+            throw checkExceptionAndThrowIt(session, name, parentFolderId, e);
         }
     }
 
+    @Override
     public Document getDocument(final String documentId) throws DocumentNotFoundException {
         final Session session2 = getSession();
         try {
             final org.apache.chemistry.opencmis.client.api.Document doc = (org.apache.chemistry.opencmis.client.api.Document) session2.getObject(session2
                     .createObjectId(documentId));
-            return convertDocument(doc);
+            return convertDocument(doc, null, null, null);
         } catch (final CmisObjectNotFoundException e) {
             throw new DocumentNotFoundException(documentId);
         }
     }
 
+    @Override
     public Document createDocument(final String name, final String parentFolderId, final String fileName, final String contentMimeType, final byte[] fileContent)
             throws DocumentationCreationException {
         final Session session = getSession();
-        return createDocument(session, name, parentFolderId, fileName, contentMimeType, fileContent);
+        return createDocument(session, name, parentFolderId, fileName, contentMimeType, fileContent, null, null);
     }
 
     private Document createDocument(final Session session, final String name, final String parentFolderId, final String fileName, final String contentMimeType,
-            final byte[] fileContent) throws DocumentationCreationException {
+            final byte[] fileContent, ProcessDefinitionUUID processDefnitionUUID, ProcessInstanceUUID processInstanceUUID) throws DocumentationCreationException {
         if (contentMimeType != null) {
             try {
                 new MimeType(contentMimeType);
@@ -292,12 +320,6 @@ public class CMISDocumentManager implements DocumentationManager {
             }
         }
         try {
-            final Folder folder = (Folder) session.getObject(session.createObjectId(parentFolderId));
-            for (final CmisObject object : folder.getChildren()) {
-                if (name.equals(object.getName())) {
-                    throw new DocumentAlreadyExistsException(object.getId(), name);
-                }
-            }
             final Map<String, String> newDocProps = new HashMap<String, String>();
             newDocProps.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
             newDocProps.put(PropertyIds.NAME, name);
@@ -326,15 +348,39 @@ public class CMISDocumentManager implements DocumentationManager {
                     }
                 }
             }
-            final String id = folder.createDocument(newDocProps, contentStream, null, null, null, null, session.getDefaultContext()).getId();
-            return convertDocument((org.apache.chemistry.opencmis.client.api.Document) session.getObject(session.createObjectId(id)));
-        } catch (final CmisConstraintException e) {
-            LOGGER.error("Can't create a document", e);
+            ObjectId objectId = session.createDocument(newDocProps, session.createObjectId(parentFolderId), contentStream, null);
+            return convertDocument((org.apache.chemistry.opencmis.client.api.Document) session.getObject(objectId), processDefnitionUUID, processInstanceUUID, parentFolderId);
+        } catch (final CmisContentAlreadyExistsException e) {
             throw new DocumentAlreadyExistsException(name, name);
         } catch (final CmisBaseException e) {
-            LOGGER.error("Can't create a document", e);
-            throw new DocumentationCreationException("Can't create a document named: " + name + "\n" + e.getMessage());
+            throw checkExceptionAndThrowIt(session, name, parentFolderId, e);
         }
+    }
+
+    /**
+     * Check if the exception is due to a document already exists or if it's not
+     * (due to xcmis server not throwing back the good exception)
+     * @param session
+     * @param name
+     * @param parentFolderId
+     * @param e
+     * @return 
+     * @throws DocumentAlreadyExistsException
+     *          if the base exception is due to a document that already exists
+     * @throws DocumentationCreationException
+     *          in other cases
+     */
+    private DocumentationCreationException checkExceptionAndThrowIt(final Session session, final String name, final String parentFolderId, final CmisBaseException e){
+        try{
+        Folder parent = (Folder) session.getObject(session.createObjectId(parentFolderId));
+            CmisObject objectByPath = session.getObjectByPath(parent.getPath()+'/'+name);
+            if(objectByPath != null){
+                return new DocumentAlreadyExistsException(name, name);
+            }
+        }catch(CmisBaseException e1){
+            //do nothing, will throw exception
+        }
+        return new DocumentationCreationException("Can't create a document named: " + name + "\n" + e.getMessage());
     }
 
     private org.ow2.bonita.services.Folder convertFolder(final Folder cmisFolder) {
@@ -350,14 +396,13 @@ public class CMISDocumentManager implements DocumentationManager {
         return folderImpl;
     }
 
-    private DocumentImpl convertDocument(final org.apache.chemistry.opencmis.client.api.Document document) {
+    private DocumentImpl convertDocument(final org.apache.chemistry.opencmis.client.api.Document document, ProcessDefinitionUUID processDefinitionUUID, ProcessInstanceUUID processInstanceUUID, String folderId) {
         final Boolean latestVersion = document.isLatestVersion();
         final Boolean majorVersion = document.isMajorVersion();
-        final List<Folder> parents = document.getParents();
-        ProcessInstanceUUID processInstanceUUID = null;
-        ProcessDefinitionUUID processDefinitionUUID = null;
-        Folder folder = null;
-        if (parents.size() > 0) {
+        if(processDefinitionUUID == null){
+          final List<Folder> parents = document.getParents();
+          Folder folder = null;
+          if (parents.size() > 0) {
             Collections.sort(parents, comparator);
             folder = parents.get(0);
             final String path = folder.getPath().substring(pathOfRootFolder.length());
@@ -368,13 +413,8 @@ public class CMISDocumentManager implements DocumentationManager {
             if (split.length >= 2) {// will work only if children of the folder
                 processInstanceUUID = new ProcessInstanceUUID(split[1]);
             }
-        }
-
-        String folderId;
-        if (folder != null) {
             folderId = folder.getId();
-        } else {
-            folderId = null;
+          }
         }
         final DocumentImpl doc = new DocumentImpl(document.getName(), folderId, document.getCreatedBy(), convertDate(document.getCreationDate()),
                 convertDate(document.getLastModificationDate()), latestVersion != null ? latestVersion : false, majorVersion != null ? majorVersion : false,
@@ -395,6 +435,7 @@ public class CMISDocumentManager implements DocumentationManager {
         return convertedDate;
     }
 
+    @Override
     public List<Document> getChildrenDocuments(final String folderId) {
         final Session session2 = getSession();
         return getChildrenDocuments(session2, folderId);
@@ -405,19 +446,23 @@ public class CMISDocumentManager implements DocumentationManager {
         final List<Document> documents = new ArrayList<Document>();
         for (final CmisObject children : folder.getChildren()) {
             if (children instanceof org.apache.chemistry.opencmis.client.api.Document) {
-                documents.add(convertDocument((org.apache.chemistry.opencmis.client.api.Document) children));
+                documents.add(convertDocument((org.apache.chemistry.opencmis.client.api.Document) children, null, null, folderId));
             }
         }
         return documents;
     }
 
+    @Override
     public List<Document> getChildrenDocuments(final ProcessDefinitionUUID processDefinitionUUID, final String subfolderName)
             throws DocumentationCreationException {
-        List<Document> result = new ArrayList<Document>();
         final Session session = getSession();
-        final String folderId = createPath(session, processDefinitionUUID, subfolderName);
-        result = getChildrenDocuments(folderId);
-        return result;
+        CacheErrorRetrier<List<Document>> errorRetrier = new CacheErrorRetrier<List<Document>>(){
+            @Override
+            public List<Document> doIt(String subFolder) throws DocumentationCreationException{
+                return getChildrenDocuments(subFolder);
+            }
+        };
+        return errorRetrier.execute(session, processDefinitionUUID, subfolderName);
     }
 
     private List<org.ow2.bonita.services.Folder> getChildrenFolder(final Session session, final String folderId) {
@@ -436,11 +481,13 @@ public class CMISDocumentManager implements DocumentationManager {
         }
     }
 
+    @Override
     public List<org.ow2.bonita.services.Folder> getChildrenFolder(final String folderId) {
         final Session session2 = getSession();
         return getChildrenFolder(session2, folderId);
     }
 
+    @Override
     public org.ow2.bonita.services.Folder getRootFolder() {
         final Session session2 = getSession();
         return getRootFolder(session2);
@@ -454,17 +501,22 @@ public class CMISDocumentManager implements DocumentationManager {
             // we don't have the good id anymore (because of a hard reset of the
             // cmis server and because of bonita was not restarted)
             final CmisObject rootFolder = session3.getObjectByPath(pathOfRootFolder);
-            this.rootFolderId = rootFolder.getId();
+            rootFolderId = rootFolder.getId();
             folder = null;
         }
         return convertFolder(folder);
     }
 
+    @Override
     public void deleteFolder(final org.ow2.bonita.services.Folder folder) {
         final Session session2 = getSession();
+        deleteFolder(folder, session2);
+    }
+
+    private void deleteFolder(final org.ow2.bonita.services.Folder folder, final Session session2) {
         final String id = folder.getId();
         try {
-            session2.getObject(session2.createObjectId(id)).delete(true);
+            ((Folder)session2.getObject(session2.createObjectId(id))).deleteTree(true, UnfileObject.DELETE, true);
         } catch (final Throwable e) {
             LOGGER.error("can't delete folder " + folder.getName() + " with id " + folder.getId(), e);
             throw new BonitaRuntimeException("can't delete folder " + folder.getName() + " with id " + folder.getId() + "\n" + e.getMessage());
@@ -496,11 +548,13 @@ public class CMISDocumentManager implements DocumentationManager {
         }
         if (entryToDelete2 != null) {
             subFolderMap.remove(entryToDelete2.getKey());
+        }
+        if (entryToDelete3 != null) {
             processInstanceMap.remove(entryToDelete3.getKey());
-            return;
         }
     }
 
+    @Override
     public void deleteDocument(final String documentId, final boolean allVersions) throws DocumentNotFoundException {
         deleteDocument(getSession(), documentId, allVersions);
     }
@@ -513,25 +567,7 @@ public class CMISDocumentManager implements DocumentationManager {
         }
     }
 
-    private static byte[] toByteArray(final InputStream input) throws IOException {
-        ByteArrayOutputStream output = null;
-        try {
-            output = new ByteArrayOutputStream();
-            final byte[] buffer = new byte[4096];
-            long count = 0;
-            int n = 0;
-            while (-1 != (n = input.read(buffer))) {
-                output.write(buffer, 0, n);
-                count += n;
-            }
-            return output.toByteArray();
-        } finally {
-            if (output != null) {
-                output.close();
-            }
-        }
-    }
-
+    @Override
     public byte[] getContent(final Document document) throws DocumentNotFoundException {
         final Session session2 = getSession();
         final org.apache.chemistry.opencmis.client.api.Document doc;
@@ -548,22 +584,17 @@ public class CMISDocumentManager implements DocumentationManager {
                 final InputStream stream = contentStream.getStream();
                 byte[] byteArray;
                 try {
-                    byteArray = toByteArray(stream);
+                    byteArray = Misc.getAllContentFrom(stream);
                     return byteArray;
                 } catch (final IOException e) {
                     e.printStackTrace();
-                } finally {
-                    try {
-                        stream.close();
-                    } catch (final IOException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
             return null;
         }
     }
 
+    @Override
     public String getDocumentPath(final String documentId) throws DocumentNotFoundException {
         final Session session2 = getSession();
         try {
@@ -575,11 +606,13 @@ public class CMISDocumentManager implements DocumentationManager {
         }
     }
 
+    @Override
     public Document createVersion(final String documentId, final boolean isMajorVersion) throws DocumentationCreationException {
         final Session session2 = getSession();
         return createVersion(session2, documentId, isMajorVersion, null, "application/octet-stream", null);
     }
 
+    @Override
     public Document createVersion(final String documentId, final boolean isMajorVersion, final String fileName, final String mimeType, final byte[] content)
             throws DocumentationCreationException {
         final Session session2 = getSession();
@@ -643,9 +676,10 @@ public class CMISDocumentManager implements DocumentationManager {
             }
         }
         session.clear();// must clear it because xcmis change ids of documents
-        return convertDocument((org.apache.chemistry.opencmis.client.api.Document) session.getObject(newVersion));
+        return convertDocument((org.apache.chemistry.opencmis.client.api.Document) session.getObject(newVersion), null, null, null);
     }
 
+    @Override
     public List<org.ow2.bonita.services.Folder> getFolders(final String folderName) {
         final Session session2 = getSession();
         return getFolders(session2, folderName);
@@ -668,6 +702,7 @@ public class CMISDocumentManager implements DocumentationManager {
         return folders;
     }
 
+    @Override
     public List<Document> getVersionsOfDocument(final String documentId) throws DocumentNotFoundException {
         final Session session2 = getSession();
         final List<DocumentImpl> versions = new ArrayList<DocumentImpl>();
@@ -679,22 +714,22 @@ public class CMISDocumentManager implements DocumentationManager {
         }
         final List<org.apache.chemistry.opencmis.client.api.Document> allVersions2 = document.getAllVersions();
         for (final org.apache.chemistry.opencmis.client.api.Document oldDoc : allVersions2) {
-            versions.add(convertDocument(oldDoc));
+            versions.add(convertDocument(oldDoc, null, null, null));
         }
         ProcessInstanceUUID processInstanceUUID = null;
         ProcessDefinitionUUID processDefinitionUUID = null;
         String folderId = null;
-        for (Document version : versions) {
-            if(version.getProcessInstanceUUID() != null){
+        for (final Document version : versions) {
+            if (version.getProcessInstanceUUID() != null) {
                 folderId = version.getParentFolderId();
                 processDefinitionUUID = version.getProcessDefinitionUUID();
                 processInstanceUUID = version.getProcessInstanceUUID();
                 break;
             }
         }
-        if(processInstanceUUID != null) {
-            for (DocumentImpl version : versions) {
-                if(version.getProcessInstanceUUID() == null){
+        if (processInstanceUUID != null) {
+            for (final DocumentImpl version : versions) {
+                if (version.getProcessInstanceUUID() == null) {
                     version.setFolderId(folderId);
                     version.setProcessDefinitionUUID(processDefinitionUUID);
                     version.setProcessInstanceUUID(processInstanceUUID);
@@ -704,13 +739,20 @@ public class CMISDocumentManager implements DocumentationManager {
         return new ArrayList<Document>(versions);
     }
 
+    @Override
     public Document createDocument(final String name, final ProcessDefinitionUUID definitionUUID) throws DocumentationCreationException,
             DocumentAlreadyExistsException {
         final Session session = getSession();
-        final String folderId = createPath(session, definitionUUID, null);
-        return createDocument(session, name, folderId);
+        CacheErrorRetrier<Document> errorRetrier = new CacheErrorRetrier<Document>(){
+            @Override
+            public Document doIt(String subFolder) throws DocumentationCreationException{
+                return CMISDocumentManager.this.createDocument(session, name, subFolder);
+            }
+        };
+        return errorRetrier.execute(session, definitionUUID, null);
     }
 
+    @Override
     public Document createDocument(final String name, final ProcessDefinitionUUID definitionUUID, final ProcessInstanceUUID instanceUUID)
             throws DocumentationCreationException, DocumentAlreadyExistsException {
         final Session session = getSession();
@@ -718,17 +760,29 @@ public class CMISDocumentManager implements DocumentationManager {
         if (instanceUUID != null) {
             folderName = instanceUUID.getValue();
         }
-        final String folderId = createPath(session, definitionUUID, folderName);
-        return createDocument(session, name, folderId);
+        CacheErrorRetrier<Document> errorRetrier = new CacheErrorRetrier<Document>(){
+            @Override
+            public Document doIt(String subFolder) throws DocumentationCreationException{
+                return CMISDocumentManager.this.createDocument(session, name, subFolder);
+            }
+        };
+        return errorRetrier.execute(session, definitionUUID, folderName);
     }
 
+    @Override
     public Document createDocument(final String name, final ProcessDefinitionUUID definitionUUID, final String fileName, final String contentMimeType,
             final byte[] fileContent) throws DocumentationCreationException, DocumentAlreadyExistsException {
         final Session session = getSession();
-        final String subFolder = createPath(session, definitionUUID, null);
-        return createDocument(session, name, subFolder, fileName, contentMimeType, fileContent);
+        CacheErrorRetrier<Document> errorRetrier = new CacheErrorRetrier<Document>(){
+            @Override
+            public Document doIt(String subFolder) throws DocumentationCreationException{
+                return CMISDocumentManager.this.createDocument(session, name, subFolder, fileName, contentMimeType, fileContent, definitionUUID, null);
+            }
+        };
+        return errorRetrier.execute(session, definitionUUID, null);
     }
 
+    @Override
     public Document createDocument(final String name, final ProcessDefinitionUUID definitionUUID, final ProcessInstanceUUID instanceUUID,
             final String fileName, final String contentMimeType, final byte[] fileContent) throws DocumentationCreationException,
             DocumentAlreadyExistsException {
@@ -737,65 +791,61 @@ public class CMISDocumentManager implements DocumentationManager {
         if (instanceUUID != null) {
             folderName = instanceUUID.getValue();
         }
-        final String subFolder = createPath(session, definitionUUID, folderName);
-        return createDocument(session, name, subFolder, fileName, contentMimeType, fileContent);
+        CacheErrorRetrier<Document> errorRetrier = new CacheErrorRetrier<Document>(){
+            @Override
+            public Document doIt(String subFolder) throws DocumentationCreationException{
+                return CMISDocumentManager.this.createDocument(session, name, subFolder, fileName, contentMimeType, fileContent, definitionUUID, instanceUUID);
+            }
+        };
+        return errorRetrier.execute(session, definitionUUID, folderName);
     }
 
     private String createPath(final Session session, final ProcessDefinitionUUID definitionUUID, final String subFolder) throws DocumentationCreationException {
+        if(subFolder == null){
+            if (processDefinitionMap.containsKey(definitionUUID)) {
+                return processDefinitionMap.get(definitionUUID);
+            }
+        }else{
+            if (subFolderMap.containsKey(definitionUUID.getValue() + subFolder)) {
+                return subFolderMap.get(definitionUUID.getValue() + subFolder);
+            }
+        }
+        //not in cache because the method would have ended in this case
+        
+        //create or get the process def folder:
+        final String processDefUUIDValue = definitionUUID.getValue();
+        List<org.ow2.bonita.services.Folder> childrenFolder;
+        try {
+            childrenFolder = getChildrenFolder(session, rootFolderId);
+        } catch (final BonitaRuntimeException e) {
+            // we don't have the good id anymore (because of a hard reset of
+            // the cmis server and because of bonita was not restarted)
+            final CmisObject rootFolder = session.getObjectByPath(pathOfRootFolder);
+            rootFolderId = rootFolder.getId();
+            childrenFolder = getChildrenFolder(session, rootFolderId);
+        }
         String mainFolderId = null;
-        Folder mainFolder = null;
-        if (processDefinitionMap.containsKey(definitionUUID)) {
-            mainFolderId = processDefinitionMap.get(definitionUUID);
-            try {
-                mainFolder = (Folder) session.getObject(session.createObjectId(mainFolderId));
-            } catch (final Throwable t) {
-                mainFolderId = null;
-                processDefinitionMap.remove(definitionUUID);
+        for (final org.ow2.bonita.services.Folder folder : childrenFolder) {
+            if (processDefUUIDValue.equals(folder.getName())) {
+                mainFolderId = folder.getId();
+                break;
             }
         }
         if (mainFolderId == null) {
-            final String processDefUUIDValue = definitionUUID.getValue();
-            List<org.ow2.bonita.services.Folder> childrenFolder;
             try {
-                childrenFolder = getChildrenFolder(session, rootFolderId);
-            } catch (final BonitaRuntimeException e) {
-                // we don't have the good id anymore (because of a hard reset of
-                // the cmis server and because of bonita was not restarted)
-                final CmisObject rootFolder = session.getObjectByPath(pathOfRootFolder);
-                this.rootFolderId = rootFolder.getId();
-                childrenFolder = getChildrenFolder(session, rootFolderId);
+                mainFolderId = createFolder(session, processDefUUIDValue, rootFolderId).getId();
+            } catch (final FolderAlreadyExistsException e) {
+                 e.printStackTrace();
             }
-            for (final org.ow2.bonita.services.Folder folder : childrenFolder) {
-                if (processDefUUIDValue.equals(folder.getName())) {
-                    mainFolderId = folder.getId();
-                    break;
-                }
-            }
-            if (mainFolderId == null) {
-                try {
-                    mainFolderId = createFolder(session, processDefUUIDValue, rootFolderId).getId();
-                } catch (final FolderAlreadyExistsException e) {
-                    e.printStackTrace();
-                }
-            }
-            processDefinitionMap.put(definitionUUID, mainFolderId);
         }
+        processDefinitionMap.put(definitionUUID, mainFolderId);
         if (subFolder == null) {
             return mainFolderId;
         }
-        if (mainFolder == null) {
-            mainFolder = (Folder) session.getObject(session.createObjectId(mainFolderId));
-        }
+        
+        
         String subFolderId = null;
-        if (subFolderMap.containsKey(definitionUUID.getValue() + subFolder)) {
-            subFolderId = subFolderMap.get(definitionUUID.getValue() + subFolder);
-            try {
-                session.getObject(session.createObjectId(subFolderId));
-            } catch (final Throwable t) {
-                subFolderId = null;
-                subFolderMap.remove(definitionUUID.getValue() + subFolder);
-            }
-        }
+        Folder mainFolder = (Folder) session.getObject(session.createObjectId(mainFolderId));
         if (subFolderId == null) {
             // final String processInstValue = instanceUUID.getValue();
             for (final CmisObject object : mainFolder.getChildren()) {
@@ -817,8 +867,12 @@ public class CMISDocumentManager implements DocumentationManager {
         return subFolderId;
     }
 
+    @Override
     public SearchResult search(final DocumentSearchBuilder builder, final int fromResult, final int maxResults) {
         final Session session2 = getSession();
+        ProcessDefinitionUUID processDefinitionUUID = null;
+        ProcessInstanceUUID processInstanceUUID = null;
+        boolean noInstance = false;
         final StringBuilder whereClause = new StringBuilder();
         whereClause.append("SELECT * FROM cmis:document");
         final List<Object> query = builder.getQuery();
@@ -849,21 +903,24 @@ public class CMISDocumentManager implements DocumentationManager {
                         createEqualsOrInClause(whereClause, criterion, "cmis:objectId");
                         break;
                     case PROCESS_DEFINITION_UUID:
-                        final String idOfProcessDefinitionUUID = getIdOfProcessDefinitionUUID(session2, criterion);
+                        final String idOfProcessDefinitionUUID = getIdOfProcessDefinitionUUID(session2, (String) criterion.getValue());
                         if (idOfProcessDefinitionUUID == null) {
                             final List<Document> list = Collections.emptyList();
                             return new SearchResult(list, 0);
                         }
+                        processDefinitionUUID = new ProcessDefinitionUUID((String) criterion.getValue());
                         whereClause.append(" IN_TREE('");
                         whereClause.append(idOfProcessDefinitionUUID);
                         whereClause.append("') ");
                         break;
                     case PROCESS_DEFINITION_UUID_WITHOUT_INSTANCES:
-                        final String idOfProcessDefinitionUUID2 = getIdOfProcessDefinitionUUID(session2, criterion);
+                        final String idOfProcessDefinitionUUID2 = getIdOfProcessDefinitionUUID(session2, (String) criterion.getValue());
                         if (idOfProcessDefinitionUUID2 == null) {
                             final List<Document> list = Collections.emptyList();
                             return new SearchResult(list, 0);
                         }
+                        noInstance = true;
+                        processDefinitionUUID = new ProcessDefinitionUUID((String) criterion.getValue());
                         whereClause.append(" IN_FOLDER('");
                         whereClause.append(idOfProcessDefinitionUUID2);
                         whereClause.append("') ");
@@ -878,6 +935,7 @@ public class CMISDocumentManager implements DocumentationManager {
                             if (folderIfOfProcessInstance != null) {
                                 ids.add(folderIfOfProcessInstance);
                             }
+                            processInstanceUUID = new ProcessInstanceUUID(value);
                         } else {
                             // in clause
                             for (final Object inValue : criterion.getValues()) {
@@ -893,7 +951,7 @@ public class CMISDocumentManager implements DocumentationManager {
                             return new SearchResult(list, 0);
                         } else {
                             for (final Iterator<String> iterator = ids.iterator(); iterator.hasNext();) {
-                                final String id = (String) iterator.next();
+                                final String id = iterator.next();
                                 whereClause.append(" IN_FOLDER('");
                                 whereClause.append(id);
                                 whereClause.append("') ");
@@ -940,11 +998,22 @@ public class CMISDocumentManager implements DocumentationManager {
         queryResult = queryResult.skipTo(fromResult);
         final ItemIterable<QueryResult> page = queryResult.getPage(maxResults);
         final List<Document> documents = new ArrayList<Document>();
+        boolean resolveParents = processDefinitionUUID ==null || (processInstanceUUID == null && !noInstance);
         for (final QueryResult queryResult2 : page) {
             final PropertyData<Object> propertyById = queryResult2.getPropertyById("cmis:objectId");
             final org.apache.chemistry.opencmis.client.api.Document doc = (org.apache.chemistry.opencmis.client.api.Document) session2.getObject(session2
                     .createObjectId((String) propertyById.getValues().get(0)));
-            documents.add(convertDocument(doc));
+            DocumentImpl convertDocument;
+            if(resolveParents){
+                convertDocument = convertDocument(doc, null, null, null);
+            }else{
+                if(processInstanceUUID != null){
+                    convertDocument = convertDocument(doc,processDefinitionUUID,processInstanceUUID, processInstanceMap.get(processInstanceUUID.getValue()));
+                }else{
+                    convertDocument = convertDocument(doc,processDefinitionUUID,processInstanceUUID, processDefinitionMap.get(processDefinitionUUID.getValue()));
+                }
+            }
+            documents.add(convertDocument);
         }
         final int totalNumItems = (int) queryResult.getTotalNumItems();
         final SearchResult result = new SearchResult(documents, Math.max(totalNumItems, documents.size()));
@@ -971,12 +1040,34 @@ public class CMISDocumentManager implements DocumentationManager {
         return id2;
     }
 
+    @Override
+    public void deleteFolderOfProcessInstance(final ProcessInstanceUUID instanceUUID) {
+        final Session session = getSession();
+        final String id = getFolderIfOfProcessInstance(session, instanceUUID.getValue());
+        if (id != null) {
+            final FolderImpl folderImpl = new FolderImpl(null, null);
+            folderImpl.setId(id);
+            deleteFolder(folderImpl, session);
+        }
+    }
+
+    @Override
+    public void deleteFolderOfProcessDefinition(final ProcessDefinitionUUID definitionUUID) {
+        final Session session = getSession();
+        final String id = getIdOfProcessDefinitionUUID(session, definitionUUID.getValue());
+        if (id != null) {
+            final FolderImpl folderImpl = new FolderImpl(null, null);
+            folderImpl.setId(id);
+            deleteFolder(folderImpl, session);
+        }
+    }
+
     private void createEqualsOrInClause(final StringBuilder whereClause, final DocumentCriterion criterion, final String field) {
         if (criterion.getValues() != null) {
             whereClause.append(" " + field + " IN (");
             final Collection<?> values = criterion.getValues();
             for (final Iterator<?> iterator = values.iterator(); iterator.hasNext();) {
-                final Object object2 = (Object) iterator.next();
+                final Object object2 = iterator.next();
                 whereClause.append("'");
                 whereClause.append(object2);
                 whereClause.append("'");
@@ -992,9 +1083,9 @@ public class CMISDocumentManager implements DocumentationManager {
         }
     }
 
-    private String getIdOfProcessDefinitionUUID(final Session session2, final DocumentCriterion criterion) {
+    private String getIdOfProcessDefinitionUUID(final Session session2, final String definitionUUID) {
         final String id;
-        final ProcessDefinitionUUID processDef = new ProcessDefinitionUUID((String) criterion.getValue());
+        final ProcessDefinitionUUID processDef = new ProcessDefinitionUUID(definitionUUID);
         if (processDefinitionMap.containsKey(processDef)) {
             id = processDefinitionMap.get(processDef);
         } else {
@@ -1033,14 +1124,22 @@ public class CMISDocumentManager implements DocumentationManager {
         }
     }
 
+    @Override
     public void clear() throws DocumentNotFoundException {
         Session session = getSession();
         clear(session, getRootFolder(session));
         // sessionsMap.clear();
+        clearCache();
+        session = null;
+    }
+
+    /**
+     * 
+     */
+    private void clearCache() {
         processDefinitionMap.clear();
         subFolderMap.clear();
         processInstanceMap.clear();
-        session = null;
     }
 
     public void clear(final org.ow2.bonita.services.Folder folder) throws DocumentNotFoundException {
@@ -1063,6 +1162,7 @@ public class CMISDocumentManager implements DocumentationManager {
         }
     }
 
+    @Override
     public void updateDocumentContent(final String documentId, final String fileName, final String mimeType, final int size, final byte[] content)
             throws DocumentNotFoundException {
         final Session session2 = getSession();
@@ -1091,19 +1191,29 @@ public class CMISDocumentManager implements DocumentationManager {
         }
     }
 
+    @Override
     public void attachDocumentTo(final ProcessDefinitionUUID processDefinitionUUID, final String documentId) throws DocumentNotFoundException {
         attachDocumentTo(processDefinitionUUID, null, documentId);
     }
 
+    @Override
     public void attachDocumentTo(final ProcessDefinitionUUID processDefinitionUUID, final ProcessInstanceUUID processInstanceUUID, final String documentId)
             throws DocumentNotFoundException {
         final Session session2 = getSession();
         try {
-            final String parentFolder = createPath(session2, processDefinitionUUID, processInstanceUUID.getValue());
-            org.apache.chemistry.opencmis.client.api.Document document;
-            document = (org.apache.chemistry.opencmis.client.api.Document) session2.getObject(session2.createObjectId(documentId));
-            final Folder cmisFolder = (Folder) session2.getObject(session2.createObjectId(parentFolder));
-            document.addToFolder(cmisFolder, true);
+            
+
+            CacheErrorRetrier<Void> errorRetrier = new CacheErrorRetrier<Void>(){
+                @Override
+                public Void doIt(String subFolder) throws DocumentationCreationException{
+                    org.apache.chemistry.opencmis.client.api.Document document;
+                    document = (org.apache.chemistry.opencmis.client.api.Document) session2.getObject(session2.createObjectId(documentId));
+                    final Folder cmisFolder = (Folder) session2.getObject(session2.createObjectId(subFolder));
+                    document.addToFolder(cmisFolder, true);
+                    return null;
+                }
+            };
+            errorRetrier.execute(session2, processDefinitionUUID, processInstanceUUID.getValue());
         } catch (final CmisRuntimeException e) {
             throw new DocumentNotFoundException(documentId);
         } catch (final DocumentationCreationException dce) {
@@ -1111,6 +1221,7 @@ public class CMISDocumentManager implements DocumentationManager {
         }
     }
 
+    @Override
     public Document createDocument(final String name, final ProcessDefinitionUUID definitionUUID, final ProcessInstanceUUID instanceUUID, final String author,
             final Date versionDate) throws DocumentationCreationException, DocumentAlreadyExistsException {
         final Session session = getSession(author);
@@ -1118,10 +1229,17 @@ public class CMISDocumentManager implements DocumentationManager {
         if (instanceUUID != null) {
             folderName = instanceUUID.getValue();
         }
-        final String folderId = createPath(session, definitionUUID, folderName);
-        return createDocument(session, name, folderId);
+
+        CacheErrorRetrier<Document> errorRetrier = new CacheErrorRetrier<Document>(){
+            @Override
+            public Document doIt(String subFolder) throws DocumentationCreationException{
+                return CMISDocumentManager.this.createDocument(session, name, subFolder);
+            }
+        };
+        return errorRetrier.execute(session, definitionUUID, folderName);
     }
 
+    @Override
     public Document createDocument(final String name, final ProcessDefinitionUUID definitionUUID, final ProcessInstanceUUID instanceUUID, final String author,
             final Date versionDate, final String fileName, final String mimeType, final byte[] content) throws DocumentationCreationException,
             DocumentAlreadyExistsException {
@@ -1130,10 +1248,16 @@ public class CMISDocumentManager implements DocumentationManager {
         if (instanceUUID != null) {
             folderName = instanceUUID.getValue();
         }
-        final String subFolder = createPath(session, definitionUUID, folderName);
-        return createDocument(session, name, subFolder, fileName, mimeType, content);
+        CacheErrorRetrier<Document> errorRetrier = new CacheErrorRetrier<Document>(){
+            @Override
+            public Document doIt(String subFolder) throws DocumentationCreationException{
+                return CMISDocumentManager.this.createDocument(session, name, subFolder, fileName, mimeType, content, definitionUUID, instanceUUID);
+            }
+        };
+        return errorRetrier.execute(session, definitionUUID, folderName);
     }
 
+    @Override
     public Document createVersion(final String documentId, final boolean isMajorVersion, final String author, final Date versionDate)
             throws DocumentationCreationException {
         // versionDate can't be set manually
@@ -1141,17 +1265,24 @@ public class CMISDocumentManager implements DocumentationManager {
         return createVersion(session2, documentId, isMajorVersion, "", "application/octet-stream", null);
     }
 
+    @Override
     public Document createVersion(final String documentId, final boolean isMajorVersion, final String author, final Date versionDate, final String fileName,
             final String mimeType, final byte[] content) throws DocumentationCreationException {
         final Session session2 = getSession(author);
         return createVersion(session2, documentId, isMajorVersion, fileName, mimeType, content);
     }
 
+    @Override
     public Document createDocument(final ProcessDefinitionUUID definitionUUID, final String name, final String subFolderName, final String fileName,
             final String contentMimeType, final byte[] fileContent) throws DocumentationCreationException, DocumentAlreadyExistsException {
         final Session session = getSession();
-        final String subFolderId = createPath(session, definitionUUID, subFolderName);
-        return createDocument(session, name, subFolderId, fileName, contentMimeType, fileContent);
+        CacheErrorRetrier<Document> errorRetrier = new CacheErrorRetrier<Document>(){
+            @Override
+            public Document doIt(String subFolder) throws DocumentationCreationException{
+                return CMISDocumentManager.this.createDocument(session, name, subFolder, fileName, contentMimeType, fileContent, definitionUUID, null);
+            }
+        };
+        return errorRetrier.execute(session, definitionUUID, subFolderName);
     }
 
 }

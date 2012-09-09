@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010  BonitaSoft S.A.
+ * Copyright (C) 2010-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -29,29 +29,31 @@ import com.thoughtworks.xstream.XStream;
 /**
  * 
  * @author Elias Ricken de Medeiros
- *
+ * 
  */
 @Provider
 public class HashMapStringConverter implements StringConverter<HashMap<?, ?>> {
-	private static Logger LOG = Logger.getLogger(HashMapStringConverter.class.getName());
-	public HashMap<?, ?> fromString(String str) {
-		try {
-		  if (!str.startsWith("<")) {
-		    str = URLDecoder.decode(str, "UTF-8");
-		  }
-		} catch (UnsupportedEncodingException e) {
-			if (LOG.isLoggable(Level.WARNING)) {
+  private static Logger LOG = Logger.getLogger(HashMapStringConverter.class.getName());
+
+  @Override
+  public HashMap<?, ?> fromString(String str) {
+    try {
+      if (!str.startsWith("<")) {
+        str = URLDecoder.decode(str, "UTF-8");
+      }
+    } catch (final UnsupportedEncodingException e) {
+      if (LOG.isLoggable(Level.WARNING)) {
         LOG.warning("Cannot decode " + str + " using UTF-8");
-      }			
-		}
-		XStream xstream = XStreamUtil.getDefaultXstream();		
-	  return (HashMap<?,?>) xstream.fromXML(str);
+      }
+    }
+    final XStream xstream = XStreamUtil.getDefaultXstream();
+    return (HashMap<?, ?>) xstream.fromXML(str);
   }
 
-	public String toString(HashMap<?, ?> value) {
-		XStream xstream = XStreamUtil.getDefaultXstream();
-		String xmap = xstream.toXML(value);
-		return xmap;
+  @Override
+  public String toString(final HashMap<?, ?> value) {
+    final XStream xstream = XStreamUtil.getDefaultXstream();
+    return xstream.toXML(value);
   }
-	
+
 }

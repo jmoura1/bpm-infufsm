@@ -89,6 +89,11 @@ public class DocumentService {
     builder.criterion(DocumentIndex.PROCESS_INSTANCE_UUID).equalsTo(instanceUUID.getValue());
     return manager.search(builder, 0, Integer.MAX_VALUE);
   }
+  public static SearchResult getDocuments(final DocumentationManager manager, ProcessDefinitionUUID definitionUUID) {
+      DocumentSearchBuilder builder = new DocumentSearchBuilder();
+      builder.criterion(DocumentIndex.PROCESS_DEFINITION_UUID_WITHOUT_INSTANCES).equalsTo(definitionUUID.getValue());
+      return manager.search(builder, 0, Integer.MAX_VALUE);
+    }
 
   public static List<org.ow2.bonita.services.Document> getAllDocumentVersions(final DocumentationManager manager, ProcessInstanceUUID instanceUUID) {
     DocumentSearchBuilder builder = new DocumentSearchBuilder();

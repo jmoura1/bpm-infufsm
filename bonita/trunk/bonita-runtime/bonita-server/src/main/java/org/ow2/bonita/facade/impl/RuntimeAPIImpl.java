@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2006  Bull S. A. S.
+ * Copyright (C) 2006 Bull S. A. S.
  * Bull, Rue Jean Jaures, B.P.68, 78340, Les Clayes-sous-Bois
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -9,7 +9,7 @@
  * See the GNU Lesser General Public License for more details.
  * You should have received a copy of the GNU Lesser General Public License along with this
  * program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth
- * Floor, Boston, MA  02110-1301, USA.
+ * Floor, Boston, MA 02110-1301, USA.
  * 
  * Modified by Matthieu Chaffotte, Elias Ricken de Medeiros - BonitaSoft S.A.
  **/
@@ -20,6 +20,7 @@ import groovy.lang.GroovyShell;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,8 +28,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,6 +69,7 @@ import org.ow2.bonita.facade.exception.VariableNotFoundException;
 import org.ow2.bonita.facade.runtime.ActivityInstance;
 import org.ow2.bonita.facade.runtime.AttachmentInstance;
 import org.ow2.bonita.facade.runtime.Comment;
+import org.ow2.bonita.facade.runtime.ConnectorExecutionDescriptor;
 import org.ow2.bonita.facade.runtime.InitialAttachment;
 import org.ow2.bonita.facade.runtime.InstanceState;
 import org.ow2.bonita.facade.runtime.ProcessInstance;
@@ -82,6 +84,7 @@ import org.ow2.bonita.facade.uuid.DocumentUUID;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
 import org.ow2.bonita.facade.uuid.ProcessInstanceUUID;
 import org.ow2.bonita.runtime.ActivityManager;
+import org.ow2.bonita.runtime.ClassDataLoader;
 import org.ow2.bonita.runtime.TaskManager;
 import org.ow2.bonita.runtime.event.EventConstants;
 import org.ow2.bonita.runtime.event.IncomingEventInstance;
@@ -99,12 +102,12 @@ import org.ow2.bonita.util.DocumentService;
 import org.ow2.bonita.util.EnvTool;
 import org.ow2.bonita.util.ExceptionManager;
 import org.ow2.bonita.util.GroovyBindingBuilder;
+import org.ow2.bonita.util.GroovyBindingBuilder.PropagateBinding;
 import org.ow2.bonita.util.GroovyException;
 import org.ow2.bonita.util.GroovyUtil;
 import org.ow2.bonita.util.Misc;
 import org.ow2.bonita.util.ProcessUtil;
 import org.ow2.bonita.util.TransientData;
-import org.ow2.bonita.util.GroovyBindingBuilder.PropagateBinding;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -117,31 +120,69 @@ import org.xml.sax.SAXException;
  */
 public class RuntimeAPIImpl implements RuntimeAPI {
 
-  private static final Logger LOG = Logger.getLogger(RuntimeAPIImpl.class.getName());
+  
+    /**
+     * @author Baptiste Mesta
+     *
+     */
+    private abstract class ExecuteInClassLoader {
+        abstract Map<String, Object> executeInClassLoader(ClassLoader classLoaderToUse,ClassDataLoader classDataLoader) throws Exception;
+        
+        public Map<String, Object> execute(ClassLoader classLoader, ProcessDefinitionUUID definitionUUID) throws Exception {
+            final ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
+            try {
+                ClassLoader classLoaderToUse = null;
+                ClassDataLoader classDataLoader = null;
+                if (classLoader != null) {
+                    classLoaderToUse = classLoader;
+                } else {
+                    if (definitionUUID == null) {
+                        classDataLoader = EnvTool.getClassDataLoader();
+                        // no need to set the classloader here (using the global classloader)
+                    } else {
+                        classLoaderToUse = EnvTool.getClassDataLoader().getProcessClassLoader(definitionUUID);
+                    }
+                }
+                if (classLoaderToUse != null) {
+                    Thread.currentThread().setContextClassLoader(classLoaderToUse);
+                }
+                return executeInClassLoader(classLoaderToUse, classDataLoader);
+            } finally{
+                Thread.currentThread().setContextClassLoader(baseClassLoader);
+            }
+        }
 
-  private String queryList;
+    }
+
+private static final Logger LOG = Logger.getLogger(RuntimeAPIImpl.class.getName());
+
+  private final String queryList;
 
   protected RuntimeAPIImpl(final String queryList) {
     this.queryList = queryList;
   }
 
   private String getQueryList() {
-    return this.queryList;
+    return queryList;
   }
 
-  public void enableEventsInFailure(ActivityInstanceUUID activityUUID) {
+  @Override
+  public void enableEventsInFailure(final ActivityInstanceUUID activityUUID) {
     final EventService eventService = EnvTool.getEventService();
     eventService.enableEventsInFailureIncomingEvents(activityUUID);
   }
 
-  public void enableEventsInFailure(ProcessInstanceUUID instanceUUID, String activityName) {
-    Set<InternalActivityInstance> activities = EnvTool.getAllQueriers().getActivityInstances(instanceUUID, activityName);
-    for (InternalActivityInstance activity : activities) {
+  @Override
+  public void enableEventsInFailure(final ProcessInstanceUUID instanceUUID, final String activityName) {
+    final Set<InternalActivityInstance> activities = EnvTool.getAllQueriers().getActivityInstances(instanceUUID,
+        activityName);
+    for (final InternalActivityInstance activity : activities) {
       enableEventsInFailure(activity.getUUID());
     }
   }
 
-  public void enablePermanentEventInFailure(ActivityDefinitionUUID activityUUID) {
+  @Override
+  public void enablePermanentEventInFailure(final ActivityDefinitionUUID activityUUID) {
     final EventService eventService = EnvTool.getEventService();
     eventService.enablePermanentEventsInFailure(activityUUID);
   }
@@ -149,102 +190,113 @@ public class RuntimeAPIImpl implements RuntimeAPI {
   /**
    * Create an instance of the specified process and return the processUUID
    */
+  @Override
   public ProcessInstanceUUID instantiateProcess(final ProcessDefinitionUUID processUUID)
-  throws ProcessNotFoundException {
+      throws ProcessNotFoundException {
     try {
       return instantiateProcess(processUUID, null, null);
     } catch (final VariableNotFoundException e) {
-      //must never occur
+      // must never occur
       throw new BonitaRuntimeException(e);
     }
   }
 
-  public ProcessInstanceUUID instantiateProcess(final ProcessDefinitionUUID processUUID, final ActivityDefinitionUUID activityUUID)
-  throws ProcessNotFoundException {
+  @Override
+  public ProcessInstanceUUID instantiateProcess(final ProcessDefinitionUUID processUUID,
+      final ActivityDefinitionUUID activityUUID) throws ProcessNotFoundException {
     try {
       return instantiateProcess(processUUID, null, null, activityUUID);
     } catch (final VariableNotFoundException e) {
-      //must never occur
+      // must never occur
       throw new BonitaRuntimeException(e);
     }
   }
 
-  public ProcessInstanceUUID instantiateProcess(final ProcessDefinitionUUID processUUID, final Map<String, Object> variables)
-  throws ProcessNotFoundException, VariableNotFoundException {
+  @Override
+  public ProcessInstanceUUID instantiateProcess(final ProcessDefinitionUUID processUUID,
+      final Map<String, Object> variables) throws ProcessNotFoundException, VariableNotFoundException {
     return instantiateProcess(processUUID, variables, null);
   }
 
+  @Override
   public ProcessInstanceUUID instantiateProcess(final ProcessDefinitionUUID processUUID,
-      final Map<String, Object> variables, Collection<InitialAttachment> attachments) throws ProcessNotFoundException, VariableNotFoundException {
+      final Map<String, Object> variables, final Collection<InitialAttachment> attachments)
+      throws ProcessNotFoundException, VariableNotFoundException {
     return instantiateProcess(processUUID, variables, attachments, null);
   }
 
-  private ProcessInstanceUUID instantiateProcess(final ProcessDefinitionUUID processUUID, final Map<String, Object> variables,
-      Collection<InitialAttachment> attachments, final ActivityDefinitionUUID activityUUID)
-  throws ProcessNotFoundException, VariableNotFoundException {
+  private ProcessInstanceUUID instantiateProcess(final ProcessDefinitionUUID processUUID,
+      final Map<String, Object> variables, final Collection<InitialAttachment> attachments,
+      final ActivityDefinitionUUID activityUUID) throws ProcessNotFoundException, VariableNotFoundException {
     FacadeUtil.checkArgsNotNull(processUUID);
-    ProcessState state = new QueryDefinitionAPIImpl(this.queryList).getProcess(processUUID).getState();
-    if (ProcessState.DISABLED.equals(state)){
-      String message = ExceptionManager.getInstance().getFullMessage("bai_RAPII_36", processUUID);
+    final ProcessState state = new QueryDefinitionAPIImpl(queryList).getProcess(processUUID).getState();
+    if (ProcessState.DISABLED.equals(state)) {
+      final String message = ExceptionManager.getInstance().getFullMessage("bai_RAPII_36", processUUID);
       throw new BonitaRuntimeException(message);
     }
     if (LOG.isLoggable(Level.FINE)) {
       LOG.fine("Starting a new instance of process : " + processUUID);
     }
-    final Execution rootExecution = ProcessUtil.createProcessInstance(processUUID, variables, attachments, null, null, activityUUID, null);
+    final Execution rootExecution = ProcessUtil.createProcessInstance(processUUID, variables, attachments, null, null,
+        activityUUID, null);
     if (LOG.isLoggable(Level.FINE)) {
       LOG.fine("Started: " + rootExecution.getInstance());
     }
-    ProcessInstance instance = rootExecution.getInstance();
+    final ProcessInstance instance = rootExecution.getInstance();
     final ProcessInstanceUUID instanceUUID = instance.getUUID();
     ProcessUtil.startEventSubProcesses(instance);
     rootExecution.getInstance().begin(activityUUID);
     return instanceUUID;
   }
 
-  public void executeTask(ActivityInstanceUUID taskUUID, boolean assignTask)
-  throws TaskNotFoundException, IllegalTaskStateException {
+  @Override
+  public void executeTask(final ActivityInstanceUUID taskUUID, final boolean assignTask) throws TaskNotFoundException,
+      IllegalTaskStateException {
     startTask(taskUUID, assignTask);
     finishTask(taskUUID, assignTask);
   }
 
+  @Override
   public void cancelProcessInstance(final ProcessInstanceUUID instanceUUID) throws InstanceNotFoundException,
-  UncancellableInstanceException {
-    //if this instance is a child execution, throw an exception
+      UncancellableInstanceException {
+    // if this instance is a child execution, throw an exception
     FacadeUtil.checkArgsNotNull(instanceUUID);
     final InternalProcessInstance instance = FacadeUtil.getInstance(instanceUUID, null);
     if (instance == null) {
       throw new InstanceNotFoundException("bai_RAPII_1", instanceUUID);
     }
-    //if this instance is a child execution, throw an exception
-    if (instance == null
-        || instance.getParentInstanceUUID() != null
-        || !instance.getInstanceState().equals(InstanceState.STARTED)) {
-      throw new UncancellableInstanceException("bai_RAPII_2", instanceUUID, instance.getParentInstanceUUID(), instance.getInstanceState());
+    // if this instance is a child execution, throw an exception
+    if (instance.getParentInstanceUUID() != null || !instance.getInstanceState().equals(InstanceState.STARTED)) {
+      throw new UncancellableInstanceException("bai_RAPII_2", instanceUUID, instance.getParentInstanceUUID(),
+          instance.getInstanceState());
     }
     instance.cancel();
   }
 
-  public void cancelProcessInstances(Collection<ProcessInstanceUUID> instanceUUIDs) throws InstanceNotFoundException, UncancellableInstanceException {
+  @Override
+  public void cancelProcessInstances(final Collection<ProcessInstanceUUID> instanceUUIDs)
+      throws InstanceNotFoundException, UncancellableInstanceException {
     FacadeUtil.checkArgsNotNull(instanceUUIDs);
-    for (ProcessInstanceUUID instanceUUID : instanceUUIDs) {
+    for (final ProcessInstanceUUID instanceUUID : instanceUUIDs) {
       cancelProcessInstance(instanceUUID);
     }
   }
 
+  @Override
   public void deleteProcessInstances(final Collection<ProcessInstanceUUID> instanceUUIDs)
-  throws InstanceNotFoundException, UndeletableInstanceException {
+      throws InstanceNotFoundException, UndeletableInstanceException {
     if (instanceUUIDs != null) {
-      for (ProcessInstanceUUID instanceUUID : instanceUUIDs) {
+      for (final ProcessInstanceUUID instanceUUID : instanceUUIDs) {
         deleteProcessInstance(instanceUUID);
       }
     }
   }
 
-  public void deleteProcessInstance(final ProcessInstanceUUID instanceUUID)
-  throws InstanceNotFoundException, UndeletableInstanceException {
-    //if this instance is a child execution, throw an exception
-    //if this instance has children, delete them
+  @Override
+  public void deleteProcessInstance(final ProcessInstanceUUID instanceUUID) throws InstanceNotFoundException,
+      UndeletableInstanceException {
+    // if this instance is a child execution, throw an exception
+    // if this instance has children, delete them
     FacadeUtil.checkArgsNotNull(instanceUUID);
 
     final Querier allQueriers = EnvTool.getAllQueriers();
@@ -264,7 +316,7 @@ public class RuntimeAPIImpl implements RuntimeAPI {
       throw new InstanceNotFoundException("bai_RAPII_3", instanceUUID);
     }
     final ProcessInstanceUUID parentInstanceUUID = processInst.getParentInstanceUUID();
-    //check that the parent instance does not exist anymore, else, throw an exception
+    // check that the parent instance does not exist anymore, else, throw an exception
     if (parentInstanceUUID != null && allQueriers.getProcessInstance(parentInstanceUUID) != null) {
       throw new UndeletableInstanceException("bai_RAPII_4", instanceUUID, parentInstanceUUID);
     }
@@ -286,16 +338,18 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     }
   }
 
+  @Override
   public void deleteAllProcessInstances(final Collection<ProcessDefinitionUUID> processUUIDs)
-  throws ProcessNotFoundException, UndeletableInstanceException {
+      throws ProcessNotFoundException, UndeletableInstanceException {
     FacadeUtil.checkArgsNotNull(processUUIDs);
-    for (ProcessDefinitionUUID processUUID : processUUIDs) {
+    for (final ProcessDefinitionUUID processUUID : processUUIDs) {
       deleteAllProcessInstances(processUUID);
     }
   }
 
-  public void deleteAllProcessInstances(final ProcessDefinitionUUID processUUID)
-  throws ProcessNotFoundException, UndeletableInstanceException {
+  @Override
+  public void deleteAllProcessInstances(final ProcessDefinitionUUID processUUID) throws ProcessNotFoundException,
+      UndeletableInstanceException {
     FacadeUtil.checkArgsNotNull(processUUID);
     final Querier querier = EnvTool.getAllQueriers();
     final ProcessDefinition process = querier.getProcess(processUUID);
@@ -305,19 +359,19 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     deleteAllProcessInstances(process);
   }
 
-  public void deleteAllProcessInstances(final ProcessDefinition process)
-  throws ProcessNotFoundException, UndeletableInstanceException {
+  public void deleteAllProcessInstances(final ProcessDefinition process) throws ProcessNotFoundException,
+      UndeletableInstanceException {
     FacadeUtil.checkArgsNotNull(process);
     final ProcessDefinitionUUID processUUID = process.getUUID();
     final Querier querier = EnvTool.getAllQueriers();
     Set<InternalProcessInstance> instances = querier.getProcessInstances(processUUID);
     for (final ProcessInstance instance : instances) {
-      //deletes only parent instances
+      // deletes only parent instances
       if (instance.getParentInstanceUUID() == null) {
         try {
           deleteProcessInstance(instance.getUUID());
         } catch (final InstanceNotFoundException e) {
-          String message = ExceptionManager.getInstance().getFullMessage("bai_RAPII_6");
+          final String message = ExceptionManager.getInstance().getFullMessage("bai_RAPII_6");
           throw new BonitaInternalException(message, e);
         }
       }
@@ -329,61 +383,69 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     }
   }
 
-  public void startTask(final ActivityInstanceUUID taskUUID, final boolean assignTask)
-  throws TaskNotFoundException, IllegalTaskStateException  {
+  @Override
+  public void startTask(final ActivityInstanceUUID taskUUID, final boolean assignTask) throws TaskNotFoundException,
+      IllegalTaskStateException {
     FacadeUtil.checkArgsNotNull(taskUUID);
     TaskManager.start(taskUUID, assignTask);
   }
 
-  public void startActivity(ActivityInstanceUUID activityUUID) throws ActivityNotFoundException {
-    //nothing
+  @Override
+  public void startActivity(final ActivityInstanceUUID activityUUID) throws ActivityNotFoundException {
+    // nothing
   }
 
-  public void finishTask(final ActivityInstanceUUID taskUUID, final boolean assignTask)
-  throws TaskNotFoundException, IllegalTaskStateException {
+  @Override
+  public void finishTask(final ActivityInstanceUUID taskUUID, final boolean assignTask) throws TaskNotFoundException,
+      IllegalTaskStateException {
     FacadeUtil.checkArgsNotNull(taskUUID);
     TaskManager.finish(taskUUID, assignTask);
   }
 
-  public void suspendTask(final ActivityInstanceUUID taskUUID, final boolean assignTask)
-  throws TaskNotFoundException, IllegalTaskStateException {
+  @Override
+  public void suspendTask(final ActivityInstanceUUID taskUUID, final boolean assignTask) throws TaskNotFoundException,
+      IllegalTaskStateException {
     FacadeUtil.checkArgsNotNull(taskUUID);
     TaskManager.suspend(taskUUID, assignTask);
   }
 
-  public void resumeTask(final ActivityInstanceUUID taskUUID, final boolean taskAssign)
-  throws TaskNotFoundException, IllegalTaskStateException {
+  @Override
+  public void resumeTask(final ActivityInstanceUUID taskUUID, final boolean taskAssign) throws TaskNotFoundException,
+      IllegalTaskStateException {
     FacadeUtil.checkArgsNotNull(taskUUID);
     TaskManager.resume(taskUUID, taskAssign);
   }
 
+  @Override
   public void assignTask(final ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
     FacadeUtil.checkArgsNotNull(taskUUID);
     TaskManager.assign(taskUUID);
   }
 
-  public void assignTask(final ActivityInstanceUUID taskUUID, final String userId)
-  throws TaskNotFoundException {
+  @Override
+  public void assignTask(final ActivityInstanceUUID taskUUID, final String userId) throws TaskNotFoundException {
     FacadeUtil.checkArgsNotNull(taskUUID, userId);
     TaskManager.assign(taskUUID, userId);
   }
 
+  @Override
   public void assignTask(final ActivityInstanceUUID taskUUID, final Set<String> candidates)
-  throws TaskNotFoundException {
+      throws TaskNotFoundException {
     FacadeUtil.checkArgsNotNull(taskUUID, candidates);
     TaskManager.assign(taskUUID, candidates);
   }
 
+  @Override
   public void unassignTask(final ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
     FacadeUtil.checkArgsNotNull(taskUUID);
     TaskManager.unAssign(taskUUID);
   }
 
   private String getDataTypeClassName(final String variableId, final Object variableValue, final AbstractUUID uuid) {
-    final boolean mayBeAnXmlDocument = variableValue != null && variableValue instanceof String && (((String)variableValue).trim().startsWith("<")  || ((String)variableValue).trim().startsWith("&lt;"));
+    final boolean mayBeAnXmlDocument = mayBeAnXMLDocument(variableValue);
     if (mayBeAnXmlDocument) {
-      String dataTypeClassName = null;  
-      DataFieldDefinition dataFieldDefinition = null; 
+      String dataTypeClassName = null;
+      DataFieldDefinition dataFieldDefinition = null;
       final String dataFieldName = Misc.getVariableName(variableId);
       final APIAccessor accessor = new StandardAPIAccessorImpl();
       final QueryDefinitionAPI queryDefinitionAPI = accessor.getQueryDefinitionAPI(AccessorUtil.QUERYLIST_JOURNAL_KEY);
@@ -394,9 +456,9 @@ public class RuntimeAPIImpl implements RuntimeAPI {
         } else if (uuid instanceof ActivityDefinitionUUID) {
           dataFieldDefinition = queryDefinitionAPI.getActivityDataField((ActivityDefinitionUUID) uuid, dataFieldName);
         }
-        //do that only if the string may be a Document        
+        // do that only if the string may be a Document
         dataTypeClassName = dataFieldDefinition.getDataTypeClassName();
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new BonitaRuntimeException("unable to find datafield with name: " + dataFieldName + " in " + uuid);
       }
       return dataTypeClassName;
@@ -404,92 +466,102 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     return null;
   }
 
-  public void setProcessInstanceVariable(final ProcessInstanceUUID instanceUUID, final String variableId, final Object variableValue)
-  throws InstanceNotFoundException, VariableNotFoundException {
-    InternalProcessInstance instance = EnvTool.getJournalQueriers().getProcessInstance(instanceUUID);
+  private boolean mayBeAnXMLDocument(final Object variableValue) {
+    final boolean mayBeAnXmlDocument = variableValue != null && variableValue instanceof String
+        && (((String) variableValue).trim().startsWith("<") || ((String) variableValue).trim().startsWith("&lt;"));
+    return mayBeAnXmlDocument;
+  }
+
+  @Override
+  public void setProcessInstanceVariable(final ProcessInstanceUUID instanceUUID, final String variableId,
+      final Object variableValue) throws InstanceNotFoundException, VariableNotFoundException {
+    final InternalProcessInstance instance = EnvTool.getJournalQueriers().getProcessInstance(instanceUUID);
     AttachmentInstance attachment = null;
     if (instance == null) {
       throw new InstanceNotFoundException("bai_RAPII_20", instanceUUID);
     }
-    String variableName = Misc.getVariableName(variableId);
+    final String variableName = Misc.getVariableName(variableId);
     if (!instance.getLastKnownVariableValues().containsKey(variableName)) {
       final DocumentationManager manager = EnvTool.getDocumentationManager();
       List<AttachmentInstance> attachments = new ArrayList<AttachmentInstance>();
       if (instance.getNbOfAttachments() > 0) {
-        attachments = DocumentService.getAllAttachmentVersions(manager, instanceUUID);
+        attachments = DocumentService.getAllAttachmentVersions(manager, instanceUUID, variableId);
       }
       if (attachments.size() == 0) {
         throw new VariableNotFoundException("bai_RAPII_21", instanceUUID, variableName);
       } else {
-        attachment = attachments.get(attachments.size() -1);
+        attachment = attachments.get(attachments.size() - 1);
       }
     }
 
     Object newValue = variableValue;
     String targetVariable = variableId;
-    final String dataTypeClassName = getDataTypeClassName(variableId, variableValue, instance.getProcessDefinitionUUID());
-    if (attachment == null){
+    final String dataTypeClassName = getDataTypeClassName(variableId, variableValue,
+        instance.getProcessDefinitionUUID());
+    if (attachment == null) {
       if (variableId.contains(BonitaConstants.XPATH_VAR_SEPARATOR)) {
         try {
           targetVariable = Misc.getVariableName(variableId);
           newValue = getXMLValueXPath(variableId, variableValue, null, instanceUUID);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           throw new VariableNotFoundException("bai_RAPII_32", instanceUUID, variableId);
         }
       } else if (variableId.contains(BonitaConstants.JAVA_VAR_SEPARATOR)) {
         try {
           targetVariable = Misc.getVariableName(variableId);
           newValue = getModifiedJavaObject(variableId, variableValue, null, instance);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
           throw new VariableNotFoundException("bai_RAPII_34", instanceUUID, null, variableId);
         }
       } else if (Document.class.getName().equals(dataTypeClassName) && variableValue instanceof String) {
         try {
           newValue = Misc.generateDocument((String) variableValue);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           throw new BonitaRuntimeException("Unable to build a DOM Document from String: " + variableValue);
         }
       }
-      EnvTool.getRecorder().recordInstanceVariableUpdated(targetVariable, newValue, instance.getUUID(), EnvTool.getUserId());
-    } 
-    else {
-      if (variableValue instanceof byte []) {
-        addAttachment(instanceUUID, attachment.getName(), attachment.getFileName(), (byte []) variableValue);
+      EnvTool.getRecorder().recordInstanceVariableUpdated(targetVariable, newValue, instance.getUUID(),
+          EnvTool.getUserId());
+    } else {
+      if (variableValue instanceof byte[]) {
+        addAttachment(instanceUUID, attachment.getName(), attachment.getFileName(), (byte[]) variableValue);
       } else if (variableValue instanceof AttachmentInstance) {
-        AttachmentInstance newAttachment = (AttachmentInstance) variableValue;
+        final AttachmentInstance newAttachment = (AttachmentInstance) variableValue;
         byte[] attachmentValue;
         try {
           final DocumentationManager manager = EnvTool.getDocumentationManager();
-          org.ow2.bonita.services.Document document = manager.getDocument(newAttachment.getUUID().getValue());
+          final org.ow2.bonita.services.Document document = manager.getDocument(newAttachment.getUUID().getValue());
           attachmentValue = manager.getContent(document);
-        } catch (DocumentNotFoundException e) {
+        } catch (final DocumentNotFoundException e) {
           throw new BonitaRuntimeException(e);
         }
         addAttachment(instanceUUID, attachment.getName(), newAttachment.getFileName(), attachmentValue);
       } else {
-        String message = ExceptionManager.getInstance().getMessage("bai_RAPII_37");
+        final String message = ExceptionManager.getInstance().getMessage("bai_RAPII_37");
         throw new IllegalArgumentException(message);
       }
     }
   }
 
-  public void setProcessInstanceVariables(final ProcessInstanceUUID instanceUUID, final  Map<String, Object> variables)
-  throws InstanceNotFoundException, VariableNotFoundException {
-    for (String key : variables.keySet()){
-      setProcessInstanceVariable(instanceUUID, key, variables.get(key));
+  @Override
+  public void setProcessInstanceVariables(final ProcessInstanceUUID instanceUUID, final Map<String, Object> variables)
+      throws InstanceNotFoundException, VariableNotFoundException {
+    for (final Entry<String, Object> variable : variables.entrySet()) {
+      setProcessInstanceVariable(instanceUUID, variable.getKey(), variable.getValue());
     }
   }
 
-  public void setActivityInstanceVariable(final ActivityInstanceUUID activityUUID, final String variableId, final Object variableValue)
-  throws ActivityNotFoundException, VariableNotFoundException {
-    //search the variable in the transient variables
-    Map<String, Object> transientVariables = TransientData.getActivityTransientVariables(activityUUID);
-    if (transientVariables!= null && transientVariables.containsKey(variableId)){
+  @Override
+  public void setActivityInstanceVariable(final ActivityInstanceUUID activityUUID, final String variableId,
+      final Object variableValue) throws ActivityNotFoundException, VariableNotFoundException {
+    // search the variable in the transient variables
+    final Map<String, Object> transientVariables = TransientData.getActivityTransientVariables(activityUUID);
+    if (transientVariables != null && transientVariables.containsKey(variableId)) {
       TransientData.updateActivityTransientVariableValue(activityUUID, variableId, variableValue);
       return;
     }
-    //search in the database
-    ActivityInstance activity = EnvTool.getJournalQueriers().getActivityInstance(activityUUID);
+    // search in the database
+    final ActivityInstance activity = EnvTool.getJournalQueriers().getActivityInstance(activityUUID);
     if (activity == null) {
       throw new ActivityNotFoundException("bai_RAPII_22", activityUUID);
     }
@@ -502,26 +574,27 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     final Recorder recorder = EnvTool.getRecorder();
     Object newValue = variableValue;
     String targetVariable = variableId;
-    String dataTypeClassName = getDataTypeClassName(variableId, variableValue, activity.getActivityDefinitionUUID());
+    final String dataTypeClassName = getDataTypeClassName(variableId, variableValue,
+        activity.getActivityDefinitionUUID());
 
     if (variableId.contains(BonitaConstants.XPATH_VAR_SEPARATOR)) {
       try {
         targetVariable = Misc.getVariableName(variableId);
         newValue = getXMLValueXPath(variableId, variableValue, activityUUID, null);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new VariableNotFoundException("bai_RAPII_31", instanceUUID, activityId, variableId);
       }
     } else if (variableId.contains(BonitaConstants.JAVA_VAR_SEPARATOR)) {
       try {
         targetVariable = Misc.getVariableName(variableId);
         newValue = getModifiedJavaObject(variableId, variableValue, activity, null);
-      } catch (Exception ex) {
+      } catch (final Exception ex) {
         throw new VariableNotFoundException("bai_RAPII_35", instanceUUID, activityId, variableId);
       }
     } else if (Document.class.getName().equals(dataTypeClassName) && variableValue instanceof String) {
       try {
         newValue = Misc.generateDocument((String) variableValue);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new BonitaRuntimeException("Unable to build a DOM Document from String: " + variableValue);
       }
     }
@@ -529,14 +602,17 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     recorder.recordActivityVariableUpdated(targetVariable, newValue, activityUUID, EnvTool.getUserId());
   }
 
-  public void setActivityInstanceVariables(ActivityInstanceUUID activityUUID, Map<String, Object> variables) throws ActivityNotFoundException, VariableNotFoundException {
-    for (String key : variables.keySet()){
-      setActivityInstanceVariable(activityUUID, key, variables.get(key));
+  @Override
+  public void setActivityInstanceVariables(final ActivityInstanceUUID activityUUID, final Map<String, Object> variables)
+      throws ActivityNotFoundException, VariableNotFoundException {
+    for (final Entry<String, Object> variable : variables.entrySet()) {
+      setActivityInstanceVariable(activityUUID, variable.getKey(), variable.getValue());
     }
   }
 
-  private Object getModifiedJavaObject(String variableExpression, Object attributeValue, ActivityInstance activity, ProcessInstance processInstance)
-  throws ActivityNotFoundException, VariableNotFoundException, InstanceNotFoundException {
+  private Object getModifiedJavaObject(final String variableExpression, final Object attributeValue,
+      final ActivityInstance activity, final ProcessInstance processInstance) throws ActivityNotFoundException,
+      VariableNotFoundException, InstanceNotFoundException {
     final String variableName = Misc.getVariableName(variableExpression);
     ActivityInstanceUUID activityUUID = null;
     if (activity != null) {
@@ -547,28 +623,39 @@ public class RuntimeAPIImpl implements RuntimeAPI {
       processInstanceUUID = processInstance.getUUID();
     }
     final Object data = getVariable(variableName, activityUUID, processInstanceUUID);
+    final ProcessDefinitionUUID processDefUUID = getProcessDefinitionUUID(activity, processInstance);
+    return getModifiedJavaObject(processDefUUID, variableExpression, data, attributeValue);
+  }
+
+  private ProcessDefinitionUUID getProcessDefinitionUUID(final ActivityInstance activity,
+      final ProcessInstance processInstance) {
     ProcessDefinitionUUID processDefUUID = null;
-    if (processInstanceUUID != null) {
+    if (processInstance != null) {
       processDefUUID = processInstance.getProcessDefinitionUUID();
     } else {
       processDefUUID = activity.getProcessDefinitionUUID();
     }
-    return getModifiedJavaObject(processDefUUID, variableExpression, data, attributeValue);
+    return processDefUUID;
   }
 
-  public Object getModifiedJavaObject(ProcessDefinitionUUID processUUID, String variableExpression, Object variableValue, Object attributeValue){
+  @Override
+  public Object getModifiedJavaObject(final ProcessDefinitionUUID processUUID, final String variableExpression,
+      final Object variableValue, final Object attributeValue) {
     final String variableName = Misc.getVariableName(variableExpression);
     final String groovyPlaceholderAccessExpression = Misc.getGroovyPlaceholderAccessExpression(variableExpression);
     final String setterName = Misc.getSetterName(variableExpression);
     final ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processUUID);
-    return modifyJavaObject(variableValue, variableName, groovyPlaceholderAccessExpression, setterName, attributeValue, processClassLoader);
+    return modifyJavaObject(variableValue, variableName, groovyPlaceholderAccessExpression, setterName, attributeValue,
+        processClassLoader);
   }
 
-  private Object modifyJavaObject(Object data, String variableName, String groovyPlaceholderAccessExpression, String setterName, Object variableValue, ClassLoader classLoader) {
-    GroovyShell shell = new GroovyShell(classLoader);
+  private Object modifyJavaObject(final Object data, final String variableName,
+      final String groovyPlaceholderAccessExpression, final String setterName, final Object variableValue,
+      final ClassLoader classLoader) {
+    final GroovyShell shell = new GroovyShell(classLoader);
     shell.setProperty(variableName, data);
     shell.setProperty("__variableValue__", variableValue);
-    StringBuilder script = new StringBuilder();
+    final StringBuilder script = new StringBuilder();
     script.append("def __tmp__ =");
     if (groovyPlaceholderAccessExpression != null && groovyPlaceholderAccessExpression.trim().length() > 0) {
       script.append(groovyPlaceholderAccessExpression);
@@ -583,19 +670,25 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     return shell.evaluate(script.toString());
   }
 
-  private Object getXMLValueXPath(String variableId, Object variableValue, ActivityInstanceUUID activityUUID, ProcessInstanceUUID processInstanceUUID)
-  throws Exception {
+  private Object getXMLValueXPath(final String variableId, final Object variableValue,
+      final ActivityInstanceUUID activityUUID, final ProcessInstanceUUID processInstanceUUID) throws Exception {
     final String variableName = Misc.getVariableName(variableId);
+    final Document doc = (Document) getVariable(variableName, activityUUID, processInstanceUUID);
+    return getXMLValueXPath(variableId, variableValue, doc);
+  }
+
+  private Object getXMLValueXPath(final String variableId, final Object variableValue, final Document doc)
+      throws Exception {
     final String xpathExpression = Misc.getXPath(variableId);
     final boolean isAppend = Misc.isXMLAppend(variableId);
-    final Document doc = (Document) getVariable(variableName, activityUUID, processInstanceUUID);
     return evaluateXPath(doc, xpathExpression, isAppend, variableValue);
   }
 
-  private Object getVariable(final String variableName, ActivityInstanceUUID activityUUID, ProcessInstanceUUID processInstanceUUID)
-  throws ActivityNotFoundException, VariableNotFoundException, InstanceNotFoundException {
+  private Object getVariable(final String variableName, final ActivityInstanceUUID activityUUID,
+      final ProcessInstanceUUID processInstanceUUID) throws ActivityNotFoundException, VariableNotFoundException,
+      InstanceNotFoundException {
     Object oldValue = null;
-    QueryRuntimeAPI queryAPI = new StandardAPIAccessorImpl().getQueryRuntimeAPI();
+    final QueryRuntimeAPI queryAPI = new StandardAPIAccessorImpl().getQueryRuntimeAPI();
     if (activityUUID != null) {
       oldValue = queryAPI.getVariable(activityUUID, variableName);
     } else {
@@ -604,69 +697,71 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     return oldValue;
   }
 
-  private Document evaluateXPath(final Document doc, final String xpathExpression, final boolean isAppend, Object variableValue)
-  throws XPathExpressionException, ParserConfigurationException, SAXException, IOException {
-    XPath xpath = XPathFactory.newInstance().newXPath();
-    Node node = (Node) xpath.compile(xpathExpression).evaluate(doc, XPathConstants.NODE);
+  private Document evaluateXPath(final Document doc, final String xpathExpression, final boolean isAppend,
+      final Object variableValue) throws XPathExpressionException, ParserConfigurationException, SAXException,
+      IOException {
+    final XPath xpath = XPathFactory.newInstance().newXPath();
+    final Node node = (Node) xpath.compile(xpathExpression).evaluate(doc, XPathConstants.NODE);
     if (isSetAttribute(xpathExpression, variableValue)) {
       if (node == null) { // Create the attribute
-        String parentPath = xpathExpression.substring(0, xpathExpression.lastIndexOf('/'));
-        String attributeName = xpathExpression.substring(xpathExpression.lastIndexOf('/') + 2) ; // +1 for @
-        Node parentNode = (Node) xpath.compile(parentPath).evaluate(doc, XPathConstants.NODE);
+        final String parentPath = xpathExpression.substring(0, xpathExpression.lastIndexOf('/'));
+        final String attributeName = xpathExpression.substring(xpathExpression.lastIndexOf('/') + 2); // +1 for @
+        final Node parentNode = (Node) xpath.compile(parentPath).evaluate(doc, XPathConstants.NODE);
         if (parentNode != null && parentNode instanceof Element) {
-          Element element = (Element)parentNode;
+          final Element element = (Element) parentNode;
           if (variableValue instanceof String) {
-            element.setAttribute(attributeName, (String)variableValue);
+            element.setAttribute(attributeName, (String) variableValue);
           } else if (variableValue instanceof Attr) {
             element.setAttribute(((Attr) variableValue).getName(), ((Attr) variableValue).getTextContent());
           }
         }
       } else if (node instanceof Attr) { // Set an existing attribute
         if (variableValue instanceof String) {
-          node.setTextContent((String)variableValue);
+          node.setTextContent((String) variableValue);
         } else if (variableValue instanceof Attr) {
-          node.setTextContent(((Attr)variableValue).getTextContent());
+          node.setTextContent(((Attr) variableValue).getTextContent());
         }
       } else if (node instanceof Element) { // add attribute to an element
-        Attr attr = (Attr)variableValue;
-        ((Element)node).setAttribute(attr.getName(), attr.getValue());
+        final Attr attr = (Attr) variableValue;
+        ((Element) node).setAttribute(attr.getName(), attr.getValue());
       }
     } else if (node instanceof Text) {
-      node.setTextContent((String)variableValue);
+      node.setTextContent((String) variableValue);
     } else if (node instanceof Element) {
       Node newNode = null;
       if (variableValue instanceof Node) {
-        newNode = doc.importNode((Node)variableValue, true);
+        newNode = doc.importNode((Node) variableValue, true);
       } else if (variableValue instanceof String) {
-        newNode = doc.importNode(Misc.generateDocument((String)variableValue).getDocumentElement(), true);
+        newNode = doc.importNode(Misc.generateDocument((String) variableValue).getDocumentElement(), true);
       }
 
       if (isAppend) {
         node.appendChild(newNode);
       } else { // replace
-        Node parentNode = node.getParentNode();
+        final Node parentNode = node.getParentNode();
         parentNode.removeChild(node);
         parentNode.appendChild(newNode);
       }
     } else if (node == null && xpathExpression.endsWith("/text()") && variableValue instanceof String) {
-      String parentPath = xpathExpression.substring(0, xpathExpression.lastIndexOf('/'));
-      Node parentNode = (Node) xpath.compile(parentPath).evaluate(doc, XPathConstants.NODE);
-      parentNode.appendChild(doc.createTextNode((String)variableValue));
+      final String parentPath = xpathExpression.substring(0, xpathExpression.lastIndexOf('/'));
+      final Node parentNode = (Node) xpath.compile(parentPath).evaluate(doc, XPathConstants.NODE);
+      parentNode.appendChild(doc.createTextNode((String) variableValue));
     }
     return doc;
   }
 
-  private boolean isSetAttribute(String xpathExpression, Object variableValue) {
+  private boolean isSetAttribute(final String xpathExpression, final Object variableValue) {
     if (variableValue instanceof Attr) {
       return true;
     } else {
-      String[] segments = xpathExpression.split("/");
-      return segments[segments.length -1].startsWith("@");
+      final String[] segments = xpathExpression.split("/");
+      return segments[segments.length - 1].startsWith("@");
     }
   }
 
+  @Override
   public void setVariable(final ActivityInstanceUUID activityUUID, final String variableId, final Object variableValue)
-  throws ActivityNotFoundException, VariableNotFoundException {
+      throws ActivityNotFoundException, VariableNotFoundException {
     try {
       setActivityInstanceVariable(activityUUID, variableId, variableValue);
     } catch (final Throwable e) {
@@ -683,24 +778,26 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     }
   }
 
+  @Override
   public void addComment(final ProcessInstanceUUID instanceUUID, final String message, final String userId)
-  throws InstanceNotFoundException {
-    CommentImpl comment = new CommentImpl(userId, message, instanceUUID);
+      throws InstanceNotFoundException {
+    final CommentImpl comment = new CommentImpl(userId, message, instanceUUID);
     addComment(comment, instanceUUID);
   }
 
+  @Override
   public void addComment(final ActivityInstanceUUID activityUUID, final String message, final String userId)
-  throws ActivityNotFoundException, InstanceNotFoundException {
+      throws ActivityNotFoundException, InstanceNotFoundException {
     final ActivityInstance activity = EnvTool.getJournalQueriers().getActivityInstance(activityUUID);
     if (activity == null) {
       throw new ActivityNotFoundException("bai_RAPII_28", activityUUID);
     }
-    CommentImpl comment = new CommentImpl(userId, message, activityUUID, activity.getProcessInstanceUUID());
+    final CommentImpl comment = new CommentImpl(userId, message, activityUUID, activity.getProcessInstanceUUID());
     addComment(comment, activity.getProcessInstanceUUID());
   }
 
-  private void addComment(Comment comment, ProcessInstanceUUID instanceUUID)
-  throws InstanceNotFoundException {
+  private void addComment(final Comment comment, final ProcessInstanceUUID instanceUUID)
+      throws InstanceNotFoundException {
     final InternalProcessInstance instance = EnvTool.getJournalQueriers().getProcessInstance(instanceUUID);
     if (instance == null) {
       throw new InstanceNotFoundException("bai_RAPII_27", instanceUUID);
@@ -708,9 +805,10 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     instance.addComment(comment);
   }
 
+  @Override
   @Deprecated
-  public void addComment(final ProcessInstanceUUID instanceUUID, final ActivityInstanceUUID activityUUID, final String message, final String userId)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+  public void addComment(final ProcessInstanceUUID instanceUUID, final ActivityInstanceUUID activityUUID,
+      final String message, final String userId) throws InstanceNotFoundException, ActivityNotFoundException {
     final InternalProcessInstance instance = EnvTool.getJournalQueriers().getProcessInstance(instanceUUID);
     if (instance == null) {
       throw new InstanceNotFoundException("bai_RAPII_27", instanceUUID);
@@ -730,76 +828,88 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     instance.addComment(comment);
   }
 
-  public void addProcessMetaData(ProcessDefinitionUUID uuid, String key, String value)
-  throws ProcessNotFoundException {
+  @Override
+  public void addProcessMetaData(final ProcessDefinitionUUID uuid, final String key, final String value)
+      throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(uuid, key, value);
-    InternalProcessDefinition process = EnvTool.getAllQueriers().getProcess(uuid);
+    final InternalProcessDefinition process = EnvTool.getAllQueriers().getProcess(uuid);
     if (process == null) {
       throw new ProcessNotFoundException("bai_RAPII_29", uuid);
     }
     process.addAMetaData(key, value);
   }
 
-  public void deleteProcessMetaData(ProcessDefinitionUUID uuid, String key)
-  throws ProcessNotFoundException {
+  @Override
+  public void deleteProcessMetaData(final ProcessDefinitionUUID uuid, final String key) throws ProcessNotFoundException {
     FacadeUtil.checkArgsNotNull(uuid, key);
-    InternalProcessDefinition process = EnvTool.getAllQueriers().getProcess(uuid);
+    final InternalProcessDefinition process = EnvTool.getAllQueriers().getProcess(uuid);
     if (process == null) {
       throw new ProcessNotFoundException("bai_RAPII_29", uuid);
     }
     process.deleteAMetaData(key);
   }
 
-  public Object evaluateGroovyExpression(String expression, ProcessInstanceUUID instanceUUID, boolean propagate)
-  throws InstanceNotFoundException, GroovyException {
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ProcessInstanceUUID instanceUUID,
+      final boolean propagate) throws InstanceNotFoundException, GroovyException {
     return evaluateGroovyExpression(expression, instanceUUID, null, propagate);
   }
 
-  public Object evaluateGroovyExpression(String expression, ProcessInstanceUUID instanceUUID, Map<String, Object> context, boolean propagate)
-  throws InstanceNotFoundException, GroovyException {
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ProcessInstanceUUID instanceUUID,
+      final Map<String, Object> context, final boolean propagate) throws InstanceNotFoundException, GroovyException {
     return GroovyUtil.evaluate(expression, context, instanceUUID, false, propagate);
   }
 
-  public Object evaluateGroovyExpression(String expression, ProcessInstanceUUID instanceUUID,
-      Map<String, Object> context, boolean useInitialVariableValues, boolean propagate)
-  throws InstanceNotFoundException, GroovyException {
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ProcessInstanceUUID instanceUUID,
+      final Map<String, Object> context, final boolean useInitialVariableValues, final boolean propagate)
+      throws InstanceNotFoundException, GroovyException {
     return GroovyUtil.evaluate(expression, context, instanceUUID, useInitialVariableValues, propagate);
   }
 
-  public Object evaluateGroovyExpression(String expression, ActivityInstanceUUID activityUUID, boolean useActivityScope, boolean propagate)
-  throws InstanceNotFoundException, ActivityNotFoundException, GroovyException {
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ActivityInstanceUUID activityUUID,
+      final boolean useActivityScope, final boolean propagate) throws InstanceNotFoundException,
+      ActivityNotFoundException, GroovyException {
     return evaluateGroovyExpression(expression, activityUUID, null, useActivityScope, propagate);
   }
 
-  public Object evaluateGroovyExpression(String expression, ActivityInstanceUUID activityUUID, Map<String, Object> context, boolean useActivityScope, boolean propagate)
-  throws InstanceNotFoundException, ActivityNotFoundException, GroovyException {
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ActivityInstanceUUID activityUUID,
+      final Map<String, Object> context, final boolean useActivityScope, final boolean propagate)
+      throws InstanceNotFoundException, ActivityNotFoundException, GroovyException {
     return GroovyUtil.evaluate(expression, context, activityUUID, useActivityScope, propagate);
   }
 
-  public Object evaluateGroovyExpression(String expression, ProcessDefinitionUUID processDefinitionUUID)
-  throws ProcessNotFoundException, GroovyException {
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ProcessDefinitionUUID processDefinitionUUID)
+      throws ProcessNotFoundException, GroovyException {
     return evaluateGroovyExpression(expression, processDefinitionUUID, null);
   }
 
-  public Object evaluateGroovyExpression(String expression, ProcessDefinitionUUID processDefinitionUUID, Map<String, Object> context)
-  throws ProcessNotFoundException, GroovyException {
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ProcessDefinitionUUID processDefinitionUUID,
+      final Map<String, Object> context) throws ProcessNotFoundException, GroovyException {
     return GroovyUtil.evaluate(expression, context, processDefinitionUUID, false);
   }
-  
-  public Map<String, Object> evaluateGroovyExpressions(final Map<String, String> expressions, final ProcessDefinitionUUID processDefinitionUUID, final Map<String, Object> context)
-  throws ProcessNotFoundException, GroovyException {
+
+  @Override
+  public Map<String, Object> evaluateGroovyExpressions(final Map<String, String> expressions,
+      final ProcessDefinitionUUID processDefinitionUUID, final Map<String, Object> context)
+      throws ProcessNotFoundException, GroovyException {
     Misc.checkArgsNotNull(processDefinitionUUID);
     if (expressions == null || expressions.isEmpty()) {
       return Collections.emptyMap();
     }
-    ClassLoader ori = Thread.currentThread().getContextClassLoader();
+    final ClassLoader ori = Thread.currentThread().getContextClassLoader();
     try {
-      ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processDefinitionUUID);
+      final ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processDefinitionUUID);
       Thread.currentThread().setContextClassLoader(processClassLoader);
-      final Binding simpleBinding = GroovyBindingBuilder.getSimpleBinding(processDefinitionUUID, null, null, context, true, true);
-      final Map<String, Object> results = evaluateGroovyExpressions(expressions, simpleBinding);
-      return results;
-    } catch (Exception e) {
+      final Binding simpleBinding = GroovyBindingBuilder.getSimpleBinding(processDefinitionUUID, null, null, context,
+          true, true);
+      return evaluateGroovyExpressions(expressions, simpleBinding);
+    } catch (final Exception e) {
       throw new GroovyException("Exception while getting binding. ProcessDefinitionUUID: " + processDefinitionUUID, e);
     } finally {
       if (ori != null && ori != Thread.currentThread().getContextClassLoader()) {
@@ -808,23 +918,26 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     }
   }
 
-  public Map<String, Object> evaluateGroovyExpressions(final Map<String, String> expressions, final ActivityInstanceUUID activityUUID, final Map<String, Object> context, final boolean useActivityScope, final boolean propagate)
-  throws InstanceNotFoundException, ActivityNotFoundException, GroovyException {
+  @Override
+  public Map<String, Object> evaluateGroovyExpressions(final Map<String, String> expressions,
+      final ActivityInstanceUUID activityUUID, final Map<String, Object> context, final boolean useActivityScope,
+      final boolean propagate) throws InstanceNotFoundException, ActivityNotFoundException, GroovyException {
     Misc.checkArgsNotNull(activityUUID);
     if (expressions == null || expressions.isEmpty()) {
       return Collections.emptyMap();
     }
-    ClassLoader ori = Thread.currentThread().getContextClassLoader();
+    final ClassLoader ori = Thread.currentThread().getContextClassLoader();
     try {
-      InternalActivityInstance activityInstance = EnvTool.getAllQueriers().getActivityInstance(activityUUID);
-      ProcessDefinitionUUID definitionUUID = activityInstance.getProcessDefinitionUUID();
-      ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(definitionUUID);
+      final InternalActivityInstance activityInstance = EnvTool.getAllQueriers().getActivityInstance(activityUUID);
+      final ProcessDefinitionUUID definitionUUID = activityInstance.getProcessDefinitionUUID();
+      final ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(definitionUUID);
       Thread.currentThread().setContextClassLoader(processClassLoader);
-      final Binding binding = getBinding(definitionUUID, activityInstance.getProcessInstanceUUID(), activityUUID, context, useActivityScope, false, propagate);
-      Map<String, Object> results = evaluateGroovyExpressions(expressions, binding);
+      final Binding binding = getBinding(definitionUUID, activityInstance.getProcessInstanceUUID(), activityUUID,
+          context, useActivityScope, false, propagate);
+      final Map<String, Object> results = evaluateGroovyExpressions(expressions, binding);
       propagateVariablesIfNecessary(activityUUID, null, propagate, binding);
       return results;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new GroovyException("Exception while evaluating expression. ActivityInstanceUUID: " + activityUUID, e);
     } finally {
       if (ori != null && ori != Thread.currentThread().getContextClassLoader()) {
@@ -837,57 +950,66 @@ public class RuntimeAPIImpl implements RuntimeAPI {
       final ProcessInstanceUUID instanceUUID, final boolean propagate, final Binding binding) throws GroovyException {
     if (propagate) {
       try {
-        GroovyUtil.propagateVariables(((PropagateBinding)binding).getVariablesToPropagate(), activityUUID, instanceUUID);
-      } catch (Exception e) {
+        GroovyUtil.propagateVariables(((PropagateBinding) binding).getVariablesToPropagate(), activityUUID,
+            instanceUUID);
+      } catch (final Exception e) {
         throw new GroovyException("Exception while propagating variables", e);
-      } 
+      }
     }
   }
 
-  private Binding getBinding(final ProcessDefinitionUUID processUUID, final ProcessInstanceUUID instanceUUID, final ActivityInstanceUUID activityUUID, final Map<String, Object> context, final boolean useActiveScope, final boolean useInitialVariableValues, final boolean propagate)
-  throws GroovyException {
+  private Binding getBinding(final ProcessDefinitionUUID processUUID, final ProcessInstanceUUID instanceUUID,
+      final ActivityInstanceUUID activityUUID, final Map<String, Object> context, final boolean useActiveScope,
+      final boolean useInitialVariableValues, final boolean propagate) throws GroovyException {
     Binding binding = null;
     try {
       if (propagate) {
-        binding = GroovyBindingBuilder.getPropagateBinding(processUUID, instanceUUID, activityUUID, context, useActiveScope, useInitialVariableValues);
+        binding = GroovyBindingBuilder.getPropagateBinding(processUUID, instanceUUID, activityUUID, context,
+            useActiveScope, useInitialVariableValues);
       } else {
-        binding = GroovyBindingBuilder.getSimpleBinding(processUUID, instanceUUID, activityUUID, context, useActiveScope, useInitialVariableValues);
+        binding = GroovyBindingBuilder.getSimpleBinding(processUUID, instanceUUID, activityUUID, context,
+            useActiveScope, useInitialVariableValues);
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new GroovyException("Exception while getting binding", e);
     }
     return binding;
   }
 
-  private Map<String, Object> evaluateGroovyExpressions(final Map<String, String> expressions, Binding binding)
-  throws GroovyException, NotSerializableException, ActivityDefNotFoundException, DataFieldNotFoundException, ProcessNotFoundException, IOException, ClassNotFoundException {
+  private Map<String, Object> evaluateGroovyExpressions(final Map<String, String> expressions, final Binding binding)
+      throws GroovyException, NotSerializableException, ActivityDefNotFoundException, DataFieldNotFoundException,
+      ProcessNotFoundException, IOException, ClassNotFoundException {
     final Map<String, Object> results = new HashMap<String, Object>();
-    for (final String expressionName : expressions.keySet()) {
-      final String expression = expressions.get(expressionName);
-      final Object result = GroovyUtil.evaluate(expression, binding);
+    for (final Entry<String, String> expr : expressions.entrySet()) {
+      final String expressionName = expr.getKey();
+      final Object result = GroovyUtil.evaluate(expr.getValue(), binding);
       results.put(expressionName, result);
     }
     return results;
   }
 
-  public Map<String, Object> evaluateGroovyExpressions(final Map<String, String> expressions, final ProcessInstanceUUID processInstanceUUID, final Map<String, Object> context, final boolean useInitialVariableValues, final boolean propagate)
-  throws InstanceNotFoundException, GroovyException {
+  @Override
+  public Map<String, Object> evaluateGroovyExpressions(final Map<String, String> expressions,
+      final ProcessInstanceUUID processInstanceUUID, final Map<String, Object> context,
+      final boolean useInitialVariableValues, final boolean propagate) throws InstanceNotFoundException,
+      GroovyException {
     Misc.checkArgsNotNull(processInstanceUUID);
     if (expressions == null || expressions.isEmpty()) {
       return Collections.emptyMap();
     }
 
-    ClassLoader ori = Thread.currentThread().getContextClassLoader();
+    final ClassLoader ori = Thread.currentThread().getContextClassLoader();
     try {
-      InternalProcessInstance instance = EnvTool.getAllQueriers().getProcessInstance(processInstanceUUID);
-      ProcessDefinitionUUID definitionUUID = instance.getProcessDefinitionUUID();
-      ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(definitionUUID);
+      final InternalProcessInstance instance = EnvTool.getAllQueriers().getProcessInstance(processInstanceUUID);
+      final ProcessDefinitionUUID definitionUUID = instance.getProcessDefinitionUUID();
+      final ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(definitionUUID);
       Thread.currentThread().setContextClassLoader(processClassLoader);
-      final Binding binding = getBinding(definitionUUID, processInstanceUUID, null, context, false, useInitialVariableValues, propagate);
-      Map<String, Object> results = evaluateGroovyExpressions(expressions, binding);
+      final Binding binding = getBinding(definitionUUID, processInstanceUUID, null, context, false,
+          useInitialVariableValues, propagate);
+      final Map<String, Object> results = evaluateGroovyExpressions(expressions, binding);
       propagateVariablesIfNecessary(null, processInstanceUUID, propagate, binding);
       return results;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new GroovyException("Exception while evaluating expression. ProcessInstanceUUID: " + processInstanceUUID, e);
     } finally {
       if (ori != null && ori != Thread.currentThread().getContextClassLoader()) {
@@ -896,25 +1018,30 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     }
   }
 
-  public void addAttachment(ProcessInstanceUUID instanceUUID, String name, String fileName, byte[] value) {
-    if(value == null && fileName != null) {
-        throw new BonitaRuntimeException("The content of the attachment cannot be null");
+  @Override
+  public void addAttachment(final ProcessInstanceUUID instanceUUID, final String name, final String fileName,
+      final byte[] value) {
+    if (value == null && fileName != null) {
+      throw new BonitaRuntimeException("The content of the attachment cannot be null");
     }
     try {
       createDocument(name, instanceUUID, fileName, DocumentService.DEFAULT_MIME_TYPE, value);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       final DocumentationManager manager = EnvTool.getDocumentationManager();
       final SearchResult result = DocumentService.getDocuments(manager, instanceUUID, name);
       try {
-        addDocumentVersion(result.getDocuments().get(0).getId(), true, fileName, DocumentService.DEFAULT_MIME_TYPE, value);
-      } catch (DocumentationCreationException e1) {
+        addDocumentVersion(result.getDocuments().get(0).getId(), true, fileName, DocumentService.DEFAULT_MIME_TYPE,
+            value);
+      } catch (final DocumentationCreationException e1) {
         throw new BonitaRuntimeException(e);
       }
     }
   }
 
-  public void addAttachment(ProcessInstanceUUID instanceUUID, String name, String label, String description, String fileName, Map<String, String> metadata, byte[] value) {
-    if(value == null && fileName != null) {
+  @Override
+  public void addAttachment(final ProcessInstanceUUID instanceUUID, final String name, final String label,
+      final String description, final String fileName, final Map<String, String> metadata, final byte[] value) {
+    if (value == null && fileName != null) {
       throw new BonitaRuntimeException("The content of the attachment cannot be null");
     }
     String mimeType = metadata.get("content-type");
@@ -923,20 +1050,21 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     }
     try {
       createDocument(name, instanceUUID, fileName, mimeType, value);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       final DocumentationManager manager = EnvTool.getDocumentationManager();
       final SearchResult result = DocumentService.getDocuments(manager, instanceUUID, name);
       try {
         addDocumentVersion(result.getDocuments().get(0).getId(), true, fileName, mimeType, value);
-      } catch (DocumentationCreationException e1) {
+      } catch (final DocumentationCreationException e1) {
         throw new BonitaRuntimeException(e);
       }
     }
   }
 
-  public void addAttachments(Map<AttachmentInstance, byte[]> attachments) {
+  @Override
+  public void addAttachments(final Map<AttachmentInstance, byte[]> attachments) {
     if (attachments != null) {
-      for (Entry<AttachmentInstance, byte[]> attachment : attachments.entrySet()) {
+      for (final Entry<AttachmentInstance, byte[]> attachment : attachments.entrySet()) {
         final AttachmentInstance attachmentInstance = attachment.getKey();
         final String name = attachmentInstance.getName();
         final ProcessInstanceUUID instanceUUID = attachmentInstance.getProcessInstanceUUID();
@@ -947,45 +1075,48 @@ public class RuntimeAPIImpl implements RuntimeAPI {
         }
         try {
           createDocument(name, instanceUUID, fileName, mimeType, attachment.getValue());
-        } catch (Exception e) {
+        } catch (final Exception e) {
           throw new BonitaRuntimeException(e);
         }
       }
     }
   }
 
-  public void removeAttachment(ProcessInstanceUUID instanceUUID, String name) throws InstanceNotFoundException {
+  @Override
+  public void removeAttachment(final ProcessInstanceUUID instanceUUID, final String name)
+      throws InstanceNotFoundException {
     FacadeUtil.checkArgsNotNull(instanceUUID, name);
     final InternalProcessInstance instance = EnvTool.getJournalQueriers().getProcessInstance(instanceUUID);
     if (instance == null) {
       throw new InstanceNotFoundException("bai_RAPII_1", instanceUUID);
     }
-    if(instance.getNbOfAttachments()<=0) {
+    if (instance.getNbOfAttachments() <= 0) {
       throw new BonitaRuntimeException(new DocumentNotFoundException(name));
     }
     final DocumentationManager manager = EnvTool.getDocumentationManager();
     final SearchResult result = DocumentService.getDocuments(manager, instanceUUID, name);
     final List<org.ow2.bonita.services.Document> documents = result.getDocuments();
     if (!documents.isEmpty()) {
-      org.ow2.bonita.services.Document document = documents.get(0);
+      final org.ow2.bonita.services.Document document = documents.get(0);
       try {
         manager.deleteDocument(document.getId(), true);
         // Keep mapping with number of attachments.
-        instance.setNbOfAttachments(instance.getNbOfAttachments()-1);
-      } catch (DocumentNotFoundException e) {
+        instance.setNbOfAttachments(instance.getNbOfAttachments() - 1);
+      } catch (final DocumentNotFoundException e) {
         throw new BonitaRuntimeException(e);
       }
     }
   }
 
-  public void setActivityInstancePriority(ActivityInstanceUUID activityInstanceUUID, int priority)
-  throws ActivityNotFoundException {
+  @Override
+  public void setActivityInstancePriority(final ActivityInstanceUUID activityInstanceUUID, final int priority)
+      throws ActivityNotFoundException {
     final ActivityInstance activity = EnvTool.getJournalQueriers().getActivityInstance(activityInstanceUUID);
     if (activity == null) {
       throw new ActivityNotFoundException("bai_RAPII_22", activityInstanceUUID);
     }
     final ProcessInstanceUUID instanceUUID = activity.getProcessInstanceUUID();
-    Execution execution = EnvTool.getJournalQueriers().getExecutionOnActivity(instanceUUID, activityInstanceUUID);
+    final Execution execution = EnvTool.getJournalQueriers().getExecutionOnActivity(instanceUUID, activityInstanceUUID);
     if (execution == null) {
       throw new ActivityNotFoundException("bai_RAPII_23", activityInstanceUUID);
     }
@@ -993,96 +1124,282 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     recorder.recordActivityPriorityUpdated(activityInstanceUUID, priority);
   }
 
-  public void deleteEvents(String eventName, String toProcessName, String toActivityName, ActivityInstanceUUID actiivtyUUID) {
+  @Override
+  public void deleteEvents(final String eventName, final String toProcessName, final String toActivityName,
+      final ActivityInstanceUUID actiivtyUUID) {
     final EventService eventService = EnvTool.getEventService();
-    Set<OutgoingEventInstance> events = eventService.getOutgoingEvents(eventName, toProcessName, toActivityName, actiivtyUUID);
+    final Set<OutgoingEventInstance> events = eventService.getOutgoingEvents(eventName, toProcessName, toActivityName,
+        actiivtyUUID);
     if (events != null) {
-      for (OutgoingEventInstance event : events) {
+      for (final OutgoingEventInstance event : events) {
         eventService.removeEvent(event);
       }
     }
   }
 
-  public Map<String, Object> executeConnector(String connectorClassName, Map<String, Object[]> parameters, ProcessDefinitionUUID definitionUUID) throws Exception {
+  @Override
+  public Map<String, Object> executeConnector(final String connectorClassName, final Map<String, Object[]> parameters,
+      final ProcessDefinitionUUID definitionUUID) throws Exception {
     return this.executeConnector(connectorClassName, parameters, definitionUUID, null, null, null, null, true);
   }
 
-  public Map<String, Object> executeConnector(String connectorClassName, Map<String, Object[]> parameters) throws Exception {
+  @Override
+  public Map<String, Object> executeConnector(final String connectorClassName, final Map<String, Object[]> parameters)
+      throws Exception {
     return this.executeConnector(connectorClassName, parameters, null, null, null, null, null, true);
   }
 
-  public Map<String, Object> executeConnector(String connectorClassName, Map<String, Object[]> parameters, ClassLoader classLoader) throws Exception {
+  @Override
+  public Map<String, Object> executeConnector(final String connectorClassName, final Map<String, Object[]> parameters,
+      final ClassLoader classLoader) throws Exception {
     return this.executeConnector(connectorClassName, parameters, null, null, null, classLoader, null, true);
   }
 
-  private Map<String, Object> executeConnector(String connectorClassName, Map<String, Object[]> parameters, ProcessDefinitionUUID definitionUUID, ProcessInstanceUUID instanceUUID, ActivityInstanceUUID activityInstanceUUID,
-      ClassLoader classLoader, Map<String, Object> context, boolean useCurrentVariableValues) throws Exception {
-    ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
-    try {
-      Connector connector = null;
-      if (classLoader == null && definitionUUID == null) {
-        connector = (Connector) EnvTool.getClassDataLoader().getInstance(null, connectorClassName);
-      } else {
-        Class<?> objectClass = null;
-        if (classLoader == null) {
-          ClassLoader processClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(definitionUUID);
-          Thread.currentThread().setContextClassLoader(processClassLoader);
-          objectClass = Class.forName(connectorClassName, true, processClassLoader);
-        } else {
-          Thread.currentThread().setContextClassLoader(classLoader);
-          objectClass = Class.forName(connectorClassName, true, classLoader);
+  private Map<String, Object[]> getInputParameters(final ConnectorExecutionDescriptor connectorDescriptor) {
+    final Map<String, Object[]> inputParameters = new HashMap<String, Object[]>(connectorDescriptor
+        .getInputParameters().size());
+    for (final Entry<String, Serializable[]> inputParam : connectorDescriptor.getInputParameters().entrySet()) {
+      inputParameters.put(inputParam.getKey(), inputParam.getValue());
+    }
+    return inputParameters;
+  }
+
+  private void handleOutputParameters(final ProcessDefinitionUUID processDefinitionUUID,
+      final ProcessInstance processInstance, final ActivityInstance activityInstance, final Map<String, Object> output,
+      final ConnectorExecutionDescriptor connectorDescriptor, final Map<String, Object> connectorOutput,
+      final boolean useCurrentVariableValues) throws Exception {
+    if (connectorDescriptor.getOutputParameters() != null) {
+      // initialize variables
+      boolean useActivityScope = false;
+      boolean useInitValues = false;
+      ActivityInstanceUUID activityInstanceUUID = null;
+      ProcessInstanceUUID processInstanceUUID = null;
+      ProcessInstanceUUID parentProcessInstanceUUID = null;
+      ProcessDefinitionUUID parentProcessDefinitionUUID = null;
+      if (processInstance != null) {
+        useInitValues = !useCurrentVariableValues;
+        processInstanceUUID = processInstance.getUUID();
+        parentProcessDefinitionUUID = processInstance.getProcessDefinitionUUID();
+        parentProcessInstanceUUID = processInstanceUUID;
+      } else if (activityInstance != null) {
+        useActivityScope = !useCurrentVariableValues;
+        activityInstanceUUID = activityInstance.getUUID();
+        parentProcessDefinitionUUID = activityInstance.getProcessDefinitionUUID();
+        parentProcessInstanceUUID = activityInstance.getProcessInstanceUUID();
+      } else if (processDefinitionUUID != null) {
+        parentProcessDefinitionUUID = processDefinitionUUID;
+      }
+      // to get the context only one of parameters processDefinitionUUID, activityInstanceUUID, processInstanceUUID must
+      // be set
+      final Map<String, Object> context = GroovyBindingBuilder.getContext(connectorOutput, processDefinitionUUID,
+          activityInstanceUUID, processInstanceUUID, useActivityScope, useInitValues);
+
+      // to get he binding to avoid useless access to the data base it's better always to pass information about process
+      // def uuid and process instance
+      // uuid
+      final Binding binding = GroovyBindingBuilder.getSimpleBinding(context, parentProcessDefinitionUUID,
+          parentProcessInstanceUUID, activityInstanceUUID);
+      for (final Entry<String, Serializable[]> outputParameter : connectorDescriptor.getOutputParameters().entrySet()) {
+        final String fieldNameExpression = outputParameter.getKey();
+        if (outputParameter.getValue().length > 0) {
+          final Object fieldValue = outputParameter.getValue()[0];
+          if (fieldValue != null) {
+            final String fieldExpression = fieldValue.toString();
+            Object evaluatedFieldValue = fieldExpression;
+            if (fieldExpression != null && fieldExpression.length() != 0
+                && Misc.containsAGroovyExpression(fieldExpression)) {
+              evaluatedFieldValue = GroovyUtil.evaluate(fieldExpression, binding);
+            }
+            updateContext(output, parentProcessDefinitionUUID, fieldNameExpression, evaluatedFieldValue);
+          }
         }
-        connector = (Connector) objectClass.newInstance();
       }
-      if (connector instanceof Mapper) {
-        throw new IllegalAccessException(connectorClassName + " is a instance of RoleResolver or Filter");
-      }
-      return ConnectorExecutor.executeConnector(connector, definitionUUID, instanceUUID, activityInstanceUUID, parameters, context, useCurrentVariableValues);
-    } finally {
-      Thread.currentThread().setContextClassLoader(baseClassLoader);
     }
   }
 
-  public Map<String, Object> executeConnector(String connectorClassName, Map<String, Object[]> parameters, ProcessDefinitionUUID definitionUUID, Map<String, Object> context) throws Exception {
+  private void updateContext(final Map<String, Object> output, final ProcessDefinitionUUID parentProcessDefinitionUUID,
+      final String fieldNameExpression, final Object evaluatedFieldValue) throws GroovyException, Exception {
+    String fieldName = fieldNameExpression;
+    Object newValue = evaluatedFieldValue;
+
+    if (fieldNameExpression.contains(BonitaConstants.XPATH_VAR_SEPARATOR)
+        || fieldNameExpression.contains(BonitaConstants.JAVA_VAR_SEPARATOR)) {
+      fieldName = Misc.getVariableName(fieldNameExpression);
+      final Object currentValue = output.get(fieldName);
+      if (currentValue == null) {
+        throw new GroovyException("The variable '" + fieldName + "' was not found in the context map or it's null");
+      }
+      if (fieldNameExpression.contains(BonitaConstants.XPATH_VAR_SEPARATOR)) {
+        if (currentValue instanceof Document) {
+          newValue = getXMLValueXPath(fieldNameExpression, evaluatedFieldValue, (Document) currentValue);
+        } else {
+          throw new GroovyException("The variable  '" + fieldName + "' is not a Document");
+        }
+      } else if (fieldNameExpression.contains(BonitaConstants.JAVA_VAR_SEPARATOR)) {
+        newValue = getModifiedJavaObject(parentProcessDefinitionUUID, fieldNameExpression, currentValue,
+            evaluatedFieldValue);
+      }
+    }
+    output.put(fieldName, newValue);
+  }
+
+  @Override
+  public Map<String, Object> executeConnectors(final ProcessDefinitionUUID processDefinitionUUID,
+      final List<ConnectorExecutionDescriptor> connectorExecutionDescriptors, final Map<String, Object> context)
+      throws Exception {
+    return executeConnectors(processDefinitionUUID, null, null, connectorExecutionDescriptors, context, true);
+  }
+
+  @Override
+  public Map<String, Object> executeConnectors(final ProcessInstanceUUID processInstanceUUID,
+      final List<ConnectorExecutionDescriptor> connectorExecutionDescriptors, final Map<String, Object> context,
+      final boolean useCurrentVariableValues) throws Exception {
+      return executeConnectors(null, processInstanceUUID, null, connectorExecutionDescriptors, context, useCurrentVariableValues);
+  }
+
+  @Override
+  public Map<String, Object> executeConnectors(final ActivityInstanceUUID activityInstanceUUID,
+      final List<ConnectorExecutionDescriptor> connectorExecutionDescriptors, final Map<String, Object> context,
+      final boolean useCurrentVariableValues) throws Exception {
+        return executeConnectors(null, null, activityInstanceUUID, connectorExecutionDescriptors, context, useCurrentVariableValues);
+    }
+
+    private Map<String, Object> executeConnectors(final ProcessDefinitionUUID processDefinitionUUID, final ProcessInstanceUUID processInstanceUUID,
+            final ActivityInstanceUUID activityInstanceUUID, final List<ConnectorExecutionDescriptor> connectorExecutionDescriptors,
+            final Map<String, Object> context, final boolean useCurrentVariableValues) throws Exception {
+
+        final InternalActivityInstance activity;
+        final InternalProcessInstance processInstance;
+        final ProcessDefinitionUUID processDefinitionUUIDToUse;
+        if (processDefinitionUUID == null) {
+            if (activityInstanceUUID != null) {
+                activity = EnvTool.getAllQueriers().getActivityInstance(activityInstanceUUID);
+                processInstance = null;
+                processDefinitionUUIDToUse = activity.getProcessDefinitionUUID();
+            } else if (processInstanceUUID != null) {
+                activity = null;
+                processInstance = EnvTool.getAllQueriers().getProcessInstance(processInstanceUUID);
+                processDefinitionUUIDToUse = processInstance.getProcessDefinitionUUID();
+            } else {
+                activity = null;
+                processInstance = null;
+                processDefinitionUUIDToUse = null;
+            }
+        } else {
+            activity = null;
+            processInstance = null;
+            processDefinitionUUIDToUse = processDefinitionUUID;
+        }
+        return new ExecuteInClassLoader() {
+
+            Map<String, Object> executeInClassLoader(ClassLoader classLoaderToUse, ClassDataLoader classDataLoader) throws Exception {
+                final Map<String, Object> output = new HashMap<String, Object>(context.size());
+                output.putAll(context);
+                for (final ConnectorExecutionDescriptor connectorDescriptor : connectorExecutionDescriptors) {
+                    try {
+                        final Map<String, Object[]> inputParameters = getInputParameters(connectorDescriptor);
+                        final Map<String, Object> connectorOutput = executeConnectorWithClassLoaderSet(connectorDescriptor.getClassName(), inputParameters,
+                                processDefinitionUUIDToUse, processInstanceUUID, activityInstanceUUID, classLoaderToUse, output, useCurrentVariableValues,
+                                classDataLoader);
+                        handleOutputParameters(processDefinitionUUIDToUse, processInstance, activity, output, connectorDescriptor, connectorOutput,
+                                useCurrentVariableValues);
+                    } catch (final Exception t) {
+                        if (!connectorDescriptor.isThrowingException() && LOG.isLoggable(Level.SEVERE)) {
+                            LOG.log(Level.SEVERE, "Error while executing one of connectors. The remaining connectors will be executed", t);
+                        } else {
+                            throw t;
+                        }
+                    }
+                }
+                return output;
+            }
+        }.execute(null, processDefinitionUUIDToUse);
+    }
+
+    private Map<String, Object> executeConnector(final String connectorClassName, final Map<String, Object[]> parameters,
+            final ProcessDefinitionUUID definitionUUID, final ProcessInstanceUUID instanceUUID, final ActivityInstanceUUID activityInstanceUUID,
+            final ClassLoader classLoader, final Map<String, Object> context, final boolean useCurrentVariableValues) throws Exception {
+        return new ExecuteInClassLoader() {
+
+            Map<String, Object> executeInClassLoader(ClassLoader classLoaderToUse, ClassDataLoader classDataLoader) throws Exception {
+                return executeConnectorWithClassLoaderSet(connectorClassName, parameters, definitionUUID, instanceUUID, activityInstanceUUID, classLoaderToUse,
+                        context, useCurrentVariableValues, classDataLoader);
+            }
+        }.execute(classLoader, definitionUUID);
+
+    }
+
+    private Map<String, Object> executeConnectorWithClassLoaderSet(final String connectorClassName, final Map<String, Object[]> parameters,
+            final ProcessDefinitionUUID definitionUUID, final ProcessInstanceUUID instanceUUID, final ActivityInstanceUUID activityInstanceUUID,
+            final ClassLoader classLoader, final Map<String, Object> context, final boolean useCurrentVariableValues, ClassDataLoader classDataLoader)
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException, Exception {
+        Connector connector = null;
+        if (classDataLoader != null) {
+            connector = (Connector) classDataLoader.getInstance(null, connectorClassName);
+        } else {
+            Class<?> objectClass = Class.forName(connectorClassName, true, classLoader);
+            connector = (Connector) objectClass.newInstance();
+        }
+        if (connector instanceof Mapper) {
+            throw new IllegalAccessException(connectorClassName + " is a instance of RoleResolver or Filter");
+        }
+        return ConnectorExecutor.executeConnector(connector, definitionUUID, instanceUUID, activityInstanceUUID, parameters, context, useCurrentVariableValues);
+    }
+
+  @Override
+  public Map<String, Object> executeConnector(final String connectorClassName, final Map<String, Object[]> parameters,
+      final ProcessDefinitionUUID definitionUUID, final Map<String, Object> context) throws Exception {
     return this.executeConnector(connectorClassName, parameters, definitionUUID, null, null, null, context, true);
   }
 
-  public Map<String, Object> executeConnector(String connectorClassName, Map<String, Object[]> parameters, ProcessInstanceUUID processInstanceUUID, Map<String, Object> context, boolean useCurrentVariableValues) throws Exception {
+  @Override
+  public Map<String, Object> executeConnector(final String connectorClassName, final Map<String, Object[]> parameters,
+      final ProcessInstanceUUID processInstanceUUID, final Map<String, Object> context,
+      final boolean useCurrentVariableValues) throws Exception {
     final ProcessInstance instance = EnvTool.getJournalQueriers().getProcessInstance(processInstanceUUID);
-    return this.executeConnector(connectorClassName, parameters, instance.getProcessDefinitionUUID(), processInstanceUUID, null, null, context, useCurrentVariableValues);
+    return this.executeConnector(connectorClassName, parameters, instance.getProcessDefinitionUUID(),
+        processInstanceUUID, null, null, context, useCurrentVariableValues);
   }
 
-  public Map<String, Object> executeConnector(String connectorClassName, Map<String, Object[]> parameters, ActivityInstanceUUID activityInstanceUUID, Map<String, Object> context, boolean useCurrentVariableValues) throws Exception {
+  @Override
+  public Map<String, Object> executeConnector(final String connectorClassName, final Map<String, Object[]> parameters,
+      final ActivityInstanceUUID activityInstanceUUID, final Map<String, Object> context,
+      final boolean useCurrentVariableValues) throws Exception {
     final ActivityInstance activity = EnvTool.getJournalQueriers().getActivityInstance(activityInstanceUUID);
-    return this.executeConnector(connectorClassName, parameters, activity.getProcessDefinitionUUID(), null, activityInstanceUUID, null, context, useCurrentVariableValues);
+    return this.executeConnector(connectorClassName, parameters, activity.getProcessDefinitionUUID(), null,
+        activityInstanceUUID, null, context, useCurrentVariableValues);
   }
 
-  public Set<String> executeFilter(String connectorClassName, Map<String, Object[]> parameters, Set<String> members)
-  throws Exception {
+  @Override
+  public Set<String> executeFilter(final String connectorClassName, final Map<String, Object[]> parameters,
+      final Set<String> members) throws Exception {
     return this.executeFilter(connectorClassName, parameters, members, null, null);
   }
 
-  public Set<String> executeFilter(String connectorClassName, Map<String, Object[]> parameters, Set<String> members,
-      ProcessDefinitionUUID definitionUUID) throws Exception {
+  @Override
+  public Set<String> executeFilter(final String connectorClassName, final Map<String, Object[]> parameters,
+      final Set<String> members, final ProcessDefinitionUUID definitionUUID) throws Exception {
     return this.executeFilter(connectorClassName, parameters, members, definitionUUID, null);
   }
 
-  public Set<String> executeFilter(String connectorClassName, Map<String, Object[]> parameters, Set<String> members,
-      ClassLoader classLoader) throws Exception {
+  @Override
+  public Set<String> executeFilter(final String connectorClassName, final Map<String, Object[]> parameters,
+      final Set<String> members, final ClassLoader classLoader) throws Exception {
     return this.executeFilter(connectorClassName, parameters, members, null, classLoader);
   }
 
-  private Set<String> executeFilter(String connectorClassName, Map<String, Object[]> parameters, Set<String> members,
-      ProcessDefinitionUUID definitionUUID, ClassLoader classLoader) throws Exception {
+  private Set<String> executeFilter(final String connectorClassName, final Map<String, Object[]> parameters,
+      final Set<String> members, final ProcessDefinitionUUID definitionUUID, final ClassLoader classLoader)
+      throws Exception {
     FacadeUtil.checkArgsNotNull(members);
-    ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
+    final ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
     try {
       Filter connector = null;
       if (classLoader == null) {
         connector = (Filter) EnvTool.getClassDataLoader().getInstance(definitionUUID, connectorClassName);
       } else {
         Thread.currentThread().setContextClassLoader(classLoader);
-        Class<?> objectClass = Class.forName(connectorClassName, true, classLoader);
+        final Class<?> objectClass = Class.forName(connectorClassName, true, classLoader);
         connector = (Filter) objectClass.newInstance();
       }
       return ConnectorExecutor.executeFilter(connector, parameters, members);
@@ -1091,30 +1408,34 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     }
   }
 
-  public Set<String> executeRoleResolver(String connectorClassName, Map<String, Object[]> parameters, ProcessDefinitionUUID definitionUUID)
-  throws Exception {
+  @Override
+  public Set<String> executeRoleResolver(final String connectorClassName, final Map<String, Object[]> parameters,
+      final ProcessDefinitionUUID definitionUUID) throws Exception {
     return this.executeRoleResolver(connectorClassName, parameters, definitionUUID, null);
   }
 
-  public Set<String> executeRoleResolver(String connectorClassName, Map<String, Object[]> parameters) throws Exception {
+  @Override
+  public Set<String> executeRoleResolver(final String connectorClassName, final Map<String, Object[]> parameters)
+      throws Exception {
     return this.executeRoleResolver(connectorClassName, parameters, null, null);
   }
 
-  public Set<String> executeRoleResolver(String connectorClassName, Map<String, Object[]> parameters, ClassLoader classLoader)
-  throws Exception {
+  @Override
+  public Set<String> executeRoleResolver(final String connectorClassName, final Map<String, Object[]> parameters,
+      final ClassLoader classLoader) throws Exception {
     return this.executeRoleResolver(connectorClassName, parameters, null, classLoader);
   }
 
-  private Set<String> executeRoleResolver(String connectorClassName, Map<String, Object[]> parameters, ProcessDefinitionUUID definitionUUID, ClassLoader classLoader)
-  throws Exception {
-    ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
+  private Set<String> executeRoleResolver(final String connectorClassName, final Map<String, Object[]> parameters,
+      final ProcessDefinitionUUID definitionUUID, final ClassLoader classLoader) throws Exception {
+    final ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
     try {
       RoleResolver connector = null;
       if (classLoader == null) {
         connector = (RoleResolver) EnvTool.getClassDataLoader().getInstance(definitionUUID, connectorClassName);
       } else {
         Thread.currentThread().setContextClassLoader(classLoader);
-        Class<?> objectClass = Class.forName(connectorClassName, true, classLoader);
+        final Class<?> objectClass = Class.forName(connectorClassName, true, classLoader);
         connector = (RoleResolver) objectClass.newInstance();
       }
       return ConnectorExecutor.executeRoleResolver(connector, parameters);
@@ -1123,33 +1444,36 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     }
   }
 
-  public void skipTask(ActivityInstanceUUID taskUUID, Map<String, Object> variablesToUpdate)
-  throws TaskNotFoundException, IllegalTaskStateException {
+  @Override
+  public void skipTask(final ActivityInstanceUUID taskUUID, final Map<String, Object> variablesToUpdate)
+      throws TaskNotFoundException, IllegalTaskStateException {
     FacadeUtil.checkArgsNotNull(taskUUID);
     TaskManager.skip(taskUUID, variablesToUpdate);
   }
-  
-  public void skip(ActivityInstanceUUID activityInstanceUUID,
-      Map<String, Object> variablesToUpdate) throws ActivityNotFoundException,
-      IllegalTaskStateException {
+
+  @Override
+  public void skip(final ActivityInstanceUUID activityInstanceUUID, final Map<String, Object> variablesToUpdate)
+      throws ActivityNotFoundException, IllegalTaskStateException {
     FacadeUtil.checkArgsNotNull(activityInstanceUUID);
     ActivityManager.skip(activityInstanceUUID, variablesToUpdate);
   }
 
-  public void executeEvent(CatchingEventUUID eventUUID) throws EventNotFoundException {
-    EventService eventService = EnvTool.getEventService();
-    long id = Long.parseLong(eventUUID.getValue());
-    IncomingEventInstance internalEvent = eventService.getIncomingEvent(id);
+  @Override
+  public void executeEvent(final CatchingEventUUID eventUUID) throws EventNotFoundException {
+    final EventService eventService = EnvTool.getEventService();
+    final long id = Long.parseLong(eventUUID.getValue());
+    final IncomingEventInstance internalEvent = eventService.getIncomingEvent(id);
     final String signal = internalEvent.getSignal();
     if (signal.contains(EventConstants.TIMER)) {
       updateExpirationDate(internalEvent, new Date());
     }
   }
 
-  public void deleteEvent(CatchingEventUUID eventUUID) throws EventNotFoundException {
-    EventService eventService = EnvTool.getEventService();
-    long id = Long.parseLong(eventUUID.getValue());
-    IncomingEventInstance internalEvent = eventService.getIncomingEvent(id);
+  @Override
+  public void deleteEvent(final CatchingEventUUID eventUUID) throws EventNotFoundException {
+    final EventService eventService = EnvTool.getEventService();
+    final long id = Long.parseLong(eventUUID.getValue());
+    final IncomingEventInstance internalEvent = eventService.getIncomingEvent(id);
     if (internalEvent == null) {
       throw new EventNotFoundException("Event " + id + "does not exist.");
     }
@@ -1157,40 +1481,47 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     EnvTool.getEventExecutor().refresh();
   }
 
-  public void deleteEvents(Collection<CatchingEventUUID> eventUUIDs) throws EventNotFoundException {
+  @Override
+  public void deleteEvents(final Collection<CatchingEventUUID> eventUUIDs) throws EventNotFoundException {
     if (eventUUIDs != null) {
-      for (CatchingEventUUID eventUUID : eventUUIDs) {
+      for (final CatchingEventUUID eventUUID : eventUUIDs) {
         deleteEvent(eventUUID);
       }
     }
   }
 
-  public void updateExpirationDate(CatchingEventUUID eventUUID, Date expiration) throws EventNotFoundException {
-    EventService eventService = EnvTool.getEventService();
-    long id = Long.parseLong(eventUUID.getValue());
-    IncomingEventInstance internalEvent = eventService.getIncomingEvent(id);
+  @Override
+  public void updateExpirationDate(final CatchingEventUUID eventUUID, final Date expiration)
+      throws EventNotFoundException {
+    final EventService eventService = EnvTool.getEventService();
+    final long id = Long.parseLong(eventUUID.getValue());
+    final IncomingEventInstance internalEvent = eventService.getIncomingEvent(id);
     if (internalEvent == null) {
       throw new EventNotFoundException("Event " + id + "does not exist.");
     }
     updateExpirationDate(internalEvent, expiration);
   }
 
-  private void updateExpirationDate(IncomingEventInstance internalEvent, Date expiration) throws EventNotFoundException {
+  private void updateExpirationDate(final IncomingEventInstance internalEvent, final Date expiration)
+      throws EventNotFoundException {
     internalEvent.setEnableTime(expiration.getTime());
     EnvTool.getEventExecutor().refresh();
   }
 
-  public void updateActivityExpectedEndDate(final ActivityInstanceUUID activityUUID, Date expectedEndDate) throws ActivityNotFoundException {
-    InternalActivityInstance activity = EnvTool.getAllQueriers(getQueryList()).getActivityInstance(activityUUID);
+  @Override
+  public void updateActivityExpectedEndDate(final ActivityInstanceUUID activityUUID, final Date expectedEndDate)
+      throws ActivityNotFoundException {
+    final InternalActivityInstance activity = EnvTool.getAllQueriers(getQueryList()).getActivityInstance(activityUUID);
     if (activity == null) {
       throw new ActivityNotFoundException("bai_QRAPII_11", activityUUID);
     }
     activity.setExpectedEndDate(expectedEndDate);
   }
 
-  public org.ow2.bonita.facade.runtime.Document createDocument(final String name, final ProcessInstanceUUID instanceUUID,
-      final String fileName, final String mimeType, final byte[] content)
-  throws DocumentationCreationException, InstanceNotFoundException {
+  @Override
+  public org.ow2.bonita.facade.runtime.Document createDocument(final String name,
+      final ProcessInstanceUUID instanceUUID, final String fileName, final String mimeType, final byte[] content)
+      throws DocumentationCreationException, InstanceNotFoundException {
     final InternalProcessInstance instance = EnvTool.getJournalQueriers().getProcessInstance(instanceUUID);
     if (instance == null) {
       throw new InstanceNotFoundException("bai_RAPII_1", instanceUUID);
@@ -1206,22 +1537,23 @@ public class RuntimeAPIImpl implements RuntimeAPI {
       d = manager.createDocument(name, definitionUUID, instanceUUID);
     }
     // Keep mapping of number of attachments
-    final int previousNbOfAttachments =instance.getNbOfAttachments();
-    if(previousNbOfAttachments<=0) {
+    final int previousNbOfAttachments = instance.getNbOfAttachments();
+    if (previousNbOfAttachments <= 0) {
       instance.setNbOfAttachments(1);
     } else {
-      instance.setNbOfAttachments(previousNbOfAttachments+1);
+      instance.setNbOfAttachments(previousNbOfAttachments + 1);
     }
-    
-    //update lastUpdateDate date
+
+    // update lastUpdateDate date
     instance.updateLastUpdateDate();
-    
+
     return DocumentService.getClientDocument(manager, d);
   }
 
-  public org.ow2.bonita.facade.runtime.Document createDocument(String name,
-      ProcessDefinitionUUID processDefinitionUUID, String fileName, String mimeType, byte[] content)
-      throws DocumentationCreationException, ProcessNotFoundException {
+  @Override
+  public org.ow2.bonita.facade.runtime.Document createDocument(final String name,
+      final ProcessDefinitionUUID processDefinitionUUID, final String fileName, final String mimeType,
+      final byte[] content) throws DocumentationCreationException, ProcessNotFoundException {
     final ProcessDefinition process = EnvTool.getAllQueriers().getProcess(processDefinitionUUID);
     if (process == null) {
       throw new ProcessNotFoundException("bai_RAPII_29", processDefinitionUUID);
@@ -1235,17 +1567,20 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     } else {
       d = manager.createDocument(name, processDefinitionUUID);
     }
-    
+
     return DocumentService.getClientDocument(manager, d);
   }
-  
-  public org.ow2.bonita.facade.runtime.Document addDocumentVersion(final DocumentUUID documentUUID, final boolean isMajorVersion,
-      final String fileName, final String mimeType, final byte[] content) throws DocumentationCreationException {
+
+  @Override
+  public org.ow2.bonita.facade.runtime.Document addDocumentVersion(final DocumentUUID documentUUID,
+      final boolean isMajorVersion, final String fileName, final String mimeType, final byte[] content)
+      throws DocumentationCreationException {
     return addDocumentVersion(documentUUID.getValue(), isMajorVersion, fileName, mimeType, content);
   }
 
-  private org.ow2.bonita.facade.runtime.Document addDocumentVersion(final String documentId, final boolean isMajorVersion, final String fileName, final String mimeType, final byte[] content)
-  throws DocumentationCreationException {
+  private org.ow2.bonita.facade.runtime.Document addDocumentVersion(final String documentId,
+      final boolean isMajorVersion, final String fileName, final String mimeType, final byte[] content)
+      throws DocumentationCreationException {
     final DocumentationManager manager = EnvTool.getDocumentationManager();
     org.ow2.bonita.services.Document d = null;
     if (content != null) {
@@ -1267,20 +1602,26 @@ public class RuntimeAPIImpl implements RuntimeAPI {
     return DocumentService.getClientDocument(manager, d);
   }
 
-  public void deleteDocuments(final boolean allVersions, final DocumentUUID... documentUUIDs) throws DocumentNotFoundException {
+  @Override
+  public void deleteDocuments(final boolean allVersions, final DocumentUUID... documentUUIDs)
+      throws DocumentNotFoundException {
     final DocumentationManager manager = EnvTool.getDocumentationManager();
     final Querier queriers = EnvTool.getAllQueriers();
     if (documentUUIDs != null) {
       org.ow2.bonita.services.Document doc;
       ProcessInstanceUUID processInstanceUUID;
-      for (DocumentUUID documentUUID : documentUUIDs) {
+      for (final DocumentUUID documentUUID : documentUUIDs) {
         doc = manager.getDocument(documentUUID.getValue());
         processInstanceUUID = doc.getProcessInstanceUUID();
         manager.deleteDocument(documentUUID.getValue(), allVersions);
         if (processInstanceUUID != null) {
           final InternalProcessInstance instance = queriers.getProcessInstance(processInstanceUUID);
           if (instance != null) {
-            instance.setNbOfAttachments(instance.getNbOfAttachments() - 1);
+            final int nbOfAttachments = instance.getNbOfAttachments() - 1;
+            instance.setNbOfAttachments(nbOfAttachments);
+            if (nbOfAttachments == 0) {
+              manager.deleteFolderOfProcessInstance(processInstanceUUID);
+            }
           } else {
             LOG.info("When deleting documents, cannot update the process instance because of its deletion");
           }
@@ -1288,5 +1629,4 @@ public class RuntimeAPIImpl implements RuntimeAPI {
       }
     }
   }
-
 }

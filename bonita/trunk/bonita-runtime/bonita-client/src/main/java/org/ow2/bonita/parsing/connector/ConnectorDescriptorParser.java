@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010  BonitaSoft S.A.
+ * Copyright (C) 2010-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -18,7 +18,6 @@ import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.ow2.bonita.connector.core.desc.ConnectorDescriptor;
 import org.ow2.bonita.parsing.connector.binding.CategoryBinding;
 import org.ow2.bonita.parsing.connector.binding.ConnectorBinding;
 import org.ow2.bonita.parsing.connector.binding.GetterBinding;
@@ -35,7 +34,7 @@ import org.w3c.dom.Element;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class ConnectorDescriptorParser extends Parser {
 
@@ -49,15 +48,15 @@ public class ConnectorDescriptorParser extends Parser {
   }
 
   @Override
-  public Object parseDocumentElement(Element connectorElement, Parse parse) {
+  public Object parseDocumentElement(final Element connectorElement, final Parse parse) {
     if (!"connector".equals(connectorElement.getNodeName())) {
-      String message = "No connector defined within this XML file";
+      final String message = "No connector defined within this XML file";
       throw new BonitaRuntimeException(message);
     }
-    ConnectorDescriptor descriptor = (ConnectorDescriptor) parseElement(connectorElement, parse);
-    return descriptor;
+    return parseElement(connectorElement, parse);
   }
 
+  @Override
   public synchronized DocumentBuilderFactory getDocumentBuilderFactory() {
     documentBuilderFactory = newDocumentBuilderFactory();
     documentBuilderFactory.setNamespaceAware(true);
@@ -66,7 +65,7 @@ public class ConnectorDescriptorParser extends Parser {
 
   /** factory method for the default bindings */
   private static Bindings getDefaultBindings() {
-    Bindings defaultBindings = new Bindings();
+    final Bindings defaultBindings = new Bindings();
     defaultBindings.addBinding(new ConnectorBinding());
     defaultBindings.addBinding(new CategoryBinding());
     defaultBindings.addBinding(new SetterBinding());
@@ -78,7 +77,7 @@ public class ConnectorDescriptorParser extends Parser {
 
   /** factory method for the default entities */
   private static Map<String, Entity> getDefaultEntities() {
-    Map<String, Entity> defaultSchemaCatalog = new HashMap<String, Entity>();
-    return defaultSchemaCatalog;
+    return new HashMap<String, Entity>();
   }
+
 }

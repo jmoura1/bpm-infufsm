@@ -15,7 +15,6 @@
  **/
 package org.ow2.bonita.services.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -53,9 +52,9 @@ import org.ow2.bonita.util.Misc;
 
 public class AbstractDbQuerier implements Querier {
 
-  private String persistenceServiceName;
+  private final String persistenceServiceName;
 
-  public AbstractDbQuerier(String persistenceServiceName) {
+  public AbstractDbQuerier(final String persistenceServiceName) {
     super();
     this.persistenceServiceName = persistenceServiceName;
   }
@@ -63,247 +62,296 @@ public class AbstractDbQuerier implements Querier {
   protected String getPersistenceServiceName() {
     return persistenceServiceName;
   }
-  
+
   protected QuerierDbSession getDbSession() {
     return EnvTool.getQuerierDbSession(persistenceServiceName);
   }
 
+  @Override
   public int getNumberOfProcesses() {
     return getDbSession().getNumberOfProcesses();
   }
-  
+
+  @Override
   public int getNumberOfParentProcessInstances() {
     return getDbSession().getNumberOfParentProcessInstances();
   }
 
+  @Override
   public int getNumberOfProcessInstances() {
     return getDbSession().getNumberOfProcessInstances();
   }
-  
-  public InternalActivityDefinition getActivity(ActivityDefinitionUUID activityDefinitionUUID) {
+
+  @Override
+  public InternalActivityDefinition getActivity(final ActivityDefinitionUUID activityDefinitionUUID) {
     Misc.checkArgsNotNull(activityDefinitionUUID);
     return getDbSession().getActivityDefinition(activityDefinitionUUID);
   }
 
-  public Set<InternalActivityInstance> getActivityInstances(ProcessInstanceUUID instanceUUID, String activityName) {
+  @Override
+  public Set<InternalActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID,
+      final String activityName) {
     Misc.checkArgsNotNull(instanceUUID, activityName);
-    Set<InternalActivityInstance> activityInstances = getDbSession().getActivityInstances(instanceUUID, activityName);
+    final Set<InternalActivityInstance> activityInstances = getDbSession().getActivityInstances(instanceUUID,
+        activityName);
     if (activityInstances != null) {
       return activityInstances;
     }
     return Collections.emptySet();
   }
 
-  public Set<InternalActivityInstance> getActivityInstances(ProcessInstanceUUID instanceUUID, String activityName, String iterationId) {
+  @Override
+  public Set<InternalActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID,
+      final String activityName, final String iterationId) {
     Misc.checkArgsNotNull(instanceUUID, activityName, iterationId);
-    Set<InternalActivityInstance> activityInstances = getDbSession().getActivityInstances(instanceUUID, activityName, iterationId);
+    final Set<InternalActivityInstance> activityInstances = getDbSession().getActivityInstances(instanceUUID,
+        activityName, iterationId);
     if (activityInstances != null) {
       return activityInstances;
     }
     return Collections.emptySet();
   }
 
-  public InternalActivityInstance getActivityInstance(ProcessInstanceUUID instanceUUID, String activityName, String iterationId, String activityInstanceId, String loopId) {
+  @Override
+  public InternalActivityInstance getActivityInstance(final ProcessInstanceUUID instanceUUID,
+      final String activityName, final String iterationId, final String activityInstanceId, final String loopId) {
     return getDbSession().getActivityInstance(instanceUUID, activityName, iterationId, activityInstanceId, loopId);
   }
 
-  public ActivityState getActivityInstanceState(ActivityInstanceUUID activityInstanceUUID) {
+  @Override
+  public ActivityState getActivityInstanceState(final ActivityInstanceUUID activityInstanceUUID) {
     Misc.checkArgsNotNull(activityInstanceUUID);
     return getDbSession().getActivityInstanceState(activityInstanceUUID);
   }
 
-  public InternalActivityInstance getActivityInstance(ActivityInstanceUUID activityInstanceUUID) {
+  @Override
+  public InternalActivityInstance getActivityInstance(final ActivityInstanceUUID activityInstanceUUID) {
     Misc.checkArgsNotNull(activityInstanceUUID);
     return getDbSession().getActivityInstance(activityInstanceUUID);
   }
 
-  public Set<InternalActivityInstance> getActivityInstances(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public Set<InternalActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID) {
     Misc.checkArgsNotNull(instanceUUID);
-    Set<InternalActivityInstance> activityInstances = getDbSession().getActivityInstances(instanceUUID);
+    final Set<InternalActivityInstance> activityInstances = getDbSession().getActivityInstances(instanceUUID);
     if (activityInstances != null) {
       return activityInstances;
     }
-    return new HashSet<InternalActivityInstance>();
+    return Collections.emptySet();
   }
-  
-  public List<InternalActivityInstance> getActivityInstances(
-			ProcessInstanceUUID instanceUUID, int fromIndex, int pageSize,
-			ActivityInstanceCriterion pagingCriterion) {
-  	Misc.checkArgsNotNull(instanceUUID);
-    List<InternalActivityInstance> activityInstances = getDbSession().getActivityInstances(instanceUUID, fromIndex, pageSize, pagingCriterion);
+
+  @Override
+  public List<InternalActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID,
+      final int fromIndex, final int pageSize, final ActivityInstanceCriterion pagingCriterion) {
+    Misc.checkArgsNotNull(instanceUUID);
+    final List<InternalActivityInstance> activityInstances = getDbSession().getActivityInstances(instanceUUID,
+        fromIndex, pageSize, pagingCriterion);
     if (activityInstances != null) {
       return activityInstances;
     }
-    return new ArrayList<InternalActivityInstance>();
-	}
+    return Collections.emptyList();
+  }
 
-  public List<InternalActivityInstance> getActivityInstancesFromRoot(ProcessInstanceUUID rootInstanceUUID) {
+  @Override
+  public List<InternalActivityInstance> getActivityInstancesFromRoot(final ProcessInstanceUUID rootInstanceUUID) {
     Misc.checkArgsNotNull(rootInstanceUUID);
     return getDbSession().getActivityInstancesFromRoot(rootInstanceUUID);
   }
-  
-  public List<InternalActivityInstance> getActivityInstancesFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs) {
+
+  @Override
+  public List<InternalActivityInstance> getActivityInstancesFromRoot(final Set<ProcessInstanceUUID> rootInstanceUUIDs) {
     Misc.checkArgsNotNull(rootInstanceUUIDs);
     return getDbSession().getActivityInstancesFromRoot(rootInstanceUUIDs);
   }
 
-  public List<InternalActivityInstance> getActivityInstancesFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs, ActivityState state) {
+  @Override
+  public List<InternalActivityInstance> getActivityInstancesFromRoot(final Set<ProcessInstanceUUID> rootInstanceUUIDs,
+      final ActivityState state) {
     Misc.checkArgsNotNull(rootInstanceUUIDs, state);
     return getDbSession().getActivityInstancesFromRoot(rootInstanceUUIDs, state);
   }
 
-  public Map<ProcessInstanceUUID, InternalActivityInstance> getLastUpdatedActivityInstanceFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs, boolean considerSystemTaks) {
+  @Override
+  public Map<ProcessInstanceUUID, InternalActivityInstance> getLastUpdatedActivityInstanceFromRoot(
+      final Set<ProcessInstanceUUID> rootInstanceUUIDs, final boolean considerSystemTaks) {
     Misc.checkArgsNotNull(rootInstanceUUIDs);
     return getDbSession().getLastUpdatedActivityInstanceFromRoot(rootInstanceUUIDs, considerSystemTaks);
   }
-  
-  public InternalProcessInstance getProcessInstance(ProcessInstanceUUID instanceUUID) {
+
+  @Override
+  public InternalProcessInstance getProcessInstance(final ProcessInstanceUUID instanceUUID) {
     Misc.checkArgsNotNull(instanceUUID);
-    final InternalProcessInstance instance = getDbSession().getProcessInstance(instanceUUID);
-    return instance;
+    return getDbSession().getProcessInstance(instanceUUID);
   }
 
+  @Override
   public Set<ProcessInstanceUUID> getParentInstancesUUIDs() {
-    Set<InternalProcessInstance> parentInstances = getParentInstances();
-    Set<ProcessInstanceUUID> result = new HashSet<ProcessInstanceUUID>();
-    for (InternalProcessInstance instance : parentInstances) {
+    final Set<InternalProcessInstance> parentInstances = getParentInstances();
+    final Set<ProcessInstanceUUID> result = new HashSet<ProcessInstanceUUID>();
+    for (final InternalProcessInstance instance : parentInstances) {
       result.add(instance.getUUID());
     }
     return result;
   }
-  
+
+  @Override
   public Set<InternalProcessInstance> getProcessInstances() {
-    Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstances();
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstances();
     if (dbInstances == null) {
       return Collections.emptySet();
     }
     return dbInstances;
-  }   
+  }
 
-  public List<InternalProcessInstance> getProcessInstances(Collection<ProcessInstanceUUID> instanceUUIDs, int fromIndex, int pageSize) {
-    List<InternalProcessInstance> dbInstances = getDbSession().getProcessInstances(instanceUUIDs, fromIndex, pageSize);
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final Collection<ProcessInstanceUUID> instanceUUIDs,
+      final int fromIndex, final int pageSize) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getProcessInstances(instanceUUIDs, fromIndex,
+        pageSize);
     if (dbInstances == null) {
       return Collections.emptyList();
     }
     return dbInstances;
   }
-  
+
+  @Override
   public List<InternalProcessInstance> getProcessInstancesWithInstanceUUIDs(
-			Set<ProcessInstanceUUID> instanceUUIDs, int fromIndex,
-			int pageSize, ProcessInstanceCriterion pagingCriterion) {
-  	List<InternalProcessInstance> dbInstances = getDbSession().getProcessInstancesWithInstanceUUIDs(
-  			instanceUUIDs, fromIndex, pageSize, pagingCriterion);
+      final Set<ProcessInstanceUUID> instanceUUIDs, final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getProcessInstancesWithInstanceUUIDs(
+        instanceUUIDs, fromIndex, pageSize, pagingCriterion);
     if (dbInstances == null) {
       return Collections.emptyList();
     }
     return dbInstances;
-	}
-  
-  public List<InternalProcessInstance> getMostRecentProcessInstances(int maxResults, long time) {
-  	return getDbSession().getMostRecentProcessInstances(maxResults, time);
   }
-  
-	public List<InternalProcessInstance> getMostRecentProcessInstances(
-			int maxResults, long time, ProcessInstanceCriterion pagingCriterion) {
-		return getDbSession().getMostRecentProcessInstances(maxResults, time, pagingCriterion);
-	}
-  
-  public List<InternalProcessInstance> getMostRecentParentProcessInstances(int maxResults, long time) {
-  	return getDbSession().getMostRecentParentProcessInstances(maxResults, time);
+
+  @Override
+  public List<InternalProcessInstance> getMostRecentProcessInstances(final int maxResults, final long time) {
+    return getDbSession().getMostRecentProcessInstances(maxResults, time);
   }
-  
-  public List<InternalProcessInstance> getMostRecentParentProcessInstances(
-			int maxResults, long time, ProcessInstanceCriterion pagingCriterion) {
-  	return getDbSession().getMostRecentParentProcessInstances(maxResults, time, pagingCriterion);
-	}
-  
-  public List<InternalProcessInstance> getMostRecentMatchingProcessInstances(Collection<ProcessInstanceUUID> instanceUUIDs, int maxResults, long time) {
-  	return getDbSession().getMostRecentMatchingProcessInstances(instanceUUIDs, maxResults, time);
+
+  @Override
+  public List<InternalProcessInstance> getMostRecentProcessInstances(final int maxResults, final long time,
+      final ProcessInstanceCriterion pagingCriterion) {
+    return getDbSession().getMostRecentProcessInstances(maxResults, time, pagingCriterion);
   }
-  
-	public List<InternalProcessInstance> getMostRecentMatchingProcessInstances(
-			Set<ProcessInstanceUUID> instanceUUIDs, int maxResults, long time,
-			ProcessInstanceCriterion pagingCriterion) {
-		return getDbSession().getMostRecentMatchingProcessInstances(instanceUUIDs, maxResults, time, pagingCriterion);
-	}
-  
-  public List<InternalProcessInstance> getMostRecentProcessesProcessInstances(Collection<ProcessDefinitionUUID> definitionUUIDs, int maxResults, long time) {
-  	return getDbSession().getMostRecentProcessesProcessInstances(definitionUUIDs, maxResults, time);
+
+  @Override
+  public List<InternalProcessInstance> getMostRecentParentProcessInstances(final int maxResults, final long time) {
+    return getDbSession().getMostRecentParentProcessInstances(maxResults, time);
   }
-  
-  public List<InternalProcessInstance> getMostRecentProcessesProcessInstances(Collection<ProcessDefinitionUUID> definitionUUIDs, 
-  		int maxResults, long time, ProcessInstanceCriterion pagingCriterion) {
-  	return getDbSession().getMostRecentProcessesProcessInstances(definitionUUIDs, maxResults, time, pagingCriterion);
+
+  @Override
+  public List<InternalProcessInstance> getMostRecentParentProcessInstances(final int maxResults, final long time,
+      final ProcessInstanceCriterion pagingCriterion) {
+    return getDbSession().getMostRecentParentProcessInstances(maxResults, time, pagingCriterion);
   }
-  
-  public List<InternalProcessDefinition> getProcesses(int fromIndex, int pageSize) {
+
+  @Override
+  public List<InternalProcessInstance> getMostRecentMatchingProcessInstances(
+      final Collection<ProcessInstanceUUID> instanceUUIDs, final int maxResults, final long time) {
+    return getDbSession().getMostRecentMatchingProcessInstances(instanceUUIDs, maxResults, time);
+  }
+
+  @Override
+  public List<InternalProcessInstance> getMostRecentMatchingProcessInstances(
+      final Set<ProcessInstanceUUID> instanceUUIDs, final int maxResults, final long time,
+      final ProcessInstanceCriterion pagingCriterion) {
+    return getDbSession().getMostRecentMatchingProcessInstances(instanceUUIDs, maxResults, time, pagingCriterion);
+  }
+
+  @Override
+  public List<InternalProcessInstance> getMostRecentProcessesProcessInstances(
+      final Collection<ProcessDefinitionUUID> definitionUUIDs, final int maxResults, final long time) {
+    return getDbSession().getMostRecentProcessesProcessInstances(definitionUUIDs, maxResults, time);
+  }
+
+  @Override
+  public List<InternalProcessInstance> getMostRecentProcessesProcessInstances(
+      final Collection<ProcessDefinitionUUID> definitionUUIDs, final int maxResults, final long time,
+      final ProcessInstanceCriterion pagingCriterion) {
+    return getDbSession().getMostRecentProcessesProcessInstances(definitionUUIDs, maxResults, time, pagingCriterion);
+  }
+
+  @Override
+  public List<InternalProcessDefinition> getProcesses(final int fromIndex, final int pageSize) {
     return getDbSession().getProcesses(fromIndex, pageSize);
   }
 
-  public List<InternalProcessDefinition> getProcesses(int fromIndex,
-      int pageSize, ProcessDefinitionCriterion pagingCriterion) {
+  @Override
+  public List<InternalProcessDefinition> getProcesses(final int fromIndex, final int pageSize,
+      final ProcessDefinitionCriterion pagingCriterion) {
     return getDbSession().getProcesses(fromIndex, pageSize, pagingCriterion);
   }
-  
-  public List<InternalProcessInstance> getProcessInstances(int fromIndex, int pageSize) {
+
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final int fromIndex, final int pageSize) {
     return getDbSession().getProcessInstances(fromIndex, pageSize);
   }
-  
-  public List<InternalProcessInstance> getProcessInstances(int fromIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
+
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
     return getDbSession().getProcessInstances(fromIndex, pageSize, pagingCriterion);
   }
-  
-  public List<InternalProcessInstance> getParentProcessInstances(int fromIndex, int pageSize) {
+
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstances(final int fromIndex, final int pageSize) {
     return getDbSession().getParentProcessInstances(fromIndex, pageSize);
   }
-  
-  public List<InternalProcessInstance> getParentProcessInstances(int fromIndex,
-			int pageSize, ProcessInstanceCriterion paginCriterion) {
-  	return getDbSession().getParentProcessInstances(fromIndex, pageSize, paginCriterion);		
-	}
 
-  public List<InternalProcessInstance> getParentProcessInstances(
-      Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstances(final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion paginCriterion) {
+    return getDbSession().getParentProcessInstances(fromIndex, pageSize, paginCriterion);
+  }
+
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstances(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
     return getDbSession().getParentProcessInstances(processUUIDs, fromIndex, pageSize, pagingCriterion);
   }
 
-  public List<InternalProcessInstance> getParentProcessInstancesExcept(
-      Set<ProcessDefinitionUUID> exceptions, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesExcept(final Set<ProcessDefinitionUUID> exceptions,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
     return getDbSession().getParentProcessInstancesExcept(exceptions, fromIndex, pageSize, pagingCriterion);
   }
-  
+
+  @Override
   public Set<InternalProcessInstance> getParentInstances() {
-    Set<InternalProcessInstance> dbInstances = getDbSession().getParentInstances();
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getParentInstances();
     if (dbInstances == null) {
       return Collections.emptySet();
     }
     return dbInstances;
   }
 
-  public Set<InternalProcessInstance> getProcessInstances(Collection<ProcessInstanceUUID> instanceUUIDs) {
+  @Override
+  public Set<InternalProcessInstance> getProcessInstances(final Collection<ProcessInstanceUUID> instanceUUIDs) {
     if (instanceUUIDs == null || instanceUUIDs.isEmpty()) {
       return Collections.emptySet();
     }
-    Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstances(instanceUUIDs);
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstances(instanceUUIDs);
     if (dbInstances == null) {
       return Collections.emptySet();
     }
     return dbInstances;
   }
 
-  public Set<InternalProcessInstance> getProcessInstances(ProcessDefinitionUUID processUUID, InstanceState instanceState) {
+  @Override
+  public Set<InternalProcessInstance> getProcessInstances(final ProcessDefinitionUUID processUUID,
+      final InstanceState instanceState) {
     Misc.checkArgsNotNull(processUUID);
-    Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstances(processUUID, instanceState);
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstances(processUUID, instanceState);
     if (dbInstances == null) {
       return Collections.emptySet();
     }
     return dbInstances;
   }
 
-  private Execution getExecOnNode(final Execution exec,
-      final ActivityInstanceUUID activityInstanceUUID) {
+  private Execution getExecOnNode(final Execution exec, final ActivityInstanceUUID activityInstanceUUID) {
     Misc.checkArgsNotNull(exec, activityInstanceUUID);
     if (exec.getExecutions() == null || exec.getExecutions().isEmpty()) {
       if (exec.getNode() != null && exec.getActivityInstanceUUID() != null
@@ -312,8 +360,7 @@ public class AbstractDbQuerier implements Querier {
       }
     } else {
       for (final Execution child : exec.getExecutions()) {
-        final Execution found = getExecOnNode(
-            (Execution) child, activityInstanceUUID);
+        final Execution found = getExecOnNode(child, activityInstanceUUID);
         if (found != null) {
           return found;
         }
@@ -322,183 +369,212 @@ public class AbstractDbQuerier implements Querier {
     return null;
   }
 
-  public Execution getExecutionOnActivity(
-      final ProcessInstanceUUID instanceUUID,
+  @Override
+  public Execution getExecutionOnActivity(final ProcessInstanceUUID instanceUUID,
       final ActivityInstanceUUID activityUUID) {
     Misc.checkArgsNotNull(instanceUUID, activityUUID);
 
-    final InternalProcessInstance instance = (InternalProcessInstance) getProcessInstance(instanceUUID);
+    final InternalProcessInstance instance = getProcessInstance(instanceUUID);
     if (instance != null) {
       return getExecOnNode(instance.getRootExecution(), activityUUID);
     }
     return getDbSession().getExecutionPointingOnNode(activityUUID);
   }
-  
-  public Set<Execution> getExecutions(ProcessInstanceUUID instanceUUID) {
-  	Misc.checkArgsNotNull(instanceUUID);
-  	return getDbSession().getExecutions(instanceUUID);
+
+  @Override
+  public Set<Execution> getExecutions(final ProcessInstanceUUID instanceUUID) {
+    Misc.checkArgsNotNull(instanceUUID);
+    return getDbSession().getExecutions(instanceUUID);
   }
 
+  @Override
   public Execution getExecutionWithEventUUID(final String eventUUID) {
     Misc.checkArgsNotNull(eventUUID);
     return getDbSession().getExecutionWithEventUUID(eventUUID);
   }
 
-  public Set<InternalProcessInstance> getUserInstances(String userId) {
-    Set<InternalProcessInstance> dbInstances = getDbSession().getUserInstances(userId);
-    if (dbInstances == null) {
-      return Collections.emptySet();
-    }
-    return dbInstances;
-  }
-  
-  public Set<InternalProcessInstance> getUserInstances(String userId, Date minStartDate) {
-    Set<InternalProcessInstance> dbInstances = getDbSession().getUserInstances(userId, minStartDate);
-    if (dbInstances == null) {
-      return Collections.emptySet();
-    }
-    return dbInstances;
-  }
-  
-  public Set<InternalProcessInstance> getUserParentInstances(String userId, Date minStartDate) {
-    Set<InternalProcessInstance> dbInstances = getDbSession().getUserParentInstances(userId, minStartDate);
-    if (dbInstances == null) {
-      return Collections.emptySet();
-    }
-    return dbInstances;
-  }
-  
-  public Set<InternalProcessInstance> getUserInstancesExcept(String userId, Set<ProcessInstanceUUID> myCases) {
-    Set<InternalProcessInstance> dbInstances = getDbSession().getUserInstancesExcept(userId, myCases);
+  @Override
+  public Set<InternalProcessInstance> getUserInstances(final String userId) {
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getUserInstances(userId);
     if (dbInstances == null) {
       return Collections.emptySet();
     }
     return dbInstances;
   }
 
-  public Set<InternalProcessInstance> getProcessInstancesWithTaskState(Collection<ActivityState> activityStates) {
-    Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstancesWithTaskState(activityStates);
+  @Override
+  public Set<InternalProcessInstance> getUserInstances(final String userId, final Date minStartDate) {
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getUserInstances(userId, minStartDate);
     if (dbInstances == null) {
       return Collections.emptySet();
     }
     return dbInstances;
   }
 
-  public Set<InternalProcessInstance> getProcessInstancesWithInstanceStates(Collection<InstanceState> instanceStates) {
-    Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstancesWithInstanceStates(instanceStates);
+  @Override
+  public Set<InternalProcessInstance> getUserParentInstances(final String userId, final Date minStartDate) {
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getUserParentInstances(userId, minStartDate);
     if (dbInstances == null) {
       return Collections.emptySet();
     }
     return dbInstances;
   }
 
-  public Set<InternalProcessInstance> getProcessInstances(ProcessDefinitionUUID processUUID) {
+  @Override
+  public Set<InternalProcessInstance> getUserInstancesExcept(final String userId, final Set<ProcessInstanceUUID> myCases) {
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getUserInstancesExcept(userId, myCases);
+    if (dbInstances == null) {
+      return Collections.emptySet();
+    }
+    return dbInstances;
+  }
+
+  @Override
+  public Set<InternalProcessInstance> getProcessInstancesWithTaskState(final Collection<ActivityState> activityStates) {
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstancesWithTaskState(activityStates);
+    if (dbInstances == null) {
+      return Collections.emptySet();
+    }
+    return dbInstances;
+  }
+
+  @Override
+  public Set<InternalProcessInstance> getProcessInstancesWithInstanceStates(
+      final Collection<InstanceState> instanceStates) {
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstancesWithInstanceStates(
+        instanceStates);
+    if (dbInstances == null) {
+      return Collections.emptySet();
+    }
+    return dbInstances;
+  }
+
+  @Override
+  public Set<InternalProcessInstance> getProcessInstances(final ProcessDefinitionUUID processUUID) {
     Misc.checkArgsNotNull(processUUID);
-    Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstances(processUUID);
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstances(processUUID);
     if (dbInstances == null) {
       return Collections.emptySet();
     }
     return dbInstances;
   }
 
-  public InternalProcessDefinition getProcess(String processId, String version) {
+  @Override
+  public InternalProcessDefinition getProcess(final String processId, final String version) {
     Misc.checkArgsNotNull(processId, version);
     return getDbSession().getProcess(processId, version);
   }
 
-  public InternalProcessDefinition getProcess(ProcessDefinitionUUID processUUID) {
+  @Override
+  public InternalProcessDefinition getProcess(final ProcessDefinitionUUID processUUID) {
     Misc.checkArgsNotNull(processUUID);
     return getDbSession().getProcess(processUUID);
   }
 
+  @Override
   public Set<InternalProcessDefinition> getProcesses() {
-    Set<InternalProcessDefinition> processes = getDbSession().getProcesses();
+    final Set<InternalProcessDefinition> processes = getDbSession().getProcesses();
     if (processes == null) {
       return Collections.emptySet();
     }
     return processes;
   }
 
-  public Set<InternalProcessDefinition> getProcesses(String processId) {
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final String processId) {
     Misc.checkArgsNotNull(processId);
-    Set<InternalProcessDefinition> processes = getDbSession().getProcesses(processId);
+    final Set<InternalProcessDefinition> processes = getDbSession().getProcesses(processId);
     if (processes == null) {
       return Collections.emptySet();
     }
     return processes;
   }
 
-  public Set<InternalProcessDefinition> getProcesses(ProcessState processState) {
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final ProcessState processState) {
     Misc.checkArgsNotNull(processState);
-    Set<InternalProcessDefinition> processes = getDbSession().getProcesses(processState);
+    final Set<InternalProcessDefinition> processes = getDbSession().getProcesses(processState);
     if (processes == null) {
       return Collections.emptySet();
     }
     return processes;
   }
 
-  public Set<InternalProcessDefinition> getProcesses(String processId, ProcessState processState) {
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final String processId, final ProcessState processState) {
     Misc.checkArgsNotNull(processId, processState);
-    Set<InternalProcessDefinition> processes = getDbSession().getProcesses(processId, processState);
+    final Set<InternalProcessDefinition> processes = getDbSession().getProcesses(processId, processState);
     if (processes == null) {
       return Collections.emptySet();
     }
     return processes;
   }
 
-  public TaskInstance getTaskInstance(ActivityInstanceUUID taskUUID) {
+  @Override
+  public TaskInstance getTaskInstance(final ActivityInstanceUUID taskUUID) {
     Misc.checkArgsNotNull(taskUUID);
     return getDbSession().getTaskInstance(taskUUID);
   }
 
-  public Set<TaskInstance> getTaskInstances(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public Set<TaskInstance> getTaskInstances(final ProcessInstanceUUID instanceUUID) {
     Misc.checkArgsNotNull(instanceUUID);
-    Set<TaskInstance> tasks = getDbSession().getTaskInstances(instanceUUID);
+    final Set<TaskInstance> tasks = getDbSession().getTaskInstances(instanceUUID);
     if (tasks == null) {
       return Collections.emptySet();
     }
     return tasks;
   }
 
-  public Set<TaskInstance> getTaskInstances(ProcessInstanceUUID instanceUUID, Set<String> taskNames) {
+  @Override
+  public Set<TaskInstance> getTaskInstances(final ProcessInstanceUUID instanceUUID, final Set<String> taskNames) {
     Misc.checkArgsNotNull(instanceUUID);
-    Set<TaskInstance> tasks = getDbSession().getTaskInstances(instanceUUID, taskNames);
+    final Set<TaskInstance> tasks = getDbSession().getTaskInstances(instanceUUID, taskNames);
     if (tasks == null) {
       return Collections.emptySet();
     }
     return tasks;
   }
 
-  public Set<TaskInstance> getUserInstanceTasks(String userId, ProcessInstanceUUID instanceUUID, ActivityState taskState) {
+  @Override
+  public Set<TaskInstance> getUserInstanceTasks(final String userId, final ProcessInstanceUUID instanceUUID,
+      final ActivityState taskState) {
     Misc.checkArgsNotNull(userId, instanceUUID, taskState);
-    Set<TaskInstance> tasks = getDbSession().getUserInstanceTasks(userId, instanceUUID, taskState);
+    final Set<TaskInstance> tasks = getDbSession().getUserInstanceTasks(userId, instanceUUID, taskState);
     if (tasks == null) {
       return Collections.emptySet();
     }
     return tasks;
   }
-  
-  public TaskInstance getOneTask(String userId, ProcessDefinitionUUID processUUID, ActivityState taskState) {
+
+  @Override
+  public TaskInstance getOneTask(final String userId, final ProcessDefinitionUUID processUUID,
+      final ActivityState taskState) {
     return getDbSession().getOneTask(userId, processUUID, taskState);
   }
-  
-  public TaskInstance getOneTask(String userId, ProcessInstanceUUID instanceUUID, ActivityState taskState) {
+
+  @Override
+  public TaskInstance getOneTask(final String userId, final ProcessInstanceUUID instanceUUID,
+      final ActivityState taskState) {
     return getDbSession().getOneTask(userId, instanceUUID, taskState);
   }
-  
-  public TaskInstance getOneTask(String userId, ActivityState taskState) {
+
+  @Override
+  public TaskInstance getOneTask(final String userId, final ActivityState taskState) {
     return getDbSession().getOneTask(userId, taskState);
   }
 
-  public Set<TaskInstance> getUserTasks(String userId, ActivityState taskState) {
-    Collection<ActivityState> taskStates = new HashSet<ActivityState>();
+  @Override
+  public Set<TaskInstance> getUserTasks(final String userId, final ActivityState taskState) {
+    final Collection<ActivityState> taskStates = new HashSet<ActivityState>();
     taskStates.add(taskState);
     return getUserTasks(userId, taskStates);
   }
 
-  public Set<TaskInstance> getUserTasks(String userId, Collection<ActivityState> taskStates) {
+  @Override
+  public Set<TaskInstance> getUserTasks(final String userId, final Collection<ActivityState> taskStates) {
     Misc.checkArgsNotNull(userId, taskStates);
-    Set<TaskInstance> tasks = getDbSession().getUserTasks(userId, taskStates);
+    final Set<TaskInstance> tasks = getDbSession().getUserTasks(userId, taskStates);
     if (tasks == null) {
       return Collections.emptySet();
     }
@@ -506,144 +582,182 @@ public class AbstractDbQuerier implements Querier {
   }
 
   /*
-   *SPECIFIC
+   * SPECIFIC
    */
-  public String getLastProcessVersion(String processName) {
+  @Override
+  public String getLastProcessVersion(final String processName) {
     Misc.checkArgsNotNull(processName);
     return getDbSession().getLastProcessVersion(processName);
   }
 
-  public long getLastProcessInstanceNb(ProcessDefinitionUUID processUUID) {
+  @Override
+  public long getLastProcessInstanceNb(final ProcessDefinitionUUID processUUID) {
     Misc.checkArgsNotNull(processUUID);
     return getDbSession().getLastProcessInstanceNb(processUUID);
   }
 
-  public InternalProcessDefinition getLastDeployedProcess(String processId, ProcessState processState) {
+  @Override
+  public InternalProcessDefinition getLastDeployedProcess(final String processId, final ProcessState processState) {
     Misc.checkArgsNotNull(processId, processState);
     return getDbSession().getLastProcess(processId, processState);
   }
 
-  public List<Integer> getNumberOfFinishedCasesPerDay(Date since, Date to) {
+  @Override
+  public List<Integer> getNumberOfFinishedCasesPerDay(final Date since, final Date to) {
     return getDbSession().getNumberOfFinishedCasesPerDay(since, to);
   }
 
-  public List<Integer> getNumberOfExecutingCasesPerDay(Date since, Date to) {
+  @Override
+  public List<Integer> getNumberOfExecutingCasesPerDay(final Date since, final Date to) {
     return getDbSession().getNumberOfExecutingCasesPerDay(since, to);
   }
 
+  @Override
   public int getNumberOfOpenSteps() {
     return getDbSession().getNumberOfOpenSteps();
   }
 
-  public List<Integer> getNumberOfOpenStepsPerDay(Date since, Date to) {
+  @Override
+  public List<Integer> getNumberOfOpenStepsPerDay(final Date since, final Date to) {
     return getDbSession().getNumberOfOpenStepsPerDay(since, to);
   }
 
-  public int getNumberOfOverdueSteps(Date currentDate) {
+  @Override
+  public int getNumberOfOverdueSteps(final Date currentDate) {
     return getDbSession().getNumberOfOverdueSteps(currentDate);
   }
 
-  public int getNumberOfStepsAtRisk(Date beginningOfTheDay, Date atRisk) {
+  @Override
+  public int getNumberOfStepsAtRisk(final Date beginningOfTheDay, final Date atRisk) {
     return getDbSession().getNumberOfStepsAtRisk(beginningOfTheDay, atRisk);
   }
 
-  public int getNumberOfUserOpenSteps(String userId) {
+  @Override
+  public int getNumberOfUserOpenSteps(final String userId) {
     return getDbSession().getNumberOfUserOpenSteps(userId);
   }
 
-  public int getNumberOfUserOverdueSteps(String userId, Date currentDate) {
+  @Override
+  public int getNumberOfUserOverdueSteps(final String userId, final Date currentDate) {
     return getDbSession().getNumberOfUserOverdueSteps(userId, currentDate);
   }
 
-  public int getNumberOfUserStepsAtRisk(String userId, Date beginningOfTheDay, Date atRisk) {
+  @Override
+  public int getNumberOfUserStepsAtRisk(final String userId, final Date beginningOfTheDay, final Date atRisk) {
     return getDbSession().getNumberOfUserStepsAtRisk(userId, beginningOfTheDay, atRisk);
   }
 
-  public int getNumberOfFinishedSteps(int priority, Date since) {
+  @Override
+  public int getNumberOfFinishedSteps(final int priority, final Date since) {
     return getDbSession().getNumberOfFinishedSteps(priority, since);
   }
 
-  public int getNumberOfOpenSteps(int priority) {
+  @Override
+  public int getNumberOfOpenSteps(final int priority) {
     return getDbSession().getNumberOfOpenSteps(priority);
   }
 
-  public int getNumberOfUserFinishedSteps(String userId, int priority, Date since) {
+  @Override
+  public int getNumberOfUserFinishedSteps(final String userId, final int priority, final Date since) {
     return getDbSession().getNumberOfUserFinishedSteps(userId, priority, since);
   }
 
-  public int getNumberOfUserOpenSteps(String userId, int priority) {
+  @Override
+  public int getNumberOfUserOpenSteps(final String userId, final int priority) {
     return getDbSession().getNumberOfUserOpenSteps(userId, priority);
   }
 
-  public Set<InternalProcessDefinition> getProcesses(Set<ProcessDefinitionUUID> definitionUUIDs) {
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final Set<ProcessDefinitionUUID> definitionUUIDs) {
     return getDbSession().getProcesses(definitionUUIDs);
   }
 
-  public Set<InternalProcessDefinition> getProcesses(Set<ProcessDefinitionUUID> definitionUUIDs, ProcessState processState) {
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final ProcessState processState) {
     return getDbSession().getProcesses(definitionUUIDs, processState);
   }
 
-  public List<InternalProcessDefinition> getProcesses(Set<ProcessDefinitionUUID> definitionUUIDs, int fromIndex, int pageSize) {
+  @Override
+  public List<InternalProcessDefinition> getProcesses(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final int fromIndex, final int pageSize) {
     return getDbSession().getProcesses(definitionUUIDs, fromIndex, pageSize);
   }
 
-  public List<InternalProcessDefinition> getProcesses(
-      Set<ProcessDefinitionUUID> definitionUUIDs, int fromIndex, int pageSize,
-      ProcessDefinitionCriterion pagingCriterion) {
+  @Override
+  public List<InternalProcessDefinition> getProcesses(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final int fromIndex, final int pageSize, final ProcessDefinitionCriterion pagingCriterion) {
     return getDbSession().getProcesses(definitionUUIDs, fromIndex, pageSize, pagingCriterion);
   }
 
-  public InternalProcessDefinition getLastDeployedProcess(Set<ProcessDefinitionUUID> definitionUUIDs, ProcessState processState) {
+  @Override
+  public InternalProcessDefinition getLastDeployedProcess(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final ProcessState processState) {
     Misc.checkArgsNotNull(processState);
     return getDbSession().getLastProcess(definitionUUIDs, processState);
   }
-  
-  public Set<InternalProcessInstance> getProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs) {
+
+  @Override
+  public Set<InternalProcessInstance> getProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs) {
     return getDbSession().getProcessInstances(definitionUUIDs);
   }
 
-  public Set<InternalProcessInstance> getUserInstances(String userId, Set<ProcessDefinitionUUID> definitionUUIDs) {
-    Set<InternalProcessInstance> dbInstances = getDbSession().getUserInstances(userId, definitionUUIDs);
+  @Override
+  public Set<InternalProcessInstance> getUserInstances(final String userId,
+      final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getUserInstances(userId, definitionUUIDs);
     if (dbInstances == null) {
       return Collections.emptySet();
     }
     return dbInstances;
   }
 
-  public int getNumberOfProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs) {
+  @Override
+  public int getNumberOfProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs) {
     return getDbSession().getNumberOfProcessInstances(definitionUUIDs);
   }
 
-  public int getNumberOfParentProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs) {
+  @Override
+  public int getNumberOfParentProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs) {
     return getDbSession().getNumberOfParentProcessInstances(definitionUUIDs);
   }
 
-  public Set<InternalProcessInstance> getProcessInstancesWithTaskState(Collection<ActivityState> activityStates, Set<ProcessDefinitionUUID> definitionUUIDs) {
-    Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstancesWithTaskState(activityStates, definitionUUIDs);
+  @Override
+  public Set<InternalProcessInstance> getProcessInstancesWithTaskState(final Collection<ActivityState> activityStates,
+      final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstancesWithTaskState(activityStates,
+        definitionUUIDs);
     if (dbInstances == null) {
       return Collections.emptySet();
     }
     return dbInstances;
   }
 
-  public Set<InternalProcessInstance> getProcessInstancesWithInstanceStates(Collection<InstanceState> instanceStates, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-    Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstancesWithInstanceStates(instanceStates, visibleProcessUUIDs);
+  @Override
+  public Set<InternalProcessInstance> getProcessInstancesWithInstanceStates(
+      final Collection<InstanceState> instanceStates, final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final Set<InternalProcessInstance> dbInstances = getDbSession().getProcessInstancesWithInstanceStates(
+        instanceStates, visibleProcessUUIDs);
     if (dbInstances == null) {
       return Collections.emptySet();
     }
     return dbInstances;
   }
 
-  public TaskInstance getOneTask(String userId, ActivityState taskState, Set<ProcessDefinitionUUID> definitionUUIDs) {
+  @Override
+  public TaskInstance getOneTask(final String userId, final ActivityState taskState,
+      final Set<ProcessDefinitionUUID> definitionUUIDs) {
     return getDbSession().getOneTask(userId, taskState, definitionUUIDs);
   }
 
-  public Set<TaskInstance> getUserTasks(String userId, ActivityState taskState, Set<ProcessDefinitionUUID> definitionUUIDs) {
-    Collection<ActivityState> taskStates = new HashSet<ActivityState>();
+  @Override
+  public Set<TaskInstance> getUserTasks(final String userId, final ActivityState taskState,
+      final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final Collection<ActivityState> taskStates = new HashSet<ActivityState>();
     taskStates.add(taskState);
-    Set<TaskInstance> userTasks = getUserTasks(userId, taskStates);
-    Set<TaskInstance> filteredTasks = new HashSet<TaskInstance>();
-    for (TaskInstance taskInstance : userTasks) {
+    final Set<TaskInstance> userTasks = getUserTasks(userId, taskStates);
+    final Set<TaskInstance> filteredTasks = new HashSet<TaskInstance>();
+    for (final TaskInstance taskInstance : userTasks) {
       if (definitionUUIDs.contains(taskInstance.getProcessDefinitionUUID())) {
         filteredTasks.add(taskInstance);
       }
@@ -651,521 +765,634 @@ public class AbstractDbQuerier implements Querier {
     return filteredTasks;
   }
 
-  public List<InternalProcessInstance> getProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs, int fromIndex, int pageSize) {
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final int fromIndex, final int pageSize) {
     return getDbSession().getProcessInstances(definitionUUIDs, fromIndex, pageSize);
   }
-  
-  public List<InternalProcessInstance> getProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs, 
-  		int fromIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
+
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
     return getDbSession().getProcessInstances(definitionUUIDs, fromIndex, pageSize, pagingCriterion);
   }
 
-  public List<InternalProcessDefinition> getProcessesExcept(
-      Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize) {
+  @Override
+  public List<InternalProcessDefinition> getProcessesExcept(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize) {
     return getDbSession().getProcessesExcept(processUUIDs, fromIndex, pageSize);
   }
 
-  public List<InternalProcessDefinition> getProcessesExcept(
-      Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize,
-      ProcessDefinitionCriterion pagingCriterion) {
+  @Override
+  public List<InternalProcessDefinition> getProcessesExcept(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize, final ProcessDefinitionCriterion pagingCriterion) {
     return getDbSession().getProcessesExcept(processUUIDs, fromIndex, pageSize, pagingCriterion);
   }
-  
-  public int getNumberOfActivityInstanceComments(ActivityInstanceUUID activityUUID) {
+
+  @Override
+  public int getNumberOfActivityInstanceComments(final ActivityInstanceUUID activityUUID) {
     return getDbSession().getNumberOfActivityInstanceComments(activityUUID);
   }
-  
-  public Map<ActivityInstanceUUID, Integer> getNumberOfActivityInstanceComments(Set<ActivityInstanceUUID> activityUUIDs) {
+
+  @Override
+  public Map<ActivityInstanceUUID, Integer> getNumberOfActivityInstanceComments(
+      final Set<ActivityInstanceUUID> activityUUIDs) {
     return getDbSession().getNumberOfActivityInstanceComments(activityUUIDs);
   }
 
-  public int getNumberOfComments(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public int getNumberOfComments(final ProcessInstanceUUID instanceUUID) {
     return getDbSession().getNumberOfComments(instanceUUID);
   }
 
-  public List<Comment> getCommentFeed(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public List<Comment> getCommentFeed(final ProcessInstanceUUID instanceUUID) {
     return getDbSession().getCommentFeed(instanceUUID);
   }
 
-  public List<Comment> getActivityInstanceCommentFeed(ActivityInstanceUUID activityUUID) {
+  @Override
+  public List<Comment> getActivityInstanceCommentFeed(final ActivityInstanceUUID activityUUID) {
     return getDbSession().getActivityInstanceCommentFeed(activityUUID);
   }
-  
-  public Set<ProcessDefinitionUUID> getAllProcessDefinitionUUIDsExcept(Set<ProcessDefinitionUUID> processUUIDs){
+
+  @Override
+  public Set<ProcessDefinitionUUID> getAllProcessDefinitionUUIDsExcept(final Set<ProcessDefinitionUUID> processUUIDs) {
     return getDbSession().getAllProcessDefinitionUUIDsExcept(processUUIDs);
   }
-  
-  public Set<ProcessDefinitionUUID> getAllProcessDefinitionUUIDs(){
+
+  @Override
+  public Set<ProcessDefinitionUUID> getAllProcessDefinitionUUIDs() {
     return getDbSession().getAllProcessDefinitionUUIDs();
   }
 
-  public int getNumberOfProcessInstanceComments(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public int getNumberOfProcessInstanceComments(final ProcessInstanceUUID instanceUUID) {
     return getDbSession().getNumberOfProcessInstanceComments(instanceUUID);
   }
 
-  public List<Comment> getProcessInstanceCommentFeed(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public List<Comment> getProcessInstanceCommentFeed(final ProcessInstanceUUID instanceUUID) {
     return getDbSession().getProcessInstanceCommentFeed(instanceUUID);
   }
 
-  public List<InternalProcessInstance> getParentUserInstances(String userId, int startingIndex, int pageSize) {
-	 List<InternalProcessInstance> dbInstances = getDbSession().getParentUserInstances(userId, startingIndex, pageSize);
-	 if (dbInstances == null) {
-	   return Collections.emptyList();
-	 }
-	 return dbInstances;
+  @Override
+  public List<InternalProcessInstance> getParentUserInstances(final String userId, final int startingIndex,
+      final int pageSize) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentUserInstances(userId, startingIndex,
+        pageSize);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
   }
 
-	public List<InternalProcessInstance> getParentUserInstances(String userId,
-			int startingIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentUserInstances(userId, startingIndex, pageSize, pagingCriterion);
-		 if (dbInstances == null) {
-		   return Collections.emptyList();
-		 }
-		 return dbInstances;
-	}
-
-  public List<InternalProcessInstance> getParentUserInstances(String userId, int startingIndex, int pageSize, Set<ProcessDefinitionUUID> definitionUUIDs) {
-    List<InternalProcessInstance> dbInstances = getDbSession().getParentUserInstances(userId, startingIndex, pageSize,  definitionUUIDs);
-	if (dbInstances == null) {
-	  return Collections.emptyList();
-	}
-	return dbInstances;
-  }
-  
-	public List<InternalProcessInstance> getParentUserInstances(String userId,
-			int startingIndex, int pageSize,
-			Set<ProcessDefinitionUUID> definitionUUIDs,
-			ProcessInstanceCriterion pagingCriterion) {
-		
-		List<InternalProcessInstance> dbInstances = getDbSession()
-				.getParentUserInstances(userId, startingIndex, pageSize,
-						definitionUUIDs, pagingCriterion);
-		if (dbInstances == null) {
-			return Collections.emptyList();
-		}
-		return dbInstances;
-	}
-
-	public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(
-			String userId, int startingIndex, int pageSize,
-			Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-		List<InternalProcessInstance> dbInstances = getDbSession()
-				.getParentProcessInstancesWithActiveUser(userId, startingIndex,
-						pageSize, visibleProcessUUIDs);
-		if (dbInstances == null) {
-			return Collections.emptyList();
-		}
-		return dbInstances;
+  @Override
+  public List<InternalProcessInstance> getParentUserInstances(final String userId, final int startingIndex,
+      final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentUserInstances(userId, startingIndex,
+        pageSize, pagingCriterion);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
   }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(
-			String userId, int startingIndex, int pageSize,
-			Set<ProcessDefinitionUUID> visibleProcessUUIDs,
-			ProcessInstanceCriterion pagingCriterion){
-		
-		List<InternalProcessInstance> dbInstances = getDbSession()
-				.getParentProcessInstancesWithActiveUser(userId, startingIndex,
-						pageSize, visibleProcessUUIDs, pagingCriterion);
-		if (dbInstances == null) {
-			return Collections.emptyList();
-		}
-		return dbInstances;
-	}
+  @Override
+  public List<InternalProcessInstance> getParentUserInstances(final String userId, final int startingIndex,
+      final int pageSize, final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentUserInstances(userId, startingIndex,
+        pageSize, definitionUUIDs);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(String userId, int startingIndex, int pageSize) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithActiveUser(userId, startingIndex, pageSize);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
+  @Override
+  public List<InternalProcessInstance> getParentUserInstances(final String userId, final int startingIndex,
+      final int pageSize, final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(
-			String userId, int startingIndex, int pageSize,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithActiveUser(
-				userId, startingIndex, pageSize, pagingCriterion);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentUserInstances(userId, startingIndex,
+        pageSize, definitionUUIDs, pagingCriterion);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, Date currentDate, Date atRisk, int startingIndex, int pageSize,
-			Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId,currentDate, atRisk, startingIndex, pageSize,  visibleProcessUUIDs);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int startingIndex, final int pageSize, final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithActiveUser(userId,
+        startingIndex, pageSize, visibleProcessUUIDs);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-			String userId, Date currentDate, Date atRisk, int startingIndex,
-			int pageSize, Set<ProcessDefinitionUUID> visibleProcessUUIDs,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-				userId,currentDate, atRisk, startingIndex, pageSize,  visibleProcessUUIDs, pagingCriterion);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int startingIndex, final int pageSize, final Set<ProcessDefinitionUUID> visibleProcessUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, Date currentDate, Date atRisk, int startingIndex, int pageSize) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk, startingIndex, pageSize);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithActiveUser(userId,
+        startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-			String userId, Date currentDate, Date atRisk, int startingIndex,
-			int pageSize, ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-				userId, currentDate, atRisk, startingIndex, pageSize, pagingCriterion);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
-	
-	public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(String userId, Date currentDate, int startingIndex, int pageSize, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithOverdueTasks(userId,currentDate, startingIndex, pageSize,  visibleProcessUUIDs);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int startingIndex, final int pageSize) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithActiveUser(userId,
+        startingIndex, pageSize);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(
-			String userId, Date currentDate, int startingIndex, int pageSize,
-			Set<ProcessDefinitionUUID> visibleProcessUUIDs,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithOverdueTasks(
-				userId, currentDate, startingIndex, pageSize,  visibleProcessUUIDs, pagingCriterion);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int startingIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithActiveUser(userId,
+        startingIndex, pageSize, pagingCriterion);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(String userId, Date currentDate, int startingIndex, int pageSize) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithOverdueTasks(userId, currentDate, startingIndex, pageSize);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final Date currentDate, final Date atRisk, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final List<InternalProcessInstance> dbInstances = getDbSession()
+        .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+            startingIndex, pageSize, visibleProcessUUIDs);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(
-			String userId, Date currentDate, int startingIndex, int pageSize,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithOverdueTasks(
-				userId, currentDate, startingIndex, pageSize, pagingCriterion);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
-	
-	public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(String userId, int startingIndex, int pageSize, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithInvolvedUser(userId, startingIndex, pageSize,  visibleProcessUUIDs);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final Date currentDate, final Date atRisk, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> dbInstances = getDbSession()
+        .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+            startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(
-			String userId, int startingIndex, int pageSize,
-			Set<ProcessDefinitionUUID> visibleProcessUUIDs,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithInvolvedUser(userId, 
-				startingIndex, pageSize,  visibleProcessUUIDs, pagingCriterion);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final Date currentDate, final Date atRisk, final int startingIndex, final int pageSize) {
+    final List<InternalProcessInstance> dbInstances = getDbSession()
+        .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+            startingIndex, pageSize);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(String userId, int startingIndex, int pageSize) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithInvolvedUser(userId, startingIndex, pageSize);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final Date currentDate, final Date atRisk, final int startingIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> dbInstances = getDbSession()
+        .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+            startingIndex, pageSize, pagingCriterion);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(
-			String userId, int startingIndex, int pageSize,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithInvolvedUser(
-				userId, startingIndex, pageSize, pagingCriterion);
-		if (dbInstances == null) {
-		  return Collections.emptyList();
-		}
-		return dbInstances;
-	}
-	
-	public Integer getNumberOfParentProcessInstancesWithActiveUser(String userId, Set<ProcessDefinitionUUID> visibleProcessUUIDs){
-		return getDbSession().getNumberOfParentProcessInstancesWithActiveUser(userId,visibleProcessUUIDs);
-	}
-	public Integer getNumberOfParentProcessInstancesWithActiveUser(String userId){
-	 return getDbSession().getNumberOfParentProcessInstancesWithActiveUser(userId);
-	}
-	
-	public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, Date currentDate, Date atRisk, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-		return getDbSession().getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,visibleProcessUUIDs);
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final Date currentDate, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithOverdueTasks(userId,
+        currentDate, startingIndex, pageSize, visibleProcessUUIDs);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, Date currentDate, Date atRisk) {
-		return getDbSession().getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk);
-	}
-	
-	public Integer getNumberOfParentProcessInstancesWithOverdueTasks(String userId, Date currentDate, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-		return getDbSession().getNumberOfParentProcessInstancesWithOverdueTasks(userId, currentDate,visibleProcessUUIDs);
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final Date currentDate, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithOverdueTasks(userId,
+        currentDate, startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public Integer getNumberOfParentProcessInstancesWithOverdueTasks(String userId, Date currentDate) {
-		return getDbSession().getNumberOfParentProcessInstancesWithOverdueTasks(userId, currentDate);
-	}
-	
-	public Integer getNumberOfParentProcessInstancesWithInvolvedUser(String userId, Set<ProcessDefinitionUUID> visibleProcessUUIDs){
-	 return getDbSession().getNumberOfParentProcessInstancesWithInvolvedUser(userId,visibleProcessUUIDs);
-	}
-	public Integer getNumberOfParentProcessInstancesWithInvolvedUser(String userId){
-	 return getDbSession().getNumberOfParentProcessInstancesWithInvolvedUser(userId);
-	}
-	public Integer getNumberOfParentProcessInstancesWithStartedBy(String userId, Set<ProcessDefinitionUUID> visibleProcessUUIDs){
-	 return getDbSession().getNumberOfParentProcessInstancesWithStartedBy(userId,visibleProcessUUIDs);
-	}
-	public Integer getNumberOfParentProcessInstancesWithStartedBy(String userId){
-	 return getDbSession().getNumberOfParentProcessInstancesWithStartedBy(userId);
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final Date currentDate, final int startingIndex, final int pageSize) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithOverdueTasks(userId,
+        currentDate, startingIndex, pageSize);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public Set<Category> getCategories(Collection<String> categoryNames) {
-	  return getDbSession().getCategories(categoryNames);
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final Date currentDate, final int startingIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithOverdueTasks(userId,
+        currentDate, startingIndex, pageSize, pagingCriterion);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public Set<Category> getAllCategories() {
-		return getDbSession().getAllCategories();
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int startingIndex, final int pageSize, final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithInvolvedUser(userId,
+        startingIndex, pageSize, visibleProcessUUIDs);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public Set<Category> getAllCategoriesExcept(Set<String> uuids) {
-		return getDbSession().getAllCategoriesExcept(uuids);
-	}
-	
-	public CategoryImpl getCategoryByUUID(String uuid) {
-	  return getDbSession().getCategoryByUUID(uuid);
-	}
-	
-	public Set<CategoryImpl> getCategoriesByUUIDs(Set<CategoryUUID> uuids) {
-	  return getDbSession().getCategoriesByUUIDs(uuids);
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int startingIndex, final int pageSize, final Set<ProcessDefinitionUUID> visibleProcessUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithInvolvedUser(userId,
+        startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-	public Set<ProcessDefinitionUUID> getProcessUUIDsFromCategory(String category) {
-		return getDbSession().getProcessUUIDsFromCategory(category);
-	}
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int startingIndex, final int pageSize) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithInvolvedUser(userId,
+        startingIndex, pageSize);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
 
-  public List<Object> search(SearchQueryBuilder query, int firstResult, int maxResults, Class<?> indexClass) {
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int startingIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> dbInstances = getDbSession().getParentProcessInstancesWithInvolvedUser(userId,
+        startingIndex, pageSize, pagingCriterion);
+    if (dbInstances == null) {
+      return Collections.emptyList();
+    }
+    return dbInstances;
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUser(final String userId,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    return getDbSession().getNumberOfParentProcessInstancesWithActiveUser(userId, visibleProcessUUIDs);
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUser(final String userId) {
+    return getDbSession().getNumberOfParentProcessInstancesWithActiveUser(userId);
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(final String userId,
+      final Date currentDate, final Date atRisk, final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    return getDbSession().getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId,
+        currentDate, atRisk, visibleProcessUUIDs);
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(final String userId,
+      final Date currentDate, final Date atRisk) {
+    return getDbSession().getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId,
+        currentDate, atRisk);
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(final String userId, final Date currentDate,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    return getDbSession().getNumberOfParentProcessInstancesWithOverdueTasks(userId, currentDate, visibleProcessUUIDs);
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(final String userId, final Date currentDate) {
+    return getDbSession().getNumberOfParentProcessInstancesWithOverdueTasks(userId, currentDate);
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(final String userId,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    return getDbSession().getNumberOfParentProcessInstancesWithInvolvedUser(userId, visibleProcessUUIDs);
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(final String userId) {
+    return getDbSession().getNumberOfParentProcessInstancesWithInvolvedUser(userId);
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithStartedBy(final String userId,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    return getDbSession().getNumberOfParentProcessInstancesWithStartedBy(userId, visibleProcessUUIDs);
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithStartedBy(final String userId) {
+    return getDbSession().getNumberOfParentProcessInstancesWithStartedBy(userId);
+  }
+
+  @Override
+  public Set<Category> getCategories(final Collection<String> categoryNames) {
+    return getDbSession().getCategories(categoryNames);
+  }
+
+  @Override
+  public Set<Category> getAllCategories() {
+    return getDbSession().getAllCategories();
+  }
+
+  @Override
+  public Set<Category> getAllCategoriesExcept(final Set<String> uuids) {
+    return getDbSession().getAllCategoriesExcept(uuids);
+  }
+
+  @Override
+  public CategoryImpl getCategoryByUUID(final String uuid) {
+    return getDbSession().getCategoryByUUID(uuid);
+  }
+
+  @Override
+  public Set<CategoryImpl> getCategoriesByUUIDs(final Set<CategoryUUID> uuids) {
+    return getDbSession().getCategoriesByUUIDs(uuids);
+  }
+
+  @Override
+  public Set<ProcessDefinitionUUID> getProcessUUIDsFromCategory(final String category) {
+    return getDbSession().getProcessUUIDsFromCategory(category);
+  }
+
+  @Override
+  public List<Object> search(final SearchQueryBuilder query, final int firstResult, final int maxResults,
+      final Class<?> indexClass) {
     return getDbSession().search(query, firstResult, maxResults, indexClass);
   }
 
-  public int search(SearchQueryBuilder query, Class<?> indexClass) {
+  @Override
+  public int search(final SearchQueryBuilder query, final Class<?> indexClass) {
     return getDbSession().search(query, indexClass);
   }
 
-  public Set<ActivityDefinitionUUID> getProcessTaskUUIDs(ProcessDefinitionUUID definitionUUID) {
+  @Override
+  public Set<ActivityDefinitionUUID> getProcessTaskUUIDs(final ProcessDefinitionUUID definitionUUID) {
     return getDbSession().getProcessTaskUUIDs(definitionUUID);
   }
 
-  public boolean processExists(ProcessDefinitionUUID definitionUUID) {
+  @Override
+  public boolean processExists(final ProcessDefinitionUUID definitionUUID) {
     return getDbSession().processExists(definitionUUID);
   }
 
-  public List<Long> getProcessInstancesDuration(Date since, Date until) {    
+  @Override
+  public List<Long> getProcessInstancesDuration(final Date since, final Date until) {
     return getDbSession().getProcessInstancesDuration(since, until);
   }
 
-  public List<Long> getProcessInstancesDuration(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  @Override
+  public List<Long> getProcessInstancesDuration(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     return getDbSession().getProcessInstancesDuration(processUUID, since, until);
   }
 
-  public List<Long> getProcessInstancesDurationFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getProcessInstancesDurationFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
     return getDbSession().getProcessInstancesDurationFromProcessUUIDs(processUUIDs, since, until);
   }
 
-  public List<Long> getActivityInstancesExecutionTime(Date since, Date until) {    
+  @Override
+  public List<Long> getActivityInstancesExecutionTime(final Date since, final Date until) {
     return getDbSession().getActivityInstancesExecutionTime(since, until);
   }
 
-  public List<Long> getActivityInstancesExecutionTime(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesExecutionTime(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     return getDbSession().getActivityInstancesExecutionTime(processUUID, since, until);
   }
 
-  public List<Long> getActivityInstancesExecutionTimeFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesExecutionTimeFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
     return getDbSession().getActivityInstancesExecutionTimeFromProcessUUIDs(processUUIDs, since, until);
   }
 
-  public List<Long> getActivityInstancesExecutionTime(
-      ActivityDefinitionUUID activityUUID, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesExecutionTime(final ActivityDefinitionUUID activityUUID, final Date since,
+      final Date until) {
     return getDbSession().getActivityInstancesExecutionTime(activityUUID, since, until);
   }
 
-  public List<Long> getActivityInstancesExecutionTimeFromActivityUUIDs(
-      Set<ActivityDefinitionUUID> activityUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesExecutionTimeFromActivityUUIDs(final Set<ActivityDefinitionUUID> activityUUIDs,
+      final Date since, final Date until) {
     return getDbSession().getActivityInstancesExecutionTimeFromActivityUUIDs(activityUUIDs, since, until);
   }
 
-  public List<Long> getTaskInstancesWaitingTime(Date since, Date until) {    
+  @Override
+  public List<Long> getTaskInstancesWaitingTime(final Date since, final Date until) {
     return getDbSession().getTaskInstancesWaitingTime(since, until);
   }
 
-  public List<Long> getTaskInstancesWaitingTime(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTime(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     return getDbSession().getTaskInstancesWaitingTime(processUUID, since, until);
   }
 
-  public List<Long> getTaskInstancesWaitingTimeFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
     return getDbSession().getTaskInstancesWaitingTimeFromProcessUUIDs(processUUIDs, since, until);
   }
 
-  public List<Long> getTaskInstancesWaitingTime(
-      ActivityDefinitionUUID taskUUID, Date since, Date until) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTime(final ActivityDefinitionUUID taskUUID, final Date since,
+      final Date until) {
     return getDbSession().getTaskInstancesWaitingTime(taskUUID, since, until);
   }
 
-  public List<Long> getTaskInstancesWaitingTimeFromTaskUUIDs(
-      Set<ActivityDefinitionUUID> taskUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeFromTaskUUIDs(final Set<ActivityDefinitionUUID> taskUUIDs,
+      final Date since, final Date until) {
     return getDbSession().getTaskInstancesWaitingTimeFromTasksUUIDs(taskUUIDs, since, until);
   }
 
-  public List<Long> getTaskInstancesWaitingTimeOfUser(String username,
-      Date since, Date until) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeOfUser(final String username, final Date since, final Date until) {
     return getDbSession().getTaskInstancesWaitingTimeOfUser(username, since, until);
   }
 
-  public List<Long> getTaskInstancesWaitingTimeOfUser(String username,
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeOfUser(final String username, final ProcessDefinitionUUID processUUID,
+      final Date since, final Date until) {
     return getDbSession().getTaskInstancesWaitingTimeOfUser(username, processUUID, since, until);
   }
 
-  public List<Long> getTaskInstancesWaitingTimeOfUserFromProcessUUIDs(
-      String username, Set<ProcessDefinitionUUID> processUUIDs, Date since,
-      Date until) {    
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeOfUserFromProcessUUIDs(final String username,
+      final Set<ProcessDefinitionUUID> processUUIDs, final Date since, final Date until) {
     return getDbSession().getTaskInstancesWaitingTimeOfUserFromProcessUUIDs(username, processUUIDs, since, until);
   }
 
-  public List<Long> getTaskInstancesWaitingTimeOfUser(String username,
-      ActivityDefinitionUUID taskUUID, Date since, Date until) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeOfUser(final String username, final ActivityDefinitionUUID taskUUID,
+      final Date since, final Date until) {
     return getDbSession().getTaskInstancesWaitingTimeOfUser(username, taskUUID, since, until);
   }
 
-  public List<Long> getTaskInstancesWaitingTimeOfUserFromTaskUUIDs(
-      String username, Set<ActivityDefinitionUUID> taskUUIDs, Date since,
-      Date until) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeOfUserFromTaskUUIDs(final String username,
+      final Set<ActivityDefinitionUUID> taskUUIDs, final Date since, final Date until) {
     return getDbSession().getTaskInstancesWaitingTimeOfUserFromTaskUUIDs(username, taskUUIDs, since, until);
   }
 
-  public List<Long> getActivityInstancesDuration(Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesDuration(final Date since, final Date until) {
     return getDbSession().getActivityInstancesDuration(since, until);
   }
 
-  public List<Long> getActivityInstancesDuration(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesDuration(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     return getDbSession().getActivityInstancesDuration(processUUID, since, until);
   }
 
-  public List<Long> getActivityInstancesDurationFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesDurationFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
     return getDbSession().getActivityInstancesDurationFromProcessUUIDs(processUUIDs, since, until);
   }
 
-  public List<Long> getActivityInstancesDuration(
-      ActivityDefinitionUUID activityUUID, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesDuration(final ActivityDefinitionUUID activityUUID, final Date since,
+      final Date until) {
     return getDbSession().getActivityInstancesDuration(activityUUID, since, until);
   }
 
-  public List<Long> getActivityInstancesDurationFromActivityUUIDs(
-      Set<ActivityDefinitionUUID> activityUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesDurationFromActivityUUIDs(final Set<ActivityDefinitionUUID> activityUUIDs,
+      final Date since, final Date until) {
     return getDbSession().getActivityInstancesDurationFromActivityUUIDs(activityUUIDs, since, until);
   }
 
-  public List<Long> getActivityInstancesDurationByActivityType(
-      Type activityType, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesDurationByActivityType(final Type activityType, final Date since,
+      final Date until) {
     return getDbSession().getActivityInstancesDurationByActivityType(activityType, since, until);
   }
 
-  public List<Long> getActivityInstancesDurationByActivityType(
-      Type activityType, ProcessDefinitionUUID processUUID, Date since,
-      Date until) {
+  @Override
+  public List<Long> getActivityInstancesDurationByActivityType(final Type activityType,
+      final ProcessDefinitionUUID processUUID, final Date since, final Date until) {
     return getDbSession().getActivityInstancesDurationByActivityType(activityType, processUUID, since, until);
   }
 
-  public List<Long> getActivityInstancesDurationByActivityTypeFromProcessUUIDs(
-      Type activityType, Set<ProcessDefinitionUUID> processUUIDs, Date since,
-      Date until) {
-    return getDbSession().getActivityInstancesDurationByActivityTypeFromProcessUUIDs(activityType, processUUIDs, since, until);
+  @Override
+  public List<Long> getActivityInstancesDurationByActivityTypeFromProcessUUIDs(final Type activityType,
+      final Set<ProcessDefinitionUUID> processUUIDs, final Date since, final Date until) {
+    return getDbSession().getActivityInstancesDurationByActivityTypeFromProcessUUIDs(activityType, processUUIDs, since,
+        until);
   }
 
-  public long getNumberOfCreatedProcessInstances(Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedProcessInstances(final Date since, final Date until) {
     return getDbSession().getNumberOfCreatedProcessInstances(since, until);
   }
 
-  public long getNumberOfCreatedProcessInstances(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedProcessInstances(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     return getDbSession().getNumberOfCreatedProcessInstances(processUUID, since, until);
   }
 
-  public long getNumberOfCreatedActivityInstances(Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstances(final Date since, final Date until) {
     return getDbSession().getNumberOfCreatedActivityInstances(since, until);
   }
 
-  public long getNumberOfCreatedActivityInstances(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstances(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     return getDbSession().getNumberOfCreatedActivityInstances(processUUID, since, until);
   }
 
-  public long getNumberOfCreatedActivityInstancesFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstancesFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
     return getDbSession().getNumberOfCreatedActivityInstancesFromProcessUUIDs(processUUIDs, since, until);
   }
 
-  public long getNumberOfCreatedActivityInstances(
-      ActivityDefinitionUUID activityUUID, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstances(final ActivityDefinitionUUID activityUUID, final Date since,
+      final Date until) {
     return getDbSession().getNumberOfCreatedActivityInstances(activityUUID, since, until);
   }
 
-  public long getNumberOfCreatedActivityInstancesFromActivityUUIDs(
-      Set<ActivityDefinitionUUID> activityUUIDs, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstancesFromActivityUUIDs(final Set<ActivityDefinitionUUID> activityUUIDs,
+      final Date since, final Date until) {
     return getDbSession().getNumberOfCreatedActivityInstancesFromActivityUUIDs(activityUUIDs, since, until);
   }
 
-  public long getNumberOfCreatedActivityInstancesByActivityType(
-      Type activityType, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstancesByActivityType(final Type activityType, final Date since,
+      final Date until) {
     return getDbSession().getNumberOfCreatedActivityInstancesByActivityType(activityType, since, until);
   }
 
-  public long getNumberOfCreatedActivityInstancesByActivityType(
-      Type activityType, ProcessDefinitionUUID processUUID, Date since,
-      Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstancesByActivityType(final Type activityType,
+      final ProcessDefinitionUUID processUUID, final Date since, final Date until) {
     return getDbSession().getNumberOfCreatedActivityInstancesByActivityType(activityType, processUUID, since, until);
   }
 
-  public long getNumberOfCreatedActivityInstancesByActivityTypeFromProcessUUIDs(
-      Type activityType, Set<ProcessDefinitionUUID> processUUIDs, Date since,
-      Date until) {
-    return getDbSession().getNumberOfCreatedActivityInstancesByActivityTypeFromProcessUUIDs(activityType, processUUIDs, since, until);
+  @Override
+  public long getNumberOfCreatedActivityInstancesByActivityTypeFromProcessUUIDs(final Type activityType,
+      final Set<ProcessDefinitionUUID> processUUIDs, final Date since, final Date until) {
+    return getDbSession().getNumberOfCreatedActivityInstancesByActivityTypeFromProcessUUIDs(activityType, processUUIDs,
+        since, until);
   }
 
-  public boolean containsOtherActiveActivities(ProcessInstanceUUID instanceUUID, ActivityInstanceUUID activityUUID) {
+  @Override
+  public boolean containsOtherActiveActivities(final ProcessInstanceUUID instanceUUID,
+      final ActivityInstanceUUID activityUUID) {
     return getDbSession().containsOtherActiveActivities(instanceUUID, activityUUID);
   }
 

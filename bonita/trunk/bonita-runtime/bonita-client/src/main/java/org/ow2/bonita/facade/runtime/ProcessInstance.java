@@ -79,6 +79,7 @@ public interface ProcessInstance extends LightProcessInstance {
 
   @Deprecated
   List<AttachmentInstance> getAttachments(String attachmentName);
+
   Set<String> getInvolvedUsers();
 
   /**

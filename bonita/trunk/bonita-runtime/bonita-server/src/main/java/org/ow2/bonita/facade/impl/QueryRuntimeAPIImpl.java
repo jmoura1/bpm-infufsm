@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
@@ -102,22 +103,24 @@ import org.xml.sax.SAXException;
  */
 public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
 
-  private String queryList;
+  private final String queryList;
 
   protected QueryRuntimeAPIImpl(final String queryList) {
     this.queryList = queryList;
   }
 
   private String getQueryList() {
-    return this.queryList;
+    return queryList;
   }
 
+  @Override
   public int getNumberOfParentProcessInstances() {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     int count = 0;
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+          RuleType.PROCESS_READ);
       if (visibleProcessUUIDs != null) {
         count = EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstances(visibleProcessUUIDs);
       }
@@ -127,12 +130,72 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return count;
   }
 
+  @Override
+  public int getNumberOfParentProcessInstances(final Set<ProcessDefinitionUUID> processDefinitionUUIDs) {
+    if (processDefinitionUUIDs == null || processDefinitionUUIDs.isEmpty()) {
+      return 0;
+    }
+
+    int count = 0;
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
+    if (access) {
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
+        if (visibleProcessUUIDs == null || visibleProcessUUIDs.isEmpty()) {
+          visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
+        }
+        visibleProcessUUIDs.retainAll(processDefinitionUUIDs);
+        if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
+          count = EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstances(visibleProcessUUIDs);
+        }
+      }
+    } else {
+      count = EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstances(processDefinitionUUIDs);
+    }
+    return count;
+  }
+
+  @Override
+  public int getNumberOfParentProcessInstancesExcept(final Set<ProcessDefinitionUUID> exceptions) {
+    if (exceptions == null || exceptions.isEmpty()) {
+      return getNumberOfParentProcessInstances();
+    }
+
+    int count = 0;
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
+    if (access) {
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
+        if (visibleProcessUUIDs == null || visibleProcessUUIDs.isEmpty()) {
+          visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
+        }
+        visibleProcessUUIDs.removeAll(exceptions);
+        if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
+          count = EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstances(visibleProcessUUIDs);
+        }
+      }
+    } else {
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs = EnvTool.getAllQueriers(getQueryList())
+          .getAllProcessDefinitionUUIDsExcept(exceptions);
+      if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
+        count = EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstances(visibleProcessUUIDs);
+      }
+    }
+    return count;
+  }
+
+  @Override
   public int getNumberOfProcessInstances() {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     int count = 0;
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+          RuleType.PROCESS_READ);
       if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
         count = EnvTool.getAllQueriers(getQueryList()).getNumberOfProcessInstances(visibleProcessUUIDs);
       }
@@ -142,8 +205,8 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return count;
   }
 
-  public ProcessInstance getProcessInstance(final ProcessInstanceUUID instanceUUID)
-  throws InstanceNotFoundException {
+  @Override
+  public ProcessInstance getProcessInstance(final ProcessInstanceUUID instanceUUID) throws InstanceNotFoundException {
     final InternalProcessInstance instance = getInternalProcessInstanceWithAttachments(instanceUUID);
     if (instance == null) {
       throw new InstanceNotFoundException("bai_QRAPII_1", instanceUUID);
@@ -151,17 +214,18 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return new ProcessInstanceImpl(instance);
   }
 
-  public LightProcessInstance getLightProcessInstance(ProcessInstanceUUID instanceUUID)
-  throws InstanceNotFoundException {
+  @Override
+  public LightProcessInstance getLightProcessInstance(final ProcessInstanceUUID instanceUUID)
+      throws InstanceNotFoundException {
     final ProcessInstance result = getInternalProcessInstanceWithoutAttachements(instanceUUID);
     if (result == null) {
       throw new InstanceNotFoundException("bai_QRAPII_1", instanceUUID);
     }
     return new LightProcessInstanceImpl(result);
-  }  
+  }
 
   private InternalProcessInstance getInternalProcessInstanceWithAttachments(final ProcessInstanceUUID instanceUUID)
-  throws InstanceNotFoundException {
+      throws InstanceNotFoundException {
     final InternalProcessInstance internalProcessInstance = getInternalProcessInstanceWithoutAttachements(instanceUUID);
     if (internalProcessInstance != null && internalProcessInstance.getNbOfAttachments() > 0) {
       bindAttachementsToInternalProcessInstance(internalProcessInstance);
@@ -174,24 +238,24 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
       final int nbOfAttachments = internalProcessInstance.getNbOfAttachments();
       if (nbOfAttachments > 0) {
         final DocumentationManager manager = EnvTool.getDocumentationManager();
-        final List<AttachmentInstance> allAttachmentVersions = DocumentService.getAllAttachmentVersions(manager, internalProcessInstance.getProcessInstanceUUID());
-        for (AttachmentInstance attachmentInstance : allAttachmentVersions) {
+        final List<AttachmentInstance> allAttachmentVersions = DocumentService.getAllAttachmentVersions(manager,
+            internalProcessInstance.getProcessInstanceUUID());
+        for (final AttachmentInstance attachmentInstance : allAttachmentVersions) {
           internalProcessInstance.addAttachment(attachmentInstance);
         }
       }
     }
   }
 
-  private InternalProcessInstance getInternalProcessInstanceWithoutAttachements(
-      final ProcessInstanceUUID instanceUUID) {
+  private InternalProcessInstance getInternalProcessInstanceWithoutAttachements(final ProcessInstanceUUID instanceUUID) {
     FacadeUtil.checkArgsNotNull(instanceUUID);
-    Querier querier = EnvTool.getAllQueriers(getQueryList());
-    final InternalProcessInstance result = querier.getProcessInstance(instanceUUID);
-    return result;
+    final Querier querier = EnvTool.getAllQueriers(getQueryList());
+    return querier.getProcessInstance(instanceUUID);
   }
 
+  @Override
   public Set<ProcessInstance> getProcessInstances() {
-    Set<InternalProcessInstance> processes = getInternalProcessInstancesWithAttachements();
+    final Set<InternalProcessInstance> processes = getInternalProcessInstancesWithAttachements();
     final Set<ProcessInstance> result = new HashSet<ProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new ProcessInstanceImpl(record));
@@ -199,8 +263,9 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
+  @Override
   public Set<LightProcessInstance> getLightProcessInstances() {
-    Set<InternalProcessInstance> processes = getInternalProcessInstancesWithoutAttachements();
+    final Set<InternalProcessInstance> processes = getInternalProcessInstancesWithoutAttachements();
     final Set<LightProcessInstance> result = new HashSet<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -209,12 +274,13 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
   }
 
   private Set<InternalProcessInstance> getInternalProcessInstancesWithoutAttachements() {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     Set<InternalProcessInstance> processes = new HashSet<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
           processes = EnvTool.getAllQueriers(getQueryList()).getProcessInstances(visibleProcessUUIDs);
         }
@@ -224,7 +290,7 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     }
     return processes;
   }
-  
+
   private Set<InternalProcessInstance> getInternalProcessInstancesWithAttachements() {
     final Set<InternalProcessInstance> processes = getInternalProcessInstancesWithoutAttachements();
     bindAttachementsToInternalProcessInstances(processes);
@@ -237,19 +303,22 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     }
   }
 
-  public List<LightProcessInstance> getLightProcessInstances(int fromIndex, int pageSize) {
+  @Override
+  public List<LightProcessInstance> getLightProcessInstances(final int fromIndex, final int pageSize) {
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     if (pageSize <= 0) {
       return result;
     }
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getProcessInstances(visibleProcessUUIDs, fromIndex, pageSize);
+          processes = EnvTool.getAllQueriers(getQueryList()).getProcessInstances(visibleProcessUUIDs, fromIndex,
+              pageSize);
         }
       }
     } else {
@@ -262,20 +331,23 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightProcessInstances(int fromIndex,
-      int pageSize, ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<LightProcessInstance> getLightProcessInstances(final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     if (pageSize <= 0) {
       return result;
     }
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getProcessInstances(visibleProcessUUIDs, fromIndex, pageSize, pagingCriterion);
+          processes = EnvTool.getAllQueriers(getQueryList()).getProcessInstances(visibleProcessUUIDs, fromIndex,
+              pageSize, pagingCriterion);
         }
       }
     } else {
@@ -288,109 +360,118 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstances(int fromIndex, int pageSize) {
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstances(final int fromIndex, final int pageSize) {
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     if (pageSize <= 0) {
       return result;
     }
-    List<InternalProcessInstance> records = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstances(fromIndex ,pageSize);
+    final List<InternalProcessInstance> records = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstances(
+        fromIndex, pageSize);
     for (final ProcessInstance record : records) {
       result.add(new LightProcessInstanceImpl(record));
     }
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstances(
-      Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstances(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
     Misc.checkArgsNotNull(processUUIDs);
     if (processUUIDs.isEmpty()) {
       return Collections.emptyList();
     }
-    List<InternalProcessInstance> processes = getParentProcessInstances(processUUIDs, fromIndex, pageSize, pagingCriterion);    
+    final List<InternalProcessInstance> processes = getParentProcessInstances(processUUIDs, fromIndex, pageSize,
+        pagingCriterion);
 
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
     }
-    return result;      
+    return result;
   }
 
-  private List<InternalProcessInstance> getParentProcessInstances(Set<ProcessDefinitionUUID> processUUIDs, int startingIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessInstance> getParentProcessInstances(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int startingIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null || visibleProcessUUIDs.isEmpty()) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
         visibleProcessUUIDs.retainAll(processUUIDs);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstances(visibleProcessUUIDs, 
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstances(visibleProcessUUIDs,
               startingIndex, pageSize, pagingCriterion);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstances(processUUIDs,  
-          startingIndex, pageSize, pagingCriterion);
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstances(processUUIDs, startingIndex,
+          pageSize, pagingCriterion);
     }
     return processes;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesExcept(
-      Set<ProcessDefinitionUUID> exceptions, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {    
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesExcept(final Set<ProcessDefinitionUUID> exceptions,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
     if (exceptions == null || exceptions.isEmpty()) {
       return getLightParentProcessInstances(fromIndex, pageSize, pagingCriterion);
     }
 
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null || visibleProcessUUIDs.isEmpty()) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
         visibleProcessUUIDs.removeAll(exceptions);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstances(visibleProcessUUIDs, 
-              fromIndex, pageSize, pagingCriterion);
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstances(visibleProcessUUIDs, fromIndex,
+              pageSize, pagingCriterion);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesExcept(exceptions,  
-          fromIndex, pageSize, pagingCriterion);
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesExcept(exceptions, fromIndex,
+          pageSize, pagingCriterion);
     }
 
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
     }
-    return result;  
+    return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstances(
-      int fromIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstances(final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     if (pageSize <= 0) {
       return result;
     }
-    List<InternalProcessInstance> records = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstances(fromIndex ,pageSize, pagingCriterion);
+    final List<InternalProcessInstance> records = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstances(
+        fromIndex, pageSize, pagingCriterion);
     for (final ProcessInstance record : records) {
       result.add(new LightProcessInstanceImpl(record));
     }
     return result;
   }
 
+  @Override
   public Set<ProcessInstance> getUserInstances() {
     final Set<InternalProcessInstance> processes = getUserProcessInstances();
-    //bind attachements from document service
+    // bind attachements from document service
     bindAttachementsToInternalProcessInstances(processes);
-    
+
     final Set<ProcessInstance> result = new HashSet<ProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new ProcessInstanceImpl(record));
@@ -398,8 +479,9 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
+  @Override
   public Set<LightProcessInstance> getLightUserInstances() {
-    Set<InternalProcessInstance> processes = getUserProcessInstances();
+    final Set<InternalProcessInstance> processes = getUserProcessInstances();
     final Set<LightProcessInstance> result = new HashSet<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -407,8 +489,9 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentUserInstances(int startingIndex, int pageSize) {
-    List<InternalProcessInstance> processes = getUserParentProcessInstances(startingIndex, pageSize);
+  @Override
+  public List<LightProcessInstance> getLightParentUserInstances(final int startingIndex, final int pageSize) {
+    final List<InternalProcessInstance> processes = getUserParentProcessInstances(startingIndex, pageSize);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -416,9 +499,10 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentUserInstances(int fromIndex,
-      int pageSize, ProcessInstanceCriterion pagingCriterion) {
-    List<InternalProcessInstance> processes = getUserParentProcessInstances(fromIndex, pageSize, pagingCriterion);
+  @Override
+  public List<LightProcessInstance> getLightParentUserInstances(final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processes = getUserParentProcessInstances(fromIndex, pageSize, pagingCriterion);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -426,8 +510,10 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUser(String userId, int fromIndex, int pageSize) {
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUser(userId, fromIndex, pageSize);
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUser(final String userId,
+      final int fromIndex, final int pageSize) {
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUser(userId, fromIndex, pageSize);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -435,10 +521,11 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUser(
-      String userId, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUser(userId, fromIndex, pageSize, pagingCriterion);
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUser(final String userId,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUser(userId, fromIndex,
+        pageSize, pagingCriterion);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -446,20 +533,11 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, int remainingDays, int fromIndex, int pageSize) {
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId,remainingDays, fromIndex, pageSize);
-    final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
-    for (final ProcessInstance record : processes) {
-      result.add(new LightProcessInstanceImpl(record));
-    }
-    return result;
-  }
-
+  @Override
   public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-      String userId, int remainingDays, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-        userId,remainingDays, fromIndex, pageSize, pagingCriterion);
+      final String userId, final int remainingDays, final int fromIndex, final int pageSize) {
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+        userId, remainingDays, fromIndex, pageSize);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -467,9 +545,12 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithOverdueTasks(String userId, int fromIndex, int pageSize) {
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithOverdueTasks(userId, 
-        fromIndex, pageSize, ProcessInstanceCriterion.DEFAULT);
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final int remainingDays, final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+        userId, remainingDays, fromIndex, pageSize, pagingCriterion);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -477,11 +558,11 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithOverdueTasks(
-      String userId, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithOverdueTasks(userId, 
-        fromIndex, pageSize, pagingCriterion);
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithOverdueTasks(final String userId,
+      final int fromIndex, final int pageSize) {
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithOverdueTasks(userId, fromIndex,
+        pageSize, ProcessInstanceCriterion.DEFAULT);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -489,36 +570,51 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  private List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(String userId, int fromIndex, 
-      int pageSize, ProcessInstanceCriterion pagingCriterion) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithOverdueTasks(final String userId,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithOverdueTasks(userId, fromIndex,
+        pageSize, pagingCriterion);
+    final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
+    for (final ProcessInstance record : processes) {
+      result.add(new LightProcessInstanceImpl(record));
+    }
+    return result;
+  }
+
+  private List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
-    Date currentDate = new Date();
+    final Date currentDate = new Date();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithOverdueTasks(
-              userId, currentDate, fromIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithOverdueTasks(userId,
+              currentDate, fromIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithOverdueTasks(userId, 
-          currentDate, fromIndex, pageSize, pagingCriterion);
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithOverdueTasks(userId, currentDate,
+          fromIndex, pageSize, pagingCriterion);
     }
     return processes;
   }
 
-  private List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(String userId, 
-      int fromIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs, ProcessInstanceCriterion pagingCriterion) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
-    Date currentDate = new Date();
+    final Date currentDate = new Date();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
@@ -529,110 +625,132 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithOverdueTasks(userId, 
-          currentDate, fromIndex, pageSize,processUUIDs, pagingCriterion);
-    }
-    return processes;
-  }
-
-
-  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId,int remainingDays, int startingIndex, int pageSize) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
-    List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
-    Date currentDate = new Date();
-    Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(currentDate);
-    Date atRisk = DateUtil.backTo(beginningOfTheDay, -(remainingDays+1));
-    if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
-        if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId,currentDate, atRisk, startingIndex, pageSize, visibleProcessUUIDs);
-        }
-      }
-    } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId,currentDate, atRisk, startingIndex, pageSize);
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithOverdueTasks(userId, currentDate,
+          fromIndex, pageSize, processUUIDs, pagingCriterion);
     }
     return processes;
   }
 
   private List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-      String userId,int remainingDays, int startingIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+      final String userId, final int remainingDays, final int startingIndex, final int pageSize) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
-    Date currentDate = new Date();
-    Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(currentDate);
-    Date atRisk = DateUtil.backTo(beginningOfTheDay, -(remainingDays+1));
+    final Date currentDate = new Date();
+    final Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(currentDate);
+    final Date atRisk = DateUtil.backTo(beginningOfTheDay, -(remainingDays + 1));
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-              userId,currentDate, atRisk, startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
+          processes = EnvTool.getAllQueriers(getQueryList())
+              .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+                  startingIndex, pageSize, visibleProcessUUIDs);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-          userId,currentDate, atRisk, startingIndex, pageSize, pagingCriterion);
+      processes = EnvTool.getAllQueriers(getQueryList())
+          .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+              startingIndex, pageSize);
     }
     return processes;
   }
 
-  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId,int remainingDays, int startingIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final int remainingDays, final int startingIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
-    Date currentDate = new Date();
-    Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(currentDate);
-    Date atRisk = DateUtil.backTo(beginningOfTheDay, -(remainingDays+1));
+    final Date currentDate = new Date();
+    final Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(currentDate);
+    final Date atRisk = DateUtil.backTo(beginningOfTheDay, -(remainingDays + 1));
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
+        if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
+          processes = EnvTool.getAllQueriers(getQueryList())
+              .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+                  startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
+        }
+      }
+    } else {
+      processes = EnvTool.getAllQueriers(getQueryList())
+          .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+              startingIndex, pageSize, pagingCriterion);
+    }
+    return processes;
+  }
+
+  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final int remainingDays, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
+    List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
+    final Date currentDate = new Date();
+    final Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(currentDate);
+    final Date atRisk = DateUtil.backTo(beginningOfTheDay, -(remainingDays + 1));
+    if (access) {
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
         visibleProcessUUIDs.retainAll(processUUIDs);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId,currentDate, atRisk, startingIndex, pageSize, visibleProcessUUIDs);
+          processes = EnvTool.getAllQueriers(getQueryList())
+              .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+                  startingIndex, pageSize, visibleProcessUUIDs);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId,currentDate, atRisk, startingIndex, pageSize, processUUIDs);
+      processes = EnvTool.getAllQueriers(getQueryList())
+          .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+              startingIndex, pageSize, processUUIDs);
     }
     return processes;
   }
 
-  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId,
-      int remainingDays, int startingIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs, ProcessInstanceCriterion pagingCriterion) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final int remainingDays, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> processUUIDs, final ProcessInstanceCriterion pagingCriterion) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
-    Date currentDate = new Date();
-    Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(currentDate);
-    Date atRisk = DateUtil.backTo(beginningOfTheDay, -(remainingDays+1));
+    final Date currentDate = new Date();
+    final Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(currentDate);
+    final Date atRisk = DateUtil.backTo(beginningOfTheDay, -(remainingDays + 1));
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
         visibleProcessUUIDs.retainAll(processUUIDs);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-              userId,currentDate, atRisk, startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
+          processes = EnvTool.getAllQueriers(getQueryList())
+              .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+                  startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-          userId,currentDate, atRisk, startingIndex, pageSize, processUUIDs, pagingCriterion);
+      processes = EnvTool.getAllQueriers(getQueryList())
+          .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+              startingIndex, pageSize, processUUIDs, pagingCriterion);
     }
     return processes;
   }
 
-
-  public List<LightProcessInstance> getLightParentProcessInstancesWithInvolvedUser(String userId, int fromIndex, int pageSize) {
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithInvolvedUser(userId, fromIndex, pageSize);
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithInvolvedUser(final String userId,
+      final int fromIndex, final int pageSize) {
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithInvolvedUser(userId, fromIndex,
+        pageSize);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -640,11 +758,11 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithInvolvedUser(
-      String userId, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithInvolvedUser(
-        userId, fromIndex, pageSize, pagingCriterion);
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithInvolvedUser(final String userId,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithInvolvedUser(userId, fromIndex,
+        pageSize, pagingCriterion);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -652,11 +770,14 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithInvolvedUser(String userId, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
-    if(processUUIDs== null || processUUIDs.isEmpty()){
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithInvolvedUser(final String userId,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs) {
+    if (processUUIDs == null || processUUIDs.isEmpty()) {
       return Collections.emptyList();
     }
-    List<InternalProcessInstance> internalProcesses = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithInvolvedUser(userId, fromIndex, pageSize, processUUIDs);
+    final List<InternalProcessInstance> internalProcesses = EnvTool.getAllQueriers(getQueryList())
+        .getParentProcessInstancesWithInvolvedUser(userId, fromIndex, pageSize, processUUIDs);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : internalProcesses) {
       result.add(new LightProcessInstanceImpl(record));
@@ -664,15 +785,15 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithInvolvedUser(
-      String userId, int fromIndex, int pageSize,
-      Set<ProcessDefinitionUUID> processUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
-    if(processUUIDs== null || processUUIDs.isEmpty()){
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithInvolvedUser(final String userId,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
+    if (processUUIDs == null || processUUIDs.isEmpty()) {
       return Collections.emptyList();
     }
-    List<InternalProcessInstance> internalProcesses = EnvTool.getAllQueriers(getQueryList())
-    .getParentProcessInstancesWithInvolvedUser(userId, fromIndex, pageSize, processUUIDs, pagingCriterion);
+    final List<InternalProcessInstance> internalProcesses = EnvTool.getAllQueriers(getQueryList())
+        .getParentProcessInstancesWithInvolvedUser(userId, fromIndex, pageSize, processUUIDs, pagingCriterion);
 
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : internalProcesses) {
@@ -681,14 +802,17 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUser(String userId) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUser(final String userId) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithActiveUser(userId, visibleProcessUUIDs);
+          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithActiveUser(userId,
+              visibleProcessUUIDs);
         }
       }
       return 0;
@@ -697,50 +821,64 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     }
   }
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, int remainingDays) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
-    Date currentDate = new Date();
-    Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(currentDate);
-    Date atRisk = DateUtil.backTo(beginningOfTheDay, -(remainingDays+1));
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(final String userId,
+      final int remainingDays) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
+    final Date currentDate = new Date();
+    final Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(currentDate);
+    final Date atRisk = DateUtil.backTo(beginningOfTheDay, -(remainingDays + 1));
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId,currentDate, atRisk, visibleProcessUUIDs);
+          return EnvTool.getAllQueriers(getQueryList())
+              .getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate,
+                  atRisk, visibleProcessUUIDs);
         }
       }
       return 0;
     } else {
-      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId,currentDate, atRisk);
+      return EnvTool.getAllQueriers(getQueryList())
+          .getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate,
+              atRisk);
     }
   }
 
-  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(String userId) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
-    Date currentDate = new Date();
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(final String userId) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
+    final Date currentDate = new Date();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithOverdueTasks(userId,currentDate, visibleProcessUUIDs);
+          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithOverdueTasks(userId,
+              currentDate, visibleProcessUUIDs);
         }
       }
       return 0;
     } else {
-      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithOverdueTasks(userId,currentDate);
+      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithOverdueTasks(userId,
+          currentDate);
     }
-  }	
+  }
 
-  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(String userId) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(final String userId) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(userId, visibleProcessUUIDs);
+          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(userId,
+              visibleProcessUUIDs);
         }
       }
       return 0;
@@ -749,32 +887,40 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     }
   }
 
-  public Integer getNumberOfParentProcessInstancesWithInvolvedUserAndCategory(String userId, String category) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
-    Set<ProcessDefinitionUUID> targetedProcesses = EnvTool.getAllQueriers(getQueryList()).getProcessUUIDsFromCategory(category);
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithInvolvedUserAndCategory(final String userId, final String category) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
+    final Set<ProcessDefinitionUUID> targetedProcesses = EnvTool.getAllQueriers(getQueryList())
+        .getProcessUUIDsFromCategory(category);
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         visibleProcessUUIDs.retainAll(targetedProcesses);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(userId, visibleProcessUUIDs);
+          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(userId,
+              visibleProcessUUIDs);
         }
       }
       return 0;
     } else {
-      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(userId, targetedProcesses);
+      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(userId,
+          targetedProcesses);
     }
   }
 
-  public Integer getNumberOfParentProcessInstancesWithStartedBy(String userId) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithStartedBy(final String userId) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithStartedBy(userId, visibleProcessUUIDs);
+          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithStartedBy(userId,
+              visibleProcessUUIDs);
         }
       }
       return 0;
@@ -783,213 +929,240 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     }
   }
 
-  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(String userId, int startingIndex, int pageSize) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int startingIndex, final int pageSize) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId, startingIndex, pageSize, visibleProcessUUIDs);
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId,
+              startingIndex, pageSize, visibleProcessUUIDs);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId, startingIndex, pageSize);
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId, startingIndex,
+          pageSize);
     }
     return processes;
   }
 
-  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(
-      String userId, int startingIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int startingIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(
-              userId, startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId,
+              startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(
-          userId, startingIndex, pageSize, pagingCriterion);
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId, startingIndex,
+          pageSize, pagingCriterion);
     }
     return processes;
   }
 
-  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(String userId, int startingIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int startingIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null || visibleProcessUUIDs.isEmpty()) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
         visibleProcessUUIDs.retainAll(processUUIDs);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId, startingIndex, pageSize, visibleProcessUUIDs);
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId,
+              startingIndex, pageSize, visibleProcessUUIDs);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId, startingIndex, pageSize, processUUIDs);
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId, startingIndex,
+          pageSize, processUUIDs);
     }
     return processes;
   }
 
-  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(String userId, 
-      int startingIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs, ProcessInstanceCriterion pagingCriterion) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int startingIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null || visibleProcessUUIDs.isEmpty()) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
         visibleProcessUUIDs.retainAll(processUUIDs);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId, 
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId,
               startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId, 
-          startingIndex, pageSize, processUUIDs, pagingCriterion);
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithActiveUser(userId, startingIndex,
+          pageSize, processUUIDs, pagingCriterion);
     }
     return processes;
   }
 
-  private List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(String userId, int startingIndex, int pageSize) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int startingIndex, final int pageSize) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithInvolvedUser(userId, startingIndex, pageSize, visibleProcessUUIDs);
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithInvolvedUser(userId,
+              startingIndex, pageSize, visibleProcessUUIDs);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithInvolvedUser(userId, startingIndex, pageSize);
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithInvolvedUser(userId,
+          startingIndex, pageSize);
     }
     return processes;
   }
 
-  private List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(String userId, 
-      int startingIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int startingIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithInvolvedUser(
-              userId, startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
-        }
-      }
-    } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithInvolvedUser(
-          userId, startingIndex, pageSize, pagingCriterion);
-    }
-    return processes;
-  }
-
-  private List<InternalProcessInstance> getUserParentProcessInstances(int startingIndex, int pageSize) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
-    List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
-    if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
-        if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), startingIndex, pageSize, visibleProcessUUIDs);
-        }
-      }
-    } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), startingIndex, pageSize);
-    }
-    return processes;
-  }
-
-  private List<InternalProcessInstance> getUserParentProcessInstances(int startingIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
-    List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
-    if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
-        if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), 
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithInvolvedUser(userId,
               startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), 
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentProcessInstancesWithInvolvedUser(userId,
           startingIndex, pageSize, pagingCriterion);
     }
     return processes;
   }
 
-  private List<InternalProcessInstance> getUserParentProcessInstances(int startingIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessInstance> getUserParentProcessInstances(final int startingIndex, final int pageSize) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
-        if (visibleProcessUUIDs == null) {
-          visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
-        }
-        visibleProcessUUIDs.retainAll(processUUIDs);
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), startingIndex, pageSize, visibleProcessUUIDs);
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), startingIndex,
+              pageSize, visibleProcessUUIDs);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), startingIndex, pageSize, processUUIDs);
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), startingIndex,
+          pageSize);
     }
     return processes;
   }
 
-  private List<InternalProcessInstance> getUserParentProcessInstances(int startingIndex, int pageSize, 
-      Set<ProcessDefinitionUUID> processUUIDs, ProcessInstanceCriterion pagingCriterion) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  private List<InternalProcessInstance> getUserParentProcessInstances(final int startingIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
+        if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), startingIndex,
+              pageSize, visibleProcessUUIDs, pagingCriterion);
+        }
+      }
+    } else {
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), startingIndex,
+          pageSize, pagingCriterion);
+    }
+    return processes;
+  }
+
+  private List<InternalProcessInstance> getUserParentProcessInstances(final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
+    List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
+    if (access) {
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
         visibleProcessUUIDs.retainAll(processUUIDs);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), 
-              startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), startingIndex,
+              pageSize, visibleProcessUUIDs);
         }
       }
     } else {
-      processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), 
-          startingIndex, pageSize, processUUIDs, pagingCriterion);
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), startingIndex,
+          pageSize, processUUIDs);
+    }
+    return processes;
+  }
+
+  private List<InternalProcessInstance> getUserParentProcessInstances(final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> processUUIDs, final ProcessInstanceCriterion pagingCriterion) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
+    List<InternalProcessInstance> processes = new ArrayList<InternalProcessInstance>();
+    if (access) {
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
+        if (visibleProcessUUIDs == null) {
+          visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
+        }
+        visibleProcessUUIDs.retainAll(processUUIDs);
+        if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
+          processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), startingIndex,
+              pageSize, visibleProcessUUIDs, pagingCriterion);
+        }
+      }
+    } else {
+      processes = EnvTool.getAllQueriers(getQueryList()).getParentUserInstances(EnvTool.getUserId(), startingIndex,
+          pageSize, processUUIDs, pagingCriterion);
     }
     return processes;
   }
 
   private Set<InternalProcessInstance> getUserProcessInstances() {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     Set<InternalProcessInstance> processes = new HashSet<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
           processes = EnvTool.getAllQueriers(getQueryList()).getUserInstances(EnvTool.getUserId(), visibleProcessUUIDs);
         }
@@ -1000,19 +1173,22 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return processes;
   }
 
-  public Set<ProcessInstance> getProcessInstances(Collection<ProcessInstanceUUID> instanceUUIDs) {
+  @Override
+  public Set<ProcessInstance> getProcessInstances(final Collection<ProcessInstanceUUID> instanceUUIDs) {
     final Set<ProcessInstance> result = new HashSet<ProcessInstance>();
     if (instanceUUIDs == null || instanceUUIDs.isEmpty()) {
       return result;
     }
-    for (final InternalProcessInstance record : EnvTool.getAllQueriers(getQueryList()).getProcessInstances(instanceUUIDs)) {
+    for (final InternalProcessInstance record : EnvTool.getAllQueriers(getQueryList()).getProcessInstances(
+        instanceUUIDs)) {
       bindAttachementsToInternalProcessInstance(record);
       result.add(new ProcessInstanceImpl(record));
     }
     return result;
   }
 
-  public Set<LightProcessInstance> getLightProcessInstances(Collection<ProcessInstanceUUID> instanceUUIDs) {
+  @Override
+  public Set<LightProcessInstance> getLightProcessInstances(final Collection<ProcessInstanceUUID> instanceUUIDs) {
     final Set<LightProcessInstance> result = new HashSet<LightProcessInstance>();
     if (instanceUUIDs == null || instanceUUIDs.isEmpty()) {
       return result;
@@ -1023,7 +1199,9 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightProcessInstances(Collection<ProcessInstanceUUID> instanceUUIDs, int fromIndex, int pageSize) {
+  @Override
+  public List<LightProcessInstance> getLightProcessInstances(final Collection<ProcessInstanceUUID> instanceUUIDs,
+      final int fromIndex, final int pageSize) {
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     if (pageSize <= 0) {
       return result;
@@ -1031,15 +1209,16 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     if (instanceUUIDs == null || instanceUUIDs.isEmpty()) {
       return result;
     }
-    for (final ProcessInstance record : EnvTool.getAllQueriers(getQueryList()).getProcessInstances(instanceUUIDs, fromIndex, pageSize)) {
+    for (final ProcessInstance record : EnvTool.getAllQueriers(getQueryList()).getProcessInstances(instanceUUIDs,
+        fromIndex, pageSize)) {
       result.add(new LightProcessInstanceImpl(record));
     }
     return result;
   }
 
-  public List<LightProcessInstance> getLightProcessInstances(
-      Set<ProcessInstanceUUID> instanceUUIDs, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<LightProcessInstance> getLightProcessInstances(final Set<ProcessInstanceUUID> instanceUUIDs,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     if (pageSize <= 0) {
       return result;
@@ -1054,20 +1233,23 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Set<ProcessInstance> getProcessInstancesWithTaskState(Collection<ActivityState> activityStates) {
+  @Override
+  public Set<ProcessInstance> getProcessInstancesWithTaskState(final Collection<ActivityState> activityStates) {
     final Set<ProcessInstance> result = new HashSet<ProcessInstance>();
     if (activityStates == null || activityStates.isEmpty()) {
       return result;
     }
 
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     Set<InternalProcessInstance> processes = new HashSet<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          processes = EnvTool.getAllQueriers(getQueryList()).getProcessInstancesWithTaskState(activityStates, visibleProcessUUIDs);
+          processes = EnvTool.getAllQueriers(getQueryList()).getProcessInstancesWithTaskState(activityStates,
+              visibleProcessUUIDs);
         }
       }
     } else {
@@ -1080,18 +1262,19 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Set<ProcessInstance> getProcessInstancesWithInstanceStates(Collection<InstanceState> instanceStates) {
+  @Override
+  public Set<ProcessInstance> getProcessInstancesWithInstanceStates(final Collection<InstanceState> instanceStates) {
     Misc.checkArgsNotNull(instanceStates);
     if (instanceStates.isEmpty()) {
       throw new IllegalArgumentException(ExceptionManager.getInstance().getMessage("bai_QRAPII_15"));
     }
     final Set<ProcessInstance> result = new HashSet<ProcessInstance>();
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     Set<InternalProcessInstance> processes = new HashSet<InternalProcessInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
             RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
           processes = EnvTool.getAllQueriers(getQueryList()).getProcessInstancesWithInstanceStates(instanceStates,
@@ -1108,6 +1291,7 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
+  @Override
   public Set<ProcessInstance> getProcessInstances(final ProcessDefinitionUUID processUUID) {
     final Set<ProcessInstance> result = new HashSet<ProcessInstance>();
     for (final InternalProcessInstance record : EnvTool.getAllQueriers(getQueryList()).getProcessInstances(processUUID)) {
@@ -1117,7 +1301,8 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Set<LightProcessInstance> getLightProcessInstances(ProcessDefinitionUUID processUUID) {
+  @Override
+  public Set<LightProcessInstance> getLightProcessInstances(final ProcessDefinitionUUID processUUID) {
     final Set<LightProcessInstance> result = new HashSet<LightProcessInstance>();
     for (final ProcessInstance record : EnvTool.getAllQueriers(getQueryList()).getProcessInstances(processUUID)) {
       result.add(new LightProcessInstanceImpl(record));
@@ -1125,7 +1310,8 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Set<LightProcessInstance> getLightWeightProcessInstances(Set<ProcessDefinitionUUID> processUUIDs) {
+  @Override
+  public Set<LightProcessInstance> getLightWeightProcessInstances(final Set<ProcessDefinitionUUID> processUUIDs) {
     final Set<LightProcessInstance> result = new HashSet<LightProcessInstance>();
     for (final ProcessInstance record : EnvTool.getAllQueriers(getQueryList()).getProcessInstances(processUUIDs)) {
       result.add(new LightProcessInstanceImpl(record));
@@ -1133,10 +1319,11 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public ActivityInstance getActivityInstance(final ProcessInstanceUUID instanceUUID, final String activityId, final String iterationId, final String activityInstanceId, final String loopId)
-  throws ActivityNotFoundException, InstanceNotFoundException {
-    final ActivityInstance result =
-      EnvTool.getAllQueriers(getQueryList()).getActivityInstance(instanceUUID, activityId, iterationId, activityInstanceId, loopId);
+  public ActivityInstance getActivityInstance(final ProcessInstanceUUID instanceUUID, final String activityId,
+      final String iterationId, final String activityInstanceId, final String loopId) throws ActivityNotFoundException,
+      InstanceNotFoundException {
+    final ActivityInstance result = EnvTool.getAllQueriers(getQueryList()).getActivityInstance(instanceUUID,
+        activityId, iterationId, activityInstanceId, loopId);
     if (result == null) {
       if (EnvTool.getAllQueriers(getQueryList()).getProcessInstance(instanceUUID) == null) {
         throw new InstanceNotFoundException("bai_QRAPII_2", instanceUUID);
@@ -1146,22 +1333,20 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return new ActivityInstanceImpl(result);
   }
 
-  public boolean canExecuteTask(ActivityInstanceUUID taskUUID)
-  throws TaskNotFoundException {
-    TaskInstance task = getTask(taskUUID);
-    if (task == null) {
-      return false;
-    }
+  @Override
+  public boolean canExecuteTask(final ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
+    final TaskInstance task = getTask(taskUUID);
     if (!task.getState().equals(ActivityState.READY)) {
       return false;
     }
-    String userId = EnvTool.getUserId();
+    final String userId = EnvTool.getUserId();
     if (task.isTaskAssigned()) {
       return task.getTaskUser().equals(userId);
     }
     return task.getTaskCandidates().contains(userId);
   }
 
+  @Override
   public Set<ActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID) {
     final Set<ActivityInstance> result = new HashSet<ActivityInstance>();
     for (final ActivityInstance record : EnvTool.getAllQueriers(getQueryList()).getActivityInstances(instanceUUID)) {
@@ -1170,19 +1355,24 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightActivityInstance> getLightActivityInstancesFromRoot(ProcessInstanceUUID rootInstanceUUID) {
+  @Override
+  public List<LightActivityInstance> getLightActivityInstancesFromRoot(final ProcessInstanceUUID rootInstanceUUID) {
     final List<LightActivityInstance> result = new ArrayList<LightActivityInstance>();
-    List<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList()).getActivityInstancesFromRoot(rootInstanceUUID);
+    final List<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList())
+        .getActivityInstancesFromRoot(rootInstanceUUID);
     for (final InternalActivityInstance record : activities) {
       result.add(new LightActivityInstanceImpl(record));
     }
     return result;
   }
 
-  public Map<ProcessInstanceUUID, List<LightActivityInstance>> getLightActivityInstancesFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs, ActivityState state) {
-    Map<ProcessInstanceUUID, List<LightActivityInstance>> result = new HashMap<ProcessInstanceUUID, List<LightActivityInstance>>();
-    List<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList()).getActivityInstancesFromRoot(rootInstanceUUIDs, state);
-    for (InternalActivityInstance activity : activities) {
+  @Override
+  public Map<ProcessInstanceUUID, List<LightActivityInstance>> getLightActivityInstancesFromRoot(
+      final Set<ProcessInstanceUUID> rootInstanceUUIDs, final ActivityState state) {
+    final Map<ProcessInstanceUUID, List<LightActivityInstance>> result = new HashMap<ProcessInstanceUUID, List<LightActivityInstance>>();
+    final List<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList())
+        .getActivityInstancesFromRoot(rootInstanceUUIDs, state);
+    for (final InternalActivityInstance activity : activities) {
       final ProcessInstanceUUID instanceUUID = activity.getRootInstanceUUID();
       if (!result.containsKey(instanceUUID)) {
         result.put(instanceUUID, new ArrayList<LightActivityInstance>());
@@ -1192,10 +1382,13 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Map<ProcessInstanceUUID, List<LightActivityInstance>> getLightActivityInstancesFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs) {
-    Map<ProcessInstanceUUID, List<LightActivityInstance>> result = new HashMap<ProcessInstanceUUID, List<LightActivityInstance>>();
-    List<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList()).getActivityInstancesFromRoot(rootInstanceUUIDs);
-    for (InternalActivityInstance activity : activities) {
+  @Override
+  public Map<ProcessInstanceUUID, List<LightActivityInstance>> getLightActivityInstancesFromRoot(
+      final Set<ProcessInstanceUUID> rootInstanceUUIDs) {
+    final Map<ProcessInstanceUUID, List<LightActivityInstance>> result = new HashMap<ProcessInstanceUUID, List<LightActivityInstance>>();
+    final List<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList())
+        .getActivityInstancesFromRoot(rootInstanceUUIDs);
+    for (final InternalActivityInstance activity : activities) {
       final ProcessInstanceUUID instanceUUID = activity.getRootInstanceUUID();
       if (!result.containsKey(instanceUUID)) {
         result.put(instanceUUID, new ArrayList<LightActivityInstance>());
@@ -1205,18 +1398,23 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Map<ProcessInstanceUUID, LightActivityInstance> getLightLastUpdatedActivityInstanceFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs, boolean considerSystemTaks) {
-    Map<ProcessInstanceUUID, LightActivityInstance> result = new HashMap<ProcessInstanceUUID, LightActivityInstance>();
-    Map<ProcessInstanceUUID, InternalActivityInstance> temp = EnvTool.getAllQueriers(getQueryList()).getLastUpdatedActivityInstanceFromRoot(rootInstanceUUIDs, considerSystemTaks);
-    for (Map.Entry<ProcessInstanceUUID, InternalActivityInstance> entry : temp.entrySet()) {
+  @Override
+  public Map<ProcessInstanceUUID, LightActivityInstance> getLightLastUpdatedActivityInstanceFromRoot(
+      final Set<ProcessInstanceUUID> rootInstanceUUIDs, final boolean considerSystemTaks) {
+    final Map<ProcessInstanceUUID, LightActivityInstance> result = new HashMap<ProcessInstanceUUID, LightActivityInstance>();
+    final Map<ProcessInstanceUUID, InternalActivityInstance> temp = EnvTool.getAllQueriers(getQueryList())
+        .getLastUpdatedActivityInstanceFromRoot(rootInstanceUUIDs, considerSystemTaks);
+    for (final Map.Entry<ProcessInstanceUUID, InternalActivityInstance> entry : temp.entrySet()) {
       result.put(entry.getKey(), new LightActivityInstanceImpl(entry.getValue()));
     }
     return result;
   }
 
-  public List<LightTaskInstance> getLightTaskInstancesFromRoot(ProcessInstanceUUID rootInstanceUUID) {
+  @Override
+  public List<LightTaskInstance> getLightTaskInstancesFromRoot(final ProcessInstanceUUID rootInstanceUUID) {
     final List<LightTaskInstance> result = new ArrayList<LightTaskInstance>();
-    for (final InternalActivityInstance record : EnvTool.getAllQueriers(getQueryList()).getActivityInstancesFromRoot(rootInstanceUUID)) {
+    for (final InternalActivityInstance record : EnvTool.getAllQueriers(getQueryList()).getActivityInstancesFromRoot(
+        rootInstanceUUID)) {
       if (record.isTask()) {
         result.add(new LightActivityInstanceImpl(record));
       }
@@ -1224,42 +1422,46 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Map<ProcessInstanceUUID, List<LightTaskInstance>> getLightTaskInstancesFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs) {
-    Map<ProcessInstanceUUID, List<LightTaskInstance>> result = new HashMap<ProcessInstanceUUID, List<LightTaskInstance>>();
-    for (ProcessInstanceUUID instanceUUID : rootInstanceUUIDs) {
+  @Override
+  public Map<ProcessInstanceUUID, List<LightTaskInstance>> getLightTaskInstancesFromRoot(
+      final Set<ProcessInstanceUUID> rootInstanceUUIDs) {
+    final Map<ProcessInstanceUUID, List<LightTaskInstance>> result = new HashMap<ProcessInstanceUUID, List<LightTaskInstance>>();
+    for (final ProcessInstanceUUID instanceUUID : rootInstanceUUIDs) {
       result.put(instanceUUID, getLightTaskInstancesFromRoot(instanceUUID));
     }
     return result;
   }
 
-  public Set<LightActivityInstance> getLightActivityInstances(ProcessInstanceUUID instanceUUID)
-  throws InstanceNotFoundException {
+  @Override
+  public Set<LightActivityInstance> getLightActivityInstances(final ProcessInstanceUUID instanceUUID)
+      throws InstanceNotFoundException {
     final Set<LightActivityInstance> result = new HashSet<LightActivityInstance>();
-    final Set<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList()).getActivityInstances(instanceUUID); 
+    final Set<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList()).getActivityInstances(
+        instanceUUID);
     for (final ActivityInstance record : activities) {
       result.add(new LightActivityInstanceImpl(record));
     }
     return result;
   }
 
-  public List<LightActivityInstance> getLightActivityInstances(
-      ProcessInstanceUUID instanceUUID, int fromIdex, int pageSize,
-      ActivityInstanceCriterion pagingCriterion)
+  @Override
+  public List<LightActivityInstance> getLightActivityInstances(final ProcessInstanceUUID instanceUUID,
+      final int fromIdex, final int pageSize, final ActivityInstanceCriterion pagingCriterion)
       throws InstanceNotFoundException {
     final List<LightActivityInstance> result = new ArrayList<LightActivityInstance>();
-    final List<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList())
-    .getActivityInstances(instanceUUID, fromIdex, pageSize, pagingCriterion); 
+    final List<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList()).getActivityInstances(
+        instanceUUID, fromIdex, pageSize, pagingCriterion);
     for (final ActivityInstance record : activities) {
       result.add(new LightActivityInstanceImpl(record));
     }
     return result;
   }
 
+  @Override
   public Set<ActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID, final String activityId)
-  throws ActivityNotFoundException {
+      throws ActivityNotFoundException {
     final Set<ActivityInstance> result = new HashSet<ActivityInstance>();
-    for (final ActivityInstance record 
-        : EnvTool.getAllQueriers(getQueryList()).getActivityInstances(instanceUUID)) {
+    for (final ActivityInstance record : EnvTool.getAllQueriers(getQueryList()).getActivityInstances(instanceUUID)) {
       if (record.getActivityName().equals(activityId)) {
         result.add(new ActivityInstanceImpl(record));
       }
@@ -1270,10 +1472,12 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Set<LightActivityInstance> getLightActivityInstances(ProcessInstanceUUID instanceUUID, String activityName)
-  throws InstanceNotFoundException, ActivityNotFoundException {
+  @Override
+  public Set<LightActivityInstance> getLightActivityInstances(final ProcessInstanceUUID instanceUUID,
+      final String activityName) throws InstanceNotFoundException, ActivityNotFoundException {
     final Set<LightActivityInstance> result = new HashSet<LightActivityInstance>();
-    Set<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList()).getActivityInstances(instanceUUID);
+    final Set<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList()).getActivityInstances(
+        instanceUUID);
     for (final InternalActivityInstance record : activities) {
       if (record.getActivityName().equals(activityName)) {
         result.add(new LightActivityInstanceImpl(record));
@@ -1285,16 +1489,19 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Set<LightActivityInstance> getLightActivityInstances(ProcessInstanceUUID instanceUUID, String activityName, String iterationId)
-  {
+  @Override
+  public Set<LightActivityInstance> getLightActivityInstances(final ProcessInstanceUUID instanceUUID,
+      final String activityName, final String iterationId) {
     final Set<LightActivityInstance> result = new HashSet<LightActivityInstance>();
-    final Set<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList()).getActivityInstances(instanceUUID, activityName, iterationId);
+    final Set<InternalActivityInstance> activities = EnvTool.getAllQueriers(getQueryList()).getActivityInstances(
+        instanceUUID, activityName, iterationId);
     for (final ActivityInstance record : activities) {
       result.add(new LightActivityInstanceImpl(record));
     }
     return result;
   }
 
+  @Override
   public Set<TaskInstance> getTasks(final ProcessInstanceUUID instanceUUID) {
     final Set<TaskInstance> result = new HashSet<TaskInstance>();
     for (final TaskInstance record : EnvTool.getAllQueriers(getQueryList()).getTaskInstances(instanceUUID)) {
@@ -1303,7 +1510,8 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Set<LightTaskInstance> getLightTasks(ProcessInstanceUUID instanceUUID) throws InstanceNotFoundException {
+  @Override
+  public Set<LightTaskInstance> getLightTasks(final ProcessInstanceUUID instanceUUID) throws InstanceNotFoundException {
     final Set<LightTaskInstance> result = new HashSet<LightTaskInstance>();
     for (final TaskInstance record : EnvTool.getAllQueriers(getQueryList()).getTaskInstances(instanceUUID)) {
       result.add(new LightActivityInstanceImpl(record));
@@ -1311,7 +1519,8 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Set<LightTaskInstance> getLightTasks(ProcessInstanceUUID instanceUUID, Set<String> taskNames) {
+  @Override
+  public Set<LightTaskInstance> getLightTasks(final ProcessInstanceUUID instanceUUID, final Set<String> taskNames) {
     final Set<LightTaskInstance> result = new HashSet<LightTaskInstance>();
     if (taskNames != null && !taskNames.isEmpty()) {
       for (final TaskInstance record : EnvTool.getAllQueriers(getQueryList()).getTaskInstances(instanceUUID, taskNames)) {
@@ -1321,19 +1530,25 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Collection<TaskInstance> getTaskList(final ProcessInstanceUUID instanceUUID, final ActivityState taskState) throws InstanceNotFoundException {
+  @Override
+  public Collection<TaskInstance> getTaskList(final ProcessInstanceUUID instanceUUID, final ActivityState taskState)
+      throws InstanceNotFoundException {
     return getTaskListUser(instanceUUID, EnvTool.getUserId(), taskState);
   }
 
-  public Collection<LightTaskInstance> getLightTaskList(final ProcessInstanceUUID instanceUUID, final ActivityState taskState) throws InstanceNotFoundException {
+  @Override
+  public Collection<LightTaskInstance> getLightTaskList(final ProcessInstanceUUID instanceUUID,
+      final ActivityState taskState) throws InstanceNotFoundException {
     return getLightTaskListUser(instanceUUID, EnvTool.getUserId(), taskState);
   }
 
-  public Collection<TaskInstance> getTaskList(ProcessInstanceUUID instanceUUID, Collection<ActivityState> taskStates) throws InstanceNotFoundException {
+  @Override
+  public Collection<TaskInstance> getTaskList(final ProcessInstanceUUID instanceUUID,
+      final Collection<ActivityState> taskStates) throws InstanceNotFoundException {
     FacadeUtil.checkArgsNotNull(instanceUUID, taskStates);
     final Collection<TaskInstance> todos = new HashSet<TaskInstance>();
-    for (ActivityState taskState : taskStates) {
-      Collection<TaskInstance> tasks = getTaskListUser(instanceUUID, EnvTool.getUserId(), taskState);
+    for (final ActivityState taskState : taskStates) {
+      final Collection<TaskInstance> tasks = getTaskListUser(instanceUUID, EnvTool.getUserId(), taskState);
       if (tasks != null) {
         todos.addAll(tasks);
       }
@@ -1341,11 +1556,13 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return todos;
   }
 
-  public Collection<LightTaskInstance> getLightTaskList(ProcessInstanceUUID instanceUUID, Collection<ActivityState> taskStates) throws InstanceNotFoundException {
+  @Override
+  public Collection<LightTaskInstance> getLightTaskList(final ProcessInstanceUUID instanceUUID,
+      final Collection<ActivityState> taskStates) throws InstanceNotFoundException {
     FacadeUtil.checkArgsNotNull(instanceUUID, taskStates);
     final Collection<LightTaskInstance> todos = new HashSet<LightTaskInstance>();
-    for (ActivityState taskState : taskStates) {
-      Collection<LightTaskInstance> tasks = getLightTaskListUser(instanceUUID, EnvTool.getUserId(), taskState);
+    for (final ActivityState taskState : taskStates) {
+      final Collection<LightTaskInstance> tasks = getLightTaskListUser(instanceUUID, EnvTool.getUserId(), taskState);
       if (tasks != null) {
         todos.addAll(tasks);
       }
@@ -1353,14 +1570,17 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return todos;
   }
 
+  @Override
   public Collection<TaskInstance> getTaskList(final ActivityState taskState) {
     return getTaskListUser(EnvTool.getUserId(), taskState);
   }
 
+  @Override
   public Collection<LightTaskInstance> getLightTaskList(final ActivityState taskState) {
     return getLightTaskListUser(EnvTool.getUserId(), taskState);
   }
 
+  @Override
   public TaskInstance getTask(final ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
     final TaskInstance taskInstance = EnvTool.getAllQueriers(getQueryList()).getTaskInstance(taskUUID);
     if (taskInstance == null) {
@@ -1369,7 +1589,8 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return new ActivityInstanceImpl(taskInstance);
   }
 
-  public Set<String> getTaskCandidates(ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
+  @Override
+  public Set<String> getTaskCandidates(final ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
     final TaskInstance taskInstance = EnvTool.getAllQueriers(getQueryList()).getTaskInstance(taskUUID);
     if (taskInstance == null) {
       throw new TaskNotFoundException("bai_QRAPII_5", taskUUID);
@@ -1377,55 +1598,60 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return CopyTool.copy(taskInstance.getTaskCandidates());
   }
 
-  public Map<ActivityInstanceUUID, Set<String>> getTaskCandidates(Set<ActivityInstanceUUID> taskUUIDs) throws TaskNotFoundException {
+  @Override
+  public Map<ActivityInstanceUUID, Set<String>> getTaskCandidates(final Set<ActivityInstanceUUID> taskUUIDs)
+      throws TaskNotFoundException {
     final Map<ActivityInstanceUUID, Set<String>> result = new HashMap<ActivityInstanceUUID, Set<String>>();
-    for (ActivityInstanceUUID taskUUID : taskUUIDs) {
+    for (final ActivityInstanceUUID taskUUID : taskUUIDs) {
       final TaskInstance taskInstance = EnvTool.getAllQueriers(getQueryList()).getTaskInstance(taskUUID);
       if (taskInstance == null) {
         throw new TaskNotFoundException("bai_QRAPII_5", taskUUID);
       }
-      result.put(taskUUID, CopyTool.copy(taskInstance.getTaskCandidates()));  
+      result.put(taskUUID, CopyTool.copy(taskInstance.getTaskCandidates()));
     }
     return result;
   }
 
   public Map<String, Object> getActivityInstanceVariables(final ProcessInstanceUUID instanceUUID,
-      final String activityId, final String iterationId, final String activityInstanceId, final String loopId) throws ActivityNotFoundException, InstanceNotFoundException {
+      final String activityId, final String iterationId, final String activityInstanceId, final String loopId)
+      throws ActivityNotFoundException, InstanceNotFoundException {
 
-    final ActivityInstance activityInst = EnvTool.getAllQueriers().getActivityInstance(instanceUUID, activityId, iterationId, activityInstanceId, loopId);
+    final ActivityInstance activityInst = EnvTool.getAllQueriers().getActivityInstance(instanceUUID, activityId,
+        iterationId, activityInstanceId, loopId);
 
     if (activityInst == null) {
       throw new ActivityNotFoundException("bai_QRAPII_6", instanceUUID, activityId);
     }
-    Map<String, Object> variables = activityInst.getLastKnownVariableValues();
-    /*Map<String, Object> convertedVariables = new HashMap<String, Object>();
-    for (Map.Entry<String, Object> variable : variables.entrySet()) {
-      Object value = variable.getValue();
-      if (value != null && (value.getClass().getClassLoader() instanceof ProcessClassLoader
-      || value.getClass().getClassLoader() instanceof CommonClassLoader)) {
-        convertedVariables.put(variable.getKey(), new ObjectVariable((Serializable)value));
-      } else {
-        convertedVariables.put(variable.getKey(), value);
-      }
-    }
-    return convertedVariables;
+    final Map<String, Object> variables = activityInst.getLastKnownVariableValues();
+    /*
+     * Map<String, Object> convertedVariables = new HashMap<String, Object>();
+     * for (Map.Entry<String, Object> variable : variables.entrySet()) { Object
+     * value = variable.getValue(); if (value != null &&
+     * (value.getClass().getClassLoader() instanceof ProcessClassLoader ||
+     * value.getClass().getClassLoader() instanceof CommonClassLoader)) {
+     * convertedVariables.put(variable.getKey(), new
+     * ObjectVariable((Serializable)value)); } else {
+     * convertedVariables.put(variable.getKey(), value); } } return
+     * convertedVariables;
      */
     return variables;
   }
 
-  public Object getActivityInstanceVariable(final ProcessInstanceUUID instanceUUID,
-      final String activityId, final String iterationId,
-      final String activityInstanceId, final String loopId, final String variableId) throws InstanceNotFoundException,
-      ActivityNotFoundException, VariableNotFoundException {
+  public Object getActivityInstanceVariable(final ProcessInstanceUUID instanceUUID, final String activityId,
+      final String iterationId, final String activityInstanceId, final String loopId, final String variableId)
+      throws InstanceNotFoundException, ActivityNotFoundException, VariableNotFoundException {
 
-    final Map<String, Object> variables = getActivityInstanceVariables(instanceUUID, activityId, iterationId, activityInstanceId, loopId);
+    final Map<String, Object> variables = getActivityInstanceVariables(instanceUUID, activityId, iterationId,
+        activityInstanceId, loopId);
     if (variables == null || !variables.containsKey(variableId)) {
       throw new VariableNotFoundException("bai_QRAPII_7", instanceUUID, activityId, variableId);
     }
     return variables.get(variableId);
   }
 
-  public Map<String, Object> getProcessInstanceVariables(final ProcessInstanceUUID instanceUUID) throws InstanceNotFoundException {
+  @Override
+  public Map<String, Object> getProcessInstanceVariables(final ProcessInstanceUUID instanceUUID)
+      throws InstanceNotFoundException {
     final ProcessInstance processInstance = getInternalProcessInstanceWithoutAttachements(instanceUUID);
     if (processInstance == null) {
       throw new InstanceNotFoundException("bai_QRAPII_8", instanceUUID);
@@ -1433,18 +1659,21 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return processInstance.getLastKnownVariableValues();
   }
 
+  @Override
   public Map<String, Object> getProcessInstanceVariables(final ProcessInstanceUUID instanceUUID, final Date maxDate)
-  throws InstanceNotFoundException {
-    //take all initial instance var and for each varupdate being proceed before max date, replace the initial value by the new one  
+      throws InstanceNotFoundException {
+    // take all initial instance var and for each varupdate being proceed before
+    // max date, replace the initial value by
+    // the new one
     final ProcessInstance processInstance = getInternalProcessInstanceWithoutAttachements(instanceUUID);
     final Map<String, Object> instanceInitialVars = processInstance.getInitialVariableValues();
     final Map<String, Object> instanceVarBeforeMaxDate = new HashMap<String, Object>();
     instanceVarBeforeMaxDate.putAll(instanceInitialVars);
     final Map<String, VariableUpdate> maxVarUpdates = new HashMap<String, VariableUpdate>();
 
-    for (VariableUpdate varUpdate : processInstance.getVariableUpdates()) {
+    for (final VariableUpdate varUpdate : processInstance.getVariableUpdates()) {
       if (varUpdate.getDate().getTime() <= maxDate.getTime()) {
-        VariableUpdate currentMax = maxVarUpdates.get(varUpdate.getName()); 
+        final VariableUpdate currentMax = maxVarUpdates.get(varUpdate.getName());
         if (currentMax == null || currentMax.getDate().getTime() <= varUpdate.getDate().getTime()) {
           maxVarUpdates.put(varUpdate.getName(), varUpdate);
           instanceVarBeforeMaxDate.put(varUpdate.getName(), varUpdate.getValue());
@@ -1454,8 +1683,8 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return instanceVarBeforeMaxDate;
   }
 
-  private Object getProcessInstanceVariable(final ProcessInstanceUUID instanceUUID, final String variableId, final Date maxDate)
-  throws InstanceNotFoundException, VariableNotFoundException {
+  private Object getProcessInstanceVariable(final ProcessInstanceUUID instanceUUID, final String variableId,
+      final Date maxDate) throws InstanceNotFoundException, VariableNotFoundException {
     final String variableName = Misc.getVariableName(variableId);
     final String xpath = Misc.getXPath(variableId);
 
@@ -1463,11 +1692,11 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     if (variables == null || !variables.containsKey(variableName)) {
       throw new VariableNotFoundException("bai_QRAPII_9", instanceUUID, variableName);
     }
-    Object value = variables.get(variableName);
+    final Object value = variables.get(variableName);
     if (xpath != null && xpath.length() > 0) {
       try {
         return evaluateXPath(xpath, (org.w3c.dom.Document) value);
-      } catch (Exception ex) {
+      } catch (final Exception ex) {
         throw new VariableNotFoundException("bai_QRAPII_17", instanceUUID, variableName);
       }
     } else {
@@ -1475,19 +1704,20 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     }
   }
 
+  @Override
   public Object getProcessInstanceVariable(final ProcessInstanceUUID instanceUUID, final String variableId)
-  throws InstanceNotFoundException, VariableNotFoundException {
+      throws InstanceNotFoundException, VariableNotFoundException {
     final String variableName = Misc.getVariableName(variableId);
     final String xpath = Misc.getXPath(variableId);
     final Map<String, Object> variables = getProcessInstanceVariables(instanceUUID);
     if (variables == null || !variables.containsKey(variableName)) {
       throw new VariableNotFoundException("bai_QRAPII_10", instanceUUID, variableName);
     }
-    Object value = variables.get(variableName);
+    final Object value = variables.get(variableName);
     if (xpath != null && xpath.length() > 0) {
       try {
         return evaluateXPath(xpath, (org.w3c.dom.Document) value);
-      } catch (Exception ex) {
+      } catch (final Exception ex) {
         ex.printStackTrace();
         throw new VariableNotFoundException("bai_QRAPII_17", instanceUUID, variableId);
       }
@@ -1496,8 +1726,8 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     }
   }
 
-  public ActivityInstance getActivityInstance(final ActivityInstanceUUID activityUUID)
-  throws ActivityNotFoundException {
+  @Override
+  public ActivityInstance getActivityInstance(final ActivityInstanceUUID activityUUID) throws ActivityNotFoundException {
     final ActivityInstance activity = EnvTool.getAllQueriers(getQueryList()).getActivityInstance(activityUUID);
     if (activity == null) {
       throw new ActivityNotFoundException("bai_QRAPII_11", activityUUID);
@@ -1505,11 +1735,12 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return new ActivityInstanceImpl(activity);
   }
 
+  @Override
   public ActivityState getActivityInstanceState(final ActivityInstanceUUID activityUUID)
-  throws ActivityNotFoundException {
+      throws ActivityNotFoundException {
     FacadeUtil.checkArgsNotNull(activityUUID);
     final Querier querier = EnvTool.getAllQueriers(getQueryList());
-    ActivityState state = querier.getActivityInstanceState(activityUUID);
+    final ActivityState state = querier.getActivityInstanceState(activityUUID);
     if (state == null) {
       final ActivityInstance activity = querier.getActivityInstance(activityUUID);
       throw new ActivityNotFoundException("bai_QRAPII_3", activity.getProcessInstanceUUID(), activity.getActivityName());
@@ -1517,14 +1748,15 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return state;
   }
 
+  @Override
   public Object getActivityInstanceVariable(final ActivityInstanceUUID activityUUID, final String variableId)
-  throws ActivityNotFoundException, VariableNotFoundException {
-    //search in transient variables
-    Map<String, Object> transientVariables = TransientData.getActivityTransientVariables(activityUUID);
-    if (transientVariables != null && transientVariables.containsKey(variableId)){
+      throws ActivityNotFoundException, VariableNotFoundException {
+    // search in transient variables
+    final Map<String, Object> transientVariables = TransientData.getActivityTransientVariables(activityUUID);
+    if (transientVariables != null && transientVariables.containsKey(variableId)) {
       return transientVariables.get(variableId);
     }
-    //search in the database persisted variables
+    // search in the database persisted variables
     final String variableName = Misc.getVariableName(variableId);
     final String xpath = Misc.getXPath(variableId);
     final ActivityInstance activity = EnvTool.getAllQueriers().getActivityInstance(activityUUID);
@@ -1536,11 +1768,11 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     if (!variableValues.containsKey(variableName)) {
       throw new VariableNotFoundException("bai_QRAPII_12", activityUUID, variableName);
     }
-    Object value = activity.getLastKnownVariableValues().get(variableName);
+    final Object value = activity.getLastKnownVariableValues().get(variableName);
     if (xpath != null && xpath.length() > 0) {
       try {
         return evaluateXPath(xpath, (org.w3c.dom.Document) value);
-      } catch (Exception ex) {
+      } catch (final Exception ex) {
         throw new VariableNotFoundException("bai_QRAPII_16", activityUUID, variableName);
       }
     } else {
@@ -1548,8 +1780,8 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     }
   }
 
-  private Object evaluateXPath(final String xpath, final org.w3c.dom.Document doc)
-  throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+  private Object evaluateXPath(final String xpath, final org.w3c.dom.Document doc) throws ParserConfigurationException,
+      SAXException, IOException, XPathExpressionException {
     final XPath xpathEval = XPathFactory.newInstance().newXPath();
     if (isTextExpected(xpath)) {
       return xpathEval.evaluate(xpath, doc);
@@ -1558,57 +1790,64 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     }
   }
 
-  private boolean isTextExpected(String xpath) {
-    String[] segments = xpath.split("/");
-    String lastSegment = segments[segments.length - 1];
+  private boolean isTextExpected(final String xpath) {
+    final String[] segments = xpath.split("/");
+    final String lastSegment = segments[segments.length - 1];
     return lastSegment.equals("text()") || lastSegment.startsWith("@");
   }
 
+  @Override
   public Map<String, Object> getActivityInstanceVariables(final ActivityInstanceUUID activityUUID)
-  throws ActivityNotFoundException {
-    Map<String, Object> variables = new HashMap<String, Object>();
-    Map<String, Object> transientVariables = TransientData.getActivityTransientVariables(activityUUID);
+      throws ActivityNotFoundException {
+    final Map<String, Object> variables = new HashMap<String, Object>();
+    final Map<String, Object> transientVariables = TransientData.getActivityTransientVariables(activityUUID);
     if (transientVariables != null) {
       variables.putAll(transientVariables);
     }
     final ActivityInstance activity = EnvTool.getAllQueriers().getActivityInstance(activityUUID);
     if (activity == null) {
       throw new ActivityNotFoundException("bai_QRAPII_11", activityUUID);
-    }    
-    Map<String, Object> lastKnownVariables = activity.getLastKnownVariableValues();
-    if (lastKnownVariables != null){
+    }
+    final Map<String, Object> lastKnownVariables = activity.getLastKnownVariableValues();
+    if (lastKnownVariables != null) {
       variables.putAll(lastKnownVariables);
     }
     return variables;
   }
 
-  public Collection<TaskInstance> getTaskList(final ProcessInstanceUUID instanceUUID, final String userId, final ActivityState taskState)
-  throws InstanceNotFoundException {
+  @Override
+  public Collection<TaskInstance> getTaskList(final ProcessInstanceUUID instanceUUID, final String userId,
+      final ActivityState taskState) throws InstanceNotFoundException {
     return getTaskListUser(instanceUUID, userId, taskState);
   }
 
-  public Collection<LightTaskInstance> getLightTaskList(final ProcessInstanceUUID instanceUUID, final String userId, final ActivityState taskState)
-  throws InstanceNotFoundException {
+  @Override
+  public Collection<LightTaskInstance> getLightTaskList(final ProcessInstanceUUID instanceUUID, final String userId,
+      final ActivityState taskState) throws InstanceNotFoundException {
     return getLightTaskListUser(instanceUUID, userId, taskState);
   }
 
+  @Override
   public Collection<TaskInstance> getTaskList(final String userId, final ActivityState taskState) {
     return getTaskListUser(userId, taskState);
   }
 
+  @Override
   public Collection<LightTaskInstance> getLightTaskList(final String userId, final ActivityState taskState) {
     return getLightTaskListUser(userId, taskState);
   }
 
-  public ActivityInstanceUUID getOneTask(ActivityState taskState) {
+  @Override
+  public ActivityInstanceUUID getOneTask(final ActivityState taskState) {
     final Querier journal = EnvTool.getJournalQueriers(getQueryList());
 
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     TaskInstance task = null;
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
           task = journal.getOneTask(EnvTool.getUserId(), taskState, visibleProcessUUIDs);
         }
@@ -1622,26 +1861,28 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return new ActivityInstanceUUID(task.getUUID());
   }
 
-  public ActivityInstanceUUID getOneTask(ProcessInstanceUUID instanceUUID, ActivityState taskState) {
+  @Override
+  public ActivityInstanceUUID getOneTask(final ProcessInstanceUUID instanceUUID, final ActivityState taskState) {
     final Querier journal = EnvTool.getJournalQueriers(getQueryList());
-    TaskInstance task = journal.getOneTask(EnvTool.getUserId(), instanceUUID, taskState);
+    final TaskInstance task = journal.getOneTask(EnvTool.getUserId(), instanceUUID, taskState);
     if (task == null) {
       return null;
     }
     return new ActivityInstanceUUID(task.getUUID());
   }
 
-  public ActivityInstanceUUID getOneTask(ProcessDefinitionUUID processUUID, ActivityState taskState) {
+  @Override
+  public ActivityInstanceUUID getOneTask(final ProcessDefinitionUUID processUUID, final ActivityState taskState) {
     final Querier journal = EnvTool.getJournalQueriers(getQueryList());
-    TaskInstance task = journal.getOneTask(EnvTool.getUserId(), processUUID, taskState);
+    final TaskInstance task = journal.getOneTask(EnvTool.getUserId(), processUUID, taskState);
     if (task == null) {
       return null;
     }
     return new ActivityInstanceUUID(task.getUUID());
   }
 
-  private Collection<TaskInstance> getTaskListUser(final ProcessInstanceUUID instanceUUID, final String userId, final ActivityState taskState)
-  throws InstanceNotFoundException {
+  private Collection<TaskInstance> getTaskListUser(final ProcessInstanceUUID instanceUUID, final String userId,
+      final ActivityState taskState) throws InstanceNotFoundException {
     final Collection<TaskInstance> todos = new ArrayList<TaskInstance>();
     for (final TaskInstance taskActivity : getInternalTaskListUser(instanceUUID, userId, taskState)) {
       todos.add(new ActivityInstanceImpl(taskActivity));
@@ -1649,8 +1890,8 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return todos;
   }
 
-  private Collection<LightTaskInstance> getLightTaskListUser(final ProcessInstanceUUID instanceUUID, final String userId, final ActivityState taskState)
-  throws InstanceNotFoundException {
+  private Collection<LightTaskInstance> getLightTaskListUser(final ProcessInstanceUUID instanceUUID,
+      final String userId, final ActivityState taskState) throws InstanceNotFoundException {
     final Collection<LightTaskInstance> todos = new ArrayList<LightTaskInstance>();
     for (final TaskInstance taskActivity : getInternalTaskListUser(instanceUUID, userId, taskState)) {
       todos.add(new LightActivityInstanceImpl(taskActivity));
@@ -1658,8 +1899,8 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return todos;
   }
 
-  private Collection<TaskInstance> getInternalTaskListUser(final ProcessInstanceUUID instanceUUID, final String userId, final ActivityState taskState)
-  throws InstanceNotFoundException {
+  private Collection<TaskInstance> getInternalTaskListUser(final ProcessInstanceUUID instanceUUID, final String userId,
+      final ActivityState taskState) throws InstanceNotFoundException {
     FacadeUtil.checkArgsNotNull(instanceUUID, taskState, userId);
     final ProcessInstance processInstance = getInternalProcessInstanceWithoutAttachements(instanceUUID);
     if (processInstance == null) {
@@ -1671,7 +1912,7 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
 
   private Collection<TaskInstance> getTaskListUser(final String userId, final ActivityState taskState) {
     final Collection<TaskInstance> result = new HashSet<TaskInstance>();
-    for (TaskInstance taskInstance : getInternalTaskListUser(userId, taskState)) {
+    for (final TaskInstance taskInstance : getInternalTaskListUser(userId, taskState)) {
       result.add(new ActivityInstanceImpl(taskInstance));
     }
     return result;
@@ -1679,7 +1920,7 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
 
   private Collection<LightTaskInstance> getLightTaskListUser(final String userId, final ActivityState taskState) {
     final Collection<LightTaskInstance> result = new HashSet<LightTaskInstance>();
-    for (TaskInstance taskInstance : getInternalTaskListUser(userId, taskState)) {
+    for (final TaskInstance taskInstance : getInternalTaskListUser(userId, taskState)) {
       result.add(new LightActivityInstanceImpl(taskInstance));
     }
     return result;
@@ -1688,12 +1929,13 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
   private Collection<TaskInstance> getInternalTaskListUser(final String userId, final ActivityState taskState) {
     FacadeUtil.checkArgsNotNull(userId, taskState);
 
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     Collection<TaskInstance> tasks = new HashSet<TaskInstance>();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
           tasks = EnvTool.getAllQueriers(getQueryList()).getUserTasks(userId, taskState, visibleProcessUUIDs);
         }
@@ -1704,8 +1946,9 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return tasks;
   }
 
+  @Override
   public Object getVariable(final ActivityInstanceUUID activityUUID, final String variableId)
-  throws ActivityNotFoundException, VariableNotFoundException {
+      throws ActivityNotFoundException, VariableNotFoundException {
     try {
       return getActivityInstanceVariable(activityUUID, variableId);
     } catch (final Throwable e) {
@@ -1713,7 +1956,7 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
       if (activity == null) {
         throw new ActivityNotFoundException("bai_QRAPII_11", activityUUID);
       }
-      Date maxDate = getMaxDate(activity);
+      final Date maxDate = getMaxDate(activity);
       try {
         return getProcessInstanceVariable(activity.getProcessInstanceUUID(), variableId, maxDate);
       } catch (final InstanceNotFoundException e1) {
@@ -1724,20 +1967,20 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     }
   }
 
-  public Map<String, Object> getVariables(final ActivityInstanceUUID activityUUID)
-  throws ActivityNotFoundException {
+  @Override
+  public Map<String, Object> getVariables(final ActivityInstanceUUID activityUUID) throws ActivityNotFoundException {
     final ActivityInstance activity = EnvTool.getAllQueriers(getQueryList()).getActivityInstance(activityUUID);
     if (activity == null) {
       throw new ActivityNotFoundException("bai_QRAPII_14", activityUUID);
     }
-    Date maxDate = getMaxDate(activity);
+    final Date maxDate = getMaxDate(activity);
     try {
       final Map<String, Object> allVariables = new HashMap<String, Object>();
       final Map<String, Object> localVariables = activity.getLastKnownVariableValues();
-      final Map<String, Object> globalVariables = 
-        getProcessInstanceVariables(activity.getProcessInstanceUUID(), maxDate);
-      //add global first because if some variables are in both local and global
-      //we want to keep local value
+      final Map<String, Object> globalVariables = getProcessInstanceVariables(activity.getProcessInstanceUUID(),
+          maxDate);
+      // add global first because if some variables are in both local and global
+      // we want to keep local value
       allVariables.putAll(globalVariables);
       allVariables.putAll(localVariables);
       return allVariables;
@@ -1748,47 +1991,64 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     }
   }
 
-  private Date getMaxDate(ActivityInstance activity) {
-    Date endedDate = activity.getEndedDate();
+  private Date getMaxDate(final ActivityInstance activity) {
+    final Date endedDate = activity.getEndedDate();
     if (endedDate == null) {
       return new Date();
     }
     return endedDate;
   }
 
-  public Set<String> getAttachmentNames(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public Set<String> getAttachmentNames(final ProcessInstanceUUID instanceUUID) {
     FacadeUtil.checkArgsNotNull(instanceUUID);
     try {
       final InternalProcessInstance instance = getInternalProcessInstanceWithAttachments(instanceUUID);
       final Set<String> attachmentNames = new HashSet<String>();
       final List<AttachmentInstance> attachments = instance.getAttachments();
-      for (AttachmentInstance attachment : attachments) {
+      for (final AttachmentInstance attachment : attachments) {
         attachmentNames.add(attachment.getName());
       }
       return attachmentNames;
-    } catch (InstanceNotFoundException e) {
+    } catch (final InstanceNotFoundException e) {
       throw new BonitaRuntimeException(e);
     }
   }
 
-  public AttachmentInstance getLastAttachment(ProcessInstanceUUID instanceUUID, String attachmentName) {
+  @Override
+  public AttachmentInstance getLastAttachment(final ProcessInstanceUUID instanceUUID, final String attachmentName) {
     FacadeUtil.checkArgsNotNull(instanceUUID, attachmentName);
+    final StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append("getLastAttachment for process instance ");
+    stringBuilder.append(instanceUUID);
+    stringBuilder.append(" and name ");
+    stringBuilder.append(attachmentName);
+    Misc.log(Level.FINE, stringBuilder.toString());
     final DocumentationManager manager = EnvTool.getDocumentationManager();
     final SearchResult result = DocumentService.getDocuments(manager, instanceUUID, attachmentName);
     final List<org.ow2.bonita.services.Document> documents = result.getDocuments();
     if (documents.isEmpty()) {
+      Misc.log(Level.FINE, "getLastAttachment end (no document found)");
       return null;
     } else {
-      return DocumentService.getAttachmentFromDocument(manager, documents.get(0));
+      final AttachmentInstance attachmentFromDocument = DocumentService.getAttachmentFromDocument(manager,
+          documents.get(0));
+      Misc.log(Level.FINE, "getLastAttachment end");
+      return attachmentFromDocument;
     }
   }
 
-  public AttachmentInstance getLastAttachment(ProcessInstanceUUID instanceUUID, String attachmentName, ActivityInstanceUUID activityUUID)
-  throws ActivityNotFoundException {
-    ActivityInstance activity = getActivityInstance(activityUUID);
+  @Override
+  public AttachmentInstance getLastAttachment(final ProcessInstanceUUID instanceUUID, final String attachmentName,
+      final ActivityInstanceUUID activityUUID) throws ActivityNotFoundException {
+
+    final StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append("getActivity for getLastAttachment ");
+    stringBuilder.append(activityUUID);
+    Misc.log(Level.FINE, stringBuilder.toString());
+    final ActivityInstance activity = getActivityInstance(activityUUID);
     Date date = null;
-    if (!activity.getState().equals(ActivityState.READY)
-        && !activity.getState().equals(ActivityState.SUSPENDED)
+    if (!activity.getState().equals(ActivityState.READY) && !activity.getState().equals(ActivityState.SUSPENDED)
         && !activity.getState().equals(ActivityState.EXECUTING)) {
       date = activity.getLastStateUpdate().getUpdatedDate();
     } else {
@@ -1797,26 +2057,36 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return getLastAttachment(instanceUUID, attachmentName, date);
   }
 
-  public AttachmentInstance getLastAttachment(ProcessInstanceUUID instanceUUID, String attachmentName, Date date) {
+  @Override
+  public AttachmentInstance getLastAttachment(final ProcessInstanceUUID instanceUUID, final String attachmentName,
+      final Date date) {
     FacadeUtil.checkArgsNotNull(instanceUUID, attachmentName, date);
 
+    final StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append("getLastAttachment for process instance ");
+    stringBuilder.append(instanceUUID);
+    stringBuilder.append(" and name ");
+    stringBuilder.append(attachmentName);
+    stringBuilder.append(" and date ");
+    stringBuilder.append(date);
+    Misc.log(Level.FINE, stringBuilder.toString());
     final DocumentationManager manager = EnvTool.getDocumentationManager();
     final SearchResult result = DocumentService.getDocuments(manager, instanceUUID, attachmentName);
     final List<org.ow2.bonita.services.Document> documents = result.getDocuments();
     final List<org.ow2.bonita.services.Document> allDocuments = new ArrayList<org.ow2.bonita.services.Document>();
-    for (org.ow2.bonita.services.Document document : documents) {
+    for (final org.ow2.bonita.services.Document document : documents) {
       List<org.ow2.bonita.services.Document> documentVersions;
       try {
         documentVersions = manager.getVersionsOfDocument(document.getId());
         allDocuments.addAll(documentVersions);
-      } catch (DocumentNotFoundException e) {
+      } catch (final DocumentNotFoundException e) {
         throw new BonitaRuntimeException(e);
       }
     }
     org.ow2.bonita.services.Document doc = null;
     for (int i = 0; i < allDocuments.size(); i++) {
-      org.ow2.bonita.services.Document tmp = allDocuments.get(i);
-      long tmpDate = tmp.getCreationDate().getTime();
+      final org.ow2.bonita.services.Document tmp = allDocuments.get(i);
+      final long tmpDate = tmp.getCreationDate().getTime();
       if (tmpDate <= date.getTime()) {
         if (doc == null) {
           doc = tmp;
@@ -1826,16 +2096,21 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
       }
     }
     if (doc == null) {
+      Misc.log(Level.FINE, "getLastAttachment end (no document found)");
       return null;
     }
-    return DocumentService.getAttachmentFromDocument(manager, doc);
+    final AttachmentInstance attachmentFromDocument = DocumentService.getAttachmentFromDocument(manager, doc);
+    Misc.log(Level.FINE, "getLastAttachment end");
+    return attachmentFromDocument;
   }
 
-  public Collection<AttachmentInstance> getLastAttachments(ProcessInstanceUUID instanceUUID, Set<String> attachmentNames) {
+  @Override
+  public Collection<AttachmentInstance> getLastAttachments(final ProcessInstanceUUID instanceUUID,
+      final Set<String> attachmentNames) {
     FacadeUtil.checkArgsNotNull(instanceUUID, attachmentNames);
-    Set<AttachmentInstance> result = new HashSet<AttachmentInstance>();
-    for (String attachmentName : attachmentNames) {
-      AttachmentInstance attachmentInstance = getLastAttachment(instanceUUID, attachmentName);
+    final Set<AttachmentInstance> result = new HashSet<AttachmentInstance>();
+    for (final String attachmentName : attachmentNames) {
+      final AttachmentInstance attachmentInstance = getLastAttachment(instanceUUID, attachmentName);
       if (attachmentInstance != null) {
         result.add(attachmentInstance);
       }
@@ -1843,12 +2118,14 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public Collection<AttachmentInstance> getLastAttachments(ProcessInstanceUUID instanceUUID, String regex) {
+  @Override
+  public Collection<AttachmentInstance> getLastAttachments(final ProcessInstanceUUID instanceUUID, final String regex) {
     FacadeUtil.checkArgsNotNull(instanceUUID, regex);
     final DocumentationManager manager = EnvTool.getDocumentationManager();
-    List<AttachmentInstance> matchingAttachments = DocumentService.getAllAttachmentVersions(manager, instanceUUID);
-    Map<String, AttachmentInstance> result = new HashMap<String, AttachmentInstance>();
-    for (AttachmentInstance attachmentInstance : matchingAttachments) {
+    final List<AttachmentInstance> matchingAttachments = DocumentService
+        .getAllAttachmentVersions(manager, instanceUUID);
+    final Map<String, AttachmentInstance> result = new HashMap<String, AttachmentInstance>();
+    for (final AttachmentInstance attachmentInstance : matchingAttachments) {
       if (attachmentInstance.getName().matches(regex)) {
         result.put(attachmentInstance.getName(), new AttachmentInstanceImpl(attachmentInstance));
       }
@@ -1856,61 +2133,70 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result.values();
   }
 
-  public List<AttachmentInstance> getAttachments(ProcessInstanceUUID instanceUUID, String attachmentName) {
+  @Override
+  public List<AttachmentInstance> getAttachments(final ProcessInstanceUUID instanceUUID, final String attachmentName) {
     FacadeUtil.checkArgsNotNull(instanceUUID, attachmentName);
     final DocumentationManager manager = EnvTool.getDocumentationManager();
     return DocumentService.getAllAttachmentVersions(manager, instanceUUID, attachmentName);
   }
 
-  public byte[] getAttachmentValue(AttachmentInstance attachmentInstance) {
+  @Override
+  public byte[] getAttachmentValue(final AttachmentInstance attachmentInstance) {
     final DocumentationManager manager = EnvTool.getDocumentationManager();
     try {
-      org.ow2.bonita.services.Document document = manager.getDocument(attachmentInstance.getUUID().getValue());
+      final org.ow2.bonita.services.Document document = manager.getDocument(attachmentInstance.getUUID().getValue());
       return manager.getContent(document);
-    } catch (DocumentNotFoundException e) {
+    } catch (final DocumentNotFoundException e) {
       throw new BonitaRuntimeException(e);
     }
   }
 
-  public List<Comment> getCommentFeed(ProcessInstanceUUID instanceUUID) {
-    List<Comment> comments = EnvTool.getAllQueriers(getQueryList()).getCommentFeed(instanceUUID);
+  @Override
+  public List<Comment> getCommentFeed(final ProcessInstanceUUID instanceUUID) {
+    final List<Comment> comments = EnvTool.getAllQueriers(getQueryList()).getCommentFeed(instanceUUID);
     return new ArrayList<Comment>(comments);
   }
 
-  public List<Comment> getActivityInstanceCommentFeed(ActivityInstanceUUID activityUUID) {
+  @Override
+  public List<Comment> getActivityInstanceCommentFeed(final ActivityInstanceUUID activityUUID) {
     FacadeUtil.checkArgsNotNull(activityUUID);
-    List<Comment> comments = EnvTool.getAllQueriers(getQueryList()).getActivityInstanceCommentFeed(activityUUID);
+    final List<Comment> comments = EnvTool.getAllQueriers(getQueryList()).getActivityInstanceCommentFeed(activityUUID);
     return new ArrayList<Comment>(comments);
   }
 
-  public int getNumberOfActivityInstanceComments(ActivityInstanceUUID activityUUID) {
+  @Override
+  public int getNumberOfActivityInstanceComments(final ActivityInstanceUUID activityUUID) {
     return EnvTool.getAllQueriers(getQueryList()).getNumberOfActivityInstanceComments(activityUUID);
   }
 
-  public Map<ActivityInstanceUUID, Integer> getNumberOfActivityInstanceComments(Set<ActivityInstanceUUID> activityUUIDs) {
-    if(activityUUIDs == null || activityUUIDs.isEmpty()){
+  @Override
+  public Map<ActivityInstanceUUID, Integer> getNumberOfActivityInstanceComments(
+      final Set<ActivityInstanceUUID> activityUUIDs) {
+    if (activityUUIDs == null || activityUUIDs.isEmpty()) {
       return Collections.emptyMap();
     }
     return EnvTool.getAllQueriers(getQueryList()).getNumberOfActivityInstanceComments(activityUUIDs);
   }
 
-  public int getNumberOfComments(ProcessInstanceUUID instanceUUID)
-  throws InstanceNotFoundException {
+  @Override
+  public int getNumberOfComments(final ProcessInstanceUUID instanceUUID) throws InstanceNotFoundException {
     return EnvTool.getAllQueriers(getQueryList()).getNumberOfComments(instanceUUID);
   }
 
-  public int getNumberOfProcessInstanceComments(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public int getNumberOfProcessInstanceComments(final ProcessInstanceUUID instanceUUID) {
     return EnvTool.getAllQueriers(getQueryList()).getNumberOfProcessInstanceComments(instanceUUID);
   }
 
-  public List<Comment> getProcessInstanceCommentFeed(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public List<Comment> getProcessInstanceCommentFeed(final ProcessInstanceUUID instanceUUID) {
     FacadeUtil.checkArgsNotNull(instanceUUID);
-    List<Comment> comments = EnvTool.getAllQueriers(getQueryList()).getProcessInstanceCommentFeed(instanceUUID);
+    final List<Comment> comments = EnvTool.getAllQueriers(getQueryList()).getProcessInstanceCommentFeed(instanceUUID);
     return new ArrayList<Comment>(comments);
   }
 
-  public LightTaskInstance getLightTaskInstance(ActivityInstanceUUID taskUUID)
-  throws TaskNotFoundException {
+  @Override
+  public LightTaskInstance getLightTaskInstance(final ActivityInstanceUUID taskUUID) throws TaskNotFoundException {
     final TaskInstance taskInstance = EnvTool.getAllQueriers(getQueryList()).getTaskInstance(taskUUID);
     if (taskInstance == null) {
       throw new TaskNotFoundException("bai_QRAPII_5", taskUUID);
@@ -1918,33 +2204,37 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return new LightActivityInstanceImpl(taskInstance);
   }
 
-  public LightActivityInstance getLightActivityInstance(ActivityInstanceUUID activityInstanceUUID)
-  throws ActivityNotFoundException {
-    final ActivityInstance activityInstance = EnvTool.getAllQueriers(getQueryList()).getActivityInstance(activityInstanceUUID);
+  @Override
+  public LightActivityInstance getLightActivityInstance(final ActivityInstanceUUID activityInstanceUUID)
+      throws ActivityNotFoundException {
+    final ActivityInstance activityInstance = EnvTool.getAllQueriers(getQueryList()).getActivityInstance(
+        activityInstanceUUID);
     if (activityInstance == null) {
       throw new ActivityNotFoundException("bai_QRAPII_11", activityInstanceUUID);
     }
     return new LightActivityInstanceImpl(activityInstance);
   }
 
-  public int search(SearchQueryBuilder query) {
-    Class<?> indexClass = getIndexedClass(query);
+  @Override
+  public int search(final SearchQueryBuilder query) {
+    final Class<?> indexClass = getIndexedClass(query);
     return EnvTool.getAllQueriers(getQueryList()).search(query, indexClass);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public <T> List<T> search(SearchQueryBuilder query, int firstResult, int maxResults) {
-    Index index = query.getIndex();
-    Class<?> resultClass = index.getResultClass();
-    Class<?> indexClass = getIndexedClass(query);
-    List<Object> list = EnvTool.getAllQueriers(getQueryList()).search(query, firstResult, maxResults, indexClass);
+  public <T> List<T> search(final SearchQueryBuilder query, final int firstResult, final int maxResults) {
+    final Index index = query.getIndex();
+    final Class<?> resultClass = index.getResultClass();
+    final Class<?> indexClass = getIndexedClass(query);
+    final List<Object> list = EnvTool.getAllQueriers(getQueryList()).search(query, firstResult, maxResults, indexClass);
     if (UserImpl.class.equals(resultClass)) {
       return (List<T>) getUsers(list);
     } else if (LightProcessInstance.class.equals(resultClass)) {
       return (List<T>) getLightProcessInstances(list);
     } else if (LightProcessDefinition.class.equals(resultClass)) {
       return (List<T>) getLightProcessDefinitions(list);
-    } else  if (LightActivityInstance.class.equals(resultClass)) {
+    } else if (LightActivityInstance.class.equals(resultClass)) {
       return (List<T>) getLightActivityInstances(list);
     } else if (GroupImpl.class.equals(resultClass)) {
       return (List<T>) getGroups(list);
@@ -1957,9 +2247,9 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     }
   }
 
-  private Class<?> getIndexedClass(SearchQueryBuilder query) {
-    Index index = query.getIndex();
-    Class<?> resultClass = index.getResultClass();
+  private Class<?> getIndexedClass(final SearchQueryBuilder query) {
+    final Index index = query.getIndex();
+    final Class<?> resultClass = index.getResultClass();
     Class<?> indexClass = null;
     if (UserImpl.class.equals(resultClass)) {
       indexClass = UserImpl.class;
@@ -1979,64 +2269,70 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return indexClass;
   }
 
-  private List<LightActivityInstance> getLightActivityInstances(List<Object> list) {
-    List<LightActivityInstance> result = new ArrayList<LightActivityInstance>();
-    for (Object object : list) {
+  private List<LightActivityInstance> getLightActivityInstances(final List<Object> list) {
+    final List<LightActivityInstance> result = new ArrayList<LightActivityInstance>();
+    for (final Object object : list) {
       result.add(new LightActivityInstanceImpl((InternalActivityInstance) object));
     }
     return result;
   }
 
-  private List<LightProcessInstance> getLightProcessInstances(List<Object> list) {
-    List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
-    for (Object object : list) {
+  private List<LightProcessInstance> getLightProcessInstances(final List<Object> list) {
+    final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
+    for (final Object object : list) {
       result.add(new LightProcessInstanceImpl((InternalProcessInstance) object));
     }
     return result;
   }
 
-  private List<LightProcessDefinition> getLightProcessDefinitions(List<Object> list) {
-    List<LightProcessDefinition> result = new ArrayList<LightProcessDefinition>();
-    for (Object object : list) {
+  private List<LightProcessDefinition> getLightProcessDefinitions(final List<Object> list) {
+    final List<LightProcessDefinition> result = new ArrayList<LightProcessDefinition>();
+    for (final Object object : list) {
       result.add(new LightProcessDefinitionImpl((InternalProcessDefinition) object));
     }
     return result;
   }
 
-  private List<UserImpl> getUsers(List<Object> list) {
-    List<UserImpl> result = new ArrayList<UserImpl>();
-    for (Object object : list) {
+  private List<UserImpl> getUsers(final List<Object> list) {
+    final List<UserImpl> result = new ArrayList<UserImpl>();
+    for (final Object object : list) {
       result.add(new UserImpl((UserImpl) object));
     }
     return result;
   }
 
-  private List<GroupImpl> getGroups(List<Object> list) {
-    List<GroupImpl> result = new ArrayList<GroupImpl>();
-    for (Object object : list) {
+  private List<GroupImpl> getGroups(final List<Object> list) {
+    final List<GroupImpl> result = new ArrayList<GroupImpl>();
+    for (final Object object : list) {
       result.add(new GroupImpl((GroupImpl) object));
     }
     return result;
   }
 
-  private List<RoleImpl> getRoles(List<Object> list) {
-    List<RoleImpl> result = new ArrayList<RoleImpl>();
-    for (Object object : list) {
+  private List<RoleImpl> getRoles(final List<Object> list) {
+    final List<RoleImpl> result = new ArrayList<RoleImpl>();
+    for (final Object object : list) {
       result.add(new RoleImpl((RoleImpl) object));
     }
     return result;
   }
 
-  private List<CaseImpl> getCases(List<Object> list) {
-    List<CaseImpl> result = new ArrayList<CaseImpl>();
-    for (Object object : list) {
+  private List<CaseImpl> getCases(final List<Object> list) {
+    final List<CaseImpl> result = new ArrayList<CaseImpl>();
+    for (final Object object : list) {
       result.add(new CaseImpl((CaseImpl) object));
     }
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUser(String username, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUser(username, fromIndex, pageSize, processUUIDs);
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUser(final String username,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs) {
+    if (processUUIDs == null || processUUIDs.isEmpty()) {
+      return Collections.emptyList();
+    }
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUser(username, fromIndex,
+        pageSize, processUUIDs);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -2044,16 +2340,15 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUser(
-      String username, int fromIndex, int pageSize,
-      Set<ProcessDefinitionUUID> processUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUser(final String username,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
     List<InternalProcessInstance> processes = null;
     if (processUUIDs == null || processUUIDs.isEmpty()) {
       processes = new ArrayList<InternalProcessInstance>();
     } else {
-      processes = getParentProcessInstancesWithActiveUser(username, 
-          fromIndex, pageSize, processUUIDs, pagingCriterion);
+      processes = getParentProcessInstancesWithActiveUser(username, fromIndex, pageSize, processUUIDs, pagingCriterion);
     }
 
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
@@ -2063,25 +2358,29 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String username, int remainingDays, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(username,remainingDays, fromIndex, pageSize, processUUIDs);
-    final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
-    for (final ProcessInstance record : processes) {
-      result.add(new LightProcessInstanceImpl(record));
-    }
-    return result;
-  }
-
+  @Override
   public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-      String username, int remainingDays, int fromIndex, int pageSize,
-      Set<ProcessDefinitionUUID> processUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
-    if (processUUIDs == null || processUUIDs.isEmpty()){
+      final String username, final int remainingDays, final int fromIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+        username, remainingDays, fromIndex, pageSize, processUUIDs);
+    final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
+    for (final ProcessInstance record : processes) {
+      result.add(new LightProcessInstanceImpl(record));
+    }
+    return result;
+  }
+
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String username, final int remainingDays, final int fromIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> processUUIDs, final ProcessInstanceCriterion pagingCriterion) {
+    if (processUUIDs == null || processUUIDs.isEmpty()) {
       return new ArrayList<LightProcessInstance>();
     }
 
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-        username,remainingDays, fromIndex, pageSize, processUUIDs, pagingCriterion);
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+        username, remainingDays, fromIndex, pageSize, processUUIDs, pagingCriterion);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -2089,35 +2388,43 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDateExcept(String username, int remainingDays, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
-    Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
-    return getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(username, remainingDays, fromIndex, pageSize, visibleProcesses);
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDateExcept(
+      final String username, final int remainingDays, final int fromIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(
+        processUUIDs);
+    return getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(username, remainingDays,
+        fromIndex, pageSize, visibleProcesses);
   }
 
+  @Override
   public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDateExcept(
-      String username, int remainingDays, int fromIndex, int pageSize,
-      Set<ProcessDefinitionUUID> processUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {		
-    Set<ProcessDefinitionUUID> visibleProcesses = null;		
-    if (processUUIDs == null || processUUIDs.isEmpty()){
+      final String username, final int remainingDays, final int fromIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> processUUIDs, final ProcessInstanceCriterion pagingCriterion) {
+    Set<ProcessDefinitionUUID> visibleProcesses = null;
+    if (processUUIDs == null || processUUIDs.isEmpty()) {
       visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDs();
-    } else { 
+    } else {
       visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
     }
 
-    return getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-        username, remainingDays, fromIndex, pageSize, visibleProcesses, pagingCriterion);
+    return getLightParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(username, remainingDays,
+        fromIndex, pageSize, visibleProcesses, pagingCriterion);
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserExcept(String userId, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
-    Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserExcept(final String userId,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs) {
+    final Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(
+        processUUIDs);
     return getLightParentProcessInstancesWithActiveUser(userId, fromIndex, pageSize, visibleProcesses);
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserExcept(
-      String userId, int fromIndex, int pageSize,
-      Set<ProcessDefinitionUUID> processUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithActiveUserExcept(final String userId,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
     Set<ProcessDefinitionUUID> visibleProcesses = null;
     if (processUUIDs == null || processUUIDs.isEmpty()) {
       visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDs();
@@ -2127,26 +2434,33 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return getLightParentProcessInstancesWithActiveUser(userId, fromIndex, pageSize, visibleProcesses, pagingCriterion);
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithInvolvedUserExcept(String username, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
-    Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithInvolvedUserExcept(final String username,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs) {
+    final Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(
+        processUUIDs);
     return getLightParentProcessInstancesWithInvolvedUser(username, fromIndex, pageSize, visibleProcesses);
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithInvolvedUserExcept(
-      String username, int fromIndex, int pageSize,
-      Set<ProcessDefinitionUUID> processUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithInvolvedUserExcept(final String username,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
     Set<ProcessDefinitionUUID> visibleProcesses = null;
     if (processUUIDs == null || processUUIDs.isEmpty()) {
       visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDs();
     } else {
       visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
     }
-    return getLightParentProcessInstancesWithInvolvedUser(username, fromIndex, pageSize, visibleProcesses, pagingCriterion);
+    return getLightParentProcessInstancesWithInvolvedUser(username, fromIndex, pageSize, visibleProcesses,
+        pagingCriterion);
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithOverdueTasks(String username, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithOverdueTasks(username, fromIndex, pageSize, processUUIDs, ProcessInstanceCriterion.DEFAULT);
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithOverdueTasks(final String username,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs) {
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithOverdueTasks(username, fromIndex,
+        pageSize, processUUIDs, ProcessInstanceCriterion.DEFAULT);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -2154,16 +2468,16 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithOverdueTasks(
-      String username, int fromIndex, int pageSize,
-      Set<ProcessDefinitionUUID> processUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
-    if (processUUIDs == null || processUUIDs.isEmpty()){
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithOverdueTasks(final String username,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
+    if (processUUIDs == null || processUUIDs.isEmpty()) {
       return Collections.emptyList();
     }
 
-    List<InternalProcessInstance> processes = getParentProcessInstancesWithOverdueTasks(
-        username, fromIndex, pageSize, processUUIDs, pagingCriterion);
+    final List<InternalProcessInstance> processes = getParentProcessInstancesWithOverdueTasks(username, fromIndex,
+        pageSize, processUUIDs, pagingCriterion);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -2171,26 +2485,32 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithOverdueTasksExcept(String username, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
-    Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithOverdueTasksExcept(final String username,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs) {
+    final Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(
+        processUUIDs);
     return getLightParentProcessInstancesWithOverdueTasks(username, fromIndex, pageSize, visibleProcesses);
   }
 
-  public List<LightProcessInstance> getLightParentProcessInstancesWithOverdueTasksExcept(
-      String username, int fromIndex, int pageSize,
-      Set<ProcessDefinitionUUID> processUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<LightProcessInstance> getLightParentProcessInstancesWithOverdueTasksExcept(final String username,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> processUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
     Set<ProcessDefinitionUUID> visibleProcesses = null;
-    if (processUUIDs == null || processUUIDs.isEmpty()){
+    if (processUUIDs == null || processUUIDs.isEmpty()) {
       visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDs();
     } else {
       visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
     }
-    return getLightParentProcessInstancesWithOverdueTasks(username, fromIndex, pageSize, visibleProcesses, pagingCriterion);
+    return getLightParentProcessInstancesWithOverdueTasks(username, fromIndex, pageSize, visibleProcesses,
+        pagingCriterion);
   }
 
-  public List<LightProcessInstance> getLightParentUserInstances(int fromIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
-    List<InternalProcessInstance> processes = getUserParentProcessInstances(fromIndex, pageSize, processUUIDs);
+  @Override
+  public List<LightProcessInstance> getLightParentUserInstances(final int fromIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final List<InternalProcessInstance> processes = getUserParentProcessInstances(fromIndex, pageSize, processUUIDs);
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -2198,15 +2518,15 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentUserInstances(int fromIndex,
-      int pageSize, Set<ProcessDefinitionUUID> processUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<LightProcessInstance> getLightParentUserInstances(final int fromIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> processUUIDs, final ProcessInstanceCriterion pagingCriterion) {
     List<InternalProcessInstance> processes = null;
     if (processUUIDs == null || processUUIDs.isEmpty()) {
       processes = new ArrayList<InternalProcessInstance>();
     } else {
       processes = getUserParentProcessInstances(fromIndex, pageSize, processUUIDs, pagingCriterion);
-    }  	
+    }
     final List<LightProcessInstance> result = new ArrayList<LightProcessInstance>();
     for (final ProcessInstance record : processes) {
       result.add(new LightProcessInstanceImpl(record));
@@ -2214,226 +2534,288 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return result;
   }
 
-  public List<LightProcessInstance> getLightParentUserInstancesExcept(int fromIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs) {
+  @Override
+  public List<LightProcessInstance> getLightParentUserInstancesExcept(final int fromIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
     Set<ProcessDefinitionUUID> visibleProcesses = null;
     if (processUUIDs == null || processUUIDs.isEmpty()) {
       visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDs();
     } else {
       visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
-    }    
+    }
     return getLightParentUserInstances(fromIndex, pageSize, visibleProcesses);
   }
 
-  public List<LightProcessInstance> getLightParentUserInstancesExcept(
-      int fromIndex, int pageSize, Set<ProcessDefinitionUUID> processUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
-    Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
+  @Override
+  public List<LightProcessInstance> getLightParentUserInstancesExcept(final int fromIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> processUUIDs, final ProcessInstanceCriterion pagingCriterion) {
+    final Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(
+        processUUIDs);
     return getLightParentUserInstances(fromIndex, pageSize, visibleProcesses, pagingCriterion);
   }
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUser(String username, Set<ProcessDefinitionUUID> processUUIDs) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUser(final String username,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
         visibleProcessUUIDs.retainAll(processUUIDs);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithActiveUser(username, visibleProcessUUIDs);
+          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithActiveUser(username,
+              visibleProcessUUIDs);
         }
       }
       return 0;
     } else {
-      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithActiveUser(username,processUUIDs);
+      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithActiveUser(username,
+          processUUIDs);
     }
   }
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String username, int remainingDays, Set<ProcessDefinitionUUID> processUUIDs) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
-    Date currentDate = new Date();
-    Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(currentDate);
-    Date atRisk = DateUtil.backTo(beginningOfTheDay, -(remainingDays+1));
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String username, final int remainingDays, final Set<ProcessDefinitionUUID> processUUIDs) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
+    final Date currentDate = new Date();
+    final Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(currentDate);
+    final Date atRisk = DateUtil.backTo(beginningOfTheDay, -(remainingDays + 1));
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
         visibleProcessUUIDs.retainAll(processUUIDs);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(username,currentDate, atRisk, visibleProcessUUIDs);
+          return EnvTool.getAllQueriers(getQueryList())
+              .getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(username, currentDate,
+                  atRisk, visibleProcessUUIDs);
         }
       }
       return 0;
     } else {
-      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(username,currentDate, atRisk,processUUIDs);
+      return EnvTool.getAllQueriers(getQueryList())
+          .getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(username, currentDate,
+              atRisk, processUUIDs);
     }
   }
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDateExcept(String username, int remainingDays, Set<ProcessDefinitionUUID> processUUIDs) {
-    Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
-    return getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(username,remainingDays, visibleProcesses);
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDateExcept(
+      final String username, final int remainingDays, final Set<ProcessDefinitionUUID> processUUIDs) {
+    final Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(
+        processUUIDs);
+    return getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(username, remainingDays,
+        visibleProcesses);
   }
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUserExcept(String username, Set<ProcessDefinitionUUID> processUUIDs) {
-    Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUserExcept(final String username,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(
+        processUUIDs);
     return getNumberOfParentProcessInstancesWithActiveUser(username, visibleProcesses);
   }
 
-  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(String username, Set<ProcessDefinitionUUID> processUUIDs) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(final String username,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
         visibleProcessUUIDs.retainAll(processUUIDs);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(username, visibleProcessUUIDs);
+          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(username,
+              visibleProcessUUIDs);
         }
       }
       return 0;
     } else {
-      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(username, processUUIDs);
+      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(username,
+          processUUIDs);
     }
   }
 
-  public Integer getNumberOfParentProcessInstancesWithInvolvedUserExcept(String username, Set<ProcessDefinitionUUID> processUUIDs) {
-    Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithInvolvedUserExcept(final String username,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(
+        processUUIDs);
     return getNumberOfParentProcessInstancesWithInvolvedUser(username, visibleProcesses);
   }
 
-  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(String username, Set<ProcessDefinitionUUID> processUUIDs) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
-    Date currentDate = new Date();
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(final String username,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
+    final Date currentDate = new Date();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
-      if(applicationName!=null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      final String applicationName = EnvTool.getApplicationAccessName();
+      if (applicationName != null) {
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
         visibleProcessUUIDs.retainAll(processUUIDs);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithOverdueTasks(username,currentDate, visibleProcessUUIDs);
+          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithOverdueTasks(username,
+              currentDate, visibleProcessUUIDs);
         }
       }
       return 0;
     } else {
-      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithOverdueTasks(username,currentDate,processUUIDs);
+      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithOverdueTasks(username,
+          currentDate, processUUIDs);
     }
   }
 
-  public Integer getNumberOfParentProcessInstancesWithOverdueTasksExcept(String username, Set<ProcessDefinitionUUID> processUUIDs) {
-    Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithOverdueTasksExcept(final String username,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(
+        processUUIDs);
     return getNumberOfParentProcessInstancesWithOverdueTasks(username, visibleProcesses);
   }
 
-  public Integer getNumberOfParentProcessInstancesWithStartedBy(String username, Set<ProcessDefinitionUUID> processUUIDs) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithStartedBy(final String username,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (visibleProcessUUIDs == null) {
           visibleProcessUUIDs = new HashSet<ProcessDefinitionUUID>();
         }
         visibleProcessUUIDs.retainAll(processUUIDs);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithStartedBy(username, visibleProcessUUIDs);
+          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithStartedBy(username,
+              visibleProcessUUIDs);
         }
       }
       return 0;
     } else {
-      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithStartedBy(username, processUUIDs);
+      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithStartedBy(username,
+          processUUIDs);
     }
   }
 
-  public Integer getNumberOfParentProcessInstancesWithStartedByExcept(String username, Set<ProcessDefinitionUUID> processUUIDs) {
-    Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithStartedByExcept(final String username,
+      final Set<ProcessDefinitionUUID> processUUIDs) {
+    final Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(
+        processUUIDs);
     return getNumberOfParentProcessInstancesWithStartedBy(username, visibleProcesses);
   }
 
-  public Integer getNumberOfParentProcessInstancesWithInvolvedUserAndCategory(String username, String category, Set<ProcessDefinitionUUID> processUUIDs) {
-    boolean access = EnvTool.isRestrictedApplicationAcces();
-    Set<ProcessDefinitionUUID> targetedProcesses = EnvTool.getAllQueriers(getQueryList()).getProcessUUIDsFromCategory(category);
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithInvolvedUserAndCategory(final String username,
+      final String category, final Set<ProcessDefinitionUUID> processUUIDs) {
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
+    final Set<ProcessDefinitionUUID> targetedProcesses = EnvTool.getAllQueriers(getQueryList())
+        .getProcessUUIDsFromCategory(category);
     if (access) {
-      String applicationName = EnvTool.getApplicationAccessName();
+      final String applicationName = EnvTool.getApplicationAccessName();
       if (applicationName != null) {
-        Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+        final Set<ProcessDefinitionUUID> visibleProcessUUIDs = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         visibleProcessUUIDs.retainAll(targetedProcesses);
         visibleProcessUUIDs.retainAll(processUUIDs);
         if (visibleProcessUUIDs != null && !visibleProcessUUIDs.isEmpty()) {
-          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(username, visibleProcessUUIDs);
+          return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(username,
+              visibleProcessUUIDs);
         }
       }
       return 0;
     } else {
       targetedProcesses.retainAll(processUUIDs);
-      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(username, targetedProcesses);
+      return EnvTool.getAllQueriers(getQueryList()).getNumberOfParentProcessInstancesWithInvolvedUser(username,
+          targetedProcesses);
     }
   }
 
-  public Integer getNumberOfParentProcessInstancesWithInvolvedUserAndCategoryExcept(String username, String category, Set<ProcessDefinitionUUID> processUUIDs) {
-    Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(processUUIDs);
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithInvolvedUserAndCategoryExcept(final String username,
+      final String category, final Set<ProcessDefinitionUUID> processUUIDs) {
+    final Set<ProcessDefinitionUUID> visibleProcesses = EnvTool.getAllQueriers().getAllProcessDefinitionUUIDsExcept(
+        processUUIDs);
     return getNumberOfParentProcessInstancesWithInvolvedUserAndCategory(username, category, visibleProcesses);
   }
 
-  public Set<String> getActiveUsersOfProcessInstance(ProcessInstanceUUID uuid) throws InstanceNotFoundException {
-    final ProcessInstance instance = getInternalProcessInstanceWithoutAttachements(uuid);  
+  @Override
+  public Set<String> getActiveUsersOfProcessInstance(final ProcessInstanceUUID uuid) throws InstanceNotFoundException {
+    final ProcessInstance instance = getInternalProcessInstanceWithoutAttachements(uuid);
     if (instance == null) {
       throw new InstanceNotFoundException("bai_QRAPII_1", uuid);
     }
     return instance.getActiveUsers();
   }
 
-  public Map<ProcessInstanceUUID, Set<String>> getActiveUsersOfProcessInstances(Set<ProcessInstanceUUID> instanceUUIDs) throws InstanceNotFoundException {
+  @Override
+  public Map<ProcessInstanceUUID, Set<String>> getActiveUsersOfProcessInstances(
+      final Set<ProcessInstanceUUID> instanceUUIDs) throws InstanceNotFoundException {
     FacadeUtil.checkArgsNotNull(instanceUUIDs);
-    HashMap<ProcessInstanceUUID, Set<String>> result = new HashMap<ProcessInstanceUUID, Set<String>>();
-    for (ProcessInstanceUUID processInstanceUUID : instanceUUIDs) {
+    final HashMap<ProcessInstanceUUID, Set<String>> result = new HashMap<ProcessInstanceUUID, Set<String>>();
+    for (final ProcessInstanceUUID processInstanceUUID : instanceUUIDs) {
       result.put(processInstanceUUID, getActiveUsersOfProcessInstance(processInstanceUUID));
-    }    
+    }
     return result;
   }
 
-  public CatchingEvent getEvent(CatchingEventUUID eventUUID) throws EventNotFoundException {
-    EventService eventService = EnvTool.getEventService();
-    long incomingId = Long.parseLong(eventUUID.getValue());
-    IncomingEventInstance incomingEvent = eventService.getIncomingEvent(incomingId);
+  @Override
+  public CatchingEvent getEvent(final CatchingEventUUID eventUUID) throws EventNotFoundException {
+    final EventService eventService = EnvTool.getEventService();
+    final long incomingId = Long.parseLong(eventUUID.getValue());
+    final IncomingEventInstance incomingEvent = eventService.getIncomingEvent(incomingId);
     if (incomingEvent == null) {
       throw new EventNotFoundException("Event " + incomingId + "does not exist.");
     }
     return getEvent(incomingEvent);
   }
 
+  @Override
   public Set<CatchingEvent> getEvents() {
-    EventService eventService = EnvTool.getEventService();
-    Set<IncomingEventInstance> incomingEventInstances = eventService.getIncomingEvents();
+    final EventService eventService = EnvTool.getEventService();
+    final Set<IncomingEventInstance> incomingEventInstances = eventService.getIncomingEvents();
     return getEvents(incomingEventInstances);
   }
 
-  public Set<CatchingEvent> getEvents(ProcessInstanceUUID instanceUUID) {
-    EventService eventService = EnvTool.getEventService();
-    Set<IncomingEventInstance> incomingEventInstances = eventService.getIncomingEvents(instanceUUID);
+  @Override
+  public Set<CatchingEvent> getEvents(final ProcessInstanceUUID instanceUUID) {
+    final EventService eventService = EnvTool.getEventService();
+    final Set<IncomingEventInstance> incomingEventInstances = eventService.getIncomingEvents(instanceUUID);
     return getEvents(incomingEventInstances);
   }
 
-  public Set<CatchingEvent> getEvents(ActivityInstanceUUID activityUUID) {
-    EventService eventService = EnvTool.getEventService();
-    Set<IncomingEventInstance> incomingEventInstances = eventService.getIncomingEvents(activityUUID);
+  @Override
+  public Set<CatchingEvent> getEvents(final ActivityInstanceUUID activityUUID) {
+    final EventService eventService = EnvTool.getEventService();
+    final Set<IncomingEventInstance> incomingEventInstances = eventService.getIncomingEvents(activityUUID);
     return getEvents(incomingEventInstances);
   }
 
-  private Set<CatchingEvent> getEvents(Set<IncomingEventInstance> incomingEventInstances) {
-    Set<CatchingEvent> events = new HashSet<CatchingEvent>();
-    for (IncomingEventInstance incomingEventInstance : incomingEventInstances) {
-      CatchingEvent event = getEvent(incomingEventInstance);
+  private Set<CatchingEvent> getEvents(final Set<IncomingEventInstance> incomingEventInstances) {
+    final Set<CatchingEvent> events = new HashSet<CatchingEvent>();
+    for (final IncomingEventInstance incomingEventInstance : incomingEventInstances) {
+      final CatchingEvent event = getEvent(incomingEventInstance);
       if (event != null) {
         events.add(event);
       }
@@ -2445,25 +2827,26 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     final String signal = incomingEventInstance.getSignal();
     CatchingEventImpl event = null;
     if (signal.contains(EventConstants.TIMER)) {
-      CatchingEventUUID uuid = new CatchingEventUUID(String.valueOf(incomingEventInstance.getId()));
+      final CatchingEventUUID uuid = new CatchingEventUUID(String.valueOf(incomingEventInstance.getId()));
       Position position = null;
       if (signal.contains(EventConstants.START_EVENT)) {
         position = Position.START;
-      } else if (signal.contains(EventConstants.INTERMEDIATE_EVENT)
-          || signal.equals("end_of_timer")) {
+      } else if (signal.contains(EventConstants.INTERMEDIATE_EVENT) || signal.equals("end_of_timer")) {
         position = Position.INTERMEDIATE;
       } else if (signal.contains(EventConstants.BOUNDARY_EVENT)) {
         position = Position.BOUNDARY;
       } else if (signal.equals("timer")) {
         position = Position.DEADLINE;
       }
-      event = new CatchingEventImpl(uuid, position, Type.TIMER, incomingEventInstance.getEnableTime(), 
+      event = new CatchingEventImpl(uuid, position, Type.TIMER, incomingEventInstance.getEnableTime(),
           incomingEventInstance.getActivityDefinitionUUID(), incomingEventInstance.getActivityUUID(),
-          incomingEventInstance.getInstanceUUID(),incomingEventInstance.getActivityName(), incomingEventInstance.getProcessName());
+          incomingEventInstance.getInstanceUUID(), incomingEventInstance.getActivityName(),
+          incomingEventInstance.getProcessName());
     }
     return event;
   }
 
+  @Override
   public byte[] getDocumentContent(final DocumentUUID documentUUID) throws DocumentNotFoundException {
     final DocumentationManager manager = EnvTool.getDocumentationManager();
     final String documentId = documentUUID.getValue();
@@ -2474,6 +2857,7 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return manager.getContent(document);
   }
 
+  @Override
   public DocumentResult searchDocuments(final DocumentSearchBuilder builder, final int fromResult, final int MaxResults) {
     final DocumentationManager manager = EnvTool.getDocumentationManager();
     final SearchResult searchResult = manager.search(builder, fromResult, MaxResults);
@@ -2481,19 +2865,21 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     final List<org.ow2.bonita.services.Document> searchDocuments = searchResult.getDocuments();
     final List<Document> documents = new ArrayList<Document>();
     for (int i = 0; i < searchDocuments.size(); i++) {
-      org.ow2.bonita.services.Document searchDocument = searchDocuments.get(i);
+      final org.ow2.bonita.services.Document searchDocument = searchDocuments.get(i);
       documents.add(DocumentService.getClientDocument(manager, searchDocument));
     }
     final int count = searchResult.getCount();
     return new DocumentResult(count, documents);
   }
 
+  @Override
   public Document getDocument(final DocumentUUID documentUUID) throws DocumentNotFoundException {
     FacadeUtil.checkArgsNotNull(documentUUID);
     final DocumentationManager manager = EnvTool.getDocumentationManager();
     return getDocument(documentUUID, manager);
   }
 
+  @Override
   public List<Document> getDocuments(final List<DocumentUUID> documentUUIDs) throws DocumentNotFoundException {
     FacadeUtil.checkArgsNotNull(documentUUIDs);
     final List<Document> documents = new ArrayList<Document>();
@@ -2506,21 +2892,44 @@ public class QueryRuntimeAPIImpl implements QueryRuntimeAPI {
     return documents;
   }
 
-  public Document getDocument(final DocumentUUID documentUUID, final DocumentationManager manager) throws DocumentNotFoundException {
-    org.ow2.bonita.services.Document document = manager.getDocument(documentUUID.getValue());
+  public Document getDocument(final DocumentUUID documentUUID, final DocumentationManager manager)
+      throws DocumentNotFoundException {
+    final org.ow2.bonita.services.Document document = manager.getDocument(documentUUID.getValue());
     return DocumentService.getClientDocument(manager, document);
   }
 
-  public List<Document> getDocumentVersions(DocumentUUID documentUUID) throws DocumentNotFoundException {
+  @Override
+  public List<Document> getDocumentVersions(final DocumentUUID documentUUID) throws DocumentNotFoundException {
     FacadeUtil.checkArgsNotNull(documentUUID);
     final DocumentationManager manager = EnvTool.getDocumentationManager();
-    final List<org.ow2.bonita.services.Document> documentVersions = manager.getVersionsOfDocument(documentUUID.getValue());
+    final List<org.ow2.bonita.services.Document> documentVersions = manager.getVersionsOfDocument(documentUUID
+        .getValue());
     final List<Document> documents = new ArrayList<Document>();
     for (int i = 0; i < documentVersions.size(); i++) {
       final org.ow2.bonita.services.Document documentVersion = documentVersions.get(i);
       documents.add(DocumentService.getClientDocument(manager, documentVersion));
     }
     return documents;
+  }
+
+  @Override
+  public Set<String> getInvolvedUsersOfProcessInstance(final ProcessInstanceUUID instanceUUID)
+      throws InstanceNotFoundException {
+    final ProcessInstance instance = getInternalProcessInstanceWithoutAttachements(instanceUUID);
+    if (instance == null) {
+      throw new InstanceNotFoundException("bai_QRAPII_1", instanceUUID);
+    }
+    return new HashSet<String>(instance.getInvolvedUsers());
+  }
+
+  @Override
+  public Set<ProcessInstanceUUID> getChildrenInstanceUUIDsOfProcessInstance(final ProcessInstanceUUID instanceUUID)
+      throws InstanceNotFoundException {
+    final ProcessInstance instance = getInternalProcessInstanceWithoutAttachements(instanceUUID);
+    if (instance == null) {
+      throw new InstanceNotFoundException("bai_QRAPII_1", instanceUUID);
+    }
+    return new HashSet<ProcessInstanceUUID>(instance.getChildrenInstanceUUID());
   }
 
 }

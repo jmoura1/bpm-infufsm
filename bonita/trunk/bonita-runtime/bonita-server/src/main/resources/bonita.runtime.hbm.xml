@@ -421,8 +421,8 @@
     <property name="name" column="NAME"/>
     <property name="processName" column="PROC_NAME"/>
     <property name="activityName" column="ACT_NAME"/>
-    <property name="overdue" column="OVERDUE"/>
-    <property name="lockOwner" column="LOCK_OWNER"/>
+    <property name="overdue" column="OVERDUE" index="IDX_BN_OEI_OVERDUE"/>
+    <property name="lockOwner" column="LOCK_OWNER" index="IDX_BN_OEI_LOCK_OWNER" />
     <property name="consumed" column="CONSUMED"/>
     <property name="locked" column="LOCKED"/>
   </class>
@@ -443,13 +443,13 @@
     <component name="eventSubProcessRootInstanceUUID" class="org.ow2.bonita.facade.uuid.ProcessInstanceUUID">
       <property name="value" column="IEI_ESPRI_UUID_" index="IDX_IEI_ESPRI_UUID"/>
     </component>
-    <property name="name" column="NAME"/>
-    <property name="processName" column="PROC_NAME"/>
+    <property name="name" column="NAME" index="IDX_BN_IEI_NAM_SIG_PROCNAM" />
+    <property name="signal" column="SIGNAL_" index="IDX_BN_IEI_NAM_SIG_PROCNAM" />
+    <property name="processName" column="PROC_NAME" index="IDX_BN_IEI_NAM_SIG_PROCNAM" />
     <property name="activityName" column="ACT_NAME"/>
     <property name="expression" column="EXPR" type="text"/>
     <property name="executionUUID" column="EXEC_UUID_"/>
-    <property name="signal" column="SIGNAL_"/>
-    <property name="enableTime" column="ENABLE_TIME_"/>
+    <property name="enableTime" column="ENABLE_TIME_" index="IDX_BN_IEI_ENABL_TIME" />
     <property name="executionLocked" column="EXEC_LOCKED"/>
     <property name="lockOwner" column="LOCK_OWNER"/>
     <property name="exception" column="EXCEPTION_" type="text" />

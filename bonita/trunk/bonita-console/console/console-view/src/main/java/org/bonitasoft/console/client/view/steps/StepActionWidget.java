@@ -147,15 +147,19 @@ public class StepActionWidget extends BonitaPanel implements ModelChangeListener
     protected void initMenuBar() {
         if (StepState.FAILED.equals(myStep.getState())  && UserRightsManager.getInstance().isAllowed(RuleType.SKIP_STEP,myStep.getUUID().getStepDefinitionUUID())){
             addSkipEntry();
-        } else {
+        } 
+/* else {
+
             if (UserRightsManager.getInstance().isAllowed(RuleType.ASSIGN_TO_ME_STEP, myStep.getUUID().getStepDefinitionUUID())) {
                 addAssignToMeEntry();
             }
             myMenuBar.addItem(BUTTON_OTHERS_TITLE, buildSubMenu());
         }
+
         if (UserRightsManager.getInstance().isAllowed(RuleType.CHANGE_PRIORITY_STEP, myStep.getUUID().getStepDefinitionUUID())) {
             myMenuBar.addItem(PRIORITY, buildPriorityMenu());
         }
+*/
     }
 
     protected void addAssignToMeEntry() {

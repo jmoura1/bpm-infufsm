@@ -83,7 +83,7 @@ public class LabelDataStore {
    */
   private LabelDataStore() {
     super();
-    DEFAULT_LABELS = new LabelModel[] { LabelModel.INBOX_LABEL, LabelModel.STAR_LABEL, LabelModel.MY_CASES_LABEL, LabelModel.ALL_LABEL, LabelModel.ATRISK_LABEL, LabelModel.OVERDUE_LABEL/*, LabelModel.MY_TEAM_LABEL, LabelModel.DELEGEE_LABEL*/ };
+    DEFAULT_LABELS = new LabelModel[] { LabelModel.INBOX_LABEL, LabelModel.MY_CASES_LABEL, LabelModel.ALL_LABEL, /*, LabelModel.MY_TEAM_LABEL, LabelModel.DELEGEE_LABEL*/ };
   }
 
   /**
@@ -279,7 +279,15 @@ public class LabelDataStore {
         theResult.add(buildLabelModel(label));
       }
     }
+    if (theResult.contains(LabelModel.STAR_LABEL))
+	theResult.remove(LabelModel.STAR_LABEL);
 
+    if (theResult.contains(LabelModel.OVERDUE_LABEL))
+	theResult.remove(LabelModel.OVERDUE_LABEL);
+
+    if (theResult.contains(LabelModel.ATRISK_LABEL))
+	theResult.remove(LabelModel.ATRISK_LABEL);
+/*
     if (!theResult.contains(LabelModel.STAR_LABEL)) {
       // Check if it is needed to re-create it.
       // Empty metadata means true.
@@ -300,7 +308,7 @@ public class LabelDataStore {
         }
       }
     }
-
+*/
     return theResult;
   }
 
@@ -315,7 +323,15 @@ public class LabelDataStore {
         theResult.add(buildLabelModel(label));
       }
     }
+    if (theResult.contains(LabelModel.STAR_LABEL))
+	theResult.remove(LabelModel.STAR_LABEL);
 
+    if (theResult.contains(LabelModel.OVERDUE_LABEL))
+	theResult.remove(LabelModel.OVERDUE_LABEL);
+
+    if (theResult.contains(LabelModel.ATRISK_LABEL))
+	theResult.remove(LabelModel.ATRISK_LABEL);
+/*
     if (!theResult.contains(LabelModel.STAR_LABEL)) {
       // Check if it is needed to re-create it.
       // Empty metadata means true.
@@ -336,7 +352,7 @@ public class LabelDataStore {
         }
       }
     }
-
+*/
     return theResult;
   }
 

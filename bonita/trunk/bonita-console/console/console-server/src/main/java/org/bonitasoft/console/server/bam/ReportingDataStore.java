@@ -108,13 +108,13 @@ public class ReportingDataStore {
         theState = managementAPI.getMetaData(GLOBAL_REPORTING_ACTIVATION_STATE);
         if (!"false".equalsIgnoreCase(theState)) {
             // Empty metadata means true.
-            theResult.setGlobalReportingEnabled(true);
+            theResult.setGlobalReportingEnabled(false);
         }
         // Get the metadata for the user settings.
         theState = managementAPI.getMetaData(USER_REPORTING_ACTIVATION_STATE);
         if (!"false".equalsIgnoreCase(theState)) {
             // Empty metadata means true.
-            theResult.setUserReportingEnabled(true);
+            theResult.setUserReportingEnabled(false);
 
             // Get the metadata for the user auto-refresh frequency (only if the
             // user reporting is enabled).

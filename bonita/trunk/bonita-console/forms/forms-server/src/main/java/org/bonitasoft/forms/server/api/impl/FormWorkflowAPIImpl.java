@@ -56,7 +56,6 @@ import org.ow2.bonita.facade.exception.VariableNotFoundException;
 import org.ow2.bonita.facade.runtime.ActivityState;
 import org.ow2.bonita.facade.runtime.AttachmentInstance;
 import org.ow2.bonita.facade.runtime.InitialAttachment;
-import org.ow2.bonita.facade.runtime.ProcessInstance;
 import org.ow2.bonita.facade.runtime.command.WebExecuteTask;
 import org.ow2.bonita.facade.runtime.command.WebInstantiateProcess;
 import org.ow2.bonita.facade.uuid.ActivityDefinitionUUID;
@@ -64,6 +63,7 @@ import org.ow2.bonita.facade.uuid.ActivityInstanceUUID;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
 import org.ow2.bonita.facade.uuid.ProcessInstanceUUID;
 import org.ow2.bonita.light.LightActivityInstance;
+import org.ow2.bonita.light.LightProcessInstance;
 import org.ow2.bonita.light.LightTaskInstance;
 import org.ow2.bonita.util.AccessorUtil;
 import org.ow2.bonita.util.BonitaConstants;
@@ -415,6 +415,7 @@ public class FormWorkflowAPIImpl implements IFormWorkflowAPI {
      * {@inheritDoc}
      */
     public Date getMigrationDate(ProcessDefinitionUUID processDefinitionUUID) throws ProcessNotFoundException {
+        
         final QueryDefinitionAPI queryDefinitionAPI = AccessorUtil.getQueryDefinitionAPI();
         return queryDefinitionAPI.getMigrationDate(processDefinitionUUID);
     }
@@ -424,28 +425,9 @@ public class FormWorkflowAPIImpl implements IFormWorkflowAPI {
      */
     public boolean isTaskOver(final ActivityInstanceUUID activityInstanceUUID) throws ActivityNotFoundException {
 
-        return isTaskInState(activityInstanceUUID, ActivityState.ABORTED) || isTaskInState(activityInstanceUUID, ActivityState.FINISHED) || isTaskInState(activityInstanceUUID, ActivityState.SKIPPED);
-    }
-
-    /**
-     * Check whether a task is in the required state or not
-     * 
-     * @param activityInstanceUUID
-     *            the {@link ActivityInstanceUUID}
-     * @param activityState
-     *            the required state
-     * @return true if the task is in the required state
-     * @throws ActivityNotFoundException
-     */
-    private boolean isTaskInState(final ActivityInstanceUUID activityInstanceUUID, final ActivityState activityState) throws ActivityNotFoundException {
-
         final QueryRuntimeAPI queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
         final ActivityState activityInstanceState = queryRuntimeAPI.getActivityInstanceState(activityInstanceUUID);
-        if (activityState.compareTo(activityInstanceState) == 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return ActivityState.ABORTED.equals(activityInstanceState) || ActivityState.FINISHED.equals(activityInstanceState) || ActivityState.SKIPPED.equals(activityInstanceState);
     }
 
     /**
@@ -522,8 +504,7 @@ public class FormWorkflowAPIImpl implements IFormWorkflowAPI {
     private ActivityInstanceUUID getSubprocessNextTask(final ProcessInstanceUUID processInstanceUUID) throws InstanceNotFoundException {
 
         final QueryRuntimeAPI queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
-        final ProcessInstance processInstance = queryRuntimeAPI.getProcessInstance(processInstanceUUID);
-        final Set<ProcessInstanceUUID> children = processInstance.getChildrenInstanceUUID();
+        final Set<ProcessInstanceUUID> children = queryRuntimeAPI.getChildrenInstanceUUIDsOfProcessInstance(processInstanceUUID);
         ActivityInstanceUUID taskUUID = null;
         for (final ProcessInstanceUUID childProcessInstanceUUID : children) {
             taskUUID = queryRuntimeAPI.getOneTask(childProcessInstanceUUID, ActivityState.READY);
@@ -549,7 +530,7 @@ public class FormWorkflowAPIImpl implements IFormWorkflowAPI {
     private ActivityInstanceUUID getParentProcessNextTask(final ProcessInstanceUUID processInstanceUUID) throws InstanceNotFoundException {
 
         final QueryRuntimeAPI queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
-        final ProcessInstance processInstance = queryRuntimeAPI.getProcessInstance(processInstanceUUID);
+        final LightProcessInstance processInstance = queryRuntimeAPI.getLightProcessInstance(processInstanceUUID);
         final ProcessInstanceUUID parentProcessInstanceUUID = processInstance.getParentInstanceUUID();
         if (parentProcessInstanceUUID != null) {
             ActivityInstanceUUID taskUUID = queryRuntimeAPI.getOneTask(parentProcessInstanceUUID, ActivityState.READY);
@@ -619,7 +600,7 @@ public class FormWorkflowAPIImpl implements IFormWorkflowAPI {
                 attachmentName = attachmentName.substring(2, attachmentName.length() - 1);
             }
             final QueryRuntimeAPI queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
-            final ProcessInstance processInstance = queryRuntimeAPI.getProcessInstance(processInstanceUUID);
+            final LightProcessInstance processInstance = queryRuntimeAPI.getLightProcessInstance(processInstanceUUID);
             final Date startDate = processInstance.getStartedDate();
             AttachmentInstance attachment = null;
             if (isCurrentValue) {
@@ -850,11 +831,122 @@ public class FormWorkflowAPIImpl implements IFormWorkflowAPI {
      */
     public Set<String> getProcessInvolvedUsers(ProcessInstanceUUID processInstanceUUID) throws InstanceNotFoundException {
         final QueryRuntimeAPI queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
-        final ProcessInstance processInstance = queryRuntimeAPI.getProcessInstance(processInstanceUUID);
+        final LightProcessInstance processInstance = queryRuntimeAPI.getLightProcessInstance(processInstanceUUID);
         final Set<String> involvedUsers = new HashSet<String>();
-        involvedUsers.add(processInstance.getStartedBy());
-        involvedUsers.addAll(processInstance.getInvolvedUsers());
+        ProcessInstanceUUID rootProcessInstanceUUID = processInstance.getRootInstanceUUID();
+        if (processInstanceUUID.equals(rootProcessInstanceUUID)) {
+            involvedUsers.add(processInstance.getStartedBy());
+            involvedUsers.addAll(queryRuntimeAPI.getInvolvedUsersOfProcessInstance(processInstanceUUID));
+        } else {
+            final LightProcessInstance rootProcessInstance = queryRuntimeAPI.getLightProcessInstance(rootProcessInstanceUUID);
+            involvedUsers.add(rootProcessInstance.getStartedBy());
+            involvedUsers.addAll(queryRuntimeAPI.getInvolvedUsersOfProcessInstance(rootProcessInstanceUUID));
+        }
         return involvedUsers;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, Object> getFieldsValues(ActivityInstanceUUID activityInstanceUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, boolean isCurrentValue, Map<String, Object> transientDataContext)
+            throws ActivityNotFoundException, InstanceNotFoundException {
+        
+        final IFormExpressionsAPI formExpressionsAPI = FormAPIFactory.getFormExpressionsAPI();
+        return formExpressionsAPI.evaluateExpressions(activityInstanceUUID, expressions, fieldValues, locale, isCurrentValue, transientDataContext);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, Object> getFieldsValues(ActivityInstanceUUID activityInstanceUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, boolean isCurrentValue) throws ActivityNotFoundException, InstanceNotFoundException {
+        
+        return getFieldsValues(activityInstanceUUID, expressions, fieldValues, locale, isCurrentValue, new HashMap<String, Object>());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, Object> getFieldsValues(ActivityInstanceUUID activityInstanceUUID, Map<String, String> expressions, Locale locale, boolean isCurrentValue, Map<String, Object> transientDataContext) throws ActivityNotFoundException, InstanceNotFoundException {
+
+        final IFormExpressionsAPI formExpressionsAPI = FormAPIFactory.getFormExpressionsAPI();
+        return formExpressionsAPI.evaluateInitialExpressions(activityInstanceUUID, expressions, locale, isCurrentValue, transientDataContext);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, Object> getFieldsValues(ActivityInstanceUUID activityInstanceUUID, Map<String, String> expressions, Locale locale, boolean isCurrentValue) throws ActivityNotFoundException, InstanceNotFoundException {
+        
+        return getFieldsValues(activityInstanceUUID, expressions, locale, isCurrentValue, new HashMap<String, Object>());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, Object> getFieldsValues(ProcessInstanceUUID processInstanceUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, boolean isCurrentValue, Map<String, Object> transientDataContext)
+            throws InstanceNotFoundException {
+
+        final IFormExpressionsAPI formExpressionsAPI = FormAPIFactory.getFormExpressionsAPI();
+        return formExpressionsAPI.evaluateExpressions(processInstanceUUID, expressions, fieldValues, locale, isCurrentValue, transientDataContext);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, Object> getFieldsValues(ProcessInstanceUUID processInstanceUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, boolean isCurrentValue) throws InstanceNotFoundException {
+        
+        return getFieldsValues(processInstanceUUID, expressions, fieldValues, locale, isCurrentValue, new HashMap<String, Object>());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, Object> getFieldsValues(ProcessInstanceUUID processInstanceUUID, Map<String, String> expressions, Locale locale, boolean isCurrentValue, Map<String, Object> transientDataContext) throws InstanceNotFoundException {
+
+        final IFormExpressionsAPI formExpressionsAPI = FormAPIFactory.getFormExpressionsAPI();
+        return formExpressionsAPI.evaluateInitialExpressions(processInstanceUUID, expressions, locale, isCurrentValue, transientDataContext);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, Object> getFieldsValues(ProcessInstanceUUID processInstanceUUID, Map<String, String> expressions, Locale locale, boolean isCurrentValue) throws InstanceNotFoundException {
+        
+        return getFieldsValues(processInstanceUUID, expressions, locale, isCurrentValue, new HashMap<String, Object>());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, Object> getFieldsValues(ProcessDefinitionUUID processDefinitionUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, Map<String, Object> transientDataContext) throws ProcessNotFoundException {
+
+        final IFormExpressionsAPI formExpressionsAPI = FormAPIFactory.getFormExpressionsAPI();
+        return formExpressionsAPI.evaluateExpressions(processDefinitionUUID, expressions, fieldValues, locale, transientDataContext);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, Object> getFieldsValues(ProcessDefinitionUUID processDefinitionUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale) throws ProcessNotFoundException {
+        
+        return getFieldsValues(processDefinitionUUID, expressions, fieldValues, locale, new HashMap<String, Object>());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, Object> getFieldsValues(ProcessDefinitionUUID processDefinitionUUID, Map<String, String> expressions, Locale locale, Map<String, Object> transientDataContext) throws ProcessNotFoundException {
+
+        final IFormExpressionsAPI formExpressionsAPI = FormAPIFactory.getFormExpressionsAPI();
+        return formExpressionsAPI.evaluateInitialExpressions(processDefinitionUUID, expressions, locale, transientDataContext);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<String, Object> getFieldsValues(ProcessDefinitionUUID processDefinitionUUID, Map<String, String> expressions, Locale locale) throws ProcessNotFoundException {
+        
+        return getFieldsValues(processDefinitionUUID, expressions, locale, new HashMap<String, Object>());
     }
 
 }

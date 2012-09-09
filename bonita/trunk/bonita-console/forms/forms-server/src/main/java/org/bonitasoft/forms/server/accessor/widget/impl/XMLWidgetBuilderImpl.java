@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.xpath.XPath;
+
 import org.bonitasoft.forms.client.model.ActionType;
 import org.bonitasoft.forms.client.model.FormAction;
 import org.bonitasoft.forms.client.model.FormFieldAvailableValue;
@@ -35,7 +37,7 @@ import org.bonitasoft.forms.client.model.FormWidget;
 import org.bonitasoft.forms.client.model.FormWidget.ItemPosition;
 import org.bonitasoft.forms.client.model.FormWidget.SelectMode;
 import org.bonitasoft.forms.client.model.WidgetType;
-import org.bonitasoft.forms.server.accessor.impl.util.XPathUtil;
+import org.bonitasoft.forms.server.accessor.impl.util.XMLUtil;
 import org.bonitasoft.forms.server.accessor.widget.IXMLWidgetBuilder;
 import org.bonitasoft.forms.server.constants.XMLForms;
 import org.bonitasoft.forms.server.exception.InvalidFormDefinitionException;
@@ -46,32 +48,19 @@ import org.w3c.dom.NodeList;
  * Accessor used to read the page nodes in the XML definition file and retrieve the widgets and validators
  * @author Anthony Birembaut
  */
-public class XMLWidgetBuilderImpl extends XPathUtil implements IXMLWidgetBuilder {
+public class XMLWidgetBuilderImpl extends XMLUtil implements IXMLWidgetBuilder {
     
     /**
      * Logger
      */
     private static Logger LOGGER = Logger.getLogger(XMLWidgetBuilderImpl.class.getName());
-    
-    /**
-     * Instance attribute
-     */
-    protected static XMLWidgetBuilderImpl INSTANCE = null;
-    
-    /**
-     * @return the XMLWidgetBuilderImpl instance
-     */
-    public static synchronized XMLWidgetBuilderImpl getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new XMLWidgetBuilderImpl();
-        }
-        return INSTANCE;
-    }
 
     /**
-     * Private contructor to prevent instantiation
+     * Contructor
+     * @param xpathEvaluator
      */
-    protected XMLWidgetBuilderImpl() {
+    public XMLWidgetBuilderImpl(final XPath xpathEvaluator) {
+        super(xpathEvaluator);
     }
     
     /**

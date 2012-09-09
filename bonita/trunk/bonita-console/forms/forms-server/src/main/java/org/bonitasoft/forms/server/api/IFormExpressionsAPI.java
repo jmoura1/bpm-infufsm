@@ -48,7 +48,7 @@ public interface IFormExpressionsAPI {
     String FIELDID_PREFIX = "field_";
     
     /**
-     * evaluate an initial value expression (at for construction)
+     * evaluate an initial value expression (at form construction)
      * @param activityInstanceUUID the activity instance UUID
      * @param expression the expression
      * @param locale the user's locale
@@ -60,7 +60,7 @@ public interface IFormExpressionsAPI {
     Object evaluateInitialExpression(ActivityInstanceUUID activityInstanceUUID, String expression, Locale locale, boolean isCurrentValue) throws InstanceNotFoundException, ActivityNotFoundException;
     
     /**
-     * evaluate an initial value expression (at for construction)
+     * evaluate an initial value expression (at form construction)
      * @param processInstanceUUID the process instance UUID
      * @param expression the expression
      * @param locale the user's locale
@@ -70,7 +70,7 @@ public interface IFormExpressionsAPI {
     Object evaluateInitialExpression(ProcessInstanceUUID processInstanceUUID, String expression, Locale locale, boolean isCurrentValue) throws InstanceNotFoundException;
     
     /**
-     * evaluate an initial value expression (at for construction)
+     * evaluate an initial value expression (at form construction)
      * @param processDefinitionUUID the process definition UUID
      * @param expression the expression
      * @param locale the user's locale
@@ -80,7 +80,7 @@ public interface IFormExpressionsAPI {
     Object evaluateInitialExpression(ProcessDefinitionUUID processDefinitionUUID, String expression, Locale locale) throws ProcessNotFoundException;
 
     /**
-     * evaluate an initial value expression (at for construction)
+     * evaluate an initial value expression (at form construction)
      * @param activityInstanceUUID the activity instance UUID
      * @param expression the expression
      * @param locale the user's locale
@@ -93,7 +93,7 @@ public interface IFormExpressionsAPI {
     Object evaluateInitialExpression(ActivityInstanceUUID activityInstanceUUID, String expression, Locale locale, boolean isCurrentValue, Map<String, Object> context) throws InstanceNotFoundException, ActivityNotFoundException;
     
     /**
-     * evaluate an initial value expression (at for construction)
+     * evaluate an initial value expression (at form construction)
      * @param processInstanceUUID the process instance UUID
      * @param expression the expression
      * @param locale the user's locale
@@ -105,7 +105,7 @@ public interface IFormExpressionsAPI {
     Object evaluateInitialExpression(ProcessInstanceUUID processInstanceUUID, String expression, Locale locale, boolean isCurrentValue, Map<String, Object> context) throws InstanceNotFoundException;
     
     /**
-     * evaluate an initial value expression (at for construction)
+     * evaluate an initial value expression (at form construction)
      * @param processDefinitionUUID the process definition UUID
      * @param expression the expression
      * @param locale the user's locale
@@ -279,4 +279,81 @@ public interface IFormExpressionsAPI {
      * @return the new object value
      */
     Object getModifiedJavaObject(ProcessDefinitionUUID processDefinitionUUID, String variableExpression, Object objectValue, Object attributeValue);
+
+    /**
+     * evaluate an initial value expression (at form construction)
+     * @param activityInstanceUUID the activity instance UUID
+     * @param expressions the map of expressions to evaluate
+     * @param locale the user's locale
+     * @param isCurrentValue if true, values returned are the current values for the instance. otherwise, it's the values at step end
+     * @param context some additional context for groovy evaluation
+     * @return The result of the evaluations as a Map
+     * @throws ActivityNotFoundException 
+     * @throws InstanceNotFoundException 
+     */
+    Map<String, Object> evaluateInitialExpressions(ActivityInstanceUUID activityInstanceUUID, Map<String, String> expressions, Locale locale, boolean isCurrentValue, Map<String, Object> context) throws InstanceNotFoundException, ActivityNotFoundException;
+
+    /**
+     * Evaluate an expression (at form submission)
+     * @param activityInstanceUUID the activity instance UUID
+     * @param expressions the map of expressions to evaluate
+     * @param fieldValues the form field values
+     * @param locale the user's locale
+     * @param isCurrentValue if true, values returned are the current values for the instance. otherwise, it's the values at step end
+     * @param context some additional context for groovy evaluation
+     * @return The result of the evaluations as a Map
+     * @throws ActivityNotFoundException 
+     * @throws InstanceNotFoundException 
+     */
+    Map<String, Object> evaluateExpressions(ActivityInstanceUUID activityInstanceUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, boolean isCurrentValue, Map<String, Object> context) throws InstanceNotFoundException, ActivityNotFoundException;
+
+    /**
+     * Evaluate an expression (at form construction)
+     * @param processInstanceUUID the process instance UUID
+     * @param expressions the map of expressions to evaluate
+     * @param locale the user's locale
+     * @param isCurrentValue if true, values returned are the current values for the instance. otherwise, it's the values at process instantiation
+     * @param context some additional context for groovy evaluation
+     * @return The result of the evaluations as a Map
+     * @throws InstanceNotFoundException 
+     */
+    Map<String, Object> evaluateInitialExpressions(ProcessInstanceUUID processInstanceUUID, Map<String, String> expressions, Locale locale, boolean isCurrentValue, Map<String, Object> context) throws InstanceNotFoundException;
+
+    /**
+     * Evaluate an expression (at form submission)
+     * @param processInstanceUUID the process instance UUID
+     * @param expressions the map of expressions to evaluate
+     * @param fieldValues the form field values
+     * @param locale the user's locale
+     * @param isCurrentValue if true, values returned are the current values for the instance. otherwise, it's the values at process instantiation
+     * @param context some additional context for groovy evaluation
+     * @return The result of the evaluations as a Map
+     * @throws InstanceNotFoundException 
+     */
+    Map<String, Object> evaluateExpressions(ProcessInstanceUUID processInstanceUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, boolean isCurrentValue, Map<String, Object> context) throws InstanceNotFoundException;
+
+    /**
+     * Evaluate an expression (at form construction)
+     * @param processDefinitionUUID the process definition UUID
+     * @param expressions the map of expressions to evaluate
+     * @param locale the user's locale
+     * @param isCurrentValue if true, values returned are the current values for the instance. otherwise, it's the values at process instantiation
+     * @param context some additional context for groovy evaluation
+     * @return The result of the evaluations as a Map
+     * @throws ProcessNotFoundException 
+     */
+    Map<String, Object> evaluateInitialExpressions(ProcessDefinitionUUID processDefinitionUUID, Map<String, String> expressions, Locale locale, Map<String, Object> context) throws ProcessNotFoundException;
+
+    /**
+     * Evaluate an expression (at form submission)
+     * @param processDefinitionUUID the process definition UUID
+     * @param expressions the map of expressions to evaluate
+     * @param fieldValues the form field values
+     * @param locale the user's locale
+     * @param isCurrentValue if true, values returned are the current values for the instance. otherwise, it's the values at process instantiation
+     * @param context some additional context for groovy evaluation
+     * @return The result of the evaluations as a Map
+     * @throws ProcessNotFoundException 
+     */
+    Map<String, Object> evaluateExpressions(ProcessDefinitionUUID processDefinitionUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, Map<String, Object> context) throws ProcessNotFoundException;
 }

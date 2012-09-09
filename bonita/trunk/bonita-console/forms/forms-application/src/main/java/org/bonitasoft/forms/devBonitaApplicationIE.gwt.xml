@@ -23,5 +23,6 @@
  	<servlet path="/formsservice" class="org.bonitasoft.forms.server.FormsServlet" />
     <servlet path="/fileUpload" class="org.bonitasoft.console.servlet.FileUploadServlet"/>
     <servlet path="/attachmentDownload" class="org.bonitasoft.console.servlet.AttachmentDownloadServlet"/>
+    <servlet path="/formLayoutDownload" class="org.bonitasoft.forms.server.FormLayoutDownloadServlet"/>
     <servlet path="/attachmentImage" class="org.bonitasoft.console.servlet.AttachmentImageServlet"/>
 </module>

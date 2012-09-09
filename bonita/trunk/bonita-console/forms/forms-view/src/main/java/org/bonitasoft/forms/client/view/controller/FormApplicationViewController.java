@@ -5,14 +5,14 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2.0 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.bonitasoft.forms.client.view.controller;
 
@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.bonitasoft.console.security.client.LoginServiceAsync;
 import org.bonitasoft.console.security.client.users.User;
@@ -42,6 +41,10 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
@@ -183,7 +186,8 @@ public class FormApplicationViewController {
     /**
      * create the view for the process template and the form page template
      * 
-     * @param formContainerId id of the element in which the form has to be placed (if null the form will be insterted at the
+     * @param formContainerId
+     *            id of the element in which the form has to be placed (if null the form will be insterted at the
      *            end of the body)
      */
     public void createInitialView(final String formContainerId) {
@@ -202,7 +206,8 @@ public class FormApplicationViewController {
     /**
      * create the view for the form page in the specified node
      * 
-     * @param formContainerId id of the element in which the form has to be placed (if null the form will be insterted at the
+     * @param formContainerId
+     *            id of the element in which the form has to be placed (if null the form will be insterted at the
      *            end of the body)
      */
     public void createFormInitialView(final String formContainerId) {
@@ -213,9 +218,11 @@ public class FormApplicationViewController {
     /**
      * create the view for the form page in the specified node
      * 
-     * @param formContainerId id of the element in which the form has to be placed (if null the form will be insterted at the
+     * @param formContainerId
+     *            id of the element in which the form has to be placed (if null the form will be insterted at the
      *            end of the body)
-     * @param includeApplicationTemplate if true, include the process template otherwise just display the form
+     * @param includeApplicationTemplate
+     *            if true, include the process template otherwise just display the form
      */
     protected void createView(final String formContainerId, final boolean includeApplicationTemplate) {
         this.elementId = formContainerId;
@@ -226,8 +233,8 @@ public class FormApplicationViewController {
             applicationConfigHandler = lightApplicationConfigHandler;
         }
         formsServiceAsync.getApplicationConfig(formId, urlContext, includeApplicationTemplate, applicationConfigHandler);
-    }
 
+    }
 
     /**
      * Handler allowing to display the application template
@@ -255,6 +262,7 @@ public class FormApplicationViewController {
                 Window.Location.reload();
             } else if (t instanceof ForbiddenApplicationAccessException) {
                 loginServiceAsync.logout(new AsyncCallback<Void>() {
+
                     public void onFailure(final Throwable t) {
                         urlUtils.showLoginView();
                     }
@@ -278,119 +286,156 @@ public class FormApplicationViewController {
          */
         public void onSuccess(final ApplicationConfig applicationConfig) {
 
-            HTMLPanel applicationHTMLPanel = null;
-            if (includeApplicationTemplate) {
-                final HtmlTemplate applicationTemplate = applicationConfig.getApplicationLayout();
-                applicationHTMLPanel = new HTMLPanel(applicationTemplate.getBodyContent());
-                final String onloadAttributeValue = domUtils.insertApplicationTemplate(applicationTemplate.getHeadNodes(), applicationHTMLPanel, applicationTemplate.getBodyAttributes());
+            try {
+                if (includeApplicationTemplate) {
+                    RequestBuilder theRequestBuilder;
+                    final String theURL = urlUtils.buildLayoutURL(applicationConfig.getApplicationLayout().getBodyContentId(),
+                            (String) urlContext.get(URLUtils.TASK_ID_PARAM), false);
+                    GWT.log("Calling the Form Layout Download Servlet with query: " + theURL);
+                    theRequestBuilder = new RequestBuilder(RequestBuilder.GET, theURL);
+                    theRequestBuilder.setCallback(new RequestCallback() {
 
-                if (applicationConfig.getApplicationLabel() != null && DOM.getElementById(APPLICATION_LABEL_ELEMENT_ID) != null) {
-                    domUtils.insertInElement(applicationHTMLPanel, APPLICATION_LABEL_ELEMENT_ID, applicationConfig.getApplicationLabel());
-                }
-                if (DOM.getElementById(LOGOUT_WIDGET_ELEMENT_ID) != null) {
-                    final UserLogoutWidget logoutWidget = new UserLogoutWidget(user, urlContext);
-                    applicationHTMLPanel.add(logoutWidget, LOGOUT_WIDGET_ELEMENT_ID);
-                }
-                if (DOM.getElementById(LOGOUT_BUTTON_ELEMENT_ID) != null) {
-                    Anchor logoutLink = null;
-                    if (user.isAnonymous()) {
-                        logoutLink = new Anchor(FormsResourceBundle.getMessages().loginButtonLabel());
-                    } else {
-                        logoutLink = new Anchor(FormsResourceBundle.getMessages().logoutButtonLabel());
-                    }
-                    logoutLink.setStyleName("bonita_logout_label");
-
-                    final List<String> paramsToRemove = new ArrayList<String>();
-                    paramsToRemove.add(URLUtils.LOCALE_PARAM);
-                    final List<String> hashParamsToRemove = new ArrayList<String>();
-
-                    if (user.isAutoLogin()) {
-                        hashParamsToRemove.add(URLUtils.AUTO_LOGIN_PARAM);
-                    } else {
-                        hashParamsToRemove.add(URLUtils.USER_CREDENTIALS_PARAM);
-                    }
-                    if (!user.isAnonymous()) {
-                        for (final Entry<String, Object> hashParamEntry : urlContext.entrySet()) {
-                            hashParamsToRemove.add(hashParamEntry.getKey());
+                        public void onError(Request aRequest, Throwable anException) {
+                            final String errorMessage = FormsResourceBundle.getErrors().applicationConfigRetrievalError();
+                            formsServiceAsync.getApplicationErrorTemplate(formId, urlContext, new ErrorPageHandler(null, formId, errorMessage, anException,
+                                    elementId));
                         }
-                    }
-                    Map<String, String> hashParamsToAdd = new HashMap<String, String>();
-                    hashParamsToAdd.put(URLUtils.TODOLIST_PARAM, "true");
-                    hashParamsToAdd.put(URLUtils.VIEW_MODE_PARAM, "app");
-                    final String theRedirectURL = urlUtils.rebuildUrl(paramsToRemove, null, hashParamsToRemove, hashParamsToAdd);
-                    final String theURL = RpcSecurityServices.getLogoutURL();
-                    String theURLSuffix = "?" + URLUtils.REDIRECT_URL_PARAM + "=";
-                    try {
-                        theURLSuffix += URL.encodeQueryString(theRedirectURL);
-                    } catch (final Exception e) {
-                        Window.alert("Unable to redirect to login page: Invalid URL");
-                        theURLSuffix += GWT.getModuleBaseURL();
-                    }
-                    logoutLink.setHref(theURL + theURLSuffix);
-                    applicationHTMLPanel.add(logoutLink, LOGOUT_BUTTON_ELEMENT_ID);
-                }
-                if (DOM.getElementById(USERNAME_ELEMENT_ID) != null) {
-                    Label usernameLabel = null;
-                    if (user.isAnonymous()) {
-                        usernameLabel = new Label("");
-                    } else {
-                        usernameLabel = new Label(user.getDisplayName());
-                    }
-                    usernameLabel.setStyleName("bonita_username_label");
-                    applicationHTMLPanel.add(usernameLabel, USERNAME_ELEMENT_ID);
-                }
-                if (DOM.getElementById(REFRESH_BUTTON_ELEMENT_ID) != null) {
-                    final Label refreshButton = new Label(FormsResourceBundle.getMessages().refreshButtonLabel());
-                    refreshButton.addClickHandler(new ClickHandler() {
-                        public void onClick(final ClickEvent event) {
-                            Window.Location.reload();
+
+                        public void onResponseReceived(Request aRequest, Response aResponse) {
+
+                            HTMLPanel applicationHTMLPanel = null;
+
+                            final HtmlTemplate applicationTemplate = applicationConfig.getApplicationLayout();
+                            applicationTemplate.setBodyContent(aResponse.getText());
+                            applicationHTMLPanel = new HTMLPanel(applicationTemplate.getBodyContent());
+                            final String onloadAttributeValue = domUtils.insertApplicationTemplate(applicationTemplate.getHeadNodes(), applicationHTMLPanel,
+                                    applicationTemplate.getBodyAttributes());
+
+                            if (applicationConfig.getApplicationLabel() != null && DOM.getElementById(APPLICATION_LABEL_ELEMENT_ID) != null) {
+                                domUtils.insertInElement(applicationHTMLPanel, APPLICATION_LABEL_ELEMENT_ID, applicationConfig.getApplicationLabel());
+                            }
+                            if (DOM.getElementById(LOGOUT_WIDGET_ELEMENT_ID) != null) {
+                                final UserLogoutWidget logoutWidget = new UserLogoutWidget(user, urlContext);
+                                applicationHTMLPanel.add(logoutWidget, LOGOUT_WIDGET_ELEMENT_ID);
+                            }
+                            if (DOM.getElementById(LOGOUT_BUTTON_ELEMENT_ID) != null) {
+                                Anchor logoutLink = null;
+                                if (user.isAnonymous()) {
+                                    logoutLink = new Anchor(FormsResourceBundle.getMessages().loginButtonLabel());
+                                } else {
+                                    logoutLink = new Anchor(FormsResourceBundle.getMessages().logoutButtonLabel());
+                                }
+                                logoutLink.setStyleName("bonita_logout_label");
+                                
+                                final List<String> paramsToRemove = new ArrayList<String>();
+                                paramsToRemove.add(URLUtils.LOCALE_PARAM);
+                                paramsToRemove.add(URLUtils.FORM_LOCALE);
+                                final List<String> hashParamsToRemove = new ArrayList<String>();
+
+                                if (user.isAutoLogin()) {
+                                    hashParamsToRemove.add(URLUtils.AUTO_LOGIN_PARAM);
+                                } else {
+                                    hashParamsToRemove.add(URLUtils.USER_CREDENTIALS_PARAM);
+                                }
+
+                                Map<String, String> hashParamsToAdd = new HashMap<String, String>();
+                                hashParamsToAdd.put(URLUtils.TODOLIST_PARAM, "true");
+                                hashParamsToAdd.put(URLUtils.VIEW_MODE_PARAM, "app");
+                                final String domain = Window.Location.getParameter(URLUtils.DOMAIN_PARAM);
+                                final String theRedirectURL = urlUtils.rebuildUrl(paramsToRemove, null, hashParamsToRemove, hashParamsToAdd);
+                                final String theURL = RpcSecurityServices.getLogoutURL();
+                                String theURLSuffix = "?" + URLUtils.REDIRECT_URL_PARAM + "=";
+                                try {
+                                    theURLSuffix += URL.encodeQueryString(theRedirectURL);
+                                } catch (final Exception e) {
+                                    Window.alert("Unable to redirect to login page: Invalid URL");
+                                    theURLSuffix += GWT.getModuleBaseURL();
+                                }
+                                if (domain != null) {
+                                    theURLSuffix += "&" + URLUtils.DOMAIN_PARAM + "=" + domain;
+                                }
+                                logoutLink.setHref(theURL + theURLSuffix);
+                                applicationHTMLPanel.add(logoutLink, LOGOUT_BUTTON_ELEMENT_ID);
+                            }
+                            if (DOM.getElementById(USERNAME_ELEMENT_ID) != null) {
+                                Label usernameLabel = null;
+                                if (user.isAnonymous()) {
+                                    usernameLabel = new Label("");
+                                } else {
+                                    usernameLabel = new Label(user.getDisplayName());
+                                }
+                                usernameLabel.setStyleName("bonita_username_label");
+                                applicationHTMLPanel.add(usernameLabel, USERNAME_ELEMENT_ID);
+                            }
+                            if (DOM.getElementById(REFRESH_BUTTON_ELEMENT_ID) != null) {
+                                final Label refreshButton = new Label(FormsResourceBundle.getMessages().refreshButtonLabel());
+                                refreshButton.addClickHandler(new ClickHandler() {
+                                    public void onClick(final ClickEvent event) {
+                                        Window.Location.reload();
+                                    }
+                                });
+                                applicationHTMLPanel.add(refreshButton, REFRESH_BUTTON_ELEMENT_ID);
+                            }
+                            if (DOM.getElementById(OPEN_USER_XP_ELEMENT_ID) != null && !user.isAutoLogin()) {
+                                final Label userXPLabel = new Label(FormsResourceBundle.getMessages().openUserXPButtonLabel());
+                                userXPLabel.setStyleName("bonita_user_xp_label");
+                                final Image userXPIcon = new Image(PICTURE_PLACEHOLDER);
+                                userXPIcon.setStyleName("bonita_user_xp_icon");
+                                userXPIcon.setTitle(FormsResourceBundle.getMessages().openUserXPButtonTitle());
+                                userXPIcon.addClickHandler(new ClickHandler() {
+                                    public void onClick(final ClickEvent event) {
+
+                                        String userXPURL = applicationConfig.getUserXPURL();
+                                        if (userXPURL == null) {
+                                            userXPURL = DEFAULT_USER_XP_URL;
+                                        }
+                                        if (user.useCredentialTransmission()) {
+                                            loginServiceAsync.generateTemporaryToken(new GenerateTemporaryTokenHandler(userXPURL));
+                                        } else {
+                                            urlUtils.windowAssign(userXPURL + "?" + URLUtils.LOCALE_PARAM + "=" + urlUtils.getLocale());
+                                        }
+                                    }
+                                });
+                                applicationHTMLPanel.add(userXPLabel, OPEN_USER_XP_ELEMENT_ID);
+                                applicationHTMLPanel.add(userXPIcon, OPEN_USER_XP_ELEMENT_ID);
+                            }
+                            if (onloadAttributeValue != null) {
+                                domUtils.javascriptEval(onloadAttributeValue);
+                            }
+
+                            buildPageFlow(applicationConfig, applicationHTMLPanel);
+
                         }
                     });
-                    applicationHTMLPanel.add(refreshButton, REFRESH_BUTTON_ELEMENT_ID);
+                    theRequestBuilder.send();
+                } else {
+                    buildPageFlow(applicationConfig, null);
                 }
-                if (DOM.getElementById(OPEN_USER_XP_ELEMENT_ID) != null && !user.isAutoLogin()) {
-                    final Label userXPLabel = new Label(FormsResourceBundle.getMessages().openUserXPButtonLabel());
-                    userXPLabel.setStyleName("bonita_user_xp_label");
-                    final Image userXPIcon = new Image(PICTURE_PLACEHOLDER);
-                    userXPIcon.setStyleName("bonita_user_xp_icon");
-                    userXPIcon.setTitle(FormsResourceBundle.getMessages().openUserXPButtonTitle());
-                    userXPIcon.addClickHandler(new ClickHandler() {
-                        public void onClick(final ClickEvent event) {
 
-                            String userXPURL = applicationConfig.getUserXPURL();
-                            if (userXPURL == null) {
-                                userXPURL = DEFAULT_USER_XP_URL;
-                            }
-                            if (user.useCredentialTransmission()) {
-                                loginServiceAsync.generateTemporaryToken(new GenerateTemporaryTokenHandler(userXPURL));
-                            } else {
-                                urlUtils.windowAssign(userXPURL + "?" + URLUtils.LOCALE_PARAM + "=" + urlUtils.getLocale());
-                            }
-                        }
-                    });
-                    applicationHTMLPanel.add(userXPLabel, OPEN_USER_XP_ELEMENT_ID);
-                    applicationHTMLPanel.add(userXPIcon, OPEN_USER_XP_ELEMENT_ID);
-                }
-                if (onloadAttributeValue != null) {
-                    domUtils.javascriptEval(onloadAttributeValue);
-                }
-            }
-            mandatoryFieldSymbol = applicationConfig.getMandatorySymbol();
-            mandatoryFieldLabel = applicationConfig.getMandatoryLabel();
-            mandatoryFieldClasses = applicationConfig.getMandatoryStyle();
-
-            final PageflowViewController formPagesViewController = FormViewControllerFactory.getPageflowViewController(formId, urlContext, user, elementId, applicationHTMLPanel);
-            formPagesViewController.setMandatoryFieldSymbol(mandatoryFieldSymbol);
-            formPagesViewController.setMandatoryFieldLabel(mandatoryFieldLabel);
-            formPagesViewController.setMandatoryFieldClasses(mandatoryFieldClasses);
-            hideLoading();
-            if (formId != null) {
-                formPagesViewController.createForm();
-            } else {
-                final String errorMessage = FormsResourceBundle.getMessages().inboxEmptyMessage();
-                formsServiceAsync.getApplicationErrorTemplate(formId, urlContext, new ErrorPageHandler(applicationHTMLPanel, formId, errorMessage, elementId));
+            } catch (Exception e) {
+                Window.alert("Error while trying to query the form layout :" + e.getMessage());
             }
         }
+    }
+
+    void buildPageFlow(ApplicationConfig applicationConfig, HTMLPanel applicationHTMLPanel) {
+        mandatoryFieldSymbol = applicationConfig.getMandatorySymbol();
+        mandatoryFieldLabel = applicationConfig.getMandatoryLabel();
+        mandatoryFieldClasses = applicationConfig.getMandatoryStyle();
+
+        final PageflowViewController formPagesViewController = FormViewControllerFactory.getPageflowViewController(formId, urlContext, user, elementId,
+                applicationHTMLPanel);
+        formPagesViewController.setMandatoryFieldSymbol(mandatoryFieldSymbol);
+        formPagesViewController.setMandatoryFieldLabel(mandatoryFieldLabel);
+        formPagesViewController.setMandatoryFieldClasses(mandatoryFieldClasses);
+        hideLoading();
+        if (formId != null) {
+            formPagesViewController.createForm();
+        } else {
+            final String errorMessage = FormsResourceBundle.getMessages().inboxEmptyMessage();
+            formsServiceAsync.getApplicationErrorTemplate(formId, urlContext, new ErrorPageHandler(applicationHTMLPanel, formId, errorMessage, elementId));
+        }
+
     }
 
     /**
@@ -424,7 +469,8 @@ public class FormApplicationViewController {
          * {@inheritDoc}
          */
         public void onSuccess(final String temporaryToken) {
-            urlUtils.windowAssign(userXPURL + "?" + URLUtils.LOCALE_PARAM + "=" + urlUtils.getLocale() + "#" + URLUtils.USER_CREDENTIALS_PARAM + "=" + temporaryToken);
+            urlUtils.windowAssign(userXPURL + "?" + URLUtils.LOCALE_PARAM + "=" + urlUtils.getLocale() + "#" + URLUtils.USER_CREDENTIALS_PARAM + "="
+                    + temporaryToken);
         }
 
         /**

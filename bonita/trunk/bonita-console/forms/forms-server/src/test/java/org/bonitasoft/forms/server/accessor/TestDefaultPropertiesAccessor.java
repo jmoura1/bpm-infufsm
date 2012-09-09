@@ -41,7 +41,7 @@ public class TestDefaultPropertiesAccessor extends FormsTestCase {
     
     @Test
     public void testGetMaxWidgetPerPage() throws Exception {
-        Assert.assertEquals(8, defaultPropertiesAccessor.getMaxWigdetPerPage());
+        Assert.assertEquals(5, defaultPropertiesAccessor.getMaxWigdetPerPage());
     }
     
     @Test

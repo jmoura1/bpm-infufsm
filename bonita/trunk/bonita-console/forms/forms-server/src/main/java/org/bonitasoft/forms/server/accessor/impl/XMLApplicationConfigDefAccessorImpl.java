@@ -21,7 +21,8 @@ import java.util.logging.Logger;
 
 import org.bonitasoft.forms.server.accessor.DefaultFormsPropertiesFactory;
 import org.bonitasoft.forms.server.accessor.IApplicationConfigDefAccessor;
-import org.bonitasoft.forms.server.accessor.impl.util.XPathUtil;
+import org.bonitasoft.forms.server.accessor.impl.util.FormDocument;
+import org.bonitasoft.forms.server.accessor.impl.util.XMLUtil;
 import org.bonitasoft.forms.server.constants.XMLForms;
 import org.bonitasoft.forms.server.exception.InvalidFormDefinitionException;
 import org.w3c.dom.Document;
@@ -31,7 +32,7 @@ import org.w3c.dom.Node;
  * @author Haojie Yuan
  * 
  */
-public class XMLApplicationConfigDefAccessorImpl extends XPathUtil implements IApplicationConfigDefAccessor {
+public class XMLApplicationConfigDefAccessorImpl extends XMLUtil implements IApplicationConfigDefAccessor {
 
     /**
      * Logger
@@ -51,11 +52,12 @@ public class XMLApplicationConfigDefAccessorImpl extends XPathUtil implements IA
     /**
      * Constructor
      * 
-     * @param document
+     * @param formDocument
      */
-    public XMLApplicationConfigDefAccessorImpl(final Document document) {
+    public XMLApplicationConfigDefAccessorImpl(final FormDocument formDocument) {
 
-        this.document = document;
+        super(formDocument.getXpathEvaluator());
+        this.document = formDocument.getDocument();
 
         final StringBuilder applicationXpathBuilder = new StringBuilder();
         applicationXpathBuilder.append("//");

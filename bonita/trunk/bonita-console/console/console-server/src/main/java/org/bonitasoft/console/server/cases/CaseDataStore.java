@@ -73,6 +73,7 @@ import org.ow2.bonita.facade.exception.UndeletableInstanceException;
 import org.ow2.bonita.facade.runtime.Comment;
 import org.ow2.bonita.facade.runtime.InstanceState;
 import org.ow2.bonita.facade.runtime.command.GetProcessInstancesActivitiesCommand;
+import org.ow2.bonita.facade.runtime.command.WebDeleteDocumentsOfProcessInstancesCommand;
 import org.ow2.bonita.facade.runtime.command.WebDeleteProcessInstancesCommand;
 import org.ow2.bonita.facade.runtime.command.WebGetLightParentProcessInstances;
 import org.ow2.bonita.facade.runtime.command.WebGetLightParentUserInstancesCommand;
@@ -235,7 +236,10 @@ public class CaseDataStore {
             if (processInstance.getParentInstanceUUID() == null) {
                 final ProcessDefinitionUUID processUUID = processInstance.getProcessDefinitionUUID();
                 if (aCaseFilter.isWithAdminRights() || aUserProfile.isAllowed(RuleType.PROCESS_READ, processUUID.getValue())) {
-                    BonitaProcessUUID theBonitaProcessUUID = processes.get(processUUID);
+                	if(aCaseFilter.getState() != null && aCaseFilter.getState().name().equals(CaseItemState.FINISHED.name()) && !processInstance.getInstanceState().name().equals(aCaseFilter.getState().name()) ){
+                		continue;
+                	}
+                	BonitaProcessUUID theBonitaProcessUUID = processes.get(processUUID);
                     if (theBonitaProcessUUID == null) {
                         theBonitaProcessUUID = buildProcessUUID(processUUID, queryDefinitionAPI);
                         processes.put(processUUID, theBonitaProcessUUID);
@@ -435,9 +439,12 @@ public class CaseDataStore {
 
         final String theName = anActivityInstance.getActivityName();
         String activityLabel = anActivityInstance.getDynamicLabel();
-        if (activityLabel == null || activityLabel.length() == 0) {
-            activityLabel = anActivityInstance.getActivityLabel();
-        }
+		if (activityLabel == null || activityLabel.length() == 0) {
+			activityLabel = anActivityInstance.getActivityLabel();
+		}
+		if (activityLabel != null && activityLabel.length() > 50) {
+			activityLabel = activityLabel.substring(0, 50) + "...";
+		}
         String activityDescription = anActivityInstance.getDynamicDescription();
         if (activityDescription == null || activityDescription.length() == 0) {
             activityDescription = anActivityInstance.getActivityDescription();
@@ -650,7 +657,11 @@ public class CaseDataStore {
             for (CaseUUID theCaseUUID : aCaseSelection) {
                 theProcessInstancesToDelete.add(new ProcessInstanceUUID(theCaseUUID.toString()));
             }
-            AccessorUtil.getCommandAPI().execute(new WebDeleteProcessInstancesCommand(theProcessInstancesToDelete, deleteAttachments));
+            CommandAPI commandAPI = AccessorUtil.getCommandAPI();
+            if (deleteAttachments) {
+                commandAPI.execute(new WebDeleteDocumentsOfProcessInstancesCommand(theProcessInstancesToDelete));
+            }
+            commandAPI.execute(new WebDeleteProcessInstancesCommand(theProcessInstancesToDelete));
         }
     }
 

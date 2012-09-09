@@ -36,7 +36,6 @@ import org.bonitasoft.forms.server.accessor.DefaultFormsPropertiesFactory;
 import org.bonitasoft.forms.server.exception.InvalidFormDefinitionException;
 import org.ow2.bonita.facade.exception.ProcessNotFoundException;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
-import org.w3c.dom.Document;
 
 /**
  * The Form definition file document builder
@@ -64,7 +63,7 @@ public class FormDocumentBuilder {
     /**
      * The document for the process definition UUID
      */
-    protected Document document;
+    protected FormDocument document;
     
     /**
      * The process definition UUID
@@ -224,7 +223,7 @@ public class FormDocumentBuilder {
         final InputStream formsDefinitionStream = getFormsDefinitionInputStream();
         try {
             final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            this.document = builder.parse(formsDefinitionStream);
+            this.document = new FormDocument(builder.parse(formsDefinitionStream));
         } catch (final Exception e) {
             final String errorMessage = "Failed to parse the forms definition file";
             if (LOGGER.isLoggable(Level.SEVERE)) {
@@ -287,7 +286,7 @@ public class FormDocumentBuilder {
     /**
      * @return the document
      */
-    public Document getDocument() {
+    public FormDocument getDocument() {
         return document;
     }
     

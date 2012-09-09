@@ -61,6 +61,8 @@ public interface FormsErrors extends Messages {
     
     String fileTooBigError();
     
+    String fileTooBigErrorWithNameAndSize(String fileName, String maxSize);
+    
     String fileTooBigErrorWithName(String fileName);
     
     String taskFormSkippedError();
@@ -69,6 +71,6 @@ public interface FormsErrors extends Messages {
 
     String formAlreadySubmittedError();
     
-    String formAlreadySubmittedOrCancelledError();
+    String formAlreadySubmittedOrCanceledError();
 
 }

@@ -35,7 +35,8 @@ public interface CaseDataSource extends BonitaFilteredDataSource<CaseUUID, CaseI
 	/**
 	 * The name of the property used when the list of myCases is updated.
 	 */
-	String CASE_LIST_PROPERTY = "case list";
+  public static final String CASE_LIST_PROPERTY = "case list";
+  public static final String TO_CURRENT_POSITION = "redirect position";
   public static final String COMMENTS_PROPERTY = "case comments";
   public static final String FILTER_UPDATED = "case filter";
   static final String CONFIGURATION_PROPERTY = "case datasource configuration";

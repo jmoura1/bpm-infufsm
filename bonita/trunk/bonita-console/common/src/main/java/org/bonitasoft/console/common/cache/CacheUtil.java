@@ -40,10 +40,10 @@ public class CacheUtil {
     static {
     	try {
 	    	final String pathToCacheConfigFile = PropertiesFactory.getPlatformProperties().getCommonConfFolder().getAbsolutePath() + "/cache-config.xml";
-			CACHE_MANAGER = CacheManager.create(pathToCacheConfigFile);
-    	} catch (final Exception e) {
-    		LOGGER.log(Level.SEVERE, "Unable to retrieve the path of the cache configuration file.", e);
-    		CACHE_MANAGER = CacheManager.create();
+            CACHE_MANAGER = new CacheManager(pathToCacheConfigFile);
+        } catch (final Exception e) {
+            LOGGER.log(Level.SEVERE, "Unable to retrieve the path of the cache configuration file.", e);
+            CACHE_MANAGER = new CacheManager();
 		}
     }
 

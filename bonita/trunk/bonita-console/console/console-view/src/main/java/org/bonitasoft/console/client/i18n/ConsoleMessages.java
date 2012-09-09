@@ -265,4 +265,9 @@ public interface ConsoleMessages extends com.google.gwt.i18n.client.Messages {
      * warn if no Label is Selected or if system label is selected
      */
     String invalidLabelSelectionWarn();
+    
+    /**
+     * The name you entered contains special chars
+     */
+    String fileNameWithSpecialChars();
 }

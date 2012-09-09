@@ -37,7 +37,6 @@ import org.ow2.bonita.util.AccessorUtil;
 import org.ow2.bonita.util.BusinessArchiveFactory;
 import org.ow2.bonita.util.ProcessBuilder;
 import org.ow2.bonita.util.SimpleCallbackHandler;
-import org.w3c.dom.Document;
 
 /**
  * Test for the implementation of the form document builder
@@ -49,7 +48,7 @@ public class TestFormDocumentBuilder extends FormsTestCase {
 
     @Test
     public void testInterpreteFormXMLWithI18n() throws Exception {
-        Document document = FormDocumentBuilderFactory.getFormDocumentBuilder(null, "fr", null).getDocument();
+        FormDocument document = FormDocumentBuilderFactory.getFormDocumentBuilder(null, "fr", null).getDocument();
 
         IApplicationFormDefAccessor formDefAccessor = new XMLApplicationFormDefAccessorImpl("activity$Request", document, null, null);
 
@@ -58,7 +57,7 @@ public class TestFormDocumentBuilder extends FormsTestCase {
 
     @Test
     public void testInterpreteFormXMLWithI18nDefault() throws Exception {
-        Document document = FormDocumentBuilderFactory.getFormDocumentBuilder(null, null, null).getDocument();
+        FormDocument document = FormDocumentBuilderFactory.getFormDocumentBuilder(null, null, null).getDocument();
 
         IApplicationFormDefAccessor formDefAccessor = new XMLApplicationFormDefAccessorImpl("activity$Request", document, null, null);
 
@@ -67,7 +66,7 @@ public class TestFormDocumentBuilder extends FormsTestCase {
 
     @Test
     public void testInterpreteFormXMLWithI18nNotExisting() throws Exception {
-        Document document = FormDocumentBuilderFactory.getFormDocumentBuilder(null, "de", null).getDocument();
+        FormDocument document = FormDocumentBuilderFactory.getFormDocumentBuilder(null, "de", null).getDocument();
 
         IApplicationFormDefAccessor formDefAccessor = new XMLApplicationFormDefAccessorImpl("activity$Request", document, null, null);
 

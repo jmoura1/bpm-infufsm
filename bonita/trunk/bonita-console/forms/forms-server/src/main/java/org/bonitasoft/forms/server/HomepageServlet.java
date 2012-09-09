@@ -42,13 +42,13 @@ import org.bonitasoft.console.security.server.LoginServlet;
 import org.bonitasoft.console.security.server.accessor.PropertiesFactory;
 import org.bonitasoft.console.security.server.accessor.TenancyProperties;
 import org.bonitasoft.console.servlet.ServletLoginUtils;
+import org.bonitasoft.forms.server.accessor.impl.util.FormDocument;
 import org.bonitasoft.forms.server.api.FormAPIFactory;
 import org.bonitasoft.forms.server.api.IFormDefinitionAPI;
 import org.bonitasoft.forms.server.provider.FormServiceProvider;
 import org.bonitasoft.forms.server.provider.impl.util.FormServiceProviderFactory;
 import org.bonitasoft.forms.server.provider.impl.util.FormServiceProviderUtil;
 import org.ow2.bonita.util.SimpleCallbackHandler;
-import org.w3c.dom.Document;
 
 /**
  * Servlet for requesting home page
@@ -141,7 +141,7 @@ public class HomepageServlet extends ApplicationResourceServlet {
                     context.put(FormServiceProviderUtil.LOCALE, Locale.ENGLISH);
                     final FormServiceProvider formServiceProvider = FormServiceProviderFactory.getFormServiceProvider();
                     final Date deployementDate = formServiceProvider.getDeployementDate(context);
-                    final Document document = formServiceProvider.getFormDefinitionDocument(context);
+                    final FormDocument document = formServiceProvider.getFormDefinitionDocument(context);
                     final IFormDefinitionAPI definitionAPI = FormAPIFactory.getFormDefinitionAPI(document, deployementDate, locale);
                     final String fileName = definitionAPI.getHomePage();
                     if (fileName != null) {

@@ -164,6 +164,7 @@ public abstract class AbstractCaseEditorWidget extends BonitaPanel implements Mo
         myCategoryDataSource = aCategoryDataSource;
 
         myCaseDataSource.addModelChangeListener(CaseDataSource.CASE_LIST_PROPERTY, this);
+        myCaseDataSource.addModelChangeListener(CaseDataSource.TO_CURRENT_POSITION, this);
         myCaseDataSource.addModelChangeListener(CaseDataSource.COMMENTS_PROPERTY, this);
         myLabelDataSource.addModelChangeListener(LabelDataSource.LABEL_CASE_ASSOCIATION_PROPERTY, this);
         myLabelDataSource.getConfiguration(new AsyncHandler<LabelsConfiguration>() {
@@ -544,7 +545,7 @@ public abstract class AbstractCaseEditorWidget extends BonitaPanel implements Mo
                 i++;
                 String theComment = theCommentItem.getContent();
                 theComment = toMultiLine(theComment, myCommentsTable.getOffsetWidth()/10);
-                myCommentsTable.setHTML(i, CONTENT_COL, theComment);
+                myCommentsTable.setText(i, CONTENT_COL, theComment);
                 myCommentsTable.setHTML(i, ACTION_COL, "");
                 /* CSS Style */
                 myCommentsTable.getFlexCellFormatter().setStylePrimaryName(i, CONTENT_COL, COMMENT_CONTENT_STYLE);
@@ -621,6 +622,8 @@ public abstract class AbstractCaseEditorWidget extends BonitaPanel implements Mo
                     // The edited case has been removed
                     redirectToCurrentPosition();
                 }
+            } else if (CaseDataSource.TO_CURRENT_POSITION.equals(anEvent.getPropertyName())) {    
+            	 redirectToCurrentPosition();
             } else if (CaseItem.STEPS_PROPERTY.equals(anEvent.getPropertyName())) {
                 // The list of steps of the current case has changed.
                 if (((List<StepItem>) anEvent.getOldValue()).size() >= ((List<StepItem>) anEvent.getNewValue()).size()) {

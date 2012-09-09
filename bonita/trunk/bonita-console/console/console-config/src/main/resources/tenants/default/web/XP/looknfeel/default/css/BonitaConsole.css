@@ -2519,6 +2519,7 @@ div.identified-right {
 	height: 21px;
 	/** the same as the images used to design the button (better for user interaction)*/
 	white-space: nowrap;
+	padding-left:5px;
 }
 
 .menu_item .icon_menu_bar_submenu {

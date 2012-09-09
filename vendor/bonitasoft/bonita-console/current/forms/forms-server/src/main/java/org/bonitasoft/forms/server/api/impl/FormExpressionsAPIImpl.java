@@ -35,6 +35,7 @@ import javax.activation.MimetypesFileTypeMap;
 import org.bonitasoft.forms.client.model.ActionType;
 import org.bonitasoft.forms.client.model.FormAction;
 import org.bonitasoft.forms.client.model.FormFieldValue;
+import org.bonitasoft.forms.server.accessor.DefaultFormsPropertiesFactory;
 import org.bonitasoft.forms.server.api.IFormExpressionsAPI;
 import org.bonitasoft.forms.server.exception.FileTooBigException;
 import org.bonitasoft.forms.server.provider.impl.util.FormServiceProviderUtil;
@@ -80,7 +81,7 @@ public class FormExpressionsAPIImpl implements IFormExpressionsAPI {
     /**
      * Max file size for attachments
      */
-    protected static final int MAX_FILE_SIZE = 20971520;
+    protected static final long MAX_FILE_SIZE = DefaultFormsPropertiesFactory.getDefaultFormProperties().getAttachmentMaxSize();
 
     /**
      * {@inheritDoc}
@@ -109,7 +110,9 @@ public class FormExpressionsAPIImpl implements IFormExpressionsAPI {
                 result = expression;
             }
         } catch (final GroovyException e) {
-            result = expression;
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.log(Level.SEVERE, "Error while evaluating the groovy expression.", e);
+            }
         }
         return result;
     }
@@ -141,7 +144,9 @@ public class FormExpressionsAPIImpl implements IFormExpressionsAPI {
                 result = expression;
             }
         } catch (final GroovyException e) {
-            result = expression;
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.log(Level.SEVERE, "Error while evaluating the groovy expression.", e);
+            }
         }
         return result;
     }
@@ -173,7 +178,9 @@ public class FormExpressionsAPIImpl implements IFormExpressionsAPI {
                 result = expression;
             }
         } catch (final GroovyException e) {
-            result = expression;
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.log(Level.SEVERE, "Error while evaluating the groovy expression.", e);
+            }
         }
         return result;
     }
@@ -240,8 +247,9 @@ public class FormExpressionsAPIImpl implements IFormExpressionsAPI {
                 try {
                     result = runtimeAPI.evaluateGroovyExpression(expression, activityInstanceUUID, evalContext, !isCurrentValue, false);
                 } catch (final GroovyException e) {
-                    // the expression is not a groovy expression
-                    result = expression;
+                    if (LOGGER.isLoggable(Level.SEVERE)) {
+                        LOGGER.log(Level.SEVERE, "Error while evaluating the groovy expression.", e);
+                    }
                 }
             } else {
                 result = expression;
@@ -279,8 +287,9 @@ public class FormExpressionsAPIImpl implements IFormExpressionsAPI {
                 try {
                     result = runtimeAPI.evaluateGroovyExpression(expression, processInstanceUUID, evalContext, !isCurrentValue, false);
                 } catch (final GroovyException e) {
-                    // the expression is not a groovy expression
-                    result = expression;
+                    if (LOGGER.isLoggable(Level.SEVERE)) {
+                        LOGGER.log(Level.SEVERE, "Error while evaluating the groovy expression.", e);
+                    }
                 }
             } else {
                 result = expression;
@@ -318,8 +327,9 @@ public class FormExpressionsAPIImpl implements IFormExpressionsAPI {
                 try {
                     result = runtimeAPI.evaluateGroovyExpression(expression, processDefinitionUUID, evalContext);
                 } catch (final GroovyException e) {
-                    // the expression is not a groovy expression
-                    result = expression;
+                    if (LOGGER.isLoggable(Level.SEVERE)) {
+                        LOGGER.log(Level.SEVERE, "Error while evaluating the groovy expression.", e);
+                    }
                 }
             } else {
                 result = expression;
@@ -586,12 +596,12 @@ public class FormExpressionsAPIImpl implements IFormExpressionsAPI {
             final File file = new File(fileName);
             if (file.exists()) {
                 int fileLength = 0;
-                if (file.length() > MAX_FILE_SIZE) {
+                if (file.length() > (MAX_FILE_SIZE * 1048576)) {
                     final String errorMessage = "file " + fileName + " too big !";
                     if (LOGGER.isLoggable(Level.SEVERE)) {
                         LOGGER.log(Level.SEVERE, errorMessage);
                     }
-                    throw new FileTooBigException(errorMessage, fileName);
+                    throw new FileTooBigException(errorMessage, fileName, String.valueOf(MAX_FILE_SIZE));
                 } else {
                     fileLength = (int)file.length();
                     try {
@@ -654,12 +664,236 @@ public class FormExpressionsAPIImpl implements IFormExpressionsAPI {
     }
     
     /**
-     * {@inheritDoc}
-     * 
+     *{@inheritDoc}
      */
     public Object getModifiedJavaObject(final ProcessDefinitionUUID processDefinitionUUID, final String variableExpression, final Object objectValue, final Object attributeValue) {
         
         final RuntimeAPI runtimeAPI = AccessorUtil.getRuntimeAPI();
         return runtimeAPI.getModifiedJavaObject(processDefinitionUUID, variableExpression, objectValue, attributeValue);
+    }
+
+    /**
+     *{@inheritDoc}
+     */
+    public Map<String, Object> evaluateInitialExpressions(ActivityInstanceUUID activityInstanceUUID, Map<String, String> expressions, Locale locale, boolean isCurrentValue, Map<String, Object> context) throws InstanceNotFoundException, ActivityNotFoundException {
+
+        final Map<String, Object> result = new HashMap<String, Object>();
+        final Map<String, String> expressionsToEvaluate = new HashMap<String, String>();
+        for (Entry<String, String> expressionEntry : expressions.entrySet()) {
+            String expression = expressionEntry.getValue();
+            if (expression != null && expression.length() != 0 && Misc.containsAGroovyExpression(expression)) {
+                expressionsToEvaluate.put(expressionEntry.getKey(), expression);
+            } else {
+                result.put(expressionEntry.getKey(), expression);
+            }
+        }
+        if (!expressionsToEvaluate.isEmpty()) {
+            final Map<String, Object> expressionContext = new HashMap<String, Object>();
+            if (context != null) {
+                expressionContext.putAll(context);
+            }
+            final RuntimeAPI runtimeAPI = AccessorUtil.getRuntimeAPI();
+            try {
+                result.putAll(runtimeAPI.evaluateGroovyExpressions(expressionsToEvaluate, activityInstanceUUID, expressionContext, !isCurrentValue, false));
+            } catch (final GroovyException e) {
+                if (LOGGER.isLoggable(Level.SEVERE)) {
+                    LOGGER.log(Level.SEVERE, "Error while evaluating the groovy expressions.", e);
+                }
+                for (Entry<String, String> expressionsToEvaluateEntry : expressionsToEvaluate.entrySet()) {
+                    result.put(expressionsToEvaluateEntry.getKey(), null);
+                }  
+            }
+        }
+        return result;
+    }
+
+    /**
+     *{@inheritDoc}
+     */
+    public Map<String, Object> evaluateExpressions(ActivityInstanceUUID activityInstanceUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, boolean isCurrentValue, Map<String, Object> context) throws InstanceNotFoundException, ActivityNotFoundException {
+
+        final Map<String, Object> result = new HashMap<String, Object>();
+        final Map<String, String> expressionsToEvaluate = new HashMap<String, String>();
+        for (Entry<String, String> expressionEntry : expressions.entrySet()) {
+            String expression = expressionEntry.getValue();
+            if (expression != null && expression.matches(FIELD_REGEX)) {
+                final String fieldId = expression.substring(FIELDID_PREFIX.length());
+                result.put(expressionEntry.getKey(), evaluateFieldValueActionExpression(fieldId, fieldValues, locale));
+             } else if (expression != null && expression.length() != 0 && Misc.containsAGroovyExpression(expression)) {
+                expressionsToEvaluate.put(expressionEntry.getKey(), expression);
+            } else {
+                result.put(expressionEntry.getKey(), expression);
+            }
+        }
+        if (!expressionsToEvaluate.isEmpty()) {
+            final Map<String, Object> expressionContext = generateGroovyContext(fieldValues, locale);
+            if (context != null) {
+                expressionContext.putAll(context);
+            }
+            final RuntimeAPI runtimeAPI = AccessorUtil.getRuntimeAPI();
+            try {
+                result.putAll(runtimeAPI.evaluateGroovyExpressions(expressionsToEvaluate, activityInstanceUUID, expressionContext, !isCurrentValue, false));
+            } catch (final GroovyException e) {
+                if (LOGGER.isLoggable(Level.SEVERE)) {
+                    LOGGER.log(Level.SEVERE, "Error while evaluating the groovy expressions.", e);
+                }
+                for (Entry<String, String> expressionsToEvaluateEntry : expressionsToEvaluate.entrySet()) {
+                    result.put(expressionsToEvaluateEntry.getKey(), null);
+                }  
+            }
+        }
+        return result;
+    }
+
+    /**
+     *{@inheritDoc}
+     */
+    public Map<String, Object> evaluateInitialExpressions(ProcessInstanceUUID processInstanceUUID, Map<String, String> expressions, Locale locale, boolean isCurrentValue, Map<String, Object> context) throws InstanceNotFoundException {
+        
+        final Map<String, Object> result = new HashMap<String, Object>();
+        final Map<String, String> expressionsToEvaluate = new HashMap<String, String>();
+        for (Entry<String, String> expressionEntry : expressions.entrySet()) {
+            String expression = expressionEntry.getValue();
+            if (expression != null && expression.length() != 0 && Misc.containsAGroovyExpression(expression)) {
+                expressionsToEvaluate.put(expressionEntry.getKey(), expression);
+            } else {
+                result.put(expressionEntry.getKey(), expression);
+            }
+        }
+        if (!expressionsToEvaluate.isEmpty()) {
+            final Map<String, Object> expressionContext = new HashMap<String, Object>();
+            if (context != null) {
+                expressionContext.putAll(context);
+            }
+            final RuntimeAPI runtimeAPI = AccessorUtil.getRuntimeAPI();
+            try {
+                result.putAll(runtimeAPI.evaluateGroovyExpressions(expressionsToEvaluate, processInstanceUUID, expressionContext, !isCurrentValue, false));
+            } catch (final GroovyException e) {
+                if (LOGGER.isLoggable(Level.SEVERE)) {
+                    LOGGER.log(Level.SEVERE, "Error while evaluating the groovy expressions.", e);
+                }
+                for (Entry<String, String> expressionsToEvaluateEntry : expressionsToEvaluate.entrySet()) {
+                    result.put(expressionsToEvaluateEntry.getKey(), null);
+                }  
+            }
+        }
+        return result;
+    }
+
+    /**
+     *{@inheritDoc}
+     */
+    public Map<String, Object> evaluateExpressions(ProcessInstanceUUID processInstanceUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, boolean isCurrentValue, Map<String, Object> context) throws InstanceNotFoundException {
+
+        final Map<String, Object> result = new HashMap<String, Object>();
+        final Map<String, String> expressionsToEvaluate = new HashMap<String, String>();
+        for (Entry<String, String> expressionEntry : expressions.entrySet()) {
+            String expression = expressionEntry.getValue();
+            if (expression != null && expression.matches(FIELD_REGEX)) {
+                final String fieldId = expression.substring(FIELDID_PREFIX.length());
+                result.put(expressionEntry.getKey(), evaluateFieldValueActionExpression(fieldId, fieldValues, locale));
+             } else if (expression != null && expression.length() != 0 && Misc.containsAGroovyExpression(expression)) {
+                expressionsToEvaluate.put(expressionEntry.getKey(), expression);
+            } else {
+                result.put(expressionEntry.getKey(), expression);
+            }
+        }
+        if (!expressionsToEvaluate.isEmpty()) {
+            final Map<String, Object> expressionContext = generateGroovyContext(fieldValues, locale);
+            if (context != null) {
+                expressionContext.putAll(context);
+            }
+            final RuntimeAPI runtimeAPI = AccessorUtil.getRuntimeAPI();
+            try {
+                result.putAll(runtimeAPI.evaluateGroovyExpressions(expressionsToEvaluate, processInstanceUUID, expressionContext, !isCurrentValue, false));
+            } catch (final GroovyException e) {
+                if (LOGGER.isLoggable(Level.SEVERE)) {
+                    LOGGER.log(Level.SEVERE, "Error while evaluating the groovy expressions.", e);
+                }
+                for (Entry<String, String> expressionsToEvaluateEntry : expressionsToEvaluate.entrySet()) {
+                    result.put(expressionsToEvaluateEntry.getKey(), null);
+                }  
+            }
+        }
+        return result;
+    }
+
+    /**
+     *{@inheritDoc}
+     */
+    public Map<String, Object> evaluateInitialExpressions(ProcessDefinitionUUID processDefinitionUUID, Map<String, String> expressions, Locale locale, Map<String, Object> context) throws ProcessNotFoundException {
+
+        final Map<String, Object> result = new HashMap<String, Object>();
+        final Map<String, String> expressionsToEvaluate = new HashMap<String, String>();
+        for (Entry<String, String> expressionEntry : expressions.entrySet()) {
+            String expression = expressionEntry.getValue();
+            if (expression != null && expression.length() != 0 && Misc.containsAGroovyExpression(expression)) {
+                expressionsToEvaluate.put(expressionEntry.getKey(), expression);
+            } else {
+                result.put(expressionEntry.getKey(), expression);
+            }
+        }
+        if (!expressionsToEvaluate.isEmpty()) {
+            final Map<String, Object> expressionContext = new HashMap<String, Object>();
+            if (context != null) {
+                expressionContext.putAll(context);
+            }
+            final RuntimeAPI runtimeAPI = AccessorUtil.getRuntimeAPI();
+            try {
+                result.putAll(runtimeAPI.evaluateGroovyExpressions(expressionsToEvaluate, processDefinitionUUID, expressionContext));
+            } catch (final GroovyException e) {
+                if (LOGGER.isLoggable(Level.SEVERE)) {
+                    LOGGER.log(Level.SEVERE, "Error while evaluating the groovy expressions.", e);
+                }
+                for (Entry<String, String> expressionsToEvaluateEntry : expressionsToEvaluate.entrySet()) {
+                    result.put(expressionsToEvaluateEntry.getKey(), null);
+                }  
+            } catch (InstanceNotFoundException e) {
+                //this exception should never occur as we are working with a process definition. Not a process instance.
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
+    /**
+     *{@inheritDoc}
+     */
+    public Map<String, Object> evaluateExpressions(ProcessDefinitionUUID processDefinitionUUID, Map<String, String> expressions, Map<String, FormFieldValue> fieldValues, Locale locale, Map<String, Object> context) throws ProcessNotFoundException {
+
+        final Map<String, Object> result = new HashMap<String, Object>();
+        final Map<String, String> expressionsToEvaluate = new HashMap<String, String>();
+        for (Entry<String, String> expressionEntry : expressions.entrySet()) {
+            String expression = expressionEntry.getValue();
+            if (expression != null && expression.matches(FIELD_REGEX)) {
+                final String fieldId = expression.substring(FIELDID_PREFIX.length());
+                result.put(expressionEntry.getKey(), evaluateFieldValueActionExpression(fieldId, fieldValues, locale));
+             } else if (expression != null && expression.length() != 0 && Misc.containsAGroovyExpression(expression)) {
+                expressionsToEvaluate.put(expressionEntry.getKey(), expression);
+            } else {
+                result.put(expressionEntry.getKey(), expression);
+            }
+        }
+        if (!expressionsToEvaluate.isEmpty()) {
+            final Map<String, Object> expressionContext = generateGroovyContext(fieldValues, locale);
+            if (context != null) {
+                expressionContext.putAll(context);
+            }
+            final RuntimeAPI runtimeAPI = AccessorUtil.getRuntimeAPI();
+            try {
+                result.putAll(runtimeAPI.evaluateGroovyExpressions(expressionsToEvaluate, processDefinitionUUID, expressionContext));
+            } catch (final GroovyException e) {
+                if (LOGGER.isLoggable(Level.SEVERE)) {
+                    LOGGER.log(Level.SEVERE, "Error while evaluating the groovy expressions.", e);
+                }
+                for (Entry<String, String> expressionsToEvaluateEntry : expressionsToEvaluate.entrySet()) {
+                    result.put(expressionsToEvaluateEntry.getKey(), null);
+                }  
+            } catch (InstanceNotFoundException e) {
+                //this exception should never occur as we are working with a process definition. Not a process instance.
+                e.printStackTrace();
+            }
+        }
+        return result;
     }
 }

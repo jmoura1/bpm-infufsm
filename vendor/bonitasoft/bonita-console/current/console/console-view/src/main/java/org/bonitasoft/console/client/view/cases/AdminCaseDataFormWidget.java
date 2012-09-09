@@ -703,9 +703,10 @@ public class AdminCaseDataFormWidget extends BonitaPanel implements ModelChangeL
         public void onFailure(Throwable t) {
             
             if (t instanceof FileTooBigException) {
-                String fileName = ((FileTooBigException)t).getFileName();
+                final String fileName = ((FileTooBigException)t).getFileName();
+                final String maxSize =  ((FileTooBigException)t).getMaxSize();
                 if (fileName != null) {
-                    Window.alert(FormsResourceBundle.getErrors().fileTooBigErrorWithName(fileName));
+                    Window.alert(FormsResourceBundle.getErrors().fileTooBigErrorWithNameAndSize(fileName, maxSize));
                 } else {
                     Window.alert(FormsResourceBundle.getErrors().fileTooBigError());
                 }

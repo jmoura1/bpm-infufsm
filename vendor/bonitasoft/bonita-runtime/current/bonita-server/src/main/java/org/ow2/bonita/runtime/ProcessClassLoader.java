@@ -29,5 +29,11 @@ public class ProcessClassLoader extends AbstractClassLoader {
       LOG.fine("Creating a new ProcessClassLoader... ProcessDefinitionUUID = " + processUUID);
     }
   }
+  
+  @Override
+  public void release() {
+    super.release();
+    ((VirtualCommonClassloader)getParent()).cleanCommonClassLoader();
+  }
 
 }

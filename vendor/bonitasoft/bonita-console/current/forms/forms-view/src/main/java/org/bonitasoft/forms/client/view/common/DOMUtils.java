@@ -5,14 +5,14 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2.0 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.bonitasoft.forms.client.view.common;
 
@@ -60,6 +60,7 @@ public class DOMUtils {
     protected static DOMUtils INSTANCE = null;
 
     private final String CSS_ID_PRE = "CSS_";
+
     /**
      * @return the view controller instance
      */
@@ -83,11 +84,12 @@ public class DOMUtils {
      * @param headNodes
      * @param pageHTMLPanel
      * @param bodyAttributes
-     * @param list 
+     * @param list
      * @param elementId
      * @return the onload attribute value if it exists, null otherwise
      */
-    public String insertPageTemplate(final List<HeadNode> headNodes, final HTMLPanel pageHTMLPanel, final Map<String, String> bodyAttributes, final HTMLPanel processHTMLPanel, final String elementId) {
+    public String insertPageTemplate(final List<HeadNode> headNodes, final HTMLPanel pageHTMLPanel, final Map<String, String> bodyAttributes,
+            final HTMLPanel processHTMLPanel, final String elementId) {
 
         addHeaders(headNodes);
         addPageContent(pageHTMLPanel, processHTMLPanel, elementId);
@@ -111,7 +113,7 @@ public class DOMUtils {
         }
     }
 
-    protected Element getHeadElement(){
+    protected Element getHeadElement() {
         Element headElement = null;
         final Element documentElement = DOM.getParent(RootPanel.getBodyElement());
         final int documentChildrenCount = DOM.getChildCount(documentElement);
@@ -121,10 +123,10 @@ public class DOMUtils {
                 headElement = documentChildElement;
                 break;
             }
-        }        
+        }
         return headElement;
     }
-    
+
     /**
      * @param headNodes
      */
@@ -133,23 +135,73 @@ public class DOMUtils {
         if (headElement != null) {
             for (final HeadNode headNode : headNodes) {
                 if (isHeadNodeUseful(headNode)) {
-                    // removeOldHeaderElementIfPresent(headElement, headNode);
-                    final Element headChildElement = DOM.createElement(headNode.getTagName());
-                    for (final Entry<String, String> attributeEntry : headNode.getAttributes().entrySet()) {
-                        headChildElement.setAttribute(attributeEntry.getKey(), attributeEntry.getValue());
+                    if (!isContainHeadNode(headElement, headNode)) {
+                        // removeOldHeaderElementIfPresent(headElement, headNode);
+                        final Element headChildElement = DOM.createElement(headNode.getTagName());
+                        for (final Entry<String, String> attributeEntry : headNode.getAttributes().entrySet()) {
+                            headChildElement.setAttribute(attributeEntry.getKey(), attributeEntry.getValue());
+                        }
+                        if (headNode.getInnerHtml() != null && headNode.getInnerHtml().length() > 0) {
+                            headChildElement.setInnerText(headNode.getInnerHtml());
+                        }
+                        headElement.appendChild(headChildElement);
                     }
-                    if (headNode.getInnerHtml() != null && headNode.getInnerHtml().length() > 0) {
-                        headChildElement.setInnerText(headNode.getInnerHtml());
+                    if ("title".equalsIgnoreCase(headNode.getTagName())) {
+                        Window.setTitle(headNode.getInnerHtml());
                     }
-                    headElement.appendChild(headChildElement);
-                }
-                if ("title".equalsIgnoreCase(headNode.getTagName())) {
-                    Window.setTitle(headNode.getInnerHtml());
                 }
             }
         }
     }
-    
+
+    private boolean isContainHeadNode(final Element headElement, final HeadNode headNode) {
+        boolean isContained = false;
+        final Map<String, String> attribeteMap = headNode.getAttributes();
+        final String headInnerHtml = headNode.getInnerHtml();
+        final int childrenCount = DOM.getChildCount(headElement);
+        for (int i = 0; i < childrenCount; i++) {
+            final Element childElement = DOM.getChild(headElement, i);
+
+            boolean isSameNode = true;
+            int theIndex = 0;
+            if (headNode.getTagName().equalsIgnoreCase(childElement.getTagName())) {
+                final String childElementValue = childElement.getInnerHTML();
+                boolean innerHtml = false;
+                if (headInnerHtml == null && childElementValue == null) {
+                    innerHtml = true;
+                } else if (headInnerHtml != null && childElementValue != null) {
+                    if (headInnerHtml.equals(childElementValue)) {
+                        innerHtml = true;
+                    }
+                }
+                if (innerHtml) {
+                    for (final Entry<String, String> attributeEntry : attribeteMap.entrySet()) {
+                        if (!isSameNode) {
+                            break;
+                        }
+                        final String attributeKey = attributeEntry.getKey();
+                        final String attribeteValue = attributeEntry.getValue();
+                        if (childElement.hasAttribute(attributeKey)) {
+                            final String childElementAttributeValue = childElement.getAttribute(attributeKey);
+                            isSameNode = childElementAttributeValue.equals(attribeteValue);
+                            if (isSameNode) {
+                                theIndex++;
+                            }
+                        }
+
+                    }
+
+                    if (theIndex == attribeteMap.size()) {
+                        isContained = true;
+                        break;
+                    }
+                }
+
+            }
+        }
+        return isContained;
+    }
+
     /**
      * Deals with the whole application template injection
      * 
@@ -169,10 +221,10 @@ public class DOMUtils {
     /**
      * Add a stylesheet link is the link does not still exist
      */
-    public void addStyleSheetLink(String cssFileName){
+    public void addStyleSheetLink(String cssFileName) {
         final String theme = cssFileName.substring(0, cssFileName.length() - 4); // remove ".css"
         final List<HeadNode> cssLinks = new ArrayList<HeadNode>();
-        if (!isStylesheetExist(theme)){
+        if (!isStylesheetExist(theme)) {
             HeadNode cssLink = new HeadNode();
             cssLink.setTagName("link");
             Map<String, String> attributes = new HashMap<String, String>();
@@ -182,19 +234,19 @@ public class DOMUtils {
             attributes.put("title", theme);
             attributes.put("id", theme);
             cssLink.setAttributes(attributes);
-            cssLinks.add(cssLink); 
-            DOMUtils.getInstance().addHeaders(cssLinks);            
-        }        
+            cssLinks.add(cssLink);
+            DOMUtils.getInstance().addHeaders(cssLinks);
+        }
     }
-    
+
     /**
      * Add a theme stylesheet link is the link does not still exist
      */
     @Deprecated
-    public void addThemeStyleSheetLink(String themeName, String[] cssNames, String[] cssFileNames){
+    public void addThemeStyleSheetLink(String themeName, String[] cssNames, String[] cssFileNames) {
         final List<HeadNode> cssLinks = new ArrayList<HeadNode>();
         for (int i = 0; i < cssNames.length; i++) {
-            if (!isStylesheetExist(CSS_ID_PRE +cssNames[i])) {
+            if (!isStylesheetExist(CSS_ID_PRE + cssNames[i])) {
                 HeadNode cssLink = new HeadNode();
                 cssLink.setTagName("link");
                 Map<String, String> attributes = new HashMap<String, String>();
@@ -202,26 +254,26 @@ public class DOMUtils {
                 attributes.put("rel", "stylesheet");
                 attributes.put("href", "themeResource?location=" + cssFileNames[i] + "&theme=" + themeName);
                 attributes.put("title", cssNames[i]);
-                attributes.put("id", CSS_ID_PRE +cssNames[i]);
+                attributes.put("id", CSS_ID_PRE + cssNames[i]);
                 cssLink.setAttributes(attributes);
                 cssLinks.add(cssLink);
                 DOMUtils.getInstance().addHeaders(cssLinks);
             }
-        }        
+        }
     }
-    
+
     /**
      * Find if a link of a stylesheet is in the header
      */
-    protected boolean isStylesheetExist(String cssName){
-        boolean result=false;
+    protected boolean isStylesheetExist(String cssName) {
+        boolean result = false;
         Element cssElement = DOM.getElementById(cssName);
-        if(cssElement != null){
+        if (cssElement != null) {
             result = true;
         }
         return result;
     }
-    
+
     /**
      * clean the body attributes
      */
@@ -246,7 +298,7 @@ public class DOMUtils {
         }
         container.clear();
         container.add(applicationHTMLPanel);
-        addScriptElementToDOM(applicationHTMLPanel.getElement(),container.getElement());
+        addScriptElementToDOM(applicationHTMLPanel.getElement(), container.getElement());
     }
 
     /**
@@ -260,12 +312,12 @@ public class DOMUtils {
 
         if (processHTMLPanel != null) {
             processHTMLPanel.add(pageHTMLPanel, elementId);
-            addScriptElementToDOM(pageHTMLPanel.getElement(),processHTMLPanel.getElement());
+            addScriptElementToDOM(pageHTMLPanel.getElement(), processHTMLPanel.getElement());
         } else {
             RootPanel container = RootPanel.get(STATIC_CONTENT_ELEMENT_ID);
             container.clear();
             container.add(pageHTMLPanel);
-            addScriptElementToDOM(pageHTMLPanel.getElement(),container.getElement());
+            addScriptElementToDOM(pageHTMLPanel.getElement(), container.getElement());
         }
     }
 
@@ -308,7 +360,7 @@ public class DOMUtils {
         }
         return true;
     }
-    
+
     /**
      * Remove an element of the entry point header if it's present in the template (only for certain elements)
      * 
@@ -472,7 +524,8 @@ public class DOMUtils {
      * resize a frame to fit its content's height this method is meant to be called in the form frame (not in the
      * application/console window)
      * 
-     * @param frameId the ID of the frame to resize
+     * @param frameId
+     *            the ID of the frame to resize
      * @return true if the frame was found, false otherwise
      */
     native public boolean resizeFrame(String frameId)
@@ -511,50 +564,52 @@ public class DOMUtils {
     /**
      * perform a Javascript evaluation
      * 
-     * @param jsSourceCode the source code to execute
+     * @param jsSourceCode
+     *            the source code to execute
      */
     native public void javascriptEval(String jsSourceCode)
     /*-{
          $wnd.eval(jsSourceCode);
     }-*/;
-    
+
     /**
      * To make script in scriptElements work , need to add script elements in the currentElement to parentElement
+     * 
      * @param currentElement
      * @param parentElement
      */
-    public void addScriptElementToDOM(final Element currentElement,final Element parentElement){
+    public void addScriptElementToDOM(final Element currentElement, final Element parentElement) {
         final List<Element> list = new ArrayList<Element>();
         final NodeList<com.google.gwt.dom.client.Element> scripts = currentElement.getElementsByTagName("script");
-        for(int i = 0 ; i< scripts.getLength() ; i ++){
-            list.add((Element)scripts.getItem(i));
+        for (int i = 0; i < scripts.getLength(); i++) {
+            list.add((Element) scripts.getItem(i));
         }
-        
-        for(int i = 0 ; i < list.size() ; i ++ ){
+
+        for (int i = 0; i < list.size(); i++) {
             final Element e = list.get(i);
             e.removeFromParent();
             final Element scriptElement = DOM.createElement("script");
             final String type = e.getAttribute("type");
-            if(!isEmpty(type)){
+            if (!isEmpty(type)) {
                 scriptElement.setAttribute("type", type);
             }
             final String language = e.getAttribute("language");
-            if(!isEmpty(language)){
+            if (!isEmpty(language)) {
                 scriptElement.setAttribute("language", language);
             }
             final String src = e.getAttribute("src");
-            if(!isEmpty(src)){
+            if (!isEmpty(src)) {
                 scriptElement.setAttribute("src", src);
             }
             scriptElement.setInnerText(e.getInnerText());
             parentElement.appendChild(scriptElement);
         }
     }
-    
-    private boolean isEmpty(final String str){
-        return str == null || str.trim().length() == 0 || str.equals("null"); 
+
+    private boolean isEmpty(final String str) {
+        return str == null || str.trim().length() == 0 || str.equals("null");
     }
-    
+
     public boolean isInternetExplorer() {
         return "Microsoft Internet Explorer".equals(Window.Navigator.getAppName());
     }

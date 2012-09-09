@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010  BonitaSoft S.A.
+ * Copyright (C) 2010-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -36,7 +36,7 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
   private static final long serialVersionUID = -5403223858809095337L;
 
   protected long dbid;
-  
+
   protected String uuid;
 
   protected String name;
@@ -48,35 +48,36 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
   protected String type;
 
   protected Set<String> entities;
-  
+
   protected Set<String> users;
-  
+
   protected Set<String> roles;
-  
+
   protected Set<String> groups;
-  
+
   protected Set<String> memberships;
 
-  protected RuleImpl() {}
+  protected RuleImpl() {
+  }
 
-  protected RuleImpl(RuleType type) {
+  protected RuleImpl(final RuleType type) {
     Misc.checkArgsNotNull(type);
     this.uuid = UUID.randomUUID().toString();
     this.type = type.name();
   };
 
-  protected RuleImpl(String name, String label, String description, RuleType type,
-      Set<? extends AbstractUUID> items) {
+  protected RuleImpl(final String name, final String label, final String description, final RuleType type,
+      final Set<? extends AbstractUUID> items) {
     Misc.checkArgsNotNull(name, type);
     this.uuid = UUID.randomUUID().toString();
     this.name = name;
     this.label = label;
-    if(items != null){
+    if (items != null) {
       this.exceptions = new HashSet<String>();
-      for (AbstractUUID abstractUUID : items) {
+      for (final AbstractUUID abstractUUID : items) {
         this.exceptions.add(abstractUUID.getValue());
       }
-      
+
     } else {
       this.exceptions = null;
     }
@@ -85,15 +86,15 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
     setDescription(description);
   }
 
-  protected RuleImpl(Rule src) {
+  protected RuleImpl(final Rule src) {
     super(src);
     this.dbid = src.getId();
     this.uuid = src.getUUID();
     this.name = src.getName();
     this.label = src.getLabel();
     this.exceptions = new HashSet<String>();
-    Set<String> items_ = src.getItems();
-    for (String item : items_) {
+    final Set<String> items_ = src.getItems();
+    for (final String item : items_) {
       this.exceptions.add(item);
     }
     this.type = src.getType().name();
@@ -104,15 +105,18 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
     this.memberships = CopyTool.copy(src.getMemberships());
   }
 
+  @Override
   @Deprecated
   public long getId() {
     return dbid;
   }
-  
+
+  @Override
   public String getUUID() {
     return uuid;
   }
 
+  @Override
   public String getName() {
     return this.name;
   }
@@ -121,6 +125,7 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
     this.name = name;
   }
 
+  @Override
   public String getLabel() {
     return this.label;
   }
@@ -132,6 +137,7 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
   /**
    * @return a non null set.
    */
+  @Override
   public Set<String> getItems() {
     if (this.exceptions == null) {
       this.exceptions = new HashSet<String>();
@@ -139,24 +145,25 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
     return this.exceptions;
   }
 
-  public void setItems(Set<String> items) {
+  public void setItems(final Set<String> items) {
     Misc.checkArgsNotNull(items);
     this.exceptions = items;
   }
 
+  @Override
   public RuleType getType() {
     return RuleType.valueOf(this.type);
   }
-  
+
   /**
    * @param exceptions must be not null
    */
-  protected <E extends AbstractUUID> void addExceptions(Collection<E> exceptions) {
+  protected <E extends AbstractUUID> void addExceptions(final Collection<E> exceptions) {
     Misc.checkArgsNotNull(exceptions);
     if (this.exceptions == null) {
       this.exceptions = new HashSet<String>();
     }
-    for (AbstractUUID exception : exceptions) {
+    for (final AbstractUUID exception : exceptions) {
       this.exceptions.add(exception.getValue());
     }
   }
@@ -164,35 +171,36 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
   /**
    * @param exceptions must be not null
    */
-  protected <E extends AbstractUUID> void removeExceptions(Collection<E> exceptions) {
+  protected <E extends AbstractUUID> void removeExceptions(final Collection<E> exceptions) {
     Misc.checkArgsNotNull(exceptions);
     if (this.exceptions != null && !this.exceptions.isEmpty()) {
-      for (AbstractUUID exception : exceptions) {
+      for (final AbstractUUID exception : exceptions) {
         this.exceptions.remove(exception.getValue());
       }
     }
   }
 
-  protected <E extends AbstractUUID> void setExceptions(Set<E> exceptions) {
+  protected <E extends AbstractUUID> void setExceptions(final Set<E> exceptions) {
     Misc.checkArgsNotNull(exceptions);
-    Set<String> exceptionValues = new HashSet<String>();
-    for (AbstractUUID exception : exceptions) {
+    final Set<String> exceptionValues = new HashSet<String>();
+    for (final AbstractUUID exception : exceptions) {
       exceptionValues.add(exception.getValue());
     }
     this.exceptions = exceptionValues;
   }
 
+  @Override
   public Set<String> getEntities() {
     if (this.entities == null) {
       this.entities = new HashSet<String>();
     }
     return this.entities;
   }
-  
+
   /**
    * @param entities must be not null
    */
-  public void addEntities(Collection<String> entities) {
+  public void addEntities(final Collection<String> entities) {
     Misc.checkArgsNotNull(entities);
     if (this.entities == null) {
       this.entities = new HashSet<String>();
@@ -203,24 +211,25 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
   /**
    * @param entities must be not null
    */
-  public void removeEntities(Collection<String> entities) {
+  public void removeEntities(final Collection<String> entities) {
     Misc.checkArgsNotNull(entities);
     if (this.entities != null && !this.entities.isEmpty()) {
       this.entities.removeAll(entities);
     }
   }
 
+  @Override
   public Set<String> getGroups() {
     if (this.groups == null) {
       this.groups = new HashSet<String>();
     }
     return this.groups;
   }
-  
+
   /**
    * @param groups must be not null
    */
-  public void addGroups(Collection<String> groups) {
+  public void addGroups(final Collection<String> groups) {
     Misc.checkArgsNotNull(groups);
     if (this.groups == null) {
       this.groups = new HashSet<String>();
@@ -231,24 +240,25 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
   /**
    * @param groups must be not null
    */
-  public void removeGroups(Collection<String> groups) {
+  public void removeGroups(final Collection<String> groups) {
     Misc.checkArgsNotNull(groups);
     if (this.groups != null && !this.groups.isEmpty()) {
       this.groups.removeAll(groups);
     }
   }
 
+  @Override
   public Set<String> getMemberships() {
     if (this.memberships == null) {
       this.memberships = new HashSet<String>();
     }
     return this.memberships;
   }
-  
+
   /**
    * @param memberships must be not null
    */
-  public void addMemberships(Collection<String> memberships) {
+  public void addMemberships(final Collection<String> memberships) {
     Misc.checkArgsNotNull(memberships);
     if (this.memberships == null) {
       this.memberships = new HashSet<String>();
@@ -259,24 +269,25 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
   /**
    * @param memberships must be not null
    */
-  public void removeMemberships(Collection<String> memberships) {
+  public void removeMemberships(final Collection<String> memberships) {
     Misc.checkArgsNotNull(memberships);
     if (this.memberships != null && !this.memberships.isEmpty()) {
       this.memberships.removeAll(memberships);
     }
   }
 
+  @Override
   public Set<String> getRoles() {
     if (this.roles == null) {
       this.roles = new HashSet<String>();
     }
     return this.roles;
   }
-  
+
   /**
    * @param roles must be not null
    */
-  public void addRoles(Collection<String> roles) {
+  public void addRoles(final Collection<String> roles) {
     Misc.checkArgsNotNull(roles);
     if (this.roles == null) {
       this.roles = new HashSet<String>();
@@ -287,13 +298,14 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
   /**
    * @param roles must be not null
    */
-  public void removeRoles(Collection<String> roles) {
+  public void removeRoles(final Collection<String> roles) {
     Misc.checkArgsNotNull(roles);
     if (this.roles != null && !this.roles.isEmpty()) {
       this.roles.removeAll(roles);
     }
   }
 
+  @Override
   public Set<String> getUsers() {
     if (this.users == null) {
       this.users = new HashSet<String>();
@@ -304,7 +316,7 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
   /**
    * @param users must be not null
    */
-  public void addUsers(Collection<String> users) {
+  public void addUsers(final Collection<String> users) {
     Misc.checkArgsNotNull(users);
     if (this.users == null) {
       this.users = new HashSet<String>();
@@ -315,24 +327,25 @@ public class RuleImpl extends DescriptionElementImpl implements Rule {
   /**
    * @param users must be not null
    */
-  public void removeUsers(Collection<String> users) {
+  public void removeUsers(final Collection<String> users) {
     Misc.checkArgsNotNull(users);
     if (this.users != null && !this.users.isEmpty()) {
       this.users.removeAll(users);
     }
   }
-  
+
   @Override
   public String toString() {
     return this.name + " - " + this.label + " - " + this.type;
   }
-  
-  public static Rule createRule(Rule source) {
-    Rule result = new RuleImpl(source);
-    return result;
+
+  public static Rule createRule(final Rule source) {
+    return new RuleImpl(source);
   }
 
-  public int compareTo(Rule rule) {
+  @Override
+  public int compareTo(final Rule rule) {
     return this.getName().compareTo(rule.getName());
   }
+
 }

@@ -20,10 +20,12 @@ import org.ow2.bonita.activity.multipleinstances.instantiator.SimpleContextInsta
 import org.ow2.bonita.activity.multipleinstances.instantiator.TwoDifferentContextsInitiator;
 import org.ow2.bonita.facade.def.majorElement.ProcessDefinition;
 import org.ow2.bonita.facade.runtime.ActivityState;
+import org.ow2.bonita.facade.runtime.InstanceState;
 import org.ow2.bonita.facade.runtime.ProcessInstance;
 import org.ow2.bonita.facade.runtime.TaskInstance;
 import org.ow2.bonita.facade.uuid.ProcessInstanceUUID;
 import org.ow2.bonita.light.LightActivityInstance;
+import org.ow2.bonita.light.LightTaskInstance;
 import org.ow2.bonita.util.BonitaRuntimeException;
 import org.ow2.bonita.util.ProcessBuilder;
 
@@ -263,7 +265,7 @@ public class MultipleInstancesTest extends APITestCase {
     definition = getManagementAPI().deploy(getBusinessArchive(definition, null,
         EmptyContextInitiator.class, FixedNumberJoinChecker.class));
     try {
-      final ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(definition.getUUID());
+      getRuntimeAPI().instantiateProcess(definition.getUUID());
       fail("The initial context is empty");
     } catch (BonitaRuntimeException e) {
     } 
@@ -279,22 +281,23 @@ public class MultipleInstancesTest extends APITestCase {
       .addInputParameter("number", 3)
       .addMultipleActivitiesJoinChecker(FixedNumberJoinChecker.class.getName())
       .addInputParameter("activityNumber", 5)
-      .addHumanTask("next", getLogin())
-      .addTransition("multi", "next")
       .done();
 
     definition = getManagementAPI().deploy(getBusinessArchive(definition, null,
         NoContextMulitpleActivitiesInstantiator.class, FixedNumberJoinChecker.class));
-    ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(definition.getUUID());
+    final ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(definition.getUUID());
     Collection<TaskInstance> tasks = getQueryRuntimeAPI().getTaskList(getLogin(), ActivityState.READY);
     assertEquals(3, tasks.size());
-    Iterator<TaskInstance> iterator = tasks.iterator();
+    final Iterator<TaskInstance> iterator = tasks.iterator();
     for (int i = 0; i < 3; i++) {
       TaskInstance task = iterator.next();
       executeTask(instanceUUID, task.getActivityName());
     }
+    final ProcessInstance instance = getQueryRuntimeAPI().getProcessInstance(instanceUUID);
+    assertEquals(InstanceState.FINISHED, instance.getInstanceState());
     tasks = getQueryRuntimeAPI().getTaskList(getLogin(), ActivityState.READY);
     assertEquals(0, tasks.size());
+    
     getManagementAPI().deleteProcess(definition.getUUID());
   }
 
@@ -610,6 +613,40 @@ public class MultipleInstancesTest extends APITestCase {
     getManagementAPI().deleteProcess(process.getUUID());
     getRuntimeAPI().deleteAllProcessInstances(sub.getUUID());
     getManagementAPI().deleteProcess(sub.getUUID());
+  }
+
+  public void testMICanUseUserTaskVariables() throws Exception {
+    final List<String> users = new ArrayList<String>();
+    users.add("jack");
+    users.add("james");
+
+    ProcessDefinition definition = ProcessBuilder.createProcess("ActorSelectorDiagram", "1.0")
+        .addObjectData("listOfStepActors", List.class.getName(), "${[\"jack\", \"james\"]}")
+        .addGroup("Users")
+          .addGroupResolver(UserListRoleResolver.class.getName())
+            .addInputParameter("users", "${actorUsername}")
+        .addHumanTask("Step1", "Users")
+          .addMultipleActivitiesInstantiator(VariableInstantiator.class.getName())
+            .addInputParameter("name", "actorUsername")
+            .addInputParameter("values", "${listOfStepActors}")
+          .addMultipleActivitiesJoinChecker(PercentageJoinChecker.class.getName())
+            .addInputParameter("percentage", 1.0)
+        .done();
+
+    definition = getManagementAPI().deploy(getBusinessArchive(definition, null, UserListRoleResolver.class, VariableInstantiator.class, PercentageJoinChecker.class));
+    final ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(definition.getUUID());
+
+    final Set<LightActivityInstance> activityInstances = getQueryRuntimeAPI().getLightActivityInstances(instanceUUID);
+    assertEquals(2, activityInstances.size());
+
+    loginAs("james", "bpm");
+
+    final Collection<LightTaskInstance> tasks = getQueryRuntimeAPI().getLightTaskList(instanceUUID, ActivityState.READY);
+    assertEquals(1, tasks.size());
+    final LightTaskInstance task = tasks.iterator().next();
+    assertEquals("Step1", task.getActivityName());
+
+    getManagementAPI().deleteProcess(definition.getUUID());
   }
 
 }

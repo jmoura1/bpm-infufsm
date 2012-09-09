@@ -1026,6 +1026,23 @@ public interface AbstractRemoteQueryRuntimeAPI extends Remote {
 	    @FormParam("options") final Map<String, String> options)
 	throws RemoteException;
   
+  /**
+   * Counts the number of process instances which are not a sub instance and are instances of the given process definitions.
+   * @param processDefinitionUUIDs ProcessDefinitionUUIDs
+   * @return the number of parent process instances
+   */
+	@POST  @Path("getNumberOfProcessInstancesWithProcessUUIDs")
+  int getNumberOfParentProcessInstances(@FormParam("processUUIDs") Set<ProcessDefinitionUUID> processDefinitionUUIDs, @FormParam("options") final Map<String, String> options) throws RemoteException;
+	
+  /**
+   * Counts the number of process instances which are not a sub instance and are not an instance of the given process definitions.
+   * @param exceptions ProcessDefinitionUUIDs to be ignored
+   * @param options the options map (domain, queyList, user)
+   * @return the number of parent process instances
+   */
+	@POST  @Path("getNumberOfProcessInstancesExcept")
+  int getNumberOfParentProcessInstancesExcept(@FormParam("processUUIDs") Set<ProcessDefinitionUUID> exceptions, @FormParam("options") final Map<String, String> options) throws RemoteException;
+	
 	/**
 	 * Counts the number of process instances which are not a sub instance. 
 	 * @param options the options map (domain, queyList, user)
@@ -2162,5 +2179,17 @@ public interface AbstractRemoteQueryRuntimeAPI extends Remote {
       @PathParam("documentUUID") DocumentUUID documentUUID,
       @FormParam("options") final Map<String, String> options)
   throws RemoteException, DocumentNotFoundException;
+
+  @POST @Path("getInvolvedUsersOfProcessInstance/{instanceUUID}")
+  Set<String> getInvolvedUsersOfProcessInstance(
+      @PathParam("instanceUUID") ProcessInstanceUUID instanceUUID,
+      @FormParam("options") final Map<String, String> options)
+  throws RemoteException, InstanceNotFoundException;
+
+  @POST @Path("getChildrenInstanceUUIDsOfProcessInstance/{instanceUUID}")
+  Set<ProcessInstanceUUID> getChildrenInstanceUUIDsOfProcessInstance(
+      @PathParam("instanceUUID") ProcessInstanceUUID instanceUUID,
+      @FormParam("options") final Map<String, String> options)
+  throws RemoteException, InstanceNotFoundException;
 
 }

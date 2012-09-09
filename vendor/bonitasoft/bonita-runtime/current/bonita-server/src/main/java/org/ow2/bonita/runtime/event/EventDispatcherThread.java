@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009  BonitaSoft S.A.
+ * Copyright (C) 2009-2102 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -13,35 +13,37 @@
  **/
 package org.ow2.bonita.runtime.event;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.ow2.bonita.facade.uuid.ProcessInstanceUUID;
-import org.ow2.bonita.services.EventService;
 import org.ow2.bonita.util.Command;
-import org.ow2.bonita.util.EnvTool;
 
+/**
+ * 
+ * @author Charles Souillard, Matthieu Chaffotte
+ * 
+ */
 public class EventDispatcherThread extends Thread {
 
   static final Logger LOG = Logger.getLogger(EventDispatcherThread.class.getName());
 
   protected volatile boolean isActive = true;
-  private EventExecutor executor;
+  private final EventExecutor executor;
   private boolean refresh;
   private int currentIdleInterval;
   private int minimumInterval;
-  private Object semaphore = new Object();
-  private Object threadSemaphore = new Object();
+  private final Object semaphore = new Object();
+  private final Object threadSemaphore = new Object();
 
-  EventDispatcherThread(EventExecutor executor, String name) {
+  EventDispatcherThread(final EventExecutor executor, final String name) {
     super(name);
     this.executor = executor;
   }
 
+  @Override
   public void run() {
     if (LOG.isLoggable(Level.INFO)) {
       LOG.info("starting...");
@@ -55,13 +57,13 @@ public class EventDispatcherThread extends Thread {
           refresh = false;
           currentIdleInterval = executor.getIdleMillis();
 
-          final Map<ProcessInstanceUUID, Set<EventCoupleId>> validCouplesMap = executor.getCommandService().execute(new GetEventsCouplesCommand());
-          
-          
-          if (validCouplesMap != null && (!validCouplesMap.isEmpty())) {
-            for (Set<EventCoupleId> validCouples : validCouplesMap.values()) {
-                final EventExecutorThread thread = new EventExecutorThread(executor, validCouples);
-                executor.getThreadPool().submit(thread);
+          final Map<ProcessInstanceUUID, Set<EventCoupleId>> validCouplesMap = executor.getCommandService().execute(
+              new GetEventsCouplesCommand());
+
+          if (validCouplesMap != null && !validCouplesMap.isEmpty()) {
+            for (final Set<EventCoupleId> validCouples : validCouplesMap.values()) {
+              final EventExecutorThread thread = new EventExecutorThread(executor, validCouples);
+              executor.getThreadPool().submit(thread);
             }
             synchronized (threadSemaphore) {
               threadSemaphore.wait(executor.getLockMillis());
@@ -69,7 +71,7 @@ public class EventDispatcherThread extends Thread {
           }
           executor.getCommandService().execute(new RemoveOverdueEvents());
           if (isActive()) {
-            long waitPeriod = getWaitPeriod();
+            final long waitPeriod = getWaitPeriod();
             if (waitPeriod > 0) {
               synchronized (semaphore) {
                 if (!refresh) {
@@ -90,18 +92,20 @@ public class EventDispatcherThread extends Thread {
             }
           }
 
-        } catch (InterruptedException e) {
-          LOG.info((isActive() ? "active" : "inactive") + " event dispatcher thread '" + getName() + "' got interrupted");
-        } catch (Exception e) {
+        } catch (final InterruptedException e) {
+          LOG.info((isActive() ? "active" : "inactive") + " event dispatcher thread '" + getName()
+              + "' got interrupted");
+        } catch (final Exception e) {
           if (LOG.isLoggable(Level.SEVERE)) {
-            LOG.severe("exception in event executor thread. waiting " + currentIdleInterval + " milliseconds: " + e.getMessage());
+            LOG.severe("exception in event executor thread. waiting " + currentIdleInterval + " milliseconds: "
+                + e.getMessage());
             e.printStackTrace();
           }
           try {
             synchronized (semaphore) {
               semaphore.wait(currentIdleInterval);
             }
-          } catch (InterruptedException e2) {
+          } catch (final InterruptedException e2) {
             if (LOG.isLoggable(Level.FINE)) {
               LOG.fine("delay after exception got interrupted: " + e2);
             }
@@ -111,7 +115,7 @@ public class EventDispatcherThread extends Thread {
           currentIdleInterval = currentIdleInterval * 2;
         }
       }
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       t.printStackTrace();
     } finally {
       if (LOG.isLoggable(Level.INFO)) {
@@ -131,7 +135,7 @@ public class EventDispatcherThread extends Thread {
 
     if (nextDueDate != null) {
       final long currentTimeMillis = System.currentTimeMillis();
-      if (nextDueDate < (currentTimeMillis + currentIdleInterval)) {
+      if (nextDueDate < currentTimeMillis + currentIdleInterval) {
         interval = nextDueDate - currentTimeMillis;
       }
     }
@@ -147,7 +151,7 @@ public class EventDispatcherThread extends Thread {
     }
     synchronized (semaphore) {
       refresh = true;
-      semaphore.notify();
+      semaphore.notifyAll();
     }
   }
 
@@ -156,34 +160,34 @@ public class EventDispatcherThread extends Thread {
       LOG.info("notifying Event executor dispatcher thread of new Event");
     }
     synchronized (threadSemaphore) {
-      threadSemaphore.notify();
+      threadSemaphore.notifyAll();
     }
   }
 
-  public void deactivate(boolean join) {
+  public void deactivate(final boolean join) {
     if (isActive()) {
       if (LOG.isLoggable(Level.INFO)) {
-        LOG.info("deactivating "+getName());
+        LOG.info("deactivating " + getName());
       }
       setIsActive(false);
       interrupt();
       if (join) {
         try {
           if (LOG.isLoggable(Level.INFO)) {
-            LOG.info("joining "+getName());
+            LOG.info("joining " + getName());
           }
           join(1000 * 60 * 1);
-        } catch (InterruptedException e) {
-          LOG.severe("joining "+getName()+" got interrupted");
+        } catch (final InterruptedException e) {
+          LOG.severe("joining " + getName() + " got interrupted");
         }
       }
     } else {
       if (LOG.isLoggable(Level.INFO)) {
-        LOG.info("ignoring deactivate: "+getName()+" is not active");
+        LOG.info("ignoring deactivate: " + getName() + " is not active");
       }
     }
     if (LOG.isLoggable(Level.INFO)) {
-      LOG.info("Event dispatcher thread: "+getName()+" deactivated");
+      LOG.info("Event dispatcher thread: " + getName() + " deactivated");
     }
   }
 

@@ -40,15 +40,14 @@ public class IntBinding extends BasicTypeBinding {
     super("int");
   }
 
-  protected AbstractDescriptor createDescriptor(String value, Element element,
-      Parse parse) {
-    IntegerDescriptor integerDescriptor = new IntegerDescriptor();
+  @Override
+  protected AbstractDescriptor createDescriptor(final String value, final Element element, final Parse parse) {
+    final IntegerDescriptor integerDescriptor = new IntegerDescriptor();
     Integer integerValue;
     try {
-      integerValue = new Integer(value);
-    } catch (NumberFormatException e) {
-      parse.addProblem(createValueExceptionMessage("'" + value
-          + "' cannot be parsed to an int", element));
+      integerValue = Integer.valueOf(value);
+    } catch (final NumberFormatException e) {
+      parse.addProblem(createValueExceptionMessage("'" + value + "' cannot be parsed to an int", element));
       return null;
     }
     integerDescriptor.setValue(integerValue);

@@ -155,13 +155,17 @@ public class FileUploadWidget extends BonitaPanel {
 
     private class DeploySubmitHandler extends FileSubmitHandler {
 
-        public void onSubmitComplete(SubmitCompleteEvent anEvent) {
+        public void onSubmitComplete(final SubmitCompleteEvent anEvent) {
             String response = anEvent.getResults();
             response = URL.decodeQueryString(response);
             response = response.replaceAll("&amp;", "&");
             response = response.replaceAll("&lt;", "<");
             response = response.replaceAll("&gt;", ">");
             String fileName = response;
+            final int divIndex = fileName.indexOf("<div");
+            if(divIndex > 0 ){
+            	fileName = fileName.substring(0, divIndex);
+            }
             myFileUploadedHandler.fileUploaded(fileName);
             // clean the form.
             fileUploadInputWrapper.remove(fileUpload);

@@ -38,6 +38,7 @@ import org.ow2.bonita.util.Misc;
 
 /**
  * This {@link LoginModule} is used to verify a user identity against Bonita authentication service.
+ * 
  * @author Anthony Birembaut
  */
 public class BonitaIdentityLoginModule implements LoginModule {
@@ -51,12 +52,11 @@ public class BonitaIdentityLoginModule implements LoginModule {
   /**
    * Property key for the debug flag. Defined to be "debug".
    * 
-   * Property Value. If set, should be either "true" or "false". Default is
-   * "false".
+   * Property Value. If set, should be either "true" or "false". Default is "false".
    */
   public static final String DEBUG_OPTION_NAME = "debug";
   public static final String DOMAIN_OPTION_NAME = "domain";
-  
+
   private Subject subject = null;
   private CallbackHandler callbackHandler = null;
   private Map<String, Object> sharedState;
@@ -66,23 +66,17 @@ public class BonitaIdentityLoginModule implements LoginModule {
   private String id;
 
   /**
-   * Initialize this LoginModule. This method is called by the LoginContext
-   * after this LoginModule has been instantiated. The purpose of this method is
-   * to initialize this LoginModule with the relevant information. If this
-   * LoginModule does not understand any of the data stored in sharedState or
-   * options parameters, they can be ignored.
+   * Initialize this LoginModule. This method is called by the LoginContext after this LoginModule has been
+   * instantiated. The purpose of this method is to initialize this LoginModule with the relevant information. If this
+   * LoginModule does not understand any of the data stored in sharedState or options parameters, they can be ignored.
    * 
-   * @param subject
-   *          the Subject to be authenticated.
-   * @param callbackHandler
-   *          a CallbackHandler for communicating with the end user (prompting
-   *          for usernames and passwords, for example).
-   * @param sharedState
-   *          state shared with other configured LoginModules.
-   * @param options
-   *          options specified in the login Configuration for this particular
-   *          LoginModule.
+   * @param subject the Subject to be authenticated.
+   * @param callbackHandler a CallbackHandler for communicating with the end user (prompting for usernames and
+   *          passwords, for example).
+   * @param sharedState state shared with other configured LoginModules.
+   * @param options options specified in the login Configuration for this particular LoginModule.
    */
+  @Override
   @SuppressWarnings("unchecked")
   public void initialize(final Subject subject, final CallbackHandler callbackHandler,
       final Map<String, ?> sharedState, final Map<String, ?> options) {
@@ -98,22 +92,19 @@ public class BonitaIdentityLoginModule implements LoginModule {
     }
     this.domain = (String) options.get(DOMAIN_OPTION_NAME);
     if (this.domain == null) {
-    	this.domain = BonitaConstants.DEFAULT_DOMAIN;
+      this.domain = BonitaConstants.DEFAULT_DOMAIN;
     }
   }
 
   /**
-   * Method to authenticate a Subject (phase 1). The implementation of this
-   * method authenticates a Subject. For example, it may prompt for Subject
-   * information such as a username and password and then attempt to verify the
-   * password. This method saves the result of the authentication attempt as
-   * private state within the LoginModule.
+   * Method to authenticate a Subject (phase 1). The implementation of this method authenticates a Subject. For example,
+   * it may prompt for Subject information such as a username and password and then attempt to verify the password. This
+   * method saves the result of the authentication attempt as private state within the LoginModule.
    * 
-   * @return true if the authentication succeeded, or false if this LoginModule
-   *         should be ignored.
-   * @throws LoginException
-   *           if the authentication fails
+   * @return true if the authentication succeeded, or false if this LoginModule should be ignored.
+   * @throws LoginException if the authentication fails
    */
+  @Override
   public boolean login() throws LoginException {
     if (this.debug) {
       System.err.println("[" + BonitaIdentityLoginModule.class.getName() + "] login() - preparing - step 1");
@@ -148,7 +139,7 @@ public class BonitaIdentityLoginModule implements LoginModule {
       }
       if (name != null) {
         DomainOwner.setDomain(domain);
-        ManagementAPI managementAPI = AccessorUtil.getManagementAPI();
+        final ManagementAPI managementAPI = AccessorUtil.getManagementAPI();
         if (managementAPI.checkUserCredentials(name, password)) {
           this.id = name;
         }
@@ -163,7 +154,7 @@ public class BonitaIdentityLoginModule implements LoginModule {
         System.err.println("[" + BonitaIdentityLoginModule.class.getName() + "] login() - returning - step 5");
       }
       if (this.id == null) {
-        String message = ExceptionManager.getInstance().getFullMessage("bi_LSLM_1");
+        final String message = ExceptionManager.getInstance().getFullMessage("bi_LSLM_1");
         throw new FailedLoginException(message);
       }
       return true;
@@ -176,23 +167,20 @@ public class BonitaIdentityLoginModule implements LoginModule {
   }
 
   /**
-   * Method to commit the authentication process (phase 2). This method is
-   * called if the LoginContext's overall authentication succeeded (the relevant
-   * REQUIRED, REQUISITE, SUFFICIENT and OPTIONAL LoginModules succeeded). If
-   * this LoginModule's own authentication attempt succeeded (checked by
-   * retrieving the private state saved by the login method), then this method
-   * associates relevant Principals and Credentials with the Subject located in
-   * the LoginModule. If this LoginModule's own authentication attempted failed,
-   * then this method removes/destroys any state that was originally saved.
+   * Method to commit the authentication process (phase 2). This method is called if the LoginContext's overall
+   * authentication succeeded (the relevant REQUIRED, REQUISITE, SUFFICIENT and OPTIONAL LoginModules succeeded). If
+   * this LoginModule's own authentication attempt succeeded (checked by retrieving the private state saved by the login
+   * method), then this method associates relevant Principals and Credentials with the Subject located in the
+   * LoginModule. If this LoginModule's own authentication attempted failed, then this method removes/destroys any state
+   * that was originally saved.
    * 
-   * @return true if this method succeeded, or false if this LoginModule should
-   *         be ignored.
-   * @throws LoginException
-   *           if the commit fails
+   * @return true if this method succeeded, or false if this LoginModule should be ignored.
+   * @throws LoginException if the commit fails
    */
+  @Override
   public boolean commit() throws LoginException {
     if (this.id == null) {
-      String message = ExceptionManager.getInstance().getFullMessage("bi_PLM_2");
+      final String message = ExceptionManager.getInstance().getFullMessage("bi_PLM_2");
       throw new FailedLoginException(message);
     }
     final Set<Principal> principals = this.subject.getPrincipals();
@@ -203,18 +191,15 @@ public class BonitaIdentityLoginModule implements LoginModule {
   }
 
   /**
-   * Method to abort the authentication process (phase 2). This method is called
-   * if the LoginContext's overall authentication failed. (the relevant
-   * REQUIRED, REQUISITE, SUFFICIENT and OPTIONAL LoginModules did not succeed).
-   * If this LoginModule's own authentication attempt succeeded (checked by
-   * retrieving the private state saved by the login method), then this method
-   * cleans up any state that was originally saved.
+   * Method to abort the authentication process (phase 2). This method is called if the LoginContext's overall
+   * authentication failed. (the relevant REQUIRED, REQUISITE, SUFFICIENT and OPTIONAL LoginModules did not succeed). If
+   * this LoginModule's own authentication attempt succeeded (checked by retrieving the private state saved by the login
+   * method), then this method cleans up any state that was originally saved.
    * 
-   * @return true if this method succeeded, or false if this LoginModule should
-   *         be ignored.
-   * @throws LoginException
-   *           if the abort fails
+   * @return true if this method succeeded, or false if this LoginModule should be ignored.
+   * @throws LoginException if the abort fails
    */
+  @Override
   public boolean abort() throws LoginException {
     if (this.debug) {
       System.err.println("[" + BonitaIdentityLoginModule.class.getName() + "] abort()");
@@ -230,14 +215,13 @@ public class BonitaIdentityLoginModule implements LoginModule {
   }
 
   /**
-   * Method which logs out a Subject. An implementation of this method might
-   * remove/destroy a Subject's Principals and Credentials.
+   * Method which logs out a Subject. An implementation of this method might remove/destroy a Subject's Principals and
+   * Credentials.
    * 
-   * @return true if this method succeeded, or false if this LoginModule should
-   *         be ignored.
-   * @throws LoginException
-   *           if the logout fails
+   * @return true if this method succeeded, or false if this LoginModule should be ignored.
+   * @throws LoginException if the logout fails
    */
+  @Override
   public boolean logout() throws LoginException {
     if (this.id != null) {
       if (this.debug) {
@@ -248,7 +232,8 @@ public class BonitaIdentityLoginModule implements LoginModule {
       for (final Principal p : principals) {
         if (p instanceof BonitaPrincipal) {
           if (this.debug) {
-            System.err.println("[" + BonitaIdentityLoginModule.class.getName() + "] logout() - removing principal: " + p);
+            System.err.println("[" + BonitaIdentityLoginModule.class.getName() + "] logout() - removing principal: "
+                + p);
           }
           this.subject.getPrincipals().remove(p);
         }
@@ -256,21 +241,22 @@ public class BonitaIdentityLoginModule implements LoginModule {
       UserOwner.setUser(null);
       DomainOwner.setDomain(null);
       if (this.debug) {
-        System.err.println("[" + BonitaIdentityLoginModule.class.getName() + "] logout() - destroying/removing credentials");
+        System.err.println("[" + BonitaIdentityLoginModule.class.getName()
+            + "] logout() - destroying/removing credentials");
       }
       // Remove/destroy only credentials added by our commit method
       final Set<Object> credentials = new HashSet<Object>(this.subject.getPublicCredentials());
       for (final Object o : credentials) {
-        if (o instanceof Destroyable) {
-          if (this.debug) {
-            System.err.println("[" + BonitaIdentityLoginModule.class.getName() + "] logout() - destroying credential: " + o);
-          }
+        if (o instanceof Destroyable && this.debug) {
+          System.err.println("[" + BonitaIdentityLoginModule.class.getName() + "] logout() - destroying credential: "
+              + o);
           // Bug: only from this module !!
           // ((Destroyable) o).destroy();
         }
         if (!this.subject.isReadOnly()) {
           if (this.debug) {
-            System.err.println("[" + BonitaIdentityLoginModule.class.getName() + "] logout() - removing credential: " + o);
+            System.err.println("[" + BonitaIdentityLoginModule.class.getName() + "] logout() - removing credential: "
+                + o);
           }
           this.subject.getPublicCredentials().remove(o);
         }
@@ -278,4 +264,5 @@ public class BonitaIdentityLoginModule implements LoginModule {
     }
     return true;
   }
+
 }

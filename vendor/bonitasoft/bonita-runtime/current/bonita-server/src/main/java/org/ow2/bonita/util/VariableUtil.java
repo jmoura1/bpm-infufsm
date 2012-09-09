@@ -15,7 +15,6 @@
  **/
 package org.ow2.bonita.util;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +27,6 @@ import org.ow2.bonita.type.Type;
 import org.ow2.bonita.type.Variable;
 import org.ow2.bonita.type.VariableTypeResolver;
 import org.ow2.bonita.type.variable.NullVariable;
-import org.ow2.bonita.type.variable.UnpersistableVariable;
 import org.w3c.dom.Document;
 
 /**
@@ -38,9 +36,11 @@ public abstract class VariableUtil {
 
   public static final String DEPLOYMENT_IDPREFIX = "deployment$";
 
-  protected VariableUtil() { }
+  protected VariableUtil() {
+  }
 
-  public static Map<String, Variable> createVariableMap(final ProcessDefinitionUUID processUUID, final Map<String, Object> variables) {
+  public static Map<String, Variable> createVariableMap(final ProcessDefinitionUUID processUUID,
+      final Map<String, Object> variables) {
     if (variables == null || variables.isEmpty()) {
       return null;
     }
@@ -66,7 +66,7 @@ public abstract class VariableUtil {
         variable = (Variable) variableClass.newInstance();
         variable.setProcessUUID(processUUID);
       } catch (final Exception e) {
-        String message = ExceptionManager.getInstance().getFullMessage("bp_EI_14", variableClass.getName());
+        final String message = ExceptionManager.getInstance().getFullMessage("bp_EI_14", variableClass.getName());
         throw new BonitaRuntimeException(message);
       }
       final Converter converter = type.getConverter();
@@ -76,7 +76,8 @@ public abstract class VariableUtil {
       if (value == null) {
         variable = new NullVariable();
       } else {
-        variable = new UnpersistableVariable();
+        throw new BonitaRuntimeException("The value of variable '" + key + "' of process " + processUUID
+            + " is not Serializable");
       }
     }
 
@@ -86,29 +87,31 @@ public abstract class VariableUtil {
     return variable;
   }
 
-  public static Map<String, Variable> copyVariableMap(final ProcessDefinitionUUID processUUID, Map<String, Variable> variables) {
+  public static Map<String, Variable> copyVariableMap(final ProcessDefinitionUUID processUUID,
+      final Map<String, Variable> variables) {
     if (variables == null || variables.isEmpty()) {
       return null;
     }
     final Map<String, Variable> variableMap = new HashMap<String, Variable>();
     for (final Map.Entry<String, Variable> e : variables.entrySet()) {
-      Variable var = copyVariable(e.getValue());
+      final Variable var = copyVariable(e.getValue());
       variableMap.put(var.getKey(), var);
     }
     return variableMap;
   }
 
-  public static Variable copyVariable(Variable var) {
+  public static Variable copyVariable(final Variable var) {
     final Object value = var.getValue();
     final String key = var.getKey();
     return createVariable(var.getProcessUUID(), key, value);
   }
 
-  public static Map<String, Variable> createVariables(Collection<DataFieldDefinition> datafields, ProcessInstanceUUID instanceUUID, final Map<String, Object> context) {
+  public static Map<String, Variable> createVariables(final Collection<DataFieldDefinition> datafields,
+      final ProcessInstanceUUID instanceUUID, final Map<String, Object> context) {
     if (datafields == null || datafields.isEmpty()) {
       return null;
     }
-    Map<String, Variable> variables = new HashMap<String, Variable>();
+    final Map<String, Variable> variables = new HashMap<String, Variable>();
     for (final DataFieldDefinition df : datafields) {
       if (!df.isTransient()) {
         Object value = df.getInitialValue();
@@ -119,10 +122,10 @@ public abstract class VariableUtil {
     return variables;
   }
 
-  private static Object evaluateInitialValue(final ProcessInstanceUUID instanceUUID,
-      final DataFieldDefinition df, Object value, final Map<String, Object> context) {
+  private static Object evaluateInitialValue(final ProcessInstanceUUID instanceUUID, final DataFieldDefinition df,
+      Object value, final Map<String, Object> context) {
     if (value == null) {
-      String script = df.getScriptingValue();
+      final String script = df.getScriptingValue();
       if (script != null) {
         try {
           if (instanceUUID != null) {
@@ -131,12 +134,12 @@ public abstract class VariableUtil {
             value = GroovyUtil.evaluate(script, context, df.getProcessDefinitionUUID(), false);
           }
           if (df.getDataTypeClassName().equals(Document.class.getName()) && value instanceof String) {
-        	  value = Misc.generateDocument((String)value);
+            value = Misc.generateDocument((String) value);
           }
-        } catch (Exception e) {
+        } catch (final Exception e) {
           try {
             value = GroovyUtil.evaluate(script, context);
-          } catch (GroovyException e1) {
+          } catch (final GroovyException e1) {
             final StringBuilder stb = new StringBuilder("Error while initializing variable: '");
             stb.append(df.getName());
             stb.append("'. ");
@@ -148,11 +151,12 @@ public abstract class VariableUtil {
     return value;
   }
 
-  public static Map<String, Object> createTransientVariables(Collection<DataFieldDefinition> datafields, ProcessInstanceUUID instanceUUID) {
+  public static Map<String, Object> createTransientVariables(final Collection<DataFieldDefinition> datafields,
+      final ProcessInstanceUUID instanceUUID) {
     if (datafields == null || datafields.isEmpty()) {
       return null;
     }
-    Map<String, Object> variables = new HashMap<String, Object>();
+    final Map<String, Object> variables = new HashMap<String, Object>();
     for (final DataFieldDefinition df : datafields) {
       if (df.isTransient()) {
         Object value = df.getInitialValue();
@@ -167,7 +171,7 @@ public abstract class VariableUtil {
     final Map<String, Object> res = new HashMap<String, Object>();
     if (variableMap != null) {
       for (final Variable var : variableMap.values()) {
-        res.put(var.getKey(), (Serializable) var.getValue());
+        res.put(var.getKey(), var.getValue());
       }
     }
     return res;

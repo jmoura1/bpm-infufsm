@@ -18,17 +18,18 @@ package org.ow2.bonita.connector.core.desc;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class Radio extends Checkbox {
 
-  public Radio(String labelId, Setter setter, String name, String value) {
+  public Radio(final String labelId, final Setter setter, final String name, final String value) {
     super(labelId, setter, name, value);
   }
 
   @Override
-  public boolean equals(Object obj) {
-    boolean equals = super.equals(obj);
-    return (equals && obj instanceof Radio);
+  public boolean equals(final Object obj) {
+    final boolean equals = super.equals(obj);
+    return equals && obj instanceof Radio;
   }
+
 }

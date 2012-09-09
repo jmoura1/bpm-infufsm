@@ -15,24 +15,27 @@
  **/
 package org.ow2.bonita.connector.core.desc;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class Enumeration extends Widget {
-  
-  public static enum Selection { SINGLE, MUTLI };
-  private Map<String, String> values;
-  private int[] selectedIndices;
-  private int lines;
-  private Selection selection;
-  
-  public Enumeration(String labelId, Setter setter, 
-      Map<String, String> values, int[] selectedIndices, int lines,
-      Selection selection) {
+
+  public static enum Selection {
+    SINGLE, MUTLI
+  };
+
+  private final Map<String, String> values;
+  private final int[] selectedIndices;
+  private final int lines;
+  private final Selection selection;
+
+  public Enumeration(final String labelId, final Setter setter, final Map<String, String> values,
+      final int[] selectedIndices, final int lines, final Selection selection) {
     super(labelId, setter);
     this.values = values;
     this.selectedIndices = selectedIndices;
@@ -55,16 +58,47 @@ public class Enumeration extends Widget {
   public Selection getSelection() {
     return selection;
   }
-  
+
   @Override
-  public boolean equals(Object obj) {
-    boolean equals = super.equals(obj);
-    if (equals && obj instanceof Enumeration) {
-      Enumeration temp = (Enumeration) obj;
-      return (temp.getLines() == this.getLines()
-          && temp.getValues().equals(this.getValues()));
-    } else {
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + lines;
+    result = prime * result + Arrays.hashCode(selectedIndices);
+    result = prime * result + (selection == null ? 0 : selection.hashCode());
+    result = prime * result + (values == null ? 0 : values.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
       return false;
     }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Enumeration other = (Enumeration) obj;
+    if (lines != other.lines) {
+      return false;
+    }
+    if (!Arrays.equals(selectedIndices, other.selectedIndices)) {
+      return false;
+    }
+    if (selection != other.selection) {
+      return false;
+    }
+    if (values == null) {
+      if (other.values != null) {
+        return false;
+      }
+    } else if (!values.equals(other.values)) {
+      return false;
+    }
+    return true;
   }
+
 }

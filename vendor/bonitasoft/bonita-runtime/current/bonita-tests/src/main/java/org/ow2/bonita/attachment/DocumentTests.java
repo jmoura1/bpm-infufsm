@@ -10,6 +10,7 @@ public class DocumentTests extends TestCase {
     final TestSuite suite = new TestSuite("Document tests");
     suite.addTestSuite(AttachmentTest.class);
     suite.addTestSuite(DocumentTest.class);
+    suite.addTestSuite(DeleteDocOfProcInstCommandTest.class);
     return suite;
   }
 

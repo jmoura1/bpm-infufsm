@@ -19,6 +19,7 @@ package org.bonitasoft.forms.server.api;
 import java.io.IOException;
 import java.util.Date;
 
+import org.bonitasoft.forms.server.accessor.impl.util.FormDocument;
 import org.bonitasoft.forms.server.api.impl.FormAdministrationAPIImpl;
 import org.bonitasoft.forms.server.api.impl.FormDefinitionAPIImpl;
 import org.bonitasoft.forms.server.api.impl.FormExpressionsAPIImpl;
@@ -27,7 +28,6 @@ import org.bonitasoft.forms.server.api.impl.FormWorkflowAPIImpl;
 import org.bonitasoft.forms.server.exception.InvalidFormDefinitionException;
 import org.ow2.bonita.facade.exception.ProcessNotFoundException;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
-import org.w3c.dom.Document;
 
 /**
  * @author Anthony Birembaut
@@ -67,7 +67,7 @@ public class FormAPIFactory {
      * @return
      * @throws InvalidFormDefinitionException
      */
-    public static IFormDefinitionAPI getFormDefinitionAPI(final Document document, final Date processDeployementDate, final String locale) throws InvalidFormDefinitionException{
+    public static IFormDefinitionAPI getFormDefinitionAPI(final FormDocument document, final Date processDeployementDate, final String locale) throws InvalidFormDefinitionException{
         return new FormDefinitionAPIImpl(document, processDeployementDate, locale);
     }
 }

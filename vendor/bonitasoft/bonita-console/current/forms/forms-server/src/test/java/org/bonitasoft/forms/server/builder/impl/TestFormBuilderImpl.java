@@ -35,6 +35,7 @@ import org.bonitasoft.forms.server.FormsTestCase;
 import org.bonitasoft.forms.server.accessor.impl.EngineApplicationFormDefAccessorImpl;
 import org.bonitasoft.forms.server.accessor.impl.XMLApplicationConfigDefAccessorImpl;
 import org.bonitasoft.forms.server.accessor.impl.XMLApplicationFormDefAccessorImpl;
+import org.bonitasoft.forms.server.accessor.impl.util.FormDocument;
 import org.bonitasoft.forms.server.builder.IFormBuilder;
 import org.bonitasoft.forms.server.exception.InvalidFormDefinitionException;
 import org.junit.After;
@@ -176,12 +177,13 @@ public class TestFormBuilderImpl extends FormsTestCase {
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document document = builder.parse(inputStream);
         inputStream.close();
+        FormDocument formDocument = new FormDocument(document);
 
-        XMLApplicationConfigDefAccessorImpl applicationConfigDefAccessor = new XMLApplicationConfigDefAccessorImpl(document);
+        XMLApplicationConfigDefAccessorImpl applicationConfigDefAccessor = new XMLApplicationConfigDefAccessorImpl(formDocument);
         Assert.assertEquals("resources/application/welcome.html", applicationConfigDefAccessor.getWelcomePage());
         Assert.assertEquals("resources/application/BonitaApplication.html", applicationConfigDefAccessor.getHomePage());
         Assert.assertEquals("resources/application/external-welcome.html", applicationConfigDefAccessor.getExternalWelcomePage());
-        Assert.assertEquals("5.6", applicationConfigDefAccessor.getMigrationProductVersion());
+        Assert.assertEquals("5.7", applicationConfigDefAccessor.getMigrationProductVersion());
         Assert.assertEquals("process label with accents éèà", applicationConfigDefAccessor.getApplicationLabel());
         Assert.assertEquals("/process-template.html", applicationConfigDefAccessor.getApplicationLayout());
         Assert.assertEquals("/process-error-template.html", applicationConfigDefAccessor.getApplicationErrorTemplate());
@@ -190,7 +192,7 @@ public class TestFormBuilderImpl extends FormsTestCase {
         Assert.assertEquals("mandatory_style", applicationConfigDefAccessor.getApplicationMandatorySymbolStyle());
         Assert.assertEquals("application#test", applicationConfigDefAccessor.getApplicationPermissions());
 
-        XMLApplicationFormDefAccessorImpl applicationFormDefAccessor = new XMLApplicationFormDefAccessorImpl("processName--1.0$entry", document, null, null);
+        XMLApplicationFormDefAccessorImpl applicationFormDefAccessor = new XMLApplicationFormDefAccessorImpl("processName--1.0$entry", formDocument, null, null);
         Assert.assertEquals("process#processName--1.0", applicationFormDefAccessor.getFormPermissions());
         Assert.assertEquals("page1 label", applicationFormDefAccessor.getPageLabel("processPage1"));
         Assert.assertEquals("/process-page1-template.html", applicationFormDefAccessor.getFormPageLayout("processPage1"));
@@ -221,7 +223,7 @@ public class TestFormBuilderImpl extends FormsTestCase {
         Assert.assertFalse(tableWidget.hasRightHeadings());
         Assert.assertFalse(tableWidget.hasBottomHeadings());
 
-        applicationFormDefAccessor = new XMLApplicationFormDefAccessorImpl("processName--1.0--1--validate$entry", document, null, null);
+        applicationFormDefAccessor = new XMLApplicationFormDefAccessorImpl("processName--1.0--1--validate$entry", formDocument, null, null);
         List<TransientData> transientData = applicationFormDefAccessor.getTransientData();
         TransientData transientData1 = transientData.get(0);
         Assert.assertEquals(Boolean.class.getName(), transientData1.getClassname());

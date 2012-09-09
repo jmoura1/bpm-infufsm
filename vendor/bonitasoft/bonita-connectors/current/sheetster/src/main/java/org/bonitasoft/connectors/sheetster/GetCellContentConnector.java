@@ -19,7 +19,7 @@ package org.bonitasoft.connectors.sheetster;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class GetCellContentConnector extends SheetsterConnector {
 
@@ -33,22 +33,22 @@ public class GetCellContentConnector extends SheetsterConnector {
     return cellContent;
   }
 
-  public void setWorkBookId(String workBookId) {
+  public void setWorkBookId(final String workBookId) {
     this.workBookId = workBookId;
   }
 
-  public void setSheetName(String sheetName) {
+  public void setSheetName(final String sheetName) {
     this.sheetName = sheetName;
   }
 
-  public void setCell(String cell) {
+  public void setCell(final String cell) {
     this.cell = cell;
   }
 
   @Override
   protected void executeTask() throws Exception {
     final String cellResponse = "/workbook/id/" + workBookId + "/txt/cell/get/" + sheetName + "!" + cell;
-    cellContent = getHTTPObject(cellResponse.toString());
+    cellContent = getHTTPObject(cellResponse);
   }
 
 }

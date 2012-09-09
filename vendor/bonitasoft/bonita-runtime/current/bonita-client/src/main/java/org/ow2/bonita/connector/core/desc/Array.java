@@ -18,18 +18,18 @@ import java.util.List;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class Array extends Widget {
 
-  private int cols;
-  private int rows;
-  private boolean fixedCols;
-  private boolean fixedRows;
-  private List<String> colsCaptions;
+  private final int cols;
+  private final int rows;
+  private final boolean fixedCols;
+  private final boolean fixedRows;
+  private final List<String> colsCaptions;
 
-  public Array(String labelId, Setter setter, int cols, int rows,
-      boolean fixedCols, boolean fixedRows, List<String> colsCaptions) {
+  public Array(final String labelId, final Setter setter, final int cols, final int rows, final boolean fixedCols,
+      final boolean fixedRows, final List<String> colsCaptions) {
     super(labelId, setter);
     this.cols = cols;
     this.rows = rows;
@@ -59,16 +59,49 @@ public class Array extends Widget {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    boolean equals = super.equals(obj);
-    if (equals && obj instanceof Array) {
-      Array temp = (Array) obj;
-      return (temp.getCols() == this.getCols() && temp.getRows() == this.getRows()
-          && temp.isFixedCols() == this.isFixedCols() && temp.isFixedRows() == this.isFixedRows()
-          && temp.getColsCaptions().equals(this.getColsCaptions()));
-    } else {
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + cols;
+    result = prime * result + (colsCaptions == null ? 0 : colsCaptions.hashCode());
+    result = prime * result + (fixedCols ? 1231 : 1237);
+    result = prime * result + (fixedRows ? 1231 : 1237);
+    result = prime * result + rows;
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
       return false;
     }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Array other = (Array) obj;
+    if (cols != other.cols) {
+      return false;
+    }
+    if (colsCaptions == null) {
+      if (other.colsCaptions != null) {
+        return false;
+      }
+    } else if (!colsCaptions.equals(other.colsCaptions)) {
+      return false;
+    }
+    if (fixedCols != other.fixedCols) {
+      return false;
+    }
+    if (fixedRows != other.fixedRows) {
+      return false;
+    }
+    if (rows != other.rows) {
+      return false;
+    }
+    return true;
   }
 
 }

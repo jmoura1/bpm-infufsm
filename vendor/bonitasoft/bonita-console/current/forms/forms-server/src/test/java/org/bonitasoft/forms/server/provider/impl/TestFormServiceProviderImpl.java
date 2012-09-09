@@ -34,6 +34,7 @@ import org.bonitasoft.console.security.server.SimpleCallbackHandler;
 import org.bonitasoft.console.security.server.api.SecurityAPIFactory;
 import org.bonitasoft.forms.server.FormsTestCase;
 import org.bonitasoft.forms.server.accessor.IApplicationFormDefAccessor;
+import org.bonitasoft.forms.server.accessor.impl.util.FormDocument;
 import org.bonitasoft.forms.server.provider.FormServiceProvider;
 import org.bonitasoft.forms.server.provider.impl.util.FormServiceProviderFactory;
 import org.bonitasoft.forms.server.provider.impl.util.FormServiceProviderUtil;
@@ -99,8 +100,8 @@ public class TestFormServiceProviderImpl extends FormsTestCase {
         Map<String, Object> context = new HashMap<String, Object>();
         context.put(FormServiceProviderUtil.URL_CONTEXT, urlContext);
         context.put(FormServiceProviderUtil.LOCALE, Locale.ENGLISH);
-        Document document = formServiceProvider.getFormDefinitionDocument(context);
-        Assert.assertNotNull(document);
+        FormDocument document = formServiceProvider.getFormDefinitionDocument(context);
+        Assert.assertNotNull(document.getDocument());
     }
 
     @Test(expected = NoCredentialsInSessionException.class)
@@ -116,10 +117,10 @@ public class TestFormServiceProviderImpl extends FormsTestCase {
         context.put(FormServiceProviderUtil.USER, user);
         context.put(FormServiceProviderUtil.URL_CONTEXT, urlContext);
         context.put(FormServiceProviderUtil.LOCALE, Locale.ENGLISH);
-        boolean isAllowed1 = formServiceProvider.isAllowed(bonitaProcess.getUUID() + FormServiceProviderUtil.FORM_ID_SEPARATOR + FormServiceProviderUtil.RECAP_FORM_TYPE, FormServiceProviderUtil.INSTANCE_UUID + "#" + processInstanceUUID, "5.6", "5.6",
+        boolean isAllowed1 = formServiceProvider.isAllowed(bonitaProcess.getUUID() + FormServiceProviderUtil.FORM_ID_SEPARATOR + FormServiceProviderUtil.RECAP_FORM_TYPE, FormServiceProviderUtil.INSTANCE_UUID + "#" + processInstanceUUID, "5.7", "5.7",
                 context, true);
         boolean isAllowed2 = formServiceProvider.isAllowed(bonitaProcess.getUUID() + FormServiceProviderUtil.FORM_ID_SEPARATOR + FormServiceProviderUtil.RECAP_FORM_TYPE,
-                FormServiceProviderUtil.PROCESS_UUID + "#" + processInstanceUUID.getProcessDefinitionUUID(), "5.6", "5.6", context, true);
+                FormServiceProviderUtil.PROCESS_UUID + "#" + processInstanceUUID.getProcessDefinitionUUID(), "5.7", "5.7", context, true);
         Assert.assertEquals(true, isAllowed1);
         Assert.assertEquals(true, isAllowed2);
         context.remove(FormServiceProviderUtil.USER);
@@ -139,6 +140,24 @@ public class TestFormServiceProviderImpl extends FormsTestCase {
         context.put(FormServiceProviderUtil.LOCALE, Locale.ENGLISH);
         Object result = formServiceProvider.resolveExpression("${return \"good\"}", context);
         Assert.assertEquals("good", result);
+    }
+    
+    @Test
+    public void testResolveExpressions() throws Exception {
+        final FormServiceProvider formServiceProvider = FormServiceProviderFactory.getFormServiceProvider();
+        Map<String, Object> urlContext = new HashMap<String, Object>();
+        urlContext.put(FormServiceProviderUtil.INSTANCE_UUID, processInstanceUUID.getValue());
+        urlContext.put(FormServiceProviderUtil.LOCALE, Locale.ENGLISH);
+        urlContext.put(FormServiceProviderUtil.IS_CURRENT_VALUE, true);
+        Map<String, Object> context = new HashMap<String, Object>();
+        context.put(FormServiceProviderUtil.URL_CONTEXT, urlContext);
+        context.put(FormServiceProviderUtil.LOCALE, Locale.ENGLISH);
+        Map<String, String> expressions = new HashMap<String, String>();
+        expressions.put("1", "${return \"good\"}");
+        expressions.put("2", "${return \"bad\"}");
+        Map<String, Object> result = formServiceProvider.resolveExpressions(expressions, context);
+        Assert.assertEquals("good", result.get("1"));
+        Assert.assertEquals("bad", result.get("2"));
     }
 
     @Test
@@ -191,9 +210,10 @@ public class TestFormServiceProviderImpl extends FormsTestCase {
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document document = builder.parse(inputStream);
         inputStream.close();
+        FormDocument formDocument = new FormDocument(document);
         context.put(FormServiceProviderUtil.APPLICATION_DEPLOYMENT_DATE, bonitaProcess.getDeployedDate());
         context.put(FormServiceProviderUtil.IS_EDIT_MODE, true);
-        IApplicationFormDefAccessor applicationFormDefAccessor = formServiceProvider.getApplicationFormDefinition("myProcess--1.0--task1$entry", document, context);
+        IApplicationFormDefAccessor applicationFormDefAccessor = formServiceProvider.getApplicationFormDefinition("myProcess--1.0--task1$entry", formDocument, context);
         Assert.assertNull("the first page expression should be null because the entry form is empty in the forms.xml", applicationFormDefAccessor.getFirstPageExpression());
     }
 
@@ -211,9 +231,10 @@ public class TestFormServiceProviderImpl extends FormsTestCase {
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document document = builder.parse(inputStream);
         inputStream.close();
+        FormDocument formDocument = new FormDocument(document);
         context.put(FormServiceProviderUtil.APPLICATION_DEPLOYMENT_DATE, bonitaProcess.getDeployedDate());
         context.put(FormServiceProviderUtil.IS_EDIT_MODE, true);
-        IApplicationFormDefAccessor applicationFormDefAccessor = formServiceProvider.getApplicationFormDefinition("myProcess--1.0--task2$entry", document, context);
+        IApplicationFormDefAccessor applicationFormDefAccessor = formServiceProvider.getApplicationFormDefinition("myProcess--1.0--task2$entry", formDocument, context);
         Assert.assertNotNull("the first page expression should not be null because the entry form is not in the forms.xml, and so it should be generated from the engine", applicationFormDefAccessor.getFirstPageExpression());
     }
 

@@ -40,50 +40,51 @@ import org.w3c.dom.Element;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class SetterBinding extends ElementBinding {
 
-  private static final Set<String> allowedParameters = new HashSet<String>();
+  private static final Set<String> ALLOWED_PARAMETERS = new HashSet<String>(14);
 
   static {
-    allowedParameters.add("date");
-    allowedParameters.add("string");
-    allowedParameters.add("int");
-    allowedParameters.add("double");
-    allowedParameters.add("float");
-    allowedParameters.add("long");
-    allowedParameters.add("short");
-    allowedParameters.add("boolean");
-    allowedParameters.add("list");
-    allowedParameters.add("map");
-    allowedParameters.add("object");
-    allowedParameters.add("set");
-    allowedParameters.add("xml");
-    allowedParameters.add("attachment");
+    ALLOWED_PARAMETERS.add("date");
+    ALLOWED_PARAMETERS.add("string");
+    ALLOWED_PARAMETERS.add("int");
+    ALLOWED_PARAMETERS.add("double");
+    ALLOWED_PARAMETERS.add("float");
+    ALLOWED_PARAMETERS.add("long");
+    ALLOWED_PARAMETERS.add("short");
+    ALLOWED_PARAMETERS.add("boolean");
+    ALLOWED_PARAMETERS.add("list");
+    ALLOWED_PARAMETERS.add("map");
+    ALLOWED_PARAMETERS.add("object");
+    ALLOWED_PARAMETERS.add("set");
+    ALLOWED_PARAMETERS.add("xml");
+    ALLOWED_PARAMETERS.add("attachment");
   }
 
   public SetterBinding() {
     super("setter");
   }
 
-  public Object parse(Element setterElement, Parse parse, Parser parser) {
-    ConnectorDescriptor descriptor = parse.findObject(ConnectorDescriptor.class);
+  @Override
+  public Object parse(final Element setterElement, final Parse parse, final Parser parser) {
+    final ConnectorDescriptor descriptor = parse.findObject(ConnectorDescriptor.class);
     final String setterName = getChildTextContent(setterElement, "setterName");
     final String required = getChildTextContent(setterElement, "required");
     final String forbidden = getChildTextContent(setterElement, "forbidden");
     final Object[] parameters = getParameters(setterElement);
-    Setter setter = new Setter(setterName, required, forbidden, parameters);
+    final Setter setter = new Setter(setterName, required, forbidden, parameters);
     descriptor.addSetter(setter);
     return null;
   }
 
-  private Object[] getParameters(Element setter) {
-    Element parametersElement = XmlUtil.element(setter, "parameters");
+  private Object[] getParameters(final Element setter) {
+    final Element parametersElement = XmlUtil.element(setter, "parameters");
     if (parametersElement != null) {
-      List<Object> parameters = new ArrayList<Object>();
-      List<Element> elements = XmlUtil.elements(parametersElement, allowedParameters);
-      for (Element element : elements) {
+      final List<Object> parameters = new ArrayList<Object>();
+      final List<Element> elements = XmlUtil.elements(parametersElement, ALLOWED_PARAMETERS);
+      for (final Element element : elements) {
         parameters.add(getParameter(element));
       }
       return parameters.toArray();
@@ -92,9 +93,9 @@ public class SetterBinding extends ElementBinding {
     }
   }
 
-  private Object getParameter(Element parameter) {
-    String parameterType = parameter.getNodeName();
-    String parameterValue = parameter.getTextContent().trim();
+  private Object getParameter(final Element parameter) {
+    final String parameterType = parameter.getNodeName();
+    final String parameterValue = parameter.getTextContent().trim();
     if ("int".equals(parameterType)) {
       return Integer.parseInt(parameterValue);
     }
@@ -129,26 +130,27 @@ public class SetterBinding extends ElementBinding {
       return new Object();
     }
     if ("date".equals(parameterType)) {
-      SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
+      final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
       try {
         return format.parse(parameterValue);
-      } catch (ParseException e) {
+      } catch (final ParseException e) {
         e.printStackTrace();
       }
     }
     if ("xml".equals(parameterType)) {
-    	try {
-	    	if (parameterValue != null && parameterValue.trim().length() > 0) {
-	    		return Misc.generateDocument(parameterValue);
-	    	} else {
-	    		return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-	    	}
-    	} catch (Exception ex) {
-    		throw new BonitaRuntimeException(ex);
-    	}
+      try {
+        if (parameterValue != null && parameterValue.trim().length() > 0) {
+          return Misc.generateDocument(parameterValue);
+        } else {
+          return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        }
+      } catch (final Exception ex) {
+        throw new BonitaRuntimeException(ex);
+      }
     }
     if ("attachment".equals(parameterType)) {
-    	return new AttachmentInstanceImpl(new DocumentUUID("attachment"), "attachment", new ProcessInstanceUUID("mock"), "admin", new Date());
+      return new AttachmentInstanceImpl(new DocumentUUID("attachment"), "attachment", new ProcessInstanceUUID("mock"),
+          "admin", new Date());
     }
     throw new BonitaRuntimeException(parameterType);
   }

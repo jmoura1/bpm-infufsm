@@ -69,6 +69,7 @@ public class LogoutWidget extends BonitaPanel {
         URLUtils urlUtils = URLUtilsFactory.getInstance();
         List<String> paramsToRemove = new ArrayList<String>();
         paramsToRemove.add(URLUtils.LOCALE_PARAM);
+        final String domain = Window.Location.getParameter(URLUtils.DOMAIN_PARAM);
         String theRedirectURL = urlUtils.rebuildUrl(urlUtils.removeHashFromUrl(), paramsToRemove, null, null, null);
         String theURL = RpcSecurityServices.getLogoutURL();
         String theURLSuffix = "?" + URLUtils.REDIRECT_URL_PARAM + "=";
@@ -77,6 +78,9 @@ public class LogoutWidget extends BonitaPanel {
         } catch (Exception e) {
             Window.alert("Unable to redirect to login page: Invalid URL");
             theURLSuffix += GWT.getModuleBaseURL();
+        }
+        if (domain != null) {
+        	theURLSuffix += "&" + URLUtils.DOMAIN_PARAM + "=" + domain;
         }
         theLogoutLink.setHref(theURL + theURLSuffix);
 

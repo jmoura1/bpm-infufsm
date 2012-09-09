@@ -277,6 +277,7 @@
             <xsd:element name="classname" type="xsd:string" />
             <xsd:element name="condition" type="xsd:string" />
             <xsd:element name="description" type="xsd:string" minOccurs="0" />
+            <xsd:element name="throw-exception" type="xsd:boolean" minOccurs="0"/>
             <xsd:element name="parameters" type="Parameters" minOccurs="0" />
           </xsd:all>
         </xsd:complexType>

@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -47,6 +48,38 @@ import org.bonitasoft.forms.server.provider.impl.util.FormServiceProviderUtil;
  */
 public class FormFieldValuesUtil {
     
+    protected static final String WIDGET_LABEL = "label";
+
+    protected static final String EXPRESSION_KEY_SEPARATOR = ":";
+
+    protected static final String WIDGET_TITLE = "title";
+
+    protected static final String WIDGET_SUBTITLE = "subtitle";
+
+    protected static final String WIDGET_TOOLTIP = "tooltip";
+
+    protected static final String WIDGET_DISPLAY_CONDITION = "display-condition";
+
+    protected static final String WIDGET_VALUE = "value";
+
+    protected static final String WIDGET_AVAILABLE_VALUES = "available-value";
+
+    protected static final String WIDGET_VALUE_COLUMN_INDEX = "value-column-index";
+
+    protected static final String WIDGET_MAX_COLUMNS = "max-columns";
+
+    protected static final String WIDGET_MIN_COLUMNS = "min-columns";
+
+    protected static final String WIDGET_MAX_ROWS = "max-rows";
+
+    protected static final String WIDGET_MIN_ROWS = "min-rows";
+
+    protected static final String WIDGET_VERTICAL_HEADER = "verical-header";
+
+    protected static final String WIDGET_HORIZONTAL_HEADER = "horizontal-header";
+    
+    protected static final String EXPRESSION_KEY = "${";
+    
     /**
      * Logger
      */
@@ -56,14 +89,6 @@ public class FormFieldValuesUtil {
      * default dateformat pattern
      */
     protected String defaultDateFormatPattern;
-    
-    /**
-     * Default constructor.
-     */
-    public FormFieldValuesUtil() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
     
     /**
      * Build a field value object from the process definition
@@ -266,6 +291,11 @@ public class FormFieldValuesUtil {
         return tableAvailableValuesList;
     }
         
+    /**
+     * Retrieve the String value of an object
+     * @param object the object
+     * @return the String representation of this Object
+     */
     protected String getStringValue(final Object object) {
         if (object != null) {
             return object.toString();
@@ -274,59 +304,127 @@ public class FormFieldValuesUtil {
     }
     
     /**
-     * get display condition
+     * Get display condition
      * @param conditionExpression
-     * @param context
+     * @param condition
      * @throws FormNotFoundException
      * @throws FormServiceProviderNotFoundException 
      */
-    protected String getDisplayConditionStr(final String conditionExpression, final Map<String, Object> context) throws FormNotFoundException, FormServiceProviderNotFoundException {
-        final FormServiceProvider formServiceProvider = FormServiceProviderFactory.getFormServiceProvider();
+    protected String getDisplayConditionStr(final String conditionExpression, final Object condition) throws FormNotFoundException, FormServiceProviderNotFoundException {
         if (conditionExpression != null && conditionExpression.length() > 0) {
             if (Boolean.FALSE.toString().equals(conditionExpression)) {
                 return conditionExpression;
             } else {
-                return getStringValue(formServiceProvider.resolveExpression(conditionExpression, context));
+                if (condition != null) {
+                    return condition.toString();
+                } else {
+                    if (LOGGER.isLoggable(Level.WARNING)) {
+                        LOGGER.log(Level.WARNING, "the display condition expression returns a null value: " + conditionExpression);
+                    }
+                    return Boolean.FALSE.toString();
+                }
             }
         }
         return Boolean.TRUE.toString();
     }
     
     /**
-     * set the values of the form widget
-     * @param formWidget
-     * @param previousPagesFields
-     * @param locale
-     * @param isCurrentValue
-     * @param context
-     * @throws FormNotFoundException 
-     * @throws FormServiceProviderNotFoundException 
+     * Add the widget value to evaluate to the Map of expression to evaluated
+     * @param formWidget the widget
+     * @param expressionsToEvaluate the map of expressions to evaluate
+     * @param context the context including the URL parameters
      */
-    public void setFormWidgetValues(final FormWidget formWidget, final Map<String, Object> context) throws FormNotFoundException, FormServiceProviderNotFoundException {
-        final FormServiceProvider formServiceProvider = FormServiceProviderFactory.getFormServiceProvider();
-        final Locale locale = (Locale) context.get(FormServiceProviderUtil.LOCALE);
-        formWidget.setLabel(getStringValue(formServiceProvider.resolveExpression(formWidget.getLabel(), context)));
-        formWidget.setTitle(getStringValue(formServiceProvider.resolveExpression(formWidget.getTitle(), context)));
-        if (formWidget.getSubTitle() != null) {
-        	final String label = formWidget.getSubTitle().getLabel();
-        	if (label != null && label.trim().length() > 0) {
-        		formWidget.getSubTitle().setLabel(getStringValue(formServiceProvider.resolveExpression(label, context)));
-        	}
-        }
-        if (formWidget.getPopupToolTip() != null && formWidget.getPopupToolTip().length() > 0) {
-        	formWidget.setPopupToolTip(getStringValue(formServiceProvider.resolveExpression(formWidget.getPopupToolTip(), context)));
-        }
-        formWidget.setDisplayConditionExpression(getDisplayConditionStr(formWidget.getDisplayConditionExpression(), context));
-        Object value = null;
+    protected void addWidgetValueExpressionToEvaluate(final FormWidget formWidget, final Map<String, String> expressionsToEvaluate, final Map<String, Object> context) {
         boolean isEditMode = false;
         if (context.get(FormServiceProviderUtil.IS_EDIT_MODE) != null) {
             isEditMode = Boolean.valueOf(context.get(FormServiceProviderUtil.IS_EDIT_MODE).toString());
         }
         if (!isEditMode && formWidget.getVariableBound() != null) {
-            value = formServiceProvider.resolveExpression(formWidget.getVariableBound(), context);
+            expressionsToEvaluate.put(formWidget.getId() + EXPRESSION_KEY_SEPARATOR + WIDGET_VALUE, formWidget.getVariableBound());
         } else if (isEditMode || formWidget.isViewPageWidget()) {
-            value = formServiceProvider.resolveExpression(formWidget.getInitialValueExpression(), context);
+            expressionsToEvaluate.put(formWidget.getId() + EXPRESSION_KEY_SEPARATOR + WIDGET_VALUE, formWidget.getInitialValueExpression());
         }
+    }
+    
+    
+    /**
+     * Generate the Map of groovy expressions to evaluate for a widget
+     * @param formWidget the widget
+     * @param context the context including the URL parameters
+     * @return the Map of expressions to evaluate
+     */
+    protected Map<String, String> getWidgetExpressions(final FormWidget formWidget, final Map<String, Object> context) {
+        String widgetId = formWidget.getId();
+        Map<String, String> expressionsToEvaluate = new HashMap<String, String>();
+        if (formWidget.getLabel() != null) {
+            expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_LABEL, formWidget.getLabel());
+        }
+        if (formWidget.getTitle() != null) {
+            expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_TITLE, formWidget.getTitle());
+        }
+        if (formWidget.getSubTitle() != null) {
+            final String label = formWidget.getSubTitle().getLabel();
+            if (label != null) {
+                expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_SUBTITLE, label);
+            }
+        }
+        if (formWidget.getPopupToolTip() != null) {
+            expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_TOOLTIP, formWidget.getPopupToolTip());
+        }
+        expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_DISPLAY_CONDITION, formWidget.getDisplayConditionExpression());
+        
+        addWidgetValueExpressionToEvaluate(formWidget, expressionsToEvaluate, context);
+        if (formWidget.getAvailableValuesExpression() != null) {
+            expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_AVAILABLE_VALUES, formWidget.getAvailableValuesExpression());
+        }
+        if (WidgetType.TABLE.equals(formWidget.getType()) || WidgetType.EDITABLE_GRID.equals(formWidget.getType())) {
+            if (formWidget.getValueColumnIndexExpression() != null) {
+                expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_VALUE_COLUMN_INDEX, formWidget.getValueColumnIndexExpression());
+            }
+            if (formWidget.getMaxColumnsExpression() != null) {
+                expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_MAX_COLUMNS, formWidget.getMaxColumnsExpression());
+            }
+            if (formWidget.getMinColumnsExpression() != null) {
+                expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_MIN_COLUMNS, formWidget.getMinColumnsExpression());
+            }
+            if (formWidget.getMaxRowsExpression() != null) {
+                expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_MAX_ROWS, formWidget.getMaxRowsExpression());
+            }
+            if (formWidget.getMinRowsExpression() != null) {
+                expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_MIN_ROWS, formWidget.getMinRowsExpression());
+            }
+            if (formWidget.getVerticalHeaderExpression() != null) {
+                expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_VERTICAL_HEADER, formWidget.getVerticalHeaderExpression());
+            }
+            if (formWidget.getHorizontalHeaderExpression() != null) {
+                expressionsToEvaluate.put(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_HORIZONTAL_HEADER, formWidget.getHorizontalHeaderExpression());
+            }
+        }
+        return expressionsToEvaluate;
+    }
+    
+    /**
+     * Set the values of the form widget
+     * @param formWidget the widget
+     * @param previousPagesFields
+     * @param locale
+     * @param isCurrentValue
+     * @param context the context including the URL parameters
+     * @throws FormNotFoundException 
+     * @throws FormServiceProviderNotFoundException 
+     */
+    public void setFormWidgetValues(final FormWidget formWidget, final Map<String, Object> evaluatedExpressions, final Map<String, Object> context) throws FormNotFoundException, FormServiceProviderNotFoundException {
+        String widgetId = formWidget.getId();
+        final FormServiceProvider formServiceProvider = FormServiceProviderFactory.getFormServiceProvider();
+        final Locale locale = (Locale) context.get(FormServiceProviderUtil.LOCALE);
+        formWidget.setLabel(getStringValue(evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_LABEL)));
+        formWidget.setTitle(getStringValue(evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_TITLE)));
+        if (formWidget.getSubTitle() != null) {
+            formWidget.getSubTitle().setLabel(getStringValue(evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_SUBTITLE)));
+        }
+        formWidget.setPopupToolTip(getStringValue(evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_TOOLTIP)));
+        formWidget.setDisplayConditionExpression(getDisplayConditionStr(formWidget.getDisplayConditionExpression(), evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_DISPLAY_CONDITION)));
+        Object value = evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_VALUE);
         if (formWidget.getType().name().startsWith("FILE") || (formWidget.getType().equals(WidgetType.IMAGE) && formWidget.isDisplayAttachmentImage())) {
             String fileName = null;
             String attachmentName = null;
@@ -341,8 +439,8 @@ public class FormFieldValuesUtil {
             // convert the value object returned into a FormFieldValue object.
             formWidget.setInitialFieldValue(getFieldValue(value, formWidget, locale));
             //set the available values list from a groovy expression for listboxes, radiobutton groups and checkbox groups
-            if (formWidget.getAvailableValuesExpression() != null) {
-                final Object availableValuesObject = formServiceProvider.resolveExpression(formWidget.getAvailableValuesExpression(), context);
+            final Object availableValuesObject = evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_AVAILABLE_VALUES);
+            if (availableValuesObject != null) {
                 if (formWidget.getType().equals(WidgetType.TABLE)) {
                     final List<List<FormFieldAvailableValue>> availableValues = getTableAvailableValues(availableValuesObject, formWidget);
                     formWidget.setTableAvailableValues(availableValues);
@@ -355,85 +453,106 @@ public class FormFieldValuesUtil {
     }
     
     /**
-     * set the tables parameters
-     * @param formWidget
-     * @param context
+     * Set the tables parameters
+     * @param formWidget the widget
+     * @param evaluatedExpressions the map of evaluated expressions
+     * @param context the context including the URL parameters
      * @throws FormNotFoundException 
      * @throws FormServiceProviderNotFoundException 
      */
     @SuppressWarnings("unchecked")
-    public void setTablesParams(final FormWidget formWidget, final Map<String, Object> context) throws FormNotFoundException, FormServiceProviderNotFoundException {
-        final FormServiceProvider formServiceProvider = FormServiceProviderFactory.getFormServiceProvider();
+    public void setTablesParams(final FormWidget formWidget, final Map<String, Object> evaluatedExpressions, final Map<String, Object> context) throws FormNotFoundException, FormServiceProviderNotFoundException {
+        String widgetId = formWidget.getId();
         if (WidgetType.TABLE.equals(formWidget.getType()) || WidgetType.EDITABLE_GRID.equals(formWidget.getType())) {
-            if (formWidget.getValueColumnIndexExpression() != null) {
-                String valueColumnIndexStr = null;
-                final Object valueColumnIndex = formServiceProvider.resolveExpression(formWidget.getValueColumnIndexExpression(), context);
-                if (valueColumnIndex != null) {
-                    valueColumnIndexStr = valueColumnIndex.toString();
-                }
-                formWidget.setValueColumnIndexExpression(valueColumnIndexStr);
+            String valueColumnIndexStr = null;    
+            final Object valueColumnIndex = evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_VALUE_COLUMN_INDEX);
+            if (valueColumnIndex != null) {
+                valueColumnIndexStr = valueColumnIndex.toString();
             }
-            if (formWidget.getMaxColumnsExpression() != null) {
-                String maxColumnsStr = null;
-                final Object maxColumns = formServiceProvider.resolveExpression(formWidget.getMaxColumnsExpression(), context);
-                if (maxColumns != null) {
-                    maxColumnsStr = maxColumns.toString();
-                }
-                formWidget.setMaxColumnsExpression(maxColumnsStr);
+            formWidget.setValueColumnIndexExpression(valueColumnIndexStr);
+            String maxColumnsStr = null;
+            final Object maxColumns = evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_MAX_COLUMNS);
+            if (maxColumns != null) {
+                maxColumnsStr = maxColumns.toString();
             }
-            if (formWidget.getMinColumnsExpression() != null) {
-                String minColumnsStr = null;
-                final Object minColumns = formServiceProvider.resolveExpression(formWidget.getMinColumnsExpression(), context);
-                if (minColumns != null) {
-                    minColumnsStr = minColumns.toString();
-                }
-                formWidget.setMinColumnsExpression(minColumnsStr);
+            formWidget.setMaxColumnsExpression(maxColumnsStr);
+            String minColumnsStr = null;
+            final Object minColumns = evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_MIN_COLUMNS);
+            if (minColumns != null) {
+                minColumnsStr = minColumns.toString();
             }
-            if (formWidget.getMaxRowsExpression() != null) {
-                String maxRowsStr = null;
-                final Object maxRows = formServiceProvider.resolveExpression(formWidget.getMaxRowsExpression(), context);
-                if (maxRows != null) {
-                    maxRowsStr = maxRows.toString();
-                }
-                formWidget.setMaxRowsExpression(maxRowsStr);
+            formWidget.setMinColumnsExpression(minColumnsStr);
+            String maxRowsStr = null;
+            final Object maxRows = evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_MAX_ROWS);
+            if (maxRows != null) {
+                maxRowsStr = maxRows.toString();
             }
-            if (formWidget.getMinRowsExpression() != null) {
-                String minRowsStr = null;
-                final Object minRows = formServiceProvider.resolveExpression(formWidget.getMinRowsExpression(), context);
-                if (minRows != null) {
-                    minRowsStr = minRows.toString();
-                }
-                formWidget.setMinRowsExpression(minRowsStr);
+            formWidget.setMaxRowsExpression(maxRowsStr);
+            String minRowsStr = null;
+            final Object minRows = evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_MIN_ROWS);
+            if (minRows != null) {
+                minRowsStr = minRows.toString();
             }
-            if (formWidget.getVerticalHeaderExpression() != null) {
-                final Object verticalHeader = formServiceProvider.resolveExpression(formWidget.getVerticalHeaderExpression(), context);
-                List<String> verticalHeaderList = null;
-                if (verticalHeader != null) {
-                    try {
-                        verticalHeaderList = new ArrayList<String>((Collection<String>)verticalHeader);
-                    } catch (final ClassCastException e) {
-                        if (LOGGER.isLoggable(Level.SEVERE)) {
-                            LOGGER.log(Level.SEVERE, "The vertical header expression for widget " + formWidget.getId() + " should return a Collection.", e);
-                        }
+            formWidget.setMinRowsExpression(minRowsStr);
+            final Object verticalHeader = evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_VERTICAL_HEADER);
+            List<String> verticalHeaderList = null;
+            if (verticalHeader != null) {
+                try {
+                    verticalHeaderList = new ArrayList<String>((Collection<String>)verticalHeader);
+                } catch (final ClassCastException e) {
+                    if (LOGGER.isLoggable(Level.SEVERE)) {
+                        LOGGER.log(Level.SEVERE, "The vertical header expression for widget " + formWidget.getId() + " should return a Collection.", e);
                     }
                 }
-                formWidget.setVerticalHeader(verticalHeaderList);
             }
-            if (formWidget.getHorizontalHeaderExpression() != null) {
-                final Object horizontalHeader = formServiceProvider.resolveExpression(formWidget.getHorizontalHeaderExpression(), context);
-                List<String> horizontalHeaderList = null;
-                if (horizontalHeader != null) {
-                    try {
-                        horizontalHeaderList = new ArrayList<String>((Collection<String>)horizontalHeader);
-                    } catch (final ClassCastException e) {
-                        if (LOGGER.isLoggable(Level.SEVERE)) {
-                            LOGGER.log(Level.SEVERE, "The horizontal header expression for widget " + formWidget.getId() + " should return a Collection.", e);
-                        }
+            formWidget.setVerticalHeader(verticalHeaderList);
+            final Object horizontalHeader = evaluatedExpressions.get(widgetId + EXPRESSION_KEY_SEPARATOR + WIDGET_HORIZONTAL_HEADER);
+            List<String> horizontalHeaderList = null;
+            if (horizontalHeader != null) {
+                try {
+                    horizontalHeaderList = new ArrayList<String>((Collection<String>)horizontalHeader);
+                } catch (final ClassCastException e) {
+                    if (LOGGER.isLoggable(Level.SEVERE)) {
+                        LOGGER.log(Level.SEVERE, "The horizontal header expression for widget " + formWidget.getId() + " should return a Collection.", e);
                     }
                 }
-                formWidget.setHorizontalHeader(horizontalHeaderList);
             }
+            formWidget.setHorizontalHeader(horizontalHeaderList);
+        }
+    }
+
+    /**
+     * set the widget values of a form page
+     * @param widgets the widgets of the page
+     * @param context the context including the URL parameters
+     * @throws FormServiceProviderNotFoundException 
+     * @throws FormNotFoundException 
+     */
+    public void setFormWidgetsValues(List<FormWidget> widgets, Map<String, Object> context) throws FormNotFoundException, FormServiceProviderNotFoundException {
+        final Map<String, String> expressionsToEvaluate = new HashMap<String, String>();
+        for (final FormWidget formWidget : widgets) {
+            expressionsToEvaluate.putAll(getWidgetExpressions(formWidget, context));
+        }
+        final FormServiceProvider formServiceProvider = FormServiceProviderFactory.getFormServiceProvider();
+        final Map<String, Object> evaluatedExpressions = formServiceProvider.resolveExpressions(expressionsToEvaluate, context);
+        for (final FormWidget formWidget : widgets) {
+            setFormWidgetValues(formWidget, evaluatedExpressions, context);
+            setTablesParams(formWidget, evaluatedExpressions, context);
         }
     }
     
+    public void clearExpressionsOrConnectors(final String formID, final String pageID, final String locale, final Date processDeployementDate, final List<FormWidget> formWidgets) {
+        
+        for (FormWidget formWidget : formWidgets) {
+            if (formWidget.getInitialValueExpression() != null && formWidget.getInitialValueExpression().contains(EXPRESSION_KEY)) {
+                formWidget.setInitialValueExpression(null);
+            }
+
+            if (formWidget.getAvailableValuesExpression() != null && formWidget.getAvailableValuesExpression().contains(EXPRESSION_KEY)) {
+                formWidget.setAvailableValuesExpression(null);
+            }
+        }
+
+    }
+
 }

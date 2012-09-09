@@ -793,4 +793,18 @@ public class ManagementAPITest extends APITestCase {
     getManagementAPI().deleteProcess(process.getUUID());
   }
 
+  
+  public void testUnableToDeployProcessWithWrongProductVersion() throws Exception {
+    final URL processDefinitionUrl = this.getClass().getResource("process5_5_3--1.0.bar");
+
+	  try {
+	    BusinessArchiveFactory.getBusinessArchive(processDefinitionUrl);
+	    fail("A process definition defined in previous product version cannot be deployed");
+	  } catch (BonitaRuntimeException e) {
+	    assertTrue(e.getMessage().contains("The given business archive was created with a different version of BOS. Please use the current BOS version ("));
+	  }
+	  
+  }
+  
+  
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010  BonitaSoft S.A.
+ * Copyright (C) 2010-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class ConnectorBinding extends ElementBinding {
 
@@ -32,28 +32,29 @@ public class ConnectorBinding extends ElementBinding {
     super("connector");
   }
 
-  public Object parse(Element connectorElement, Parse parse, Parser parser) {
+  @Override
+  public Object parse(final Element connectorElement, final Parse parse, final Parser parser) {
     final String connectorId = getChildTextContent(connectorElement, "connectorId");
     final String version = getChildTextContent(connectorElement, "version");
     final String icon = getChildTextContent(connectorElement, "icon");
 
-    ConnectorDescriptor descriptor = new ConnectorDescriptor(connectorId, version, parse.getClassLoader());
+    final ConnectorDescriptor descriptor = new ConnectorDescriptor(connectorId, version, parse.getClassLoader());
     descriptor.setIcon(icon);
 
     parse.pushObject(descriptor);
     if (version == null) {
-      Element categoryElement = XmlUtil.element(connectorElement, "category");
+      final Element categoryElement = XmlUtil.element(connectorElement, "category");
       if (categoryElement != null) {
         parser.parseElement(categoryElement, parse, XmlDefParser.CATEGORY_MAJOR_ELT);
       }
-    } else if (version.equals("5.0")){
+    } else if ("5.0".equals(version)) {
       parseElementList(connectorElement, "categories", "category", parse, parser);
     }
     parseElementList(connectorElement, "inputs", "setter", parse, parser);
     parseElementList(connectorElement, "outputs", "getter", parse, parser);
     parseElementList(connectorElement, "pages", "page", parse, parser);
     parse.popObject();
-
     return descriptor;
   }
+
 }

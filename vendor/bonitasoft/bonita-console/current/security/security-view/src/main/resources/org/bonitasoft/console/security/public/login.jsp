@@ -12,16 +12,18 @@
 
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>. --%>
+
 <%@page language="java"%>
 <%@page contentType="text/html; charset=UTF-8"%>
 <%@page import="org.bonitasoft.console.security.server.CredentialsEncryptionServlet"%>
 <%@page import="java.util.ResourceBundle"%>
 <%@page import="java.util.Locale"%>
 <%@page import="java.net.URLEncoder"%>
+<%@page import="org.apache.commons.lang.StringEscapeUtils"%>
 <%
-	String userName = (String)session.getAttribute(CredentialsEncryptionServlet.USERNAME_SESSION_PARAM);
-	if (userName == null) {
-		userName = "";
+	String username = (String)session.getAttribute(CredentialsEncryptionServlet.USERNAME_SESSION_PARAM);
+	if (username == null) {
+		username = "";
 	}
 	String redirectUrl = request.getParameter("redirectUrl");
 	String actionUrl = "../security/credentialsencryption";
@@ -30,26 +32,36 @@
 	}
 	
 	Locale userLocale;
+	Locale formLocale;
 	
 	String localeCookieName = "BOS_Locale";
+	String formLocaleCookieName = "Form_Locale";
 	Cookie cookies [] = request.getCookies();
-	Cookie cookie = null;
+	Cookie localeCookie = null;
+	Cookie formLocaleCookie = null;
 	if (cookies != null) {
 		for (int i = 0; i < cookies.length; i++) {
 			if (cookies[i].getName().equals (localeCookieName)) {
-				cookie = cookies[i];
-				break;
+				localeCookie = cookies[i];
+			} else if(cookies[i].getName().equals (formLocaleCookieName)) {
+				formLocaleCookie = cookies[i];
 			}
 		}
 	}
-	if (cookie != null) {
-		if ("default".equals(cookie.getValue())) {
+	if (localeCookie != null) {
+		if ("default".equals(localeCookie.getValue())) {
 			userLocale = new Locale("en");
 		} else {
-			userLocale = new Locale(cookie.getValue());
+			userLocale = new Locale(localeCookie.getValue());
 		}
 	} else {
 		userLocale = request.getLocale();
+	}
+
+	if(formLocaleCookie != null) {
+		formLocale = new Locale(formLocaleCookie.getValue());
+	} else {
+		formLocale = userLocale;
 	}
 
 	ResourceBundle messages = ResourceBundle.getBundle("locale.i18n.LoginLabels", userLocale);
@@ -58,6 +70,7 @@
         messages = ResourceBundle.getBundle("locale.i18n.LoginLabels", Locale.ENGLISH);
     }
 
+    username = StringEscapeUtils.escapeXml(username);
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
@@ -122,7 +135,7 @@
 							<label for="login"><%=messages.getString("login.username")%></label>
 						</div>
 						<div id="login_field_container">
-							<input id="username" name="username" type="text" tabindex="1" maxlength="50" value="<%=userName%>" onkeypress="return submitEnter(this, event);"/>
+							<input id="username" name="username" type="text" tabindex="1" maxlength="50" value="<%=username%>" onkeypress="return submitEnter(this, event);"/>
 						</div>
 						<div class="login-form-label">
 							<label for="password"><%=messages.getString("login.password")%></label>
@@ -132,7 +145,7 @@
 						</div>
 						<div id="message_container">
 						<%
-							if(userName!=null && userName.length() > 0) {
+							if(username!=null && username.length() > 0) {
 						%>
 							<div><%=messages.getString("login.error.message")%></div>
 						<%
@@ -141,6 +154,7 @@
 						</div>
 						
 						<input name="locale" type="hidden" value="<%=userLocale.getLanguage().toString()%>" />
+						<input name="formLocale" type="hidden" value="<%=formLocale.getLanguage().toString()%>" />
 						
 						<div class="login-form-bottom">
 							<!-- div class="login-form-rememberme">

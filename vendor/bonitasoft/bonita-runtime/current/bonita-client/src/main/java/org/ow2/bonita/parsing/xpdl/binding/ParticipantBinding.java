@@ -40,6 +40,7 @@ public class ParticipantBinding extends MajorElementBinding {
     super("Participant");
   }
 
+  @Override
   public Object parse(final Element participantElement, final Parse parse, final Parser parser) {
     if (LOG.isLoggable(Level.FINE)) {
       LOG.fine("parsing element = " + participantElement);
@@ -47,9 +48,9 @@ public class ParticipantBinding extends MajorElementBinding {
 
     final String id = getId(participantElement);
     final String description = getChildTextContent(participantElement, "Description");
-    
-    ProcessBuilder processBuilder = parse.findObject(ProcessBuilder.class);
-    
+
+    final ProcessBuilder processBuilder = parse.findObject(ProcessBuilder.class);
+
     String participantType = null;
     final Element participantTypeElement = XmlUtil.element(participantElement, "ParticipantType");
     if (participantElement != null) {
@@ -61,8 +62,8 @@ public class ParticipantBinding extends MajorElementBinding {
     }
 
     if ("HUMAN".equals(participantType)) {
-      processBuilder.addHuman(id);  
-    } else if (participantType.equals("ROLE")) {
+      processBuilder.addHuman(id);
+    } else if ("ROLE".equals(participantType)) {
       processBuilder.addGroup(id);
     }
     processBuilder.addDescription(description);
@@ -73,7 +74,8 @@ public class ParticipantBinding extends MajorElementBinding {
     return null;
   }
 
-  protected void parseRoleMapper(final Element participantElement, final Parse parse, final ProcessBuilder processBuilder, final String roleId) {
+  protected void parseRoleMapper(final Element participantElement, final Parse parse,
+      final ProcessBuilder processBuilder, final String roleId) {
     final Element mapperElement = getExtendedAttribute(participantElement, "Mapper");
     if (mapperElement != null) {
       final String value = XmlUtil.attribute(mapperElement, "Value");
@@ -87,55 +89,54 @@ public class ParticipantBinding extends MajorElementBinding {
         parse.addProblem("Unsupported value on extendedAttribute Mapper: " + value);
       }
       processBuilder.addGroupResolver(className);
-      Map<String, Object[]> parameters = getRoleMapperParameters(mapperElement, parse);
+      final Map<String, Object[]> parameters = getRoleMapperParameters(mapperElement, parse);
       if (parameters != null) {
-        for (Entry<String, Object[]> parameter : parameters.entrySet()) {
+        for (final Entry<String, Object[]> parameter : parameters.entrySet()) {
           processBuilder.addInputParameter(parameter.getKey(), parameter.getValue());
         }
       }
-      
+
     }
   }
 
   private Map<String, Object[]> getRoleMapperParameters(final Element participantElement, final Parse parse) {
     Map<String, Object[]> roleMapperParameters = null;
-    final Element roleMapperParameterElement =
-      XmlUtil.element(participantElement, "Parameters");
+    final Element roleMapperParameterElement = XmlUtil.element(participantElement, "Parameters");
     if (roleMapperParameterElement != null) {
       roleMapperParameters = new HashMap<String, Object[]>();
-      List<Element> parameters = XmlUtil.elements(roleMapperParameterElement);
-      for (Element param : parameters) {
-        String paramType = param.getLocalName();
-        String variable = param.getAttribute("Var");
+      final List<Element> parameters = XmlUtil.elements(roleMapperParameterElement);
+      for (final Element param : parameters) {
+        final String paramType = param.getLocalName();
+        final String variable = param.getAttribute("Var");
         String method;
-        if (paramType.equals("InParameter")) {
+        if ("InParameter".equals(paramType)) {
           if (param.hasAttribute("Setter")) {
             method = param.getAttribute("Setter");
             if (method.length() != 0) {
-              roleMapperParameters.put(method, new Object[]{variable});
+              roleMapperParameters.put(method, new Object[] { variable });
             } else {
               parse.addProblem("The Setter attribute should not be empty!");
             }
           } else {
             parse.addProblem("InParameter need the Setter attribute");
           }
-        } else if (paramType.equals("OutParameter")) {
+        } else if ("OutParameter".equals(paramType)) {
           parse.addProblem("A RoleMapper cannot set process variables.");
-        } else if (paramType.equals("Properties")) {
+        } else if ("Properties".equals(paramType)) {
           if (variable.startsWith("file:")) {
-            roleMapperParameters.put("file:",new Object[]{variable.substring(5)});
+            roleMapperParameters.put("file:", new Object[] { variable.substring(5) });
           } else if (variable.startsWith("bar:")) {
-            roleMapperParameters.put("bar:",new Object[]{variable.substring(4)});
+            roleMapperParameters.put("bar:", new Object[] { variable.substring(4) });
           } else if (variable.startsWith("resource:")) {
-            roleMapperParameters.put("resource:",new Object[]{variable.substring(9)});
+            roleMapperParameters.put("resource:", new Object[] { variable.substring(9) });
           } else {
-            parse.addProblem("The value of Var attribute can only be either "
-                + "file:<absolute_file_path> or bar:<file_path_in_bar_file> or"
-                + "resource:<resource_path>");
+            parse
+                .addProblem("The value of Var attribute can only be either file:<absolute_file_path> or bar:<file_path_in_bar_file> or resource:<resource_path>");
           }
         } // ignores all other tags
       }
     }
     return roleMapperParameters;
   }
+
 }

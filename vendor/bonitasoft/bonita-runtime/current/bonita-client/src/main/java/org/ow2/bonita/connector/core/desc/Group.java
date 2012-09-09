@@ -17,17 +17,18 @@ import java.util.List;
 
 /**
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class Group extends Component {
 
   private boolean optional;
   private List<WidgetComponent> widgets;
 
-//used by XStream
-  protected Group() {}
-  
-  public Group(String labelId, boolean optional, List<WidgetComponent> widgets) {
+  // used by XStream
+  protected Group() {
+  }
+
+  public Group(final String labelId, final boolean optional, final List<WidgetComponent> widgets) {
     super(labelId);
     this.optional = optional;
     this.widgets = widgets;
@@ -40,16 +41,39 @@ public class Group extends Component {
   public List<WidgetComponent> getWidgets() {
     return widgets;
   }
-  
+
   @Override
-  public boolean equals(Object obj) {
-    boolean equals = super.equals(obj);
-    if (equals && obj instanceof Group) {
-      Group temp = (Group) obj;
-      return (temp.isOptional() == this.isOptional()
-          && temp.getWidgets().equals(this.getWidgets()));
-    } else {
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + (optional ? 1231 : 1237);
+    result = prime * result + (widgets == null ? 0 : widgets.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
       return false;
     }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Group other = (Group) obj;
+    if (optional != other.optional) {
+      return false;
+    }
+    if (widgets == null) {
+      if (other.widgets != null) {
+        return false;
+      }
+    } else if (!widgets.equals(other.widgets)) {
+      return false;
+    }
+    return true;
   }
+
 }

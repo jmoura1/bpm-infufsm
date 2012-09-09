@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2011 BonitaSoft S.A.
+ * Copyright (C) 2009-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,56 +34,50 @@ import org.ow2.bonita.connector.core.ConnectorError;
  */
 public class ExoFileVersions extends ExoConnector {
 
-    private String uri;
+  private String uri;
 
-    /**
-     * set the uri
-     * 
-     * @param uri the URI of the file
-     */
-    public void setUri(final String uri) {
-        this.uri = uri;
+  /**
+   * set the uri
+   * 
+   * @param uri the URI of the file
+   */
+  public void setUri(final String uri) {
+    this.uri = uri;
+  }
+
+  @Override
+  protected void validateFunctionParameters(final List<ConnectorError> errors) {
+    this.validateUri(errors, uri, "uri");
+  }
+
+  @Override
+  protected void executeFunction() throws Exception {
+    this.report(uri);
+  }
+
+  /**
+   * report version information for the URI specified file.
+   * 
+   * @param uri
+   * @throws Exception
+   */
+  public void report(final String uri) throws Exception {
+    if (LOGGER.isLoggable(Level.INFO)) {
+      LOGGER.info("report '" + uri + "'");
     }
+    final ReportInfo reportInfo = new ReportInfo(ReportType.VERSION_TREE);
+    final ReportMethod httpMethod = new ReportMethod(uri, reportInfo);
+    client.executeMethod(httpMethod);
+    processResponse(httpMethod, false);
 
-    @Override
-    protected void validateFunctionParameters(final List<ConnectorError> errors) {
-        this.validateUri(errors, uri, "uri");
+    final MultiStatus multiStatus = httpMethod.getResponseBodyAsMultiStatus();
+    final MultiStatusResponse responses[] = multiStatus.getResponses();
+    final StringBuilder responseBuilder = new StringBuilder("");
+    for (int i = 0; i < responses.length; i++) {
+      responseBuilder.append(responses[i].getHref()).append('\n');
     }
-
-    @Override
-    protected void executeFunction() throws Exception {
-        this.report(uri);
-    }
-
-    /**
-     * report version information for the URI specified file.
-     * 
-     * @param uri
-     * @throws Exception
-     */
-    public void report(final String uri) throws Exception {
-
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("report '" + uri + "'");
-        }
-
-        final ReportInfo reportInfo = new ReportInfo(ReportType.VERSION_TREE);
-
-        final ReportMethod httpMethod = new ReportMethod(uri, reportInfo);
-        client.executeMethod(httpMethod);
-
-        processResponse(httpMethod, false);
-
-        final MultiStatus multiStatus = httpMethod.getResponseBodyAsMultiStatus();
-        final MultiStatusResponse responses[] = multiStatus.getResponses();
-
-        String responseAsString = "";
-        for (int i = 0; i < responses.length; i++) {
-            responseAsString += responses[i].getHref() + "\n";
-        }
-
-        this.response = responseAsString;
-        httpMethod.releaseConnection();
-    }
+    this.response = responseBuilder.toString();
+    httpMethod.releaseConnection();
+  }
 
 }

@@ -30,6 +30,7 @@
 
 	<!-- BAM servlet -->
 	<servlet path="/reporting" class="org.bonitasoft.console.server.bam.ReportingServlet" />
+	<servlet path="/bam/run" class="org.bonitasoft.console.server.bam.BonitaWebReport" />
 	<!-- <servlet path="/bam/jasper" class="org.bonitasoft.console.server.bam.jasper.JasperWebReport" /> -->
 
 </module>

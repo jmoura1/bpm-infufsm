@@ -84,7 +84,7 @@ public interface RESTRemoteRepairAPI extends AbstractRemoteRepairAPI {
   throws RemoteException, InstanceNotFoundException, VariableNotFoundException;
 
   /**
-   ** Starts a new process instance, positioned at specific activities, with a map of instance’s variable values. The activities located before the start activities are not executed.
+   * Starts a new process instance, positioned at specific activities, with a map of instance's variable values. The activities located before the start activities are not executed.
    * All connectors of specified activities will be executed normally (include connectors OnReady).
    * @param processDefinitionUUID the process definition UUID
    * @param processVariables the process variables in this Map will override the current process variable values
@@ -107,7 +107,7 @@ public interface RESTRemoteRepairAPI extends AbstractRemoteRepairAPI {
   throws RemoteException, ProcessNotFoundException, VariableNotFoundException, ActivityNotFoundException;
 
   /**
-   * Starts a new process instance, positioned at specific activities, with a map of instance’s variable values. The activities located before the start activities are not executed.
+   * Starts a new process instance, positioned at specific activities, with a map of instance's variable values. The activities located before the start activities are not executed.
    * All connectors of specified activities will be executed normally (include connectors OnReady).
    * @param processDefinitionUUID the process definition UUID
    * @param processVariables the process variables in this Map will override the current process variable values

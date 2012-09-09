@@ -58,6 +58,7 @@ import org.ow2.bonita.facade.BAMAPITest;
 import org.ow2.bonita.facade.CommandAPITest;
 import org.ow2.bonita.facade.DefinitionAPITest;
 import org.ow2.bonita.facade.FormsMigrationTest;
+import org.ow2.bonita.facade.GroovyPerformanceTest;
 import org.ow2.bonita.facade.ManagementAPITest;
 import org.ow2.bonita.facade.RemoteAPITest;
 import org.ow2.bonita.facade.RepairAPITest;
@@ -205,6 +206,10 @@ public final class DefaultEnvNonRegressionTests extends TestCase {
     suite.addTest(TransitionTests.suite());
 
     suite.addTestSuite(BigProcessesTest.class);
+    
+    //groovy perf
+    suite.addTestSuite(GroovyPerformanceTest.class);
+    
     suite.addTestSuite(PerfTest.class);
 
     final Configuration config = (Configuration) GlobalEnvironmentFactory.getEnvironmentFactory(BonitaConstants.DEFAULT_DOMAIN).get(EnvConstants.HB_CONFIG_CORE);

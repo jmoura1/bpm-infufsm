@@ -5,22 +5,20 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2.0 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.bonitasoft.forms.client.view.controller;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.bonitasoft.console.security.client.LoginServiceAsync;
-import org.bonitasoft.console.security.client.privileges.RuleType;
 import org.bonitasoft.console.security.client.users.User;
 import org.bonitasoft.console.security.client.view.common.RpcSecurityServices;
 import org.bonitasoft.forms.client.i18n.FormsResourceBundle;
@@ -41,8 +39,13 @@ import org.bonitasoft.forms.client.view.common.RpcFormsServices;
 import org.bonitasoft.forms.client.view.common.URLUtils;
 import org.bonitasoft.forms.client.view.common.URLUtilsFactory;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -213,17 +216,42 @@ public class PageflowViewController {
         public void onSuccess(final FormPage firstPage) {
 
             if (firstPage != null) {
-                formPagesViewController = FormViewControllerFactory.getFormPagesViewController(formID, urlContext, firstPage, applicationHTMLPanel, user, elementId);
-                formPagesViewController.setMandatoryFieldSymbol(mandatoryFieldSymbol);
-                formPagesViewController.setMandatoryFieldLabel(mandatoryFieldLabel);
-                formPagesViewController.setMandatoryFieldClasses(mandatoryFieldClasses);
-                formPagesViewController.displayPage(0);
+                try {
+                    RequestBuilder theRequestBuilder;
+                    final String theURL = urlUtils.buildLayoutURL(firstPage.getPageTemplate().getBodyContentId(),
+                            (String) urlContext.get(URLUtils.TASK_ID_PARAM), true);
+                    GWT.log("Calling the Form Layout Download Servlet with query: " + theURL);
+                    theRequestBuilder = new RequestBuilder(RequestBuilder.GET, theURL);
+                    theRequestBuilder.setCallback(new RequestCallback() {
+
+                        public void onError(Request aRequest, Throwable anException) {
+                            final String errorMessage = FormsResourceBundle.getErrors().applicationConfigRetrievalError();
+                            formsServiceAsync.getApplicationErrorTemplate(firstPage.getPageId(), urlContext, new ErrorPageHandler(null, firstPage.getPageId(),
+                                    errorMessage, anException, elementId));
+                        }
+
+                        public void onResponseReceived(Request aRequest, Response aResponse) {
+
+                            firstPage.getPageTemplate().setBodyContent(aResponse.getText());
+                            formPagesViewController = FormViewControllerFactory.getFormPagesViewController(formID, urlContext, firstPage, applicationHTMLPanel,
+                                    user, elementId);
+                            formPagesViewController.setMandatoryFieldSymbol(mandatoryFieldSymbol);
+                            formPagesViewController.setMandatoryFieldLabel(mandatoryFieldLabel);
+                            formPagesViewController.setMandatoryFieldClasses(mandatoryFieldClasses);
+                            formPagesViewController.displayPage(0);
+                        }
+                    });
+                    theRequestBuilder.send();
+                } catch (Exception e) {
+                    Window.alert("Error while trying to query the form layout :" + e.getMessage());
+                }
+
             } else {
                 final String processUUIDStr = (String) urlContext.get(URLUtils.PROCESS_ID_PARAM);
                 final String instanceUUIDStr = (String) urlContext.get(URLUtils.INSTANCE_ID_PARAM);
                 if (processUUIDStr != null) {
                     final String autoInstantiate = (String) urlContext.get(URLUtils.AUTO_INSTANTIATE);
-                    //if the parameter autoInstanciate is set explicitly to false, the we skip the form
+                    // if the parameter autoInstanciate is set explicitly to false, the we skip the form
                     if (!Boolean.FALSE.toString().equals(autoInstantiate)) {
                         formsServiceAsync.skipForm(formID, urlContext, formTerminationHandler);
                     } else {
@@ -232,7 +260,9 @@ public class PageflowViewController {
                         final Button startInstanceButton = new Button(FormsResourceBundle.getMessages().caseStartButtonLabel());
                         startInstanceButton.setStyleName("bonita_form_button");
                         startInstanceButton.addClickHandler(new ClickHandler() {
+
                             public void onClick(final ClickEvent event) {
+                            	startInstanceButton.setEnabled(false);
                                 formsServiceAsync.skipForm(formID, urlContext, formTerminationHandler);
                             }
                         });
@@ -245,7 +275,8 @@ public class PageflowViewController {
                     }
                 } else if (instanceUUIDStr != null) {
                     final String errorMessage = FormsResourceBundle.getErrors().nothingToDisplay();
-                    formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, errorMessage, elementId));
+                    formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, errorMessage,
+                            elementId));
                 } else {
                     formsServiceAsync.skipForm(formID, urlContext, formTerminationHandler);
                 }
@@ -267,13 +298,14 @@ public class PageflowViewController {
                 final String errorMessage = FormsResourceBundle.getErrors().taskFormSkippedError();
                 formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, errorMessage, elementId));
             } else if (t instanceof FormAlreadySubmittedException) {
-                final String errorMessage = FormsResourceBundle.getErrors().formAlreadySubmittedOrCancelledError();
+                final String errorMessage = FormsResourceBundle.getErrors().formAlreadySubmittedOrCanceledError();
                 formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, errorMessage, elementId));
             } else if (t instanceof SessionTimeOutException) {
                 Window.Location.reload();
             } else {
                 final String errorMessage = FormsResourceBundle.getErrors().taskExecutionError();
-                formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, errorMessage, t, elementId));
+                formsServiceAsync.getApplicationErrorTemplate(formID, urlContext,
+                        new ErrorPageHandler(applicationHTMLPanel, formID, errorMessage, t, elementId));
             }
         }
 
@@ -307,7 +339,8 @@ public class PageflowViewController {
                 Window.Location.reload();
             } else {
                 final String errorMessage = FormsResourceBundle.getErrors().nextTaskRetrievalError();
-                formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, errorMessage, t, elementId));
+                formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, errorMessage, t,
+                        elementId));
             }
         }
 
@@ -322,7 +355,7 @@ public class PageflowViewController {
                     if (user.useCredentialTransmission()) {
                         loginServiceAsync.generateTemporaryToken(new GetTokenAsyncCallback(applicationURL, urlContext));
                     } else {
-                        final String url = urlUtils.getFormRedirectionUrl(applicationURL, null);
+                        final String url = urlUtils.getFormRedirectionUrl(applicationURL, urlContext);
                         if (domUtils.isPageInFrame()) {
                             urlUtils.frameRedirect(DOMUtils.DEFAULT_FORM_ELEMENT_ID, url);
                         } else {
@@ -336,7 +369,8 @@ public class PageflowViewController {
             } else {
                 if (!domUtils.consoleRefreshAndRedirectToInbox()) {
                     final String defaultConfirmationMessage = FormsResourceBundle.getMessages().submissionConfirmationMessage();
-                    formsServiceAsync.getFormConfirmationTemplate(formID, urlContext, new ConfirmationPageHandler(applicationHTMLPanel, elementId, defaultConfirmationMessage, formID, urlContext));
+                    formsServiceAsync.getFormConfirmationTemplate(formID, urlContext, new ConfirmationPageHandler(applicationHTMLPanel, elementId,
+                            defaultConfirmationMessage, formID, urlContext));
                 }
             }
         }

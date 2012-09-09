@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010  BonitaSoft S.A.
+ * Copyright (C) 2010-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -20,7 +20,6 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.ow2.bonita.building.XmlDef;
-import org.ow2.bonita.facade.def.majorElement.ProcessDefinition;
 import org.ow2.bonita.parsing.def.binding.ActivityBinding;
 import org.ow2.bonita.parsing.def.binding.AttachmentBinding;
 import org.ow2.bonita.parsing.def.binding.CategoryBinding;
@@ -43,68 +42,63 @@ import org.w3c.dom.Element;
 
 /**
  * @author Anthony Birembaut
- *
+ * 
  */
 public class XmlDefParser extends Parser {
 
   public static final String CATEGORY_MAJOR_ELT = "majorElements";
-  
+
   /** path to the directory containing all xsd files. */
   private static final String RESSOURCES_DIR = "";
 
   /** all schema resources used to parse xml def files. */
-  private static final String[] SCHEMA_RESOURCES = {
-    RESSOURCES_DIR + XmlConstants.XML_SCHEMA,
-    RESSOURCES_DIR + XmlConstants.XML_PROCESS_DEF_TRANSITIONAL_SCHEMA};
+  private static final String[] SCHEMA_RESOURCES = { RESSOURCES_DIR + XmlConstants.XML_SCHEMA,
+      RESSOURCES_DIR + XmlConstants.XML_PROCESS_DEF_TRANSITIONAL_SCHEMA };
 
   public static final Bindings DEFAULT_BINDINGS = getDefaultBindings();
 
   // the default entities are initialized at the bottom of this file.
-  private static final Map<String, Entity> defaultEntities = getDefaultEntities();
+  private static final Map<String, Entity> DEFAULT_ENTITIES = getDefaultEntities();
 
   /** schema document URIs as stringsF */
-  private static final String[] schemaSources = getSchemaSources();
+  private static final String[] SCHEMA_SOURCES = getSchemaSources();
 
   public XmlDefParser() {
-    super(DEFAULT_BINDINGS, defaultEntities);
+    super(DEFAULT_BINDINGS, DEFAULT_ENTITIES);
   }
-  
+
   @Override
-  public Object parseDocumentElement(Element processDefinitionElement, Parse parse) {
-    
-    String processDefinitionTag = processDefinitionElement.getTagName();
+  public Object parseDocumentElement(final Element processDefinitionElement, final Parse parse) {
+
+    final String processDefinitionTag = processDefinitionElement.getTagName();
     if (!XmlDef.PROCESS_DEFINITION.equals(processDefinitionTag)) {
-      String message = ExceptionManager.getInstance().getMessage("bpx_XDP_1", processDefinitionTag);
+      final String message = ExceptionManager.getInstance().getMessage("bpx_XDP_1", processDefinitionTag);
       throw new BonitaRuntimeException(message);
     }
-    List<Element> processes = XmlUtil.elements(processDefinitionElement, XmlDef.PROCESS);
-    if (processes != null) {
-      if (processes.size() > 1) {
-        String message = ExceptionManager.getInstance().getMessage("bpx_XDP_2");
-            throw new BonitaRuntimeException(message);
-      }
+    final List<Element> processes = XmlUtil.elements(processDefinitionElement, XmlDef.PROCESS);
+    if (processes != null && processes.size() > 1) {
+      final String message = ExceptionManager.getInstance().getMessage("bpx_XDP_2");
+      throw new BonitaRuntimeException(message);
     }
-    Element processElement = processes.get(0);
-    ProcessDefinition processDef = (ProcessDefinition) parseElement(processElement, parse, CATEGORY_MAJOR_ELT);
-    return processDef;
+    final Element processElement = processes.get(0);
+    return parseElement(processElement, parse, CATEGORY_MAJOR_ELT);
   }
-  
+
+  @Override
   public synchronized DocumentBuilderFactory getDocumentBuilderFactory() {
     documentBuilderFactory = newDocumentBuilderFactory();
     documentBuilderFactory.setNamespaceAware(true);
     documentBuilderFactory.setValidating(true);
     // select xml schema as the schema language (a.o.t. DTD)
-    documentBuilderFactory.setAttribute(
-        XmlConstants.JAXP_SCHEMALANGUAGE,
-        XmlConstants.XML_NS);
+    documentBuilderFactory.setAttribute(XmlConstants.JAXP_SCHEMALANGUAGE, XmlConstants.XML_NS);
     // set schema sources
-    documentBuilderFactory.setAttribute(XmlConstants.JAXP_SCHEMASOURCE, schemaSources);
+    documentBuilderFactory.setAttribute(XmlConstants.JAXP_SCHEMASOURCE, SCHEMA_SOURCES);
     return documentBuilderFactory;
   }
-  
+
   /** factory method for the default bindings */
   private static Bindings getDefaultBindings() {
-    Bindings defaultBindings = new Bindings();
+    final Bindings defaultBindings = new Bindings();
 
     defaultBindings.addBinding(new ParticipantBinding());
     defaultBindings.addBinding(new DataFieldBinding());
@@ -121,18 +115,16 @@ public class XmlDefParser extends Parser {
 
   /** factory method for the default entities */
   private static Map<String, Entity> getDefaultEntities() {
-    Map<String, Entity> defaultSchemaCatalog = new HashMap<String, Entity>();
-    ClassLoader resourceLoader = XmlDefParser.class.getClassLoader();
-    defaultSchemaCatalog.put(XmlConstants.XML_NS, new UrlEntity(
-        XmlConstants.XML_SCHEMA, resourceLoader));
-    defaultSchemaCatalog.put(XmlConstants.XML_NS2, new UrlEntity(
-        XmlConstants.XML_SCHEMA, resourceLoader));
+    final Map<String, Entity> defaultSchemaCatalog = new HashMap<String, Entity>();
+    final ClassLoader resourceLoader = XmlDefParser.class.getClassLoader();
+    defaultSchemaCatalog.put(XmlConstants.XML_NS, new UrlEntity(XmlConstants.XML_SCHEMA, resourceLoader));
+    defaultSchemaCatalog.put(XmlConstants.XML_NS2, new UrlEntity(XmlConstants.XML_SCHEMA, resourceLoader));
     return defaultSchemaCatalog;
   }
-  
+
   private static String[] getSchemaSources() {
-    String[] tab = new String[SCHEMA_RESOURCES.length];
-    ClassLoader resourceLoader = XmlDefParser.class.getClassLoader();
+    final String[] tab = new String[SCHEMA_RESOURCES.length];
+    final ClassLoader resourceLoader = XmlDefParser.class.getClassLoader();
     for (int i = 0; i < SCHEMA_RESOURCES.length; i++) {
       tab[i] = resourceLoader.getResource(SCHEMA_RESOURCES[i]).toExternalForm();
     }

@@ -34,6 +34,7 @@ import org.ow2.bonita.facade.rest.stringconverter.ActivityInstanceImplStringConv
 import org.ow2.bonita.facade.rest.stringconverter.ActivityInstanceStringConverter;
 import org.ow2.bonita.facade.rest.stringconverter.AttachementInstanceStringConverter;
 import org.ow2.bonita.facade.rest.stringconverter.BusinessArchiveStringConverter;
+import org.ow2.bonita.facade.rest.stringconverter.ConnectorExecutionDescriptorStringConverter;
 import org.ow2.bonita.facade.rest.stringconverter.DateStringConverter;
 import org.ow2.bonita.facade.rest.stringconverter.GenericObjectStringConverter;
 import org.ow2.bonita.facade.rest.stringconverter.HashMapStringConverter;
@@ -72,6 +73,7 @@ public class RESTQueryAPIAccessorImpl implements QueryAPIAccessor {
 	    providerFactory.addStringConverter(GenericObjectStringConverter.class);
 	    providerFactory.addStringConverter(RuleStringConverter.class);
 	    providerFactory.addStringConverter(DateStringConverter.class);
+	    providerFactory.addStringConverter(ConnectorExecutionDescriptorStringConverter.class);
 	    
 	    //providers	    
 	    providerFactory.registerProvider(GenericObjectProvider.class);
@@ -92,7 +94,7 @@ public class RESTQueryAPIAccessorImpl implements QueryAPIAccessor {
 	 * @return
 	 */
 	protected <T> T getRESTAccess(final Class<T> clazz) {
-	  String restServerAddress = System.getProperty(BonitaConstants.REST_SERVER_ADDRESS_PROPERTY);
+	  final String restServerAddress = System.getProperty(BonitaConstants.REST_SERVER_ADDRESS_PROPERTY);
 	  if (restServerAddress == null && LOG.isLoggable(Level.SEVERE)) {
 	    LOG.severe("The property " + BonitaConstants.REST_SERVER_ADDRESS_PROPERTY + " is null!");
 	  } else if (restServerAddress != null && LOG.isLoggable(Level.FINE)) {
@@ -102,33 +104,39 @@ public class RESTQueryAPIAccessorImpl implements QueryAPIAccessor {
   }
 
 	
-	public BAMAPI getBAMAPI() {
+	@Override
+  public BAMAPI getBAMAPI() {
 		return getBAMAPI(AccessorUtil.QUERYLIST_DEFAULT_KEY);
 	}
 		
 
-	public BAMAPI getBAMAPI(String queryList) {
-		RemoteBAMAPI remoteBAMAPI = getRESTAccess(RemoteBAMAPI.class);		
+	@Override
+  public BAMAPI getBAMAPI(final String queryList) {
+		final RemoteBAMAPI remoteBAMAPI = getRESTAccess(RemoteBAMAPI.class);		
 		return AccessorProxyUtil.getRemoteClientAPI(BAMAPI.class,
   		  remoteBAMAPI, queryList);
 	}
 
-	public QueryDefinitionAPI getQueryDefinitionAPI() {
+	@Override
+  public QueryDefinitionAPI getQueryDefinitionAPI() {
 		return getQueryDefinitionAPI(AccessorUtil.QUERYLIST_DEFAULT_KEY);
 	}
 
-	public QueryDefinitionAPI getQueryDefinitionAPI(String queryList) {
-		RemoteQueryDefinitionAPI remoteQueryRuntimeAPI = getRESTAccess(RemoteQueryDefinitionAPI.class);		
+	@Override
+  public QueryDefinitionAPI getQueryDefinitionAPI(final String queryList) {
+		final RemoteQueryDefinitionAPI remoteQueryRuntimeAPI = getRESTAccess(RemoteQueryDefinitionAPI.class);		
 		return AccessorProxyUtil.getRemoteClientAPI(QueryDefinitionAPI.class,
   		  remoteQueryRuntimeAPI, queryList);
 	}
 
-	public QueryRuntimeAPI getQueryRuntimeAPI() {
+	@Override
+  public QueryRuntimeAPI getQueryRuntimeAPI() {
 		return getQueryRuntimeAPI(AccessorUtil.QUERYLIST_DEFAULT_KEY);
 	}
 
-	public QueryRuntimeAPI getQueryRuntimeAPI(String queryList) {
-		RESTRemoteQueryRuntimeAPI remoteQueryRuntimeAPI = getRESTAccess(RESTRemoteQueryRuntimeAPI.class);		
+	@Override
+  public QueryRuntimeAPI getQueryRuntimeAPI(final String queryList) {
+		final RESTRemoteQueryRuntimeAPI remoteQueryRuntimeAPI = getRESTAccess(RESTRemoteQueryRuntimeAPI.class);		
 		return AccessorProxyUtil.getRemoteClientAPI(QueryRuntimeAPI.class,
   		  remoteQueryRuntimeAPI, queryList);
 	}

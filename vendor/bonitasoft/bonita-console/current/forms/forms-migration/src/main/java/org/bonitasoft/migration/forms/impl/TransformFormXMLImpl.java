@@ -55,12 +55,12 @@ public class TransformFormXMLImpl extends XPathUtil implements TransformFormXML 
     /**
      * bos product version
      */
-    public static final String BOS_PRODUCT_VERSION = "5.6";
+    public static final String BOS_PRODUCT_VERSION = "5.7";
     
     /**
      * bos sp product version
      */
-    public static final String BOS_SP_PRODUCT_VERSION = "5.6-SP";
+    public static final String BOS_SP_PRODUCT_VERSION = "5.7-SP";
 
     /**
      * {@inheritDoc}
@@ -86,7 +86,7 @@ public class TransformFormXMLImpl extends XPathUtil implements TransformFormXML 
      */
     public byte[] transform(final byte[] oldFormsXMLContent) throws TransformerException, IOException, SAXException, FormAlreadyMigratedException {
         
-        final InputStream XSLFileInputStream = getClass().getResourceAsStream("/"+FORMS_XSL_FILE_NAME);
+        final InputStream XSLFileInputStream = getClass().getResourceAsStream("/" + FORMS_XSL_FILE_NAME);
         final File tempFile = new File(FORMS_XML_FILE_NAME);
         tempFile.deleteOnExit();
         TransformFormXMLUtil.getFile(tempFile, oldFormsXMLContent);
@@ -96,7 +96,7 @@ public class TransformFormXMLImpl extends XPathUtil implements TransformFormXML 
         final String applicationName = getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.NAME);
         final String applicationVersion = getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.VERSION);
         if (BOS_PRODUCT_VERSION.equals(migrationProductVersion) || BOS_PRODUCT_VERSION.equals(currentProductVersion) || BOS_SP_PRODUCT_VERSION.equals(currentProductVersion)) {
-            throw new FormAlreadyMigratedException("The process with ProcessDefinitonUUID " + applicationName +"--" + applicationVersion + " does not need to be transformer or migrated!");
+            throw new FormAlreadyMigratedException("The process with ProcessDefinitonUUID " + applicationName +"--" + applicationVersion + " does not need to be transformed or migrated!");
         }
         final File result = transform(XSLFileInputStream, tempFile.getPath());
         return TransformFormXMLUtil.getAllContentFrom(result);

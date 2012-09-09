@@ -161,20 +161,36 @@ public class BonitaConsole implements EntryPoint {
 
         public void onFailure(final Throwable aT) {
             GWT.log("Unable to get any todolist form URL", aT);
-            List<String> paramsToRemove = new ArrayList<String>();
-            paramsToRemove.add(URLUtils.THEME);
-            Map<String, String> paramsToAdd = new HashMap<String, String>();
-            paramsToAdd.put(URLUtils.UI, URLUtils.USER);
             List<String> hashParamsToRemove = new ArrayList<String>();
-            hashParamsToRemove.add(URLUtils.VIEW_MODE_PARAM);
             hashParamsToRemove.add(URLUtils.TODOLIST_PARAM);
-            String urlString = urlUtils.rebuildUrl(paramsToRemove, paramsToAdd, hashParamsToRemove, null) + URLUtils.HASH_PARAMETERS_SEPARATOR + URLUtils.DEFAULT_HISTORY_TOKEN;
+            String urlString = urlUtils.rebuildUrl(null, null, hashParamsToRemove, null);
             urlUtils.windowRedirect(urlString);
         }
 
         public void onSuccess(final Map<String, Object> newUrlContext) {
+        	String urlString = null;
+        	String themeName = (String) newUrlContext.get(URLUtils.THEME);
+        	if (themeName == null || themeName.isEmpty()) {
+        		themeName = (String) urlContext.get(URLUtils.THEME);
+        	}
+        	Map<String, String> paramsToAdd = new HashMap<String, String>();
+        	paramsToAdd.put(URLUtils.THEME, themeName);
+        	
+    		List<String> hashParamsToRemove = new ArrayList<String>();
+            hashParamsToRemove.add(URLUtils.VIEW_MODE_PARAM);
+            hashParamsToRemove.add(URLUtils.TODOLIST_PARAM);
+            hashParamsToRemove.add(URLUtils.FORM_ID);
+            hashParamsToRemove.add(URLUtils.TASK_ID_PARAM);
+            hashParamsToRemove.add(URLUtils.PROCESS_ID_PARAM);
+    		urlString = urlUtils.rebuildUrl(null, paramsToAdd, hashParamsToRemove, null);
+    		if (urlString.indexOf("#") < 0) {
+    			urlString += "#";
+    		} else {
+    			urlString += "&";
+    		}
             final String hash = urlUtils.getFormRedirectionHash(newUrlContext);
-            History.newItem(hash);
+            urlString = urlString + hash;
+            urlUtils.windowRedirect(urlString);
         }
 
     }
@@ -268,7 +284,11 @@ public class BonitaConsole implements EntryPoint {
             });
             boolean isTodolist = Boolean.valueOf((String) urlContext.get(URLUtils.TODOLIST_PARAM));
             if (isTodolist) {
-                GetAnyTodolistFormHandler getAnyTodolistFormHandler = new GetAnyTodolistFormHandler();
+             	final String themeName = Window.Location.getParameter(URLUtils.THEME);
+            	if(themeName != null){
+            		urlContext.put(URLUtils.THEME, themeName);
+            	}
+                final GetAnyTodolistFormHandler getAnyTodolistFormHandler = new GetAnyTodolistFormHandler();
                 RpcFormsServices.getFormsService().getAnyTodoListForm(urlContext, getAnyTodolistFormHandler);
                 
             } else {

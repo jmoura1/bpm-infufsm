@@ -992,11 +992,19 @@ public class ApplicationAccessTest extends APITestCase {
     assertEquals(1, getQueryDefinitionAPI().getNumberOfProcesses());
     assertEquals(2, getQueryRuntimeAPI().getNumberOfProcessInstances());
     assertEquals(0, getQueryRuntimeAPI().getNumberOfParentProcessInstances());
+    assertEquals(0, getQueryRuntimeAPI().getNumberOfParentProcessInstancesExcept(new HashSet<ProcessDefinitionUUID>()));
+    assertEquals(0, getQueryRuntimeAPI().getNumberOfParentProcessInstances(new HashSet<ProcessDefinitionUUID>()));
 
     setApplicationContext(bTeam);
     assertEquals(2, getQueryDefinitionAPI().getNumberOfProcesses());
     assertEquals(4, getQueryRuntimeAPI().getNumberOfProcessInstances());
     assertEquals(2, getQueryRuntimeAPI().getNumberOfParentProcessInstances());
+    Set<ProcessDefinitionUUID> processUUIDs = new HashSet<ProcessDefinitionUUID>();
+    assertEquals(0, getQueryRuntimeAPI().getNumberOfParentProcessInstances(processUUIDs));
+    assertEquals(2, getQueryRuntimeAPI().getNumberOfParentProcessInstancesExcept(processUUIDs));
+    processUUIDs.add(process.getUUID());
+    assertEquals(2, getQueryRuntimeAPI().getNumberOfParentProcessInstances(processUUIDs));
+    assertEquals(0, getQueryRuntimeAPI().getNumberOfParentProcessInstancesExcept(processUUIDs));
 
     getRuntimeAPI().deleteAllProcessInstances(process.getUUID());
 

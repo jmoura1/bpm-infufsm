@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010  BonitaSoft S.A.
+ * Copyright (C) 2010-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -46,8 +46,9 @@ public class WebGetReadableProcessesCommand implements Command<List<LightProcess
   private final int pageSize;
   private final boolean searchInHistory;
 
-  public WebGetReadableProcessesCommand(int fromIndex, int pageSize, boolean searchInHistory, String userUUID, Collection<String> roleUUIDs, Collection<String> groupUUIDs,
-      Collection<String> membershipUUIDs, String entityID) {
+  public WebGetReadableProcessesCommand(final int fromIndex, final int pageSize, final boolean searchInHistory,
+      final String userUUID, final Collection<String> roleUUIDs, final Collection<String> groupUUIDs,
+      final Collection<String> membershipUUIDs, final String entityID) {
     super();
     this.fromIndex = fromIndex;
     this.pageSize = pageSize;
@@ -59,42 +60,44 @@ public class WebGetReadableProcessesCommand implements Command<List<LightProcess
     this.entityID = entityID;
   }
 
-  public List<LightProcessDefinition> execute(Environment environment) throws Exception {
+  @Override
+  public List<LightProcessDefinition> execute(final Environment environment) throws Exception {
     final APIAccessor accessor = new StandardAPIAccessorImpl();
     final ManagementAPI managementAPI = accessor.getManagementAPI();
     final QueryDefinitionAPI queryDefinitionAPI;
-    if(searchInHistory) {
+    if (searchInHistory) {
       queryDefinitionAPI = accessor.getQueryDefinitionAPI(AccessorUtil.QUERYLIST_HISTORY_KEY);
     } else {
       queryDefinitionAPI = accessor.getQueryDefinitionAPI(AccessorUtil.QUERYLIST_JOURNAL_KEY);
     }
 
     List<Rule> applicableRules = new ArrayList<Rule>();
-    Set<String> exceptions = new HashSet<String>();
-    applicableRules = managementAPI.getApplicableRules(RuleType.PROCESS_READ, userUUID, roleUUIDs, groupUUIDs, membershipUUIDs, entityID);
-    for (Rule rule : applicableRules) {
+    final Set<String> exceptions = new HashSet<String>();
+    applicableRules = managementAPI.getApplicableRules(RuleType.PROCESS_READ, userUUID, roleUUIDs, groupUUIDs,
+        membershipUUIDs, entityID);
+    for (final Rule rule : applicableRules) {
       exceptions.addAll(rule.getItems());
     }
 
-    Set<ProcessDefinitionUUID> processUUIDs = new HashSet<ProcessDefinitionUUID>();
-    for (String processUUID : exceptions) {
+    final Set<ProcessDefinitionUUID> processUUIDs = new HashSet<ProcessDefinitionUUID>();
+    for (final String processUUID : exceptions) {
       processUUIDs.add(new ProcessDefinitionUUID(processUUID));
     }
-    PrivilegePolicy processStartPolicy = managementAPI.getRuleTypePolicy(RuleType.PROCESS_READ);
+    final PrivilegePolicy processStartPolicy = managementAPI.getRuleTypePolicy(RuleType.PROCESS_READ);
     switch (processStartPolicy) {
     case ALLOW_BY_DEFAULT:
       // The exceptions are the processes the entity cannot manage.
       if (processUUIDs != null && !processUUIDs.isEmpty()) {
-        List<LightProcessDefinition> result = queryDefinitionAPI.getAllLightProcessesExcept(processUUIDs, fromIndex, pageSize);
-        return result;
+        return queryDefinitionAPI.getAllLightProcessesExcept(processUUIDs, fromIndex, pageSize);
       } else {
-        return queryDefinitionAPI.getLightProcesses(fromIndex,pageSize);
+        return queryDefinitionAPI.getLightProcesses(fromIndex, pageSize);
       }
 
     case DENY_BY_DEFAULT:
       // The exceptions are the processes the entity can manage.
       if (processUUIDs.size() > 0) {
-        return queryDefinitionAPI.getLightProcesses(processUUIDs, fromIndex, pageSize, ProcessDefinitionCriterion.DEFAULT);
+        return queryDefinitionAPI.getLightProcesses(processUUIDs, fromIndex, pageSize,
+            ProcessDefinitionCriterion.DEFAULT);
       } else {
         return Collections.emptyList();
       }
@@ -102,4 +105,5 @@ public class WebGetReadableProcessesCommand implements Command<List<LightProcess
       throw new IllegalArgumentException();
     }
   }
+
 }

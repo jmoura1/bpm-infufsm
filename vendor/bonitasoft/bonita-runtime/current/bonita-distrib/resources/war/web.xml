@@ -22,6 +22,7 @@
             		org.ow2.bonita.facade.rest.stringconverter.MapStringConverter,            		
             		org.ow2.bonita.facade.rest.stringconverter.HashMapStringConverter,
             		org.ow2.bonita.facade.rest.stringconverter.AttachementInstanceStringConverter,
+            		org.ow2.bonita.facade.rest.stringconverter.ConnectorExecutionDescriptorStringConverter,
             		org.ow2.bonita.facade.rest.stringconverter.ActivityInstanceStringConverter,
             		org.ow2.bonita.facade.rest.stringconverter.ActivityInstanceImplStringConverter,
             		org.ow2.bonita.facade.rest.stringconverter.CommandStringConverter,
@@ -33,6 +34,7 @@
             		org.ow2.bonita.facade.rest.stringconverter.CatchingEventStringConverter,
             		org.ow2.bonita.facade.rest.provider.GenericObjectProvider,
         		    org.ow2.bonita.facade.rest.provider.OctectStreamProvider,
+        		    org.ow2.bonita.facade.rest.provider.PrimitiveProvider,
             		org.ow2.bonita.facade.rest.exceptionmapper.BonitaExceptionMapper,
             		org.ow2.bonita.facade.rest.interceptor.LoginPreProcessorInterceptor           		
             </param-value>

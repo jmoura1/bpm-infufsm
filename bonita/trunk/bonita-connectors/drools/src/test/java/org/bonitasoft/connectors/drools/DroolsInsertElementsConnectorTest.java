@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 BonitaSoft S.A.
+ * Copyright (C) 2011-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 package org.bonitasoft.connectors.drools;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.bonitasoft.connectors.drools.common.DroolsConnectorTest;
 import org.ow2.bonita.connector.core.Connector;
@@ -28,11 +29,11 @@ import org.test.Message;
  */
 public class DroolsInsertElementsConnectorTest extends DroolsConnectorTest {
 
-  private String outIdentifier = "insertMessage1";
-  private String entryPoint = "default";
+  private final String outIdentifier = "insertMessage1";
+  private final String entryPoint = "default";
 
   public void testOk() throws Exception {
-    DroolsInsertElementsConnector droolsInsertElementsConnector = getDroolsInsertElementsConnector();
+    final DroolsInsertElementsConnector droolsInsertElementsConnector = getDroolsInsertElementsConnector();
     droolsInsertElementsConnector.execute();
     assertEquals("200", droolsInsertElementsConnector.getStatus());
   }
@@ -41,12 +42,12 @@ public class DroolsInsertElementsConnectorTest extends DroolsConnectorTest {
    * @return
    */
   private DroolsInsertElementsConnector getDroolsInsertElementsConnector() {
-    DroolsInsertElementsConnector droolsInsertElementsConnector = new DroolsInsertElementsConnector();
+    final DroolsInsertElementsConnector droolsInsertElementsConnector = new DroolsInsertElementsConnector();
     DroolsConnectorTest.configDroolsConnector(droolsInsertElementsConnector);
     droolsInsertElementsConnector.setKsessionName(properties.getProperty("ksessionName"));
-    Message message = new Message();
+    final Message message = new Message();
     message.setText("hello");
-    ArrayList<Object> listOfFacts = new ArrayList<Object>();
+    final Collection<Object> listOfFacts = new ArrayList<Object>();
 
     listOfFacts.add(message);
     droolsInsertElementsConnector.setFacts(listOfFacts);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 BonitaSoft S.A.
+ * Copyright (C) 2011-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ public class CheckIn extends AbstractCmisConnector {
   private String versionComment;
   private String documentID;
 
-  private static final Log logger = LogFactory.getLog(CheckIn.class.getClass());
+  private static final Log LOGGER = LogFactory.getLog(CheckIn.class.getClass());
 
   @Override
   protected void executeConnector() throws Exception {
@@ -56,13 +56,13 @@ public class CheckIn extends AbstractCmisConnector {
     try {
       document = (Document) s.getObject(s.createObjectId(pWCDocumentID));
     } catch (final CmisObjectNotFoundException e1) {
-      if (logger.isErrorEnabled()) {
-        logger.error(e1.getMessage());
+      if (LOGGER.isErrorEnabled()) {
+        LOGGER.error(e1.getMessage());
       }
       throw e1;
     } catch (final Exception e) {
-      if (logger.isErrorEnabled()) {
-        logger.error(e.getMessage());
+      if (LOGGER.isErrorEnabled()) {
+        LOGGER.error(e.getMessage());
       }
       throw e;
     }

@@ -31,7 +31,7 @@ import org.ow2.bonita.connector.core.ConnectorError;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class JavaConnector extends Connector {
   private String className;
@@ -60,28 +60,28 @@ public class JavaConnector extends Connector {
     return methods;
   }
 
-  public void setClassName(String className) {
+  public void setClassName(final String className) {
     this.className = className;
   }
 
-  public void setConstructorParameters(List<Object> constructorParamerters) {
+  public void setConstructorParameters(final List<Object> constructorParamerters) {
     this.constructorParameters = constructorParamerters;
   }
 
-  public void setFields(Map<String, Object> fields) {
+  public void setFields(final Map<String, Object> fields) {
     this.fields = fields;
   }
 
-  public void setMethods(List<List<Object>> methods) {
+  public void setMethods(final List<List<Object>> methods) {
     List<MethodCall> result = null;
     if (methods != null) {
       result = new ArrayList<MethodCall>();
-      for (List<Object> list : methods) {
+      for (final List<Object> list : methods) {
         List<Object> temp = null;
         if (list.size() > 1) {
           temp = list.subList(1, list.size());
         }
-        MethodCall call = new MethodCall((String)list.get(0), temp);
+        final MethodCall call = new MethodCall((String) list.get(0), temp);
         result.add(call);
       }
     }
@@ -90,18 +90,18 @@ public class JavaConnector extends Connector {
 
   @Override
   protected void executeConnector() throws Exception {
-    Class<?> connectorClass = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+    final Class<?> connectorClass = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
     Object connector = null;
     if (constructorParameters != null) {
-      Class<?>[] constructorParametersClasses = new Class[constructorParameters.size()];
+      final Class<?>[] constructorParametersClasses = new Class[constructorParameters.size()];
       for (int i = 0; i < constructorParameters.size(); i++) {
         constructorParametersClasses[i] = constructorParameters.get(i).getClass();
       }
-      Constructor<?> constructor = connectorClass.getDeclaredConstructor(constructorParametersClasses);
+      final Constructor<?> constructor = connectorClass.getDeclaredConstructor(constructorParametersClasses);
       constructor.setAccessible(true);
       connector = constructor.newInstance(constructorParameters.toArray());
     } else {
-      Constructor<?>[] constructors = connectorClass.getConstructors();
+      final Constructor<?>[] constructors = connectorClass.getConstructors();
       if (constructors != null && constructors.length > 0) {
         connector = connectorClass.newInstance();
       }
@@ -109,21 +109,21 @@ public class JavaConnector extends Connector {
 
     if (connector != null) {
       if (fields != null) {
-        for (Entry<String, Object> field : fields.entrySet()) {
-          String fieldName = field.getKey();
-          Object fieldValue = field.getValue();
-          Field f = searchField(connectorClass, fieldName);
+        for (final Entry<String, Object> field : fields.entrySet()) {
+          final String fieldName = field.getKey();
+          final Object fieldValue = field.getValue();
+          final Field f = searchField(connectorClass, fieldName);
           f.setAccessible(true);
           f.set(connector, fieldValue);
         }
       }
     }
 
-    for (MethodCall method : methods) {
+    for (final MethodCall method : methods) {
       Class<?>[] parametersClass = null;
       Object[] parametersObjet = null;
       if (method.getParameters() != null) {
-        List<Object> parameters = method.getParameters();
+        final List<Object> parameters = method.getParameters();
         parametersClass = new Class[parameters.size()];
         parametersObjet = parameters.toArray();
         for (int i = 0; i < parameters.size(); i++) {
@@ -137,37 +137,34 @@ public class JavaConnector extends Connector {
         parametersClass = new Class[0];
         parametersObjet = new Object[0];
       }
-      Method setter = searchMethod(connectorClass, method.getMethodName(), parametersClass);
+      final Method setter = searchMethod(connectorClass, method.getMethodName(), parametersClass);
       setter.invoke(connector, parametersObjet);
     }
   }
 
   @Override
   protected List<ConnectorError> validateValues() {
-    List<ConnectorError> errors = new ArrayList<ConnectorError>();
+    final List<ConnectorError> errors = new ArrayList<ConnectorError>();
     if (className.length() == 0) {
-      errors.add(new ConnectorError("className",
-          new IllegalArgumentException("is empty")));
+      errors.add(new ConnectorError("className", new IllegalArgumentException("is empty")));
     } else if (!classExists()) {
-      errors.add(new ConnectorError("className",
-          new IllegalArgumentException("is not a real class")));
+      errors.add(new ConnectorError("className", new IllegalArgumentException("is not a real class")));
     } else {
       if (fields != null) {
-        for (Entry<String, Object> field : fields.entrySet()) {
-          String fieldName = field.getKey();
+        for (final Entry<String, Object> field : fields.entrySet()) {
+          final String fieldName = field.getKey();
           if ("".equals(fieldName.trim())) {
-            errors.add(new ConnectorError("fields",
-                new IllegalArgumentException("A field is empty")));
+            errors.add(new ConnectorError("fields", new IllegalArgumentException("A field is empty")));
           } else if (!fieldExists(field.getKey())) {
-            errors.add(new ConnectorError("fields",
-                new IllegalArgumentException(fieldName + " does not exist in " + className)));
+            errors.add(new ConnectorError("fields", new IllegalArgumentException(fieldName + " does not exist in "
+                + className)));
           }
-          //check values
+          // check values
         }
       }
-      
+
       if (constructorParameters != null) {
-        Class<?>[] constructorParametersClasses = new Class[constructorParameters.size()];
+        final Class<?>[] constructorParametersClasses = new Class[constructorParameters.size()];
         for (int i = 0; i < constructorParameters.size(); i++) {
           if (constructorParameters.get(i) == null) {
             constructorParametersClasses[i] = null;
@@ -176,25 +173,23 @@ public class JavaConnector extends Connector {
           }
         }
         if (!constructorExists(constructorParametersClasses)) {
-          errors.add(new ConnectorError("constructor",
-              new IllegalArgumentException("The constructor using " + constructorParametersClasses + " does not exist")));
+          errors.add(new ConnectorError("constructor", new IllegalArgumentException("The constructor using "
+              + constructorParametersClasses + " does not exist")));
         }
-        
+
       } else if (!constructorExists(null)) {
-        errors.add(new ConnectorError("constructor",
-            new IllegalArgumentException("The default constructor does not exist")));
+        errors.add(new ConnectorError("constructor", new IllegalArgumentException(
+            "The default constructor does not exist")));
       }
-      
-      for (MethodCall method : methods) {
-        String methodName = method.getMethodName();
+
+      for (final MethodCall method : methods) {
+        final String methodName = method.getMethodName();
         if (methodName == null) {
-          errors.add(new ConnectorError("methods",
-              new IllegalArgumentException("A method name is null")));
+          errors.add(new ConnectorError("methods", new IllegalArgumentException("A method name is null")));
         } else if ("".equals(methodName.trim())) {
-          errors.add(new ConnectorError("methods",
-              new IllegalArgumentException("A method name is empty")));
+          errors.add(new ConnectorError("methods", new IllegalArgumentException("A method name is empty")));
         } else {
-          List<Object> parameters = method.getParameters();
+          final List<Object> parameters = method.getParameters();
           Class<?>[] parametersClass = null;
           if (parameters != null) {
             parametersClass = new Class[parameters.size()];
@@ -207,8 +202,8 @@ public class JavaConnector extends Connector {
             }
           }
           if (!methodExists(methodName, parametersClass)) {
-            errors.add(new ConnectorError("methods",
-                new IllegalArgumentException(methodName + " does no exist using parameters " + parameters)));
+            errors.add(new ConnectorError("methods", new IllegalArgumentException(methodName
+                + " does no exist using parameters " + parameters)));
           }
         }
       }
@@ -216,43 +211,35 @@ public class JavaConnector extends Connector {
     return errors;
   }
 
-  private boolean constructorExists(Class<?>[] parameters) {
+  private boolean constructorExists(final Class<?>[] parameters) {
     try {
-      Class<?> connectorClass = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+      final Class<?> connectorClass = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
       connectorClass.getDeclaredConstructor(parameters);
       return true;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return false;
     }
   }
 
-  private boolean fieldExists(String fieldName) {
+  private boolean fieldExists(final String fieldName) {
     try {
-      Class<?> connectorClass = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
-      Field f = searchField(connectorClass, fieldName);
-      if (f != null) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (Exception e) {
+      final Class<?> connectorClass = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+      final Field f = searchField(connectorClass, fieldName);
+      return f != null;
+    } catch (final Exception e) {
       return false;
     }
   }
 
-  private boolean methodExists(String methodName, Class<?>[] parameters) {
+  private boolean methodExists(final String methodName, Class<?>[] parameters) {
     try {
-      Class<?> connectorClass = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+      final Class<?> connectorClass = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
       if (parameters == null) {
         parameters = new Class[0];
       }
-      Method method = searchMethod(connectorClass, methodName, parameters);
-      if (method != null) {
-        return true;
-      } else {
-        return false; 
-      }
-    } catch (Exception e) {
+      final Method method = searchMethod(connectorClass, methodName, parameters);
+      return method != null;
+    } catch (final Exception e) {
       return false;
     }
   }
@@ -261,21 +248,21 @@ public class JavaConnector extends Connector {
     try {
       Class.forName(className, true, Thread.currentThread().getContextClassLoader());
       return true;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return false;
     }
   }
 
-  private static boolean ArraysEqual(Class<?>[] one, Class<?>[] two) {
+  private static boolean arraysEqual(final Class<?>[] one, final Class<?>[] two) {
     boolean equals = false;
-    if(one != null && two != null && one.length == two.length) {
+    if (one != null && two != null && one.length == two.length) {
       for (int i = 0; i < one.length; i++) {
         if (one[i] != two[i]) {
           break;
         }
       }
       equals = true;
-    }    
+    }
     return equals;
   }
 
@@ -283,14 +270,14 @@ public class JavaConnector extends Connector {
     Method method = null;
     if (c != null) {
       int i = 0;
-      Method[] methods = c.getDeclaredMethods();
+      final Method[] methods = c.getDeclaredMethods();
       while (i < methods.length && method == null) {
         if (methods[i].getName().equals(methodName)) {
-          Method m = methods[i];
+          final Method m = methods[i];
           m.setAccessible(true);
-          Class<?>[] mParams = m.getParameterTypes();
-          Class<?>[] cParams = parameters;
-          if (ArraysEqual(mParams, cParams)) {
+          final Class<?>[] mParams = m.getParameterTypes();
+          final Class<?>[] cParams = parameters;
+          if (arraysEqual(mParams, cParams)) {
             method = m;
           }
         }
@@ -308,7 +295,7 @@ public class JavaConnector extends Connector {
     Field field = null;
     if (c != null) {
       int i = 0;
-      Field[] fields = c.getDeclaredFields();
+      final Field[] fields = c.getDeclaredFields();
       while (i < fields.length && field == null) {
         if (fields[i].getName().equals(fieldName)) {
           field = fields[i];
@@ -322,4 +309,5 @@ public class JavaConnector extends Connector {
     }
     return field;
   }
+
 }

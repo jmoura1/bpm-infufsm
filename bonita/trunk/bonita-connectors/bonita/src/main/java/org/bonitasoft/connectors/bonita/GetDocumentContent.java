@@ -31,60 +31,42 @@ import org.ow2.bonita.facade.uuid.DocumentUUID;
  */
 public class GetDocumentContent extends ProcessConnector {
 
-    private String documentUUID;
-    private String content;
+  private String documentUUID;
+  private String content;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#executeConnector()
-     */
-    @Override
-    protected void executeConnector() throws Exception {
-        final QueryRuntimeAPI queryTimeAPI = getApiAccessor().getQueryRuntimeAPI();
-        byte[] byteContent = queryTimeAPI.getDocumentContent(new DocumentUUID(this.documentUUID));
-        if (byteContent != null)
-            content = new String(byteContent);
+  @Override
+  protected void executeConnector() throws Exception {
+    final QueryRuntimeAPI queryTimeAPI = getApiAccessor().getQueryRuntimeAPI();
+    final byte[] byteContent = queryTimeAPI.getDocumentContent(new DocumentUUID(documentUUID));
+    if (byteContent != null) {
+      content = new String(byteContent);
     }
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ow2.bonita.connector.core.Connector#validateValues()
-     */
-    @Override
-    protected List<ConnectorError> validateValues() {
-        final List<ConnectorError> errors = new ArrayList<ConnectorError>();
-        final QueryRuntimeAPI queryTimeAPI = getApiAccessor().getQueryRuntimeAPI();
-        ConnectorError error = null;
-        if (documentUUID.length() != 32) {
-            error = new ConnectorError("documentUUID Error", new Exception("length of documentUUID should be 32"));
-            errors.add(error);
-        }
-        try {
-            queryTimeAPI.getDocument(new DocumentUUID(documentUUID));
-        } catch (final DocumentNotFoundException e) {
-            error = new ConnectorError("document not found with UUID " + documentUUID, e);
-            errors.add(error);
-        }
-        return errors;
+  @Override
+  protected List<ConnectorError> validateValues() {
+    final List<ConnectorError> errors = new ArrayList<ConnectorError>();
+    final QueryRuntimeAPI queryTimeAPI = getApiAccessor().getQueryRuntimeAPI();
+    ConnectorError error = null;
+    if (documentUUID.length() != 32) {
+      error = new ConnectorError("documentUUID Error", new Exception("length of documentUUID should be 32"));
+      errors.add(error);
     }
+    try {
+      queryTimeAPI.getDocument(new DocumentUUID(documentUUID));
+    } catch (final DocumentNotFoundException e) {
+      error = new ConnectorError("document not found with UUID " + documentUUID, e);
+      errors.add(error);
+    }
+    return errors;
+  }
 
-    /**
-     * set document UUID
-     * 
-     * @param documentUUID
-     */
-    public void setDocumentUUID(final String documentUUID) {
-        this.documentUUID = documentUUID;
-    }
+  public void setDocumentUUID(final String documentUUID) {
+    this.documentUUID = documentUUID;
+  }
 
-    /**
-     * get document
-     * 
-     * @return Document
-     */
-    public String getContent() {
-        return content;
-    }
+  public String getContent() {
+    return content;
+  }
+
 }

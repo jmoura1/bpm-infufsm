@@ -5,14 +5,14 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2.0 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.bonitasoft.forms.server.api.impl;
 
@@ -21,12 +21,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,6 +59,7 @@ import org.bonitasoft.forms.server.accessor.IApplicationConfigDefAccessor;
 import org.bonitasoft.forms.server.accessor.IApplicationFormDefAccessor;
 import org.bonitasoft.forms.server.accessor.impl.XMLApplicationConfigDefAccessorImpl;
 import org.bonitasoft.forms.server.accessor.impl.util.FormCacheUtilFactory;
+import org.bonitasoft.forms.server.accessor.impl.util.FormDocument;
 import org.bonitasoft.forms.server.api.IFormDefinitionAPI;
 import org.bonitasoft.forms.server.exception.ApplicationFormDefinitionNotFoundException;
 import org.bonitasoft.forms.server.exception.FormNotFoundException;
@@ -67,7 +71,6 @@ import org.bonitasoft.forms.server.provider.impl.util.FormServiceProviderFactory
 import org.bonitasoft.forms.server.provider.impl.util.FormServiceProviderUtil;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
 import org.ow2.bonita.util.Misc;
-import org.w3c.dom.Document;
 
 /**
  * Implementation of {@link IFormDefinitionAPI}
@@ -75,21 +78,21 @@ import org.w3c.dom.Document;
  * @author Anthony Birembaut, Haojie Yuan
  */
 public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
-    
+
     /**
      * Logger
      */
     private static Logger LOGGER = Logger.getLogger(FormDefinitionAPIImpl.class.getName());
-    
+
     /**
      * default dateformat pattern
      */
     protected String defaultDateFormatPattern;
-    
+
     /**
      * The document containing the form definition for the application
      */
-    protected Document formDefinitionDocument;
+    protected FormDocument formDefinitionDocument;
 
     /**
      * the {@link Date} of the application deployment
@@ -99,61 +102,67 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
     /**
      * the user's locale as a String
      */
-    protected String locale;    
-    
+    protected String locale;
+
     /**
      * Constructor
      * 
-     * @param document 
-     * @param applicationDeployementDate the deployement date of the application
-     * @param locale the user's locale as a String
+     * @param document
+     * @param applicationDeployementDate
+     *            the deployement date of the application
+     * @param locale
+     *            the user's locale as a String
      * @return the FormDefinitionAPIImpl instance
-     * @throws InvalidFormDefinitionException 
+     * @throws InvalidFormDefinitionException
      */
-    public FormDefinitionAPIImpl(final Document document, final Date applicationDeploymentDate, final String locale) throws InvalidFormDefinitionException {
+    public FormDefinitionAPIImpl(final FormDocument document, final Date applicationDeploymentDate, final String locale) throws InvalidFormDefinitionException {
         this.defaultDateFormatPattern = DefaultFormsPropertiesFactory.getDefaultFormProperties().getDefaultDateFormat();
         this.formDefinitionDocument = document;
         this.applicationDeploymentDate = applicationDeploymentDate;
         this.locale = locale;
     }
-    
+
     /**
      * get the application config definition accessor by FormServiceProvider
+     * 
      * @return an instance of {@link IApplicationConfigDefAccessor}
-     * @throws FormServiceProviderNotFoundException 
+     * @throws FormServiceProviderNotFoundException
      */
-    protected IApplicationConfigDefAccessor getApplicationConfigDefinition(final Map<String, Object> context) throws FormServiceProviderNotFoundException{
+    protected IApplicationConfigDefAccessor getApplicationConfigDefinition(final Map<String, Object> context) throws FormServiceProviderNotFoundException {
         FormServiceProvider formServiceProvider = null;
         formServiceProvider = FormServiceProviderFactory.getFormServiceProvider();
         return formServiceProvider.getApplicationConfigDefinition(formDefinitionDocument, context);
     }
-  
+
     /**
      * get XMLApplicationFormDefAccessorImpl by FormServiceProvider
-     * @param formId the form ID
-     * @throws ApplicationFormDefinitionNotFoundException 
-     * @throws InvalidFormDefinitionException 
-     * @throws FormServiceProviderNotFoundException 
+     * 
+     * @param formId
+     *            the form ID
+     * @throws ApplicationFormDefinitionNotFoundException
+     * @throws InvalidFormDefinitionException
+     * @throws FormServiceProviderNotFoundException
      */
-    protected IApplicationFormDefAccessor getApplicationDefinition(final String formId,  final Map<String, Object> context) throws ApplicationFormDefinitionNotFoundException, InvalidFormDefinitionException, FormServiceProviderNotFoundException {               
+    protected IApplicationFormDefAccessor getApplicationDefinition(final String formId, final Map<String, Object> context)
+            throws ApplicationFormDefinitionNotFoundException, InvalidFormDefinitionException, FormServiceProviderNotFoundException {
         context.put(FormServiceProviderUtil.APPLICATION_DEPLOYMENT_DATE, applicationDeploymentDate);
-        FormServiceProvider formServiceProvider = null;
-        formServiceProvider = FormServiceProviderFactory.getFormServiceProvider();
+        FormServiceProvider formServiceProvider = FormServiceProviderFactory.getFormServiceProvider();
         final IApplicationFormDefAccessor applicationDefAccessor = formServiceProvider.getApplicationFormDefinition(formId, formDefinitionDocument, context);
         return applicationDefAccessor;
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public void setApplicationDelpoymentDate(Date applicationDefinitionDate) {
         this.applicationDeploymentDate = applicationDefinitionDate;
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    public HtmlTemplate getWelcomePage(final Map<String, Object> urlContext) throws FileNotFoundException, InvalidFormTemplateException, InvalidFormDefinitionException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
+    public HtmlTemplate getWelcomePage(final Map<String, Object> urlContext) throws FileNotFoundException, InvalidFormTemplateException,
+            InvalidFormDefinitionException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
         if (urlContext.get(FormServiceProviderUtil.PROCESS_UUID) == null) {
             final ProcessDefinitionUUID processDefinitionUUID = getProcessDefinitionUUIDFromXML(urlContext);
             if (processDefinitionUUID != null) {
@@ -169,20 +178,20 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
         } else {
             return null;
         }
-    } 
-    
+    }
+
     /**
      * {@inheritDoc}
      */
-    public String getProductVersion() throws FormServiceProviderNotFoundException{
+    public String getProductVersion() throws FormServiceProviderNotFoundException {
         return getApplicationConfigDefinition(new HashMap<String, Object>()).getProductVersion();
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    public String getHomePage() throws FormServiceProviderNotFoundException{
-        return getApplicationConfigDefinition(new HashMap<String, Object>()).getHomePage();        
+    public String getHomePage() throws FormServiceProviderNotFoundException {
+        return getApplicationConfigDefinition(new HashMap<String, Object>()).getHomePage();
     }
 
     /**
@@ -191,11 +200,12 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
     public String getExternalWelcomePage() throws FormServiceProviderNotFoundException {
         return getApplicationConfigDefinition(new HashMap<String, Object>()).getExternalWelcomePage();
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    public String getMigrationProductVersion(final String formID, final Map<String, Object> context) throws InvalidFormDefinitionException, FormServiceProviderNotFoundException {
+    public String getMigrationProductVersion(final String formID, final Map<String, Object> context) throws InvalidFormDefinitionException,
+            FormServiceProviderNotFoundException {
         String migrationProductVersion = FormCacheUtilFactory.getTenancyFormCacheUtil().getMigrationProductVersion(formID, locale, applicationDeploymentDate);
         if (migrationProductVersion == null) {
             migrationProductVersion = getApplicationConfigDefinition(context).getMigrationProductVersion();
@@ -209,7 +219,8 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
     /**
      * {@inheritDoc}
      */
-    public String getApplicationPermissions(final String formID, final Map<String, Object> context) throws InvalidFormDefinitionException, FormServiceProviderNotFoundException {
+    public String getApplicationPermissions(final String formID, final Map<String, Object> context) throws InvalidFormDefinitionException,
+            FormServiceProviderNotFoundException {
         String applicationPermissions = FormCacheUtilFactory.getTenancyFormCacheUtil().getApplicationPermissions(formID, locale, applicationDeploymentDate);
         if (applicationPermissions == null) {
             applicationPermissions = getApplicationConfigDefinition(context).getApplicationPermissions();
@@ -218,13 +229,14 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             }
         }
         return applicationPermissions;
-        
+
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    public String getFormPermissions(final String formID, final Map<String, Object> context) throws ApplicationFormDefinitionNotFoundException, InvalidFormDefinitionException, FormServiceProviderNotFoundException {
+    public String getFormPermissions(final String formID, final Map<String, Object> context) throws ApplicationFormDefinitionNotFoundException,
+            InvalidFormDefinitionException, FormServiceProviderNotFoundException {
         String formPermissions = FormCacheUtilFactory.getTenancyFormCacheUtil().getFormPermissions(formID, locale, applicationDeploymentDate);
         if (formPermissions == null) {
             formPermissions = getApplicationDefinition(formID, context).getFormPermissions();
@@ -234,11 +246,12 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
         }
         return formPermissions;
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    public String getNextForm(final String formID, final Map<String, Object> context) throws ApplicationFormDefinitionNotFoundException, InvalidFormDefinitionException, FormServiceProviderNotFoundException {
+    public String getNextForm(final String formID, final Map<String, Object> context) throws ApplicationFormDefinitionNotFoundException,
+            InvalidFormDefinitionException, FormServiceProviderNotFoundException {
         String nextForm = FormCacheUtilFactory.getTenancyFormCacheUtil().getNextForm(formID, locale, applicationDeploymentDate);
         if (nextForm == null) {
             nextForm = getApplicationDefinition(formID, context).getNextForm();
@@ -248,25 +261,12 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
         }
         return nextForm;
     }
-    
-    /**
-     * {@inheritDoc}
-     */
-    public String getFormPageLayout(final String formID, final String pageID, final Map<String, Object> context) throws ApplicationFormDefinitionNotFoundException, InvalidFormDefinitionException, FormServiceProviderNotFoundException{
-        String formPageLayout = FormCacheUtilFactory.getTenancyFormCacheUtil().getFormPageLayout(formID, locale, applicationDeploymentDate, pageID);
-        if (formPageLayout == null) {
-            formPageLayout = getApplicationDefinition(formID, context).getFormPageLayout(pageID);
-            if (formID != null) {
-                FormCacheUtilFactory.getTenancyFormCacheUtil().storeFormPageLayout(formID, locale, applicationDeploymentDate, pageID, formPageLayout);
-            }
-        }
-        return formPageLayout;
-    }
 
     /**
      * {@inheritDoc}
      */
-    public String getFormFirstPage(final String formID, final Map<String, Object> context) throws  InvalidFormDefinitionException, FormNotFoundException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
+    public String getFormFirstPage(final String formID, final Map<String, Object> context) throws InvalidFormDefinitionException, FormNotFoundException,
+            ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
         String firstPage = FormCacheUtilFactory.getTenancyFormCacheUtil().getFirstPage(formID, locale, applicationDeploymentDate);
         if (firstPage == null) {
             final IApplicationFormDefAccessor getApplicationDefinition = getApplicationDefinition(formID, context);
@@ -277,15 +277,17 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
         }
         return firstPage;
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    public FormPage getFormPage(final String formID, final String pageId, final Map<String, Object> context) throws InvalidFormDefinitionException, FormNotFoundException, FileNotFoundException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException{
+    public FormPage getFormPage(final String formID, final String pageId, final Map<String, Object> context) throws InvalidFormDefinitionException,
+            FormNotFoundException, FileNotFoundException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
         FormPage formPage = FormCacheUtilFactory.getTenancyFormCacheUtil().getPage(formID, locale, applicationDeploymentDate, pageId);
+
         if (formPage == null) {
             IApplicationFormDefAccessor applicationFormDefinition = getApplicationDefinition(formID, context);
-            try{
+            try {
                 final FormType formType = applicationFormDefinition.getFormType();
                 final HtmlTemplate pageTemplate = getFormPageLayout(applicationFormDefinition, formType, pageId, context);
                 final List<FormWidget> pageWidgets = applicationFormDefinition.getPageWidgets(pageId);
@@ -302,25 +304,44 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
                     LOGGER.log(Level.INFO, "Failed to parse the forms definition file.");
                 }
                 formPage = null;
-            } 
+            }
         }
+
+        if (formPage != null) {
+            // store bodycontent in the cach using formId PageId
+            String bodyContentId = null;
+            if (formID != null) {
+                bodyContentId = FormCacheUtilFactory.getTenancyFormCacheUtil().storePageLayoutContent(formID, pageId, locale, applicationDeploymentDate,
+                        formPage.getPageTemplate().getBodyContent());
+            }
+            formPage.getPageTemplate().setBodyContentId(bodyContentId);
+            formPage.getPageTemplate().setBodyContent(null);
+        }
+
         return formPage;
-    }    
+    }
 
     /**
      * Retrieve the template associated with a instantiation form page
-     * @param applicationDefAccessor the application form definition accessor
-     * @param formType the form type
-     * @param pageId the page ID
-     * @param context the Map of context
+     * 
+     * @param applicationDefAccessor
+     *            the application form definition accessor
+     * @param formType
+     *            the form type
+     * @param pageId
+     *            the page ID
+     * @param context
+     *            the Map of context
      * @return an {@link HtmlTemplate} object containing the elements required to
      *         build the level2 (page template)
-     * @throws InvalidFormDefinitionException 
-     * @throws FileNotFoundException 
-     * @throws ApplicationFormDefinitionNotFoundException 
-     * @throws FormServiceProviderNotFoundException 
+     * @throws InvalidFormDefinitionException
+     * @throws FileNotFoundException
+     * @throws ApplicationFormDefinitionNotFoundException
+     * @throws FormServiceProviderNotFoundException
      */
-    protected HtmlTemplate getFormPageLayout(final IApplicationFormDefAccessor applicationDefAccessor, final FormType formType, final String pageId, final Map<String, Object> context) throws InvalidFormDefinitionException, FileNotFoundException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
+    protected HtmlTemplate getFormPageLayout(final IApplicationFormDefAccessor applicationDefAccessor, final FormType formType, final String pageId,
+            final Map<String, Object> context) throws InvalidFormDefinitionException, FileNotFoundException, ApplicationFormDefinitionNotFoundException,
+            FormServiceProviderNotFoundException {
 
         final String templatePath = applicationDefAccessor.getFormPageLayout(pageId);
         final String defaultTemplatePath = DefaultFormsPropertiesFactory.getDefaultFormProperties().getGlobalPageTemplate();
@@ -332,11 +353,14 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             if (LOGGER.isLoggable(Level.WARNING)) {
                 LOGGER.log(Level.WARNING, message);
             }
-            boolean isActivity =false;
-            if (((Map<String, Object>)context.get(FormServiceProviderUtil.URL_CONTEXT)).get(FormServiceProviderUtil.TASK_UUID) != null) {
+            boolean isActivity = false;
+            @SuppressWarnings("unchecked")
+            Map<String, Object> urlContext = (Map<String, Object>) context.get(FormServiceProviderUtil.URL_CONTEXT);
+            if (urlContext.get(FormServiceProviderUtil.TASK_UUID) != null) {
                 isActivity = true;
             }
-            htmlTemplate = buildPageLayout(context, defaultTemplatePath, applicationDefAccessor.getPageWidgets(pageId), applicationDefAccessor.getPageValidators(pageId), formType, isActivity);
+            htmlTemplate = buildPageLayout(context, defaultTemplatePath, applicationDefAccessor.getPageWidgets(pageId),
+                    applicationDefAccessor.getPageValidators(pageId), formType, isActivity);
         }
         return htmlTemplate;
     }
@@ -344,8 +368,10 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
     /**
      * {@inheritDoc}
      */
-    public ApplicationConfig getApplicationConfig(final Map<String, Object> context, final String formID, final boolean includeApplicationTemplate) throws InvalidFormDefinitionException, FormServiceProviderNotFoundException  {
-        ApplicationConfig applicationConfig = FormCacheUtilFactory.getTenancyFormCacheUtil().getApplicationConfig(formID, locale, applicationDeploymentDate, includeApplicationTemplate);
+    public ApplicationConfig getApplicationConfig(final Map<String, Object> context, final String formID, final boolean includeApplicationTemplate)
+            throws InvalidFormDefinitionException, FormServiceProviderNotFoundException {
+        ApplicationConfig applicationConfig = FormCacheUtilFactory.getTenancyFormCacheUtil().getApplicationConfig(formID, locale, applicationDeploymentDate,
+                includeApplicationTemplate);
         if (applicationConfig == null) {
             final IApplicationConfigDefAccessor applicationConfigFormDefinition = getApplicationConfigDefinition(context);
             HtmlTemplate applicationTemplate = null;
@@ -353,6 +379,16 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             if (includeApplicationTemplate) {
                 try {
                     applicationTemplate = getApplicationLayout(context);
+
+                    // store bodycontent in the cach using formId PageId
+                    String bodyContentId = null;
+                    if (formID != null) {
+                        bodyContentId = FormCacheUtilFactory.getTenancyFormCacheUtil().storeApplicationLayoutContent(formID, locale, applicationDeploymentDate,
+                                applicationTemplate.getBodyContent());
+                    }
+                    applicationTemplate.setBodyContentId(bodyContentId);
+                    applicationTemplate.setBodyContent(null);
+
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (InvalidFormTemplateException e) {
@@ -370,17 +406,18 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             final String userXPURL = DefaultFormsPropertiesFactory.getDefaultFormProperties().getUserXPURL();
             applicationConfig = new ApplicationConfig(applicationLabel, applicationTemplate, mandatorySymbol, mandatoryLabel, mandatorySymbolClasses, userXPURL);
             if (formID != null) {
-                FormCacheUtilFactory.getTenancyFormCacheUtil().storeApplicationConfig(formID, locale, applicationDeploymentDate, includeApplicationTemplate, applicationConfig);
+                FormCacheUtilFactory.getTenancyFormCacheUtil().storeApplicationConfig(formID, locale, applicationDeploymentDate, includeApplicationTemplate,
+                        applicationConfig);
             }
         }
         return applicationConfig;
     }
-    
 
     /**
      * {@inheritDoc}
      */
-    public List<TransientData> getFormTransientData(String formID, final Map<String, Object> context) throws InvalidFormDefinitionException, FormNotFoundException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
+    public List<TransientData> getFormTransientData(String formID, final Map<String, Object> context) throws InvalidFormDefinitionException,
+            FormNotFoundException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
         List<TransientData> transientData = FormCacheUtilFactory.getTenancyFormCacheUtil().getTransientData(formID, locale, applicationDeploymentDate);
         if (transientData == null) {
             transientData = getApplicationDefinition(formID, context).getTransientData();
@@ -390,16 +427,17 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
         }
         return transientData;
     }
-    
 
     /**
      * {@inheritDoc}
      */
-    public List<FormAction> getFormActions(String formID, List<String> pageIds, final Map<String, Object> context) throws InvalidFormDefinitionException, FormNotFoundException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException{
+    public List<FormAction> getFormActions(String formID, List<String> pageIds, final Map<String, Object> context) throws InvalidFormDefinitionException,
+            FormNotFoundException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
         final List<FormAction> formActions = new ArrayList<FormAction>();
         final IApplicationFormDefAccessor applicationFormDefinition = getApplicationDefinition(formID, context);
         for (final String pageId : pageIds) {
-            List<FormAction> pageActions = FormCacheUtilFactory.getTenancyFormCacheUtil().getPageActions(formID, locale, applicationDeploymentDate, formID, pageId);
+            List<FormAction> pageActions = FormCacheUtilFactory.getTenancyFormCacheUtil().getPageActions(formID, locale, applicationDeploymentDate, formID,
+                    pageId);
             if (pageActions == null) {
                 pageActions = applicationFormDefinition.getActions(pageId);
                 if (formID != null) {
@@ -410,11 +448,12 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
         }
         return formActions;
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    public HtmlTemplate getFormConfirmationLayout(final String formID, final Map<String, Object> context) throws InvalidFormDefinitionException, FormNotFoundException, FileNotFoundException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
+    public HtmlTemplate getFormConfirmationLayout(final String formID, final Map<String, Object> context) throws InvalidFormDefinitionException,
+            FormNotFoundException, FileNotFoundException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
         final IApplicationFormDefAccessor applicationFormDefinition = getApplicationDefinition(formID, context);
         final String applicationConfirmationTemplatePath = applicationFormDefinition.getConfirmationLayout();
         final String applicationConfirmationMessage = applicationFormDefinition.getConfirmationMessage();
@@ -422,39 +461,40 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
         applicationConfirmationTemplate.setDynamicMessage(applicationConfirmationMessage);
         return applicationConfirmationTemplate;
     }
-    
+
     /**
      * Retrieve the application template data
      * 
      * @return a {@link HtmlTemplate} object containing the elements required to
      *         build the level1 (application template)
-     * @throws InvalidFormDefinitionException 
-     * @throws InvalidFormTemplateException 
-     * @throws FileNotFoundException 
-     * @throws ApplicationFormDefinitionNotFoundException 
-     * @throws FormServiceProviderNotFoundException 
+     * @throws InvalidFormDefinitionException
+     * @throws InvalidFormTemplateException
+     * @throws FileNotFoundException
+     * @throws ApplicationFormDefinitionNotFoundException
+     * @throws FormServiceProviderNotFoundException
      * @throws Exception
      */
-    protected HtmlTemplate getApplicationLayout(final Map<String, Object> context) throws FileNotFoundException, InvalidFormTemplateException, InvalidFormDefinitionException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
+    protected HtmlTemplate getApplicationLayout(final Map<String, Object> context) throws FileNotFoundException, InvalidFormTemplateException,
+            InvalidFormDefinitionException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
 
         final IApplicationConfigDefAccessor applicationConfigFormDefinition = getApplicationConfigDefinition(context);
         final String applicationTemplateLocation = applicationConfigFormDefinition.getApplicationLayout();
         return getLayout(applicationTemplateLocation, "application", applicationDeploymentDate, context);
     }
-        
+
     /**
      * {@inheritDoc}
      */
-    public void applicationAttributes(final HtmlTemplate pageTemplate, final Map<String, String> stepAttributes, final Locale locale) {
+    public String applicationAttributes(final String bodyContent, final Map<String, String> stepAttributes, final Locale locale) {
         ResourceBundle labels = ResourceBundle.getBundle("locale.i18n.ActivityAttributeLabels", locale);
-        if (locale.getLanguage() != null && labels.getLocale() != null 
-                && !locale.getLanguage().equals(labels.getLocale().getLanguage())) {
+        if (locale.getLanguage() != null && labels.getLocale() != null && !locale.getLanguage().equals(labels.getLocale().getLanguage())) {
             labels = ResourceBundle.getBundle("locale.i18n.ActivityAttributeLabels", Locale.ENGLISH);
         }
-        final String bodyContent = pageTemplate.getBodyContent();
         final StringBuilder regex = new StringBuilder();
+        final HashMap<String, String> encodedStrings = new HashMap<String, String>();
         regex.append("\\$(");
-        for (final String stepAttribute : ActivityAttribute.attributeValues()) {
+        for (String stepAttribute : ActivityAttribute.attributeValues()) {
+        	stepAttribute = encodeString(stepAttribute, encodedStrings);
             if (regex.length() > 3) {
                 regex.append("|");
             }
@@ -467,7 +507,7 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
         final Pattern pattern = Pattern.compile(regex.toString());
         final Matcher matcher = pattern.matcher(bodyContent);
         final StringBuffer stringBuffer = new StringBuffer();
-        while(matcher.find()) {
+        while (matcher.find()) {
             final String itemFound = matcher.group(1);
             if (itemFound.startsWith("label.")) {
                 String label = null;
@@ -483,7 +523,7 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             } else {
                 final String stepAttribute = ActivityAttribute.valueOfAttibute(itemFound).name();
                 if (stepAttribute != null) {
-                    final String attributeValue = stepAttributes.get(stepAttribute);
+                    final String attributeValue = encodeString(stepAttributes.get(stepAttribute), encodedStrings);
                     if (attributeValue != null) {
                         matcher.appendReplacement(stringBuffer, attributeValue);
                     } else {
@@ -493,16 +533,26 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             }
         }
         matcher.appendTail(stringBuffer);
-        
-        pageTemplate.setBodyContent(stringBuffer.toString());
+        return decodeString(stringBuffer.toString(), encodedStrings);
     }
 
     /**
      * {@inheritDoc}
      */
-    public Map<String, Object> getTransientDataContext(List<TransientData> transientData, Locale userLocale, Map<String, Object> context) throws FormNotFoundException, FormServiceProviderNotFoundException, ClassNotFoundException {
+    public Map<String, Object> getTransientDataContext(List<TransientData> transientData, Locale userLocale, Map<String, Object> context)
+            throws FormNotFoundException, FormServiceProviderNotFoundException, ClassNotFoundException {
         final FormServiceProvider formServiceProvider = FormServiceProviderFactory.getFormServiceProvider();
         final Map<String, Object> transientDataContext = new HashMap<String, Object>();
+        final Map<String, String> expressionsToEvaluate = new HashMap<String, String>();
+        for (final TransientData data : transientData) {
+            final String valueStr = data.getValue();
+            if (valueStr != null) {
+                if (Misc.containsAGroovyExpression(valueStr)) {
+                    expressionsToEvaluate.put(data.getName(), valueStr);
+                }
+            }
+        }
+        final Map<String, Object> resolvedExpressions = formServiceProvider.resolveExpressions(expressionsToEvaluate, context);
         for (final TransientData data : transientData) {
             final String name = data.getName();
             final String className = data.getClassname();
@@ -510,23 +560,23 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             Object evaluatedValue = null;
             if (valueStr != null) {
                 try {
-                    if (Misc.containsAGroovyExpression(valueStr)) {
-                        if (context != null) {
-                            evaluatedValue = formServiceProvider.resolveExpression(valueStr, context);
-                        }
-                        final ClassLoader classloader = formServiceProvider.getClassloader(context);
-                        Class<?> dataClass;
-                        if (classloader != null) {
-                            dataClass = Class.forName(className, true, classloader);
-                        } else {
-                            dataClass = Class.forName(className);
-                        }
-                        if (evaluatedValue != null) {
-                            try {
-                                evaluatedValue.getClass().asSubclass(dataClass);
-                            } catch (final ClassCastException e) {
-                                throw new IllegalArgumentException();
+                    evaluatedValue = resolvedExpressions.get(name);
+                    if (evaluatedValue != null) {
+                        final ClassLoader classloader = evaluatedValue.getClass().getClassLoader();
+                        try {
+                            Class<?> dataClass;
+                            if (classloader != null) {
+                                try {
+                                    dataClass = Class.forName(className, true, classloader);
+                                } catch (ClassNotFoundException e) {
+                                    dataClass = Class.forName(className);
+                                }
+                            } else {
+                                dataClass = Class.forName(className);
                             }
+                            evaluatedValue.getClass().asSubclass(dataClass);
+                        } catch (final ClassCastException e) {
+                            throw new IllegalArgumentException();
                         }
                     } else {
                         if (className.equals(Boolean.class.getName())) {
@@ -554,30 +604,35 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
         }
         return transientDataContext;
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    public HtmlTemplate getApplicationErrorLayout(final Map<String, Object> context) throws InvalidFormDefinitionException, FileNotFoundException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
+    public HtmlTemplate getApplicationErrorLayout(final Map<String, Object> context) throws InvalidFormDefinitionException, FileNotFoundException,
+            ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
         final IApplicationConfigDefAccessor applicationConfigFormDefinition = getApplicationConfigDefinition(context);
-        final String applicationErrorTemplatePath = applicationConfigFormDefinition.getApplicationErrorTemplate();        
+        final String applicationErrorTemplatePath = applicationConfigFormDefinition.getApplicationErrorTemplate();
         final HtmlTemplate applicationErrorTemplate = getPageLayout(applicationErrorTemplatePath, applicationDeploymentDate, context);
         return applicationErrorTemplate;
     }
-    
+
     /**
      * get a page layout
-     * @param layoutPath The path of the layout
-     * @param applicationDeploymentDate The date of the application deployed
-     * @param context Map containing the URL parameters
+     * 
+     * @param layoutPath
+     *            The path of the layout
+     * @param applicationDeploymentDate
+     *            The date of the application deployed
+     * @param context
+     *            Map containing the URL parameters
      * @return HtmlTemplate
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException
      * @throws InvalidFormDefinitionException
      * @throws ApplicationFormDefinitionNotFoundException
-     * @throws FormServiceProviderNotFoundException 
+     * @throws FormServiceProviderNotFoundException
      */
-    public HtmlTemplate getPageLayout(final String layoutPath, final Date applicationDeploymentDate, final Map<String, Object> context) throws FileNotFoundException,
-            InvalidFormDefinitionException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
+    public HtmlTemplate getPageLayout(final String layoutPath, final Date applicationDeploymentDate, final Map<String, Object> context)
+            throws FileNotFoundException, InvalidFormDefinitionException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
         try {
             if (layoutPath == null) {
                 throw new IOException();
@@ -640,23 +695,29 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             throw new FileNotFoundException(message);
         }
     }
-    
+
     /**
      * get a layout
-     * @param layoutLocation The location of the layout
-     * @param layoutTypeName The type of the layout
-     * @param applicationDeploymentDate The date of the application deployed
-     * @param context Map containing the URL parameters
+     * 
+     * @param layoutLocation
+     *            The location of the layout
+     * @param layoutTypeName
+     *            The type of the layout
+     * @param applicationDeploymentDate
+     *            The date of the application deployed
+     * @param context
+     *            Map containing the URL parameters
      * @return HtmlTemplate
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException
      * @throws InvalidFormTemplateException
      * @throws InvalidFormDefinitionException
      * @throws ApplicationFormDefinitionNotFoundException
-     * @throws FormServiceProviderNotFoundException 
+     * @throws FormServiceProviderNotFoundException
      */
     public HtmlTemplate getLayout(final String layoutpath, final String layoutTypeName, final Date applicationDeploymentDate, final Map<String, Object> context)
-            throws FileNotFoundException, InvalidFormTemplateException, InvalidFormDefinitionException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
-       
+            throws FileNotFoundException, InvalidFormTemplateException, InvalidFormDefinitionException, ApplicationFormDefinitionNotFoundException,
+            FormServiceProviderNotFoundException {
+
         InputStream htmlFileStream = null;
         try {
             if (layoutpath == null) {
@@ -665,7 +726,7 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             htmlFileStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(layoutpath);
             if (htmlFileStream == null) {
                 final FormServiceProvider formServiceProvider = FormServiceProviderFactory.getFormServiceProvider();
-                final File dir  = formServiceProvider.getApplicationResourceDir(applicationDeploymentDate, context);
+                final File dir = formServiceProvider.getApplicationResourceDir(applicationDeploymentDate, context);
                 final File htmlFile = new File(dir, layoutpath);
                 if (htmlFile.exists()) {
                     htmlFileStream = new FileInputStream(htmlFile);
@@ -734,7 +795,7 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             }
         }
     }
-    
+
     /**
      * Generates the HTML template when no page template is defined
      * 
@@ -744,18 +805,20 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
      * @param isActivity
      * @return HtmlTemplate
      * @throws FileNotFoundException
-     * @throws InvalidFormDefinitionException 
-     * @throws ApplicationFormDefinitionNotFoundException 
-     * @throws FormServiceProviderNotFoundException 
+     * @throws InvalidFormDefinitionException
+     * @throws ApplicationFormDefinitionNotFoundException
+     * @throws FormServiceProviderNotFoundException
      */
-    protected HtmlTemplate buildPageLayout(final Map<String, Object> context, final String defaultTemplatePath, final List<FormWidget> pageWidgets, final List<FormValidator> pageValidators, final FormType formType, final boolean isActivity) throws FileNotFoundException, InvalidFormDefinitionException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
+    protected HtmlTemplate buildPageLayout(final Map<String, Object> context, final String defaultTemplatePath, final List<FormWidget> pageWidgets,
+            final List<FormValidator> pageValidators, final FormType formType, final boolean isActivity) throws FileNotFoundException,
+            InvalidFormDefinitionException, ApplicationFormDefinitionNotFoundException, FormServiceProviderNotFoundException {
 
         HtmlTemplate pageTemplate = null;
 
         final HtmlTemplate pageBaseTemplate = getPageLayout(defaultTemplatePath, applicationDeploymentDate, context);
         final String baseBody = pageBaseTemplate.getBodyContent();
         final Source source = new Source(baseBody);
-        
+
         final Element formContainerElement = source.getFirstElementByClass("bonita_form_container");
         final int insertionIndex = formContainerElement.getStartTag().getEnd();
 
@@ -796,11 +859,8 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
                 }
                 isButtonContainer = false;
             }
-            if (FormType.entry == formType
-                    || pageWidget.getVariableBound() != null
-                    || pageWidget.getType().equals(WidgetType.BUTTON)
-                    || pageWidget.getType().equals(WidgetType.BUTTON_NEXT)
-                    || pageWidget.getType().equals(WidgetType.BUTTON_PREVIOUS)) {
+            if (FormType.entry == formType || pageWidget.getVariableBound() != null || pageWidget.getType().equals(WidgetType.BUTTON)
+                    || pageWidget.getType().equals(WidgetType.BUTTON_NEXT) || pageWidget.getType().equals(WidgetType.BUTTON_PREVIOUS)) {
                 formContent.append("<div id=\"" + pageWidget.getId() + "\"></div>\n");
             }
             if (FormType.entry != formType && pageWidget.getType().equals(WidgetType.BUTTON_SUBMIT)) {
@@ -808,7 +868,7 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             }
             if (FormType.entry == formType && bottomFieldValidators != null) {
                 for (final FormValidator fieldValidator : bottomFieldValidators) {
-                     formContent.append("<div id=\"" + fieldValidator.getId() + "\"></div>\n");
+                    formContent.append("<div id=\"" + fieldValidator.getId() + "\"></div>\n");
                 }
             }
         }
@@ -819,18 +879,19 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             }
             formContent.append("\n</div>\n");
         }
-        
+
         outputDocument.insert(insertionIndex, formContent.toString());
 
         final StringBuilder headerContent = new StringBuilder();
         headerContent.append("\n<div id=\"bonita_form_page_label\" class=\"bonita_form_page_label\"></div>");
-        if(isActivity && FormType.entry == formType) {
+        if (isActivity && FormType.entry == formType) {
             headerContent.append("\n<div id=\"bonita_form_step_header\">");
             headerContent.append("\n\t<div id=\"bonita-object-area-top\"></div>");
             headerContent.append("\n\t<div id=\"bonita-object-area-middle\">");
             headerContent.append("\n\t\t<div id=\"bonita-object-area-from\">$label.bonita_step_readyDate $bonita_step_readyDate</div>");
             headerContent.append("\n\t\t<div id=\"bonita-object-area-to\">$label.bonita_step_expectedEndDate $bonita_step_expectedEndDate</div>");
-            headerContent.append("\n\t\t<div id=\"bonita-object-area-priority\">$label.bonita_step_priority <span class=\"bonita-priority\">$bonita_step_priority</span></div>");
+            headerContent
+                    .append("\n\t\t<div id=\"bonita-object-area-priority\">$label.bonita_step_priority <span class=\"bonita-priority\">$bonita_step_priority</span></div>");
             headerContent.append("\n\t\t<div id=\"bonita-object-area-description\">$bonita_step_description</div>");
             headerContent.append("\n\t</div>");
             headerContent.append("\n\t<div id=\"bonita-object-area-bottom\"></div>");
@@ -842,8 +903,9 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
 
         return pageTemplate;
     }
-    
-    protected ProcessDefinitionUUID getProcessDefinitionUUIDFromXML(Map<String, Object> context) throws InvalidFormDefinitionException, FormServiceProviderNotFoundException {
+
+    protected ProcessDefinitionUUID getProcessDefinitionUUIDFromXML(Map<String, Object> context) throws InvalidFormDefinitionException,
+            FormServiceProviderNotFoundException {
         final IApplicationConfigDefAccessor applicationConfigDefinition = getApplicationConfigDefinition(context);
         if (applicationConfigDefinition instanceof XMLApplicationConfigDefAccessorImpl) {
             final String processName = applicationConfigDefinition.getApplicationName();
@@ -853,5 +915,30 @@ public class FormDefinitionAPIImpl implements IFormDefinitionAPI {
             return null;
         }
     }
-    
+
+    private String encodeString(final String source, final HashMap<String, String> encodedStrings) {
+        String to = null;
+        try {
+            if (source != null) {
+                if (encodedStrings.containsKey(source)) {
+                    to = encodedStrings.get(source);
+                } else {
+                    to = java.net.URLEncoder.encode(source, "UTF-8").replaceAll("\\+", " ");
+                    encodedStrings.put(source, to);
+                }
+            }
+        } catch (final UnsupportedEncodingException e) {
+            to = source;
+        }
+        return to;
+    }
+
+    private String decodeString(String source, final HashMap<String, String> encodedStrings) {
+        final Iterator<Entry<String, String>> it = encodedStrings.entrySet().iterator();
+        while (it.hasNext()) {
+            Entry<String, String> entry = it.next();
+            source = source.replaceAll(entry.getValue(), Matcher.quoteReplacement(entry.getKey()));
+        }
+        return source;
+    }
 }

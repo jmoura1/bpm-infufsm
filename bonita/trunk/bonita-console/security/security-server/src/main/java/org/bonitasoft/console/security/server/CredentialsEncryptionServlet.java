@@ -80,11 +80,28 @@ public class CredentialsEncryptionServlet extends HttpServlet {
      * the request param for the locale
      */
     protected static final String LOCALE_PARAMETER_NAME = "locale";
+    
+    /**
+     * the request param for the form locale
+     */
+    protected static final String FORM_LOCALE_PARAMETER_NAME = "formLocale";
 
     /**
      * the request param for the username
      */
     public static final String USERNAME_SESSION_PARAM = "username";
+    
+    /**
+     * the home page request
+     */
+    public static final String CONSOLE_PREFIX = "/console";
+    
+    /**
+     * console home page keyword
+     */
+    public static final String UI_MODE_PARAM = "ui=";
+    
+    public static final String HOMEPAGE = "homepage";
     
     /**
      * {@inheritDoc}
@@ -95,6 +112,10 @@ public class CredentialsEncryptionServlet extends HttpServlet {
         String username = request.getParameter(USERNAME_REQUEST_PARAM);
         String password = request.getParameter(PASSWORD_REQUEST_PARAM);
         final String locale = getUserLocale(request);
+        String formLocale = request.getParameter(FORM_LOCALE_PARAMETER_NAME);
+        if(formLocale == null) {
+        	formLocale = locale;
+        }
         final String redirectURL = request.getParameter(REDIRECT_URL_PARAM);
         final ICredentialsEncryptionAPI credentialsAPI = SecurityAPIFactory.getCredentialsEncryptionAPI();
         String temporaryToken = null;
@@ -117,7 +138,7 @@ public class CredentialsEncryptionServlet extends HttpServlet {
         }
         request.getSession().setAttribute(USERNAME_SESSION_PARAM, username);
         if (redirectURL != null) {
-            response.sendRedirect(buildRedirectionUrl(redirectURL, locale, temporaryToken));
+            response.sendRedirect(buildRedirectionUrl(redirectURL, locale, formLocale, temporaryToken));
         }
     }
     
@@ -132,7 +153,7 @@ public class CredentialsEncryptionServlet extends HttpServlet {
      * @param temporaryToken
      * @return
      */
-    protected String buildRedirectionUrl(final String redirectURL, final String locale, final String temporaryToken) {
+    protected String buildRedirectionUrl(final String redirectURL, final String locale, final String formLocale, final String temporaryToken) {
 
         try {
             final String decodedURL = URLDecoder.decode(redirectURL, "UTF-8");
@@ -145,12 +166,19 @@ public class CredentialsEncryptionServlet extends HttpServlet {
                 gwtTokens = "";
                 theURL = decodedURL;
             }
+            
+            String formLocaleParam = "";
+            if (!decodedURL.contains(UI_MODE_PARAM) && decodedURL.contains(HOMEPAGE)) {
+            	formLocaleParam = "&" + FORM_LOCALE_PARAMETER_NAME + "=" + formLocale;
+            }
             //Locale Handling
             String localeSuffix;
             if (theURL.contains("?")) {
             	localeSuffix = "&" + LOCALE_URL_PARAM + "=" + locale;
+            	localeSuffix += formLocaleParam;
             } else {
             	localeSuffix = "?" + LOCALE_URL_PARAM + "=" + locale;
+            	localeSuffix += formLocaleParam;
             }
             //Identity token Handling
             String urlHash;

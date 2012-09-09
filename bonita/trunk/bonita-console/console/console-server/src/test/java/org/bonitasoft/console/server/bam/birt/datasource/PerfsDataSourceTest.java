@@ -995,7 +995,7 @@ public class PerfsDataSourceTest extends BonitaTestCase {
 				AccessorUtil.getRuntimeAPI().executeTask(theActivityInstance.getUUID(), false);
 			}
 		}
-		assertEquals(InstanceState.FINISHED, AccessorUtil.getQueryRuntimeAPI().getProcessInstance(case1).getInstanceState());
+		assertEquals(InstanceState.FINISHED, AccessorUtil.getQueryRuntimeAPI().getLightProcessInstance(case1).getInstanceState());
 		// check values
 		theData = thePerfsDataSource.readFinishedCases();
 		System.out.println("Finished cases (should be 14*0 + 1*1)");
@@ -1019,7 +1019,7 @@ public class PerfsDataSourceTest extends BonitaTestCase {
 				AccessorUtil.getRuntimeAPI().executeTask(theActivityInstance.getUUID(), true);
 			}
 		}
-		assertEquals(InstanceState.FINISHED, AccessorUtil.getQueryRuntimeAPI().getProcessInstance(case2).getInstanceState());
+		assertEquals(InstanceState.FINISHED, AccessorUtil.getQueryRuntimeAPI().getLightProcessInstance(case2).getInstanceState());
 		// check values
 		theData = thePerfsDataSource.readFinishedCases();
 		System.out.println("Finished cases (should be 13*0 + 1*2)");

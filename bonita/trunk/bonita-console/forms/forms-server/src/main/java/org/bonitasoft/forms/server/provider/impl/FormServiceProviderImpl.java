@@ -19,9 +19,9 @@ package org.bonitasoft.forms.server.provider.impl;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -56,6 +56,7 @@ import org.bonitasoft.forms.server.accessor.IApplicationFormDefAccessor;
 import org.bonitasoft.forms.server.accessor.impl.EngineApplicationConfigDefAccessorImpl;
 import org.bonitasoft.forms.server.accessor.impl.XMLApplicationConfigDefAccessorImpl;
 import org.bonitasoft.forms.server.accessor.impl.util.FormCacheUtilFactory;
+import org.bonitasoft.forms.server.accessor.impl.util.FormDocument;
 import org.bonitasoft.forms.server.accessor.impl.util.FormDocumentBuilderFactory;
 import org.bonitasoft.forms.server.api.FormAPIFactory;
 import org.bonitasoft.forms.server.api.IFormValidationAPI;
@@ -75,14 +76,11 @@ import org.ow2.bonita.facade.exception.IllegalTaskStateException;
 import org.ow2.bonita.facade.exception.InstanceNotFoundException;
 import org.ow2.bonita.facade.exception.ProcessNotFoundException;
 import org.ow2.bonita.facade.exception.TaskNotFoundException;
-import org.ow2.bonita.facade.exception.VariableNotFoundException;
 import org.ow2.bonita.facade.runtime.ActivityState;
-import org.ow2.bonita.facade.runtime.ProcessInstance;
 import org.ow2.bonita.facade.uuid.ActivityInstanceUUID;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
 import org.ow2.bonita.facade.uuid.ProcessInstanceUUID;
 import org.ow2.bonita.util.AccessorUtil;
-import org.w3c.dom.Document;
 
 /**
  * Implementation of FormServiceProvider based on Bonita execution engine
@@ -96,7 +94,15 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      * Logger
      */
     private static Logger LOGGER = Logger.getLogger(FormServiceProviderImpl.class.getName());
-    
+
+    protected static SimpleDateFormat DATE_FORMAT;
+
+    static {
+        if (LOGGER.isLoggable(Level.FINER)) {
+            DATE_FORMAT = new SimpleDateFormat("HH:mm:ss:SSS");
+        }
+    }
+
     /**
      * execute actions mode : if true indicates that this is a redirection request and the actions should be executed
      */
@@ -113,11 +119,15 @@ public class FormServiceProviderImpl implements FormServiceProvider {
     /**
      * {@inheritDoc}
      */
-    public Document getFormDefinitionDocument(final Map<String, Object> context) throws IOException, InvalidFormDefinitionException, FormNotFoundException {
+    public FormDocument getFormDefinitionDocument(final Map<String, Object> context) throws IOException, InvalidFormDefinitionException, FormNotFoundException {
 
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getFormDefinitionDocument - start");
+        }
         final ProcessDefinitionUUID processDefinitionUUID = getProcessDefinitionUUID(context);
         final Locale locale = (Locale) context.get(FormServiceProviderUtil.LOCALE);
-        Document formDefinitionDocument = null;
+        FormDocument formDefinitionDocument = null;
         Date processDeployementDate = null;
         try {
             processDeployementDate = getDeployementDate(processDefinitionUUID);
@@ -139,6 +149,10 @@ public class FormServiceProviderImpl implements FormServiceProvider {
                 LOGGER.log(Level.INFO, "No form definition descriptor was found for process " + processDefinitionUUID, e);
             }
         }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getFormDefinitionDocument - end");
+        }
         return formDefinitionDocument;
     }
 
@@ -149,21 +163,29 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      * @return the {@link ProcessDefinitionUUID}
      */
     protected ProcessDefinitionUUID getProcessDefinitionUUID(final Map<String, Object> context) {
-        Map<String, Object> urlContext = new HashMap<String, Object>();
-        if (context.containsKey(FormServiceProviderUtil.URL_CONTEXT)) {
-            urlContext.putAll((Map<String, Object>) context.get(FormServiceProviderUtil.URL_CONTEXT));
-        }
-        ProcessDefinitionUUID processDefinitionUUID = null;
-        if (urlContext.get(FormServiceProviderUtil.PROCESS_UUID) != null) {
-            processDefinitionUUID = new ProcessDefinitionUUID(urlContext.get(FormServiceProviderUtil.PROCESS_UUID).toString());
-        } else if (urlContext.get(FormServiceProviderUtil.INSTANCE_UUID) != null) {
-            final ProcessInstanceUUID processInstanceUUID = new ProcessInstanceUUID(urlContext.get(FormServiceProviderUtil.INSTANCE_UUID).toString());
-            processDefinitionUUID = processInstanceUUID.getProcessDefinitionUUID();
-        } else if (urlContext.get(FormServiceProviderUtil.TASK_UUID) != null) {
-            final ActivityInstanceUUID activityInstanceUUID = new ActivityInstanceUUID(urlContext.get(FormServiceProviderUtil.TASK_UUID).toString());
-            processDefinitionUUID = activityInstanceUUID.getProcessInstanceUUID().getProcessDefinitionUUID();
-        }
 
+        @SuppressWarnings("unchecked")
+        Map<String, Object> urlContext = (Map<String, Object>) context.get(FormServiceProviderUtil.URL_CONTEXT);
+        ProcessDefinitionUUID processDefinitionUUID = null;
+        if (urlContext != null) {
+            if (urlContext.get(FormServiceProviderUtil.PROCESS_UUID) != null) {
+                processDefinitionUUID = new ProcessDefinitionUUID(urlContext.get(FormServiceProviderUtil.PROCESS_UUID).toString());
+            } else if (urlContext.get(FormServiceProviderUtil.INSTANCE_UUID) != null) {
+                final ProcessInstanceUUID processInstanceUUID = new ProcessInstanceUUID(urlContext.get(FormServiceProviderUtil.INSTANCE_UUID).toString());
+                processDefinitionUUID = processInstanceUUID.getProcessDefinitionUUID();
+            } else if (urlContext.get(FormServiceProviderUtil.TASK_UUID) != null) {
+                final ActivityInstanceUUID activityInstanceUUID = new ActivityInstanceUUID(urlContext.get(FormServiceProviderUtil.TASK_UUID).toString());
+                processDefinitionUUID = activityInstanceUUID.getProcessInstanceUUID().getProcessDefinitionUUID();
+            } else {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "The URL context does not contain any BPM entity parameter. Unable to retrive the process definition UUID.");
+                }
+            }
+        } else {
+            if (LOGGER.isLoggable(Level.WARNING)) {
+                LOGGER.log(Level.WARNING, "The URL context is null. Unable to retrive the process definition UUID.");
+            }
+        }
         return processDefinitionUUID;
     }
 
@@ -171,8 +193,14 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      * {@inheritDoc}
      */
     public boolean isAllowed(final String formId, final String permissions, final String productVersion, final String migrationProductVersion, final Map<String, Object> context, final boolean isFormPermissions) throws ForbiddenFormAccessException,
-            SuspendedFormException, CanceledFormException, FormNotFoundException, FormAlreadySubmittedException, ForbiddenApplicationAccessException, FormInErrorException, MigrationProductVersionNotIdenticalException, NoCredentialsInSessionException, SkippedFormException {
+            SuspendedFormException, CanceledFormException, FormNotFoundException, FormAlreadySubmittedException, ForbiddenApplicationAccessException, FormInErrorException, MigrationProductVersionNotIdenticalException, NoCredentialsInSessionException,
+            SkippedFormException {
 
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - isAllowed - start");
+        }
+        @SuppressWarnings("unchecked")
         Map<String, Object> urlContext = (Map<String, Object>) context.get(FormServiceProviderUtil.URL_CONTEXT);
         final User user = (User) context.get(FormServiceProviderUtil.USER);
         if (user == null) {
@@ -193,6 +221,7 @@ public class FormServiceProviderImpl implements FormServiceProvider {
             }
         }
         if (permissions != null) {
+            final IFormWorkflowAPI workflowAPI = FormAPIFactory.getFormWorkflowAPI();
             String uuidType = permissions.split("#")[0];
             if (FormServiceProviderUtil.ACTIVITY_UUID.equals(uuidType)) {
                 String activityDefinitionUUIDStr = permissions.split("#")[1];
@@ -205,7 +234,9 @@ public class FormServiceProviderImpl implements FormServiceProvider {
                         }
                         throw new ForbiddenFormAccessException(message);
                     }
-                    final IFormWorkflowAPI workflowAPI = FormAPIFactory.getFormWorkflowAPI();
+                    if (!user.isAdmin() && !user.isAllowed(RuleType.ACTIVITY_READ, activityInstanceUUID.getActivityDefinitionUUID().getValue())) {
+                        throw new ForbiddenFormAccessException();
+                    }
                     ActivityEditState activityEditState = null;
                     try {
                         activityEditState = workflowAPI.getTaskEditState(activityInstanceUUID);
@@ -216,8 +247,8 @@ public class FormServiceProviderImpl implements FormServiceProvider {
                         }
                         throw new FormNotFoundException(message);
                     }
-                    Set<String> involvedUsers = new HashSet<String>();
                     ProcessInstanceUUID processInstanceUUID = activityInstanceUUID.getProcessInstanceUUID();
+                    final Set<String> involvedUsers;
                     try {
                         involvedUsers = workflowAPI.getProcessInvolvedUsers(processInstanceUUID);
                     } catch (final InstanceNotFoundException e) {
@@ -295,11 +326,9 @@ public class FormServiceProviderImpl implements FormServiceProvider {
                         throw new ForbiddenFormAccessException(message);
                     }
                     if (isFormPermissions) {
-                        final Set<String> involvedUsers = new HashSet<String>();
-                        final QueryRuntimeAPI queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
-                        ProcessInstance processInstance = null;
+                        final Set<String> involvedUsers;
                         try {
-                            processInstance = queryRuntimeAPI.getProcessInstance(processInstanceUUID);
+                            involvedUsers = workflowAPI.getProcessInvolvedUsers(processInstanceUUID);
                         } catch (final InstanceNotFoundException e) {
                             final String message = "The process instance " + processInstanceUUID + " does not exist!";
                             if (LOGGER.isLoggable(Level.INFO)) {
@@ -307,8 +336,6 @@ public class FormServiceProviderImpl implements FormServiceProvider {
                             }
                             throw new FormNotFoundException(message);
                         }
-                        involvedUsers.add(processInstance.getStartedBy());
-                        involvedUsers.addAll(processInstance.getInvolvedUsers());
                         if (!involvedUsers.contains(user.getUsername()) && !user.isAdmin() && !user.isAllowed(RuleType.PROCESS_MANAGE, processInstanceUUID.getProcessDefinitionUUID().getValue())) {
                             throw new ForbiddenFormAccessException();
                         }
@@ -324,7 +351,7 @@ public class FormServiceProviderImpl implements FormServiceProvider {
                     }
                     final String formType = getFormType(formId);
                     if (FormServiceProviderUtil.ENTRY_FORM_TYPE.equals(formType) && !user.isAllowed(RuleType.PROCESS_START, processDefinitionUUIDStr)) {
-                        final String message = "An attempt was made by user " + user.getUsername() + " to start an instance of process " + processDefinitionUUIDStr;;
+                        final String message = "An attempt was made by user " + user.getUsername() + " to start an instance of process " + processDefinitionUUIDStr;
                         if (LOGGER.isLoggable(Level.INFO)) {
                             LOGGER.log(Level.INFO, message);
                         }
@@ -339,6 +366,10 @@ public class FormServiceProviderImpl implements FormServiceProvider {
             }
             throw new ForbiddenApplicationAccessException(message);
         }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - isAllowed - end");
+        }
         return true;
     }
 
@@ -347,18 +378,27 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      * 
      * @param formIdn the form ID
      * @return "entry", "view" or "recap"
+     * @throws FormNotFoundException
      */
-    protected String getFormType(final String formId) {
+    protected String getFormType(final String formId) throws FormNotFoundException {
         String formType = null;
-        String[] formIdComponents = formId.split("\\" + FormServiceProviderUtil.FORM_ID_SEPARATOR);
-        if (formIdComponents.length > 1) {
-            formType = formIdComponents[1];
-        } else {
-            final String message = "Wrong FormId " + formId + ". It doesn't contain the form type.";
+        if (formId == null) {
+            final String message = "the Form ID is null. The parameter 'form' is probably missing from the URL.";
             if (LOGGER.isLoggable(Level.SEVERE)) {
                 LOGGER.log(Level.SEVERE, message);
             }
-            throw new IllegalArgumentException(message);
+            throw new FormNotFoundException(message);
+        } else {
+            String[] formIdComponents = formId.split("\\" + FormServiceProviderUtil.FORM_ID_SEPARATOR);
+            if (formIdComponents.length > 1) {
+                formType = formIdComponents[1];
+            } else {
+                final String message = "Wrong FormId " + formId + ". It doesn't contain the form type.";
+                if (LOGGER.isLoggable(Level.SEVERE)) {
+                    LOGGER.log(Level.SEVERE, message);
+                }
+                throw new IllegalArgumentException(message);
+            }
         }
         return formType;
     }
@@ -368,6 +408,11 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      */
     @SuppressWarnings("unchecked")
     public Object resolveExpression(String expression, Map<String, Object> context) throws FormNotFoundException {
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - resolveExpression - start \nexpression: " + expression);
+        }
         ActivityInstanceUUID activityInstanceUUID = null;
         ProcessDefinitionUUID processDefinitionUUID = null;
         ProcessInstanceUUID processInstanceUUID = null;
@@ -397,7 +442,7 @@ public class FormServiceProviderImpl implements FormServiceProvider {
                         result = workflowAPI.getFieldValue(activityInstanceUUID, expression, locale, isCurrentValue);
                     }
                 }
-             } else if (urlContext.get(FormServiceProviderUtil.INSTANCE_UUID) != null) {
+            } else if (urlContext.get(FormServiceProviderUtil.INSTANCE_UUID) != null) {
                 processInstanceUUID = new ProcessInstanceUUID(urlContext.get(FormServiceProviderUtil.INSTANCE_UUID).toString());
                 if (fieldValues != null) {
                     if (transientDataContext != null) {
@@ -412,22 +457,26 @@ public class FormServiceProviderImpl implements FormServiceProvider {
                         result = workflowAPI.getFieldValue(processInstanceUUID, expression, locale, isCurrentValue);
                     }
                 }
-             } else if (urlContext.get(FormServiceProviderUtil.PROCESS_UUID) != null) {
-                 processDefinitionUUID = new ProcessDefinitionUUID(urlContext.get(FormServiceProviderUtil.PROCESS_UUID).toString());
-                 if (fieldValues != null) {
-                     if (transientDataContext != null) {
-                         result = workflowAPI.getFieldValue(processDefinitionUUID, expression, fieldValues, locale, transientDataContext);
-                     } else {
-                         result = workflowAPI.getFieldValue(processDefinitionUUID, expression, fieldValues, locale);
-                     }
-                 } else {
-                     if (transientDataContext != null) {
-                         result = workflowAPI.getFieldValue(processDefinitionUUID, expression, locale, transientDataContext);
-                     } else {
-                         result = workflowAPI.getFieldValue(processDefinitionUUID, expression, locale);
-                     }
-                 }
-             }
+            } else if (urlContext.get(FormServiceProviderUtil.PROCESS_UUID) != null) {
+                processDefinitionUUID = new ProcessDefinitionUUID(urlContext.get(FormServiceProviderUtil.PROCESS_UUID).toString());
+                if (fieldValues != null) {
+                    if (transientDataContext != null) {
+                        result = workflowAPI.getFieldValue(processDefinitionUUID, expression, fieldValues, locale, transientDataContext);
+                    } else {
+                        result = workflowAPI.getFieldValue(processDefinitionUUID, expression, fieldValues, locale);
+                    }
+                } else {
+                    if (transientDataContext != null) {
+                        result = workflowAPI.getFieldValue(processDefinitionUUID, expression, locale, transientDataContext);
+                    } else {
+                        result = workflowAPI.getFieldValue(processDefinitionUUID, expression, locale);
+                    }
+                }
+            } else {
+                if (LOGGER.isLoggable(Level.SEVERE)) {
+                    LOGGER.log(Level.SEVERE, "Unable to resolve expression: " + expression + ". No process entity specified in the context");
+                }
+            }
         } catch (final InstanceNotFoundException e) {
             final String message = "This processInstanceUUID " + processInstanceUUID + " does not exist!";
             if (LOGGER.isLoggable(Level.SEVERE)) {
@@ -447,7 +496,10 @@ public class FormServiceProviderImpl implements FormServiceProvider {
             }
             throw new FormNotFoundException(message);
         }
-
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - resolveExpression - end");
+        }
         return result;
     }
 
@@ -455,7 +507,121 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public Map<String, Object> executeActions(List<FormAction> actions, Map<String, Object> context) throws VariableNotFoundException, FileTooBigException, FormNotFoundException, FormAlreadySubmittedException, Exception {
+    public Map<String, Object> resolveExpressions(Map<String, String> expressions, Map<String, Object> context) throws FormNotFoundException {
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            int size = 0;
+            if (expressions != null) {
+                size = expressions.size();
+            }
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - resolveExpressions - start - nb expressions: " + size);
+        }
+        ActivityInstanceUUID activityInstanceUUID = null;
+        ProcessDefinitionUUID processDefinitionUUID = null;
+        ProcessInstanceUUID processInstanceUUID = null;
+        boolean isCurrentValue = false;
+        final Locale locale = (Locale) context.get(FormServiceProviderUtil.LOCALE);
+        if (context.get(FormServiceProviderUtil.IS_CURRENT_VALUE) != null) {
+            isCurrentValue = (Boolean) context.get(FormServiceProviderUtil.IS_CURRENT_VALUE);
+        }
+        final Map<String, Object> transientDataContext = (Map<String, Object>) context.get(FormServiceProviderUtil.TRANSIENT_DATA_CONTEXT);
+        final Map<String, FormFieldValue> fieldValues = (Map<String, FormFieldValue>) context.get(FormServiceProviderUtil.FIELD_VALUES);
+        Map<String, Object> results;
+        final IFormWorkflowAPI workflowAPI = FormAPIFactory.getFormWorkflowAPI();
+        try {
+            Map<String, Object> urlContext = (Map<String, Object>) context.get(FormServiceProviderUtil.URL_CONTEXT);
+            if (urlContext.get(FormServiceProviderUtil.TASK_UUID) != null) {
+                activityInstanceUUID = new ActivityInstanceUUID(urlContext.get(FormServiceProviderUtil.TASK_UUID).toString());
+                if (fieldValues != null) {
+                    if (transientDataContext != null) {
+                        results = workflowAPI.getFieldsValues(activityInstanceUUID, expressions, fieldValues, locale, isCurrentValue, transientDataContext);
+                    } else {
+                        results = workflowAPI.getFieldsValues(activityInstanceUUID, expressions, fieldValues, locale, isCurrentValue);
+                    }
+                } else {
+                    if (transientDataContext != null) {
+                        results = workflowAPI.getFieldsValues(activityInstanceUUID, expressions, locale, isCurrentValue, transientDataContext);
+                    } else {
+                        results = workflowAPI.getFieldsValues(activityInstanceUUID, expressions, locale, isCurrentValue);
+                    }
+                }
+            } else if (urlContext.get(FormServiceProviderUtil.INSTANCE_UUID) != null) {
+                processInstanceUUID = new ProcessInstanceUUID(urlContext.get(FormServiceProviderUtil.INSTANCE_UUID).toString());
+                if (fieldValues != null) {
+                    if (transientDataContext != null) {
+                        results = workflowAPI.getFieldsValues(processInstanceUUID, expressions, fieldValues, locale, isCurrentValue, transientDataContext);
+                    } else {
+                        results = workflowAPI.getFieldsValues(processInstanceUUID, expressions, fieldValues, locale, isCurrentValue);
+                    }
+                } else {
+                    if (transientDataContext != null) {
+                        results = workflowAPI.getFieldsValues(processInstanceUUID, expressions, locale, isCurrentValue, transientDataContext);
+                    } else {
+                        results = workflowAPI.getFieldsValues(processInstanceUUID, expressions, locale, isCurrentValue);
+                    }
+                }
+            } else if (urlContext.get(FormServiceProviderUtil.PROCESS_UUID) != null) {
+                processDefinitionUUID = new ProcessDefinitionUUID(urlContext.get(FormServiceProviderUtil.PROCESS_UUID).toString());
+                if (fieldValues != null) {
+                    if (transientDataContext != null) {
+                        results = workflowAPI.getFieldsValues(processDefinitionUUID, expressions, fieldValues, locale, transientDataContext);
+                    } else {
+                        results = workflowAPI.getFieldsValues(processDefinitionUUID, expressions, fieldValues, locale);
+                    }
+                } else {
+                    if (transientDataContext != null) {
+                        results = workflowAPI.getFieldsValues(processDefinitionUUID, expressions, locale, transientDataContext);
+                    } else {
+                        results = workflowAPI.getFieldsValues(processDefinitionUUID, expressions, locale);
+                    }
+                }
+            } else {
+                if (LOGGER.isLoggable(Level.SEVERE)) {
+                    LOGGER.log(Level.SEVERE, "Unable to resolve expressions: " + expressions + ". No process entity specified in the context");
+                }
+                results = new HashMap<String, Object>();
+            }
+        } catch (final InstanceNotFoundException e) {
+            final String message = "This processInstanceUUID " + processInstanceUUID + " does not exist!";
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.log(Level.SEVERE, message, e);
+            }
+            throw new FormNotFoundException(message);
+        } catch (final ActivityNotFoundException e) {
+            final String message = "This activityInstanceUUID " + activityInstanceUUID + " does not exist!";
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.log(Level.SEVERE, message, e);
+            }
+            throw new FormNotFoundException(message);
+        } catch (final ProcessNotFoundException e) {
+            final String message = "This processDefinitionUUID " + processDefinitionUUID + " does not exist!";
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.log(Level.SEVERE, message, e);
+            }
+            throw new FormNotFoundException(message);
+        }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - resolveExpressions - end");
+        }
+        return results;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> executeActions(List<FormAction> actions, Map<String, Object> context) throws FileTooBigException, FormNotFoundException, FormAlreadySubmittedException, Exception {
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            int size = 0;
+            if (actions != null) {
+                size = actions.size();
+            }
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - ###executeActions - start - nb actions: " + size);
+        }
         ActivityInstanceUUID activityInstanceUUID = null;
         ProcessInstanceUUID processInstanceUUID = null;
         ProcessDefinitionUUID processDefinitionUUID = null;
@@ -500,6 +666,11 @@ public class FormServiceProviderImpl implements FormServiceProvider {
                     workflowAPI.executeActions(activityInstanceUUID, fieldValues, actions, locale);
                 }
             }
+        } catch (final FormAlreadySubmittedException e) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "The form cannot be submitted anymore.", e);
+            }
+            throw e;
         } catch (final InstanceNotFoundException e) {
             final String message = "The process instance with UUID " + processInstanceUUID + " cannot be found!";
             if (LOGGER.isLoggable(Level.SEVERE)) {
@@ -534,14 +705,17 @@ public class FormServiceProviderImpl implements FormServiceProvider {
             if (LOGGER.isLoggable(Level.INFO)) {
                 LOGGER.log(Level.INFO, e.getMessage(), e);
             }
-            throw new FileTooBigException(e.getMessage(), e.getFileName());
+            throw new FileTooBigException(e.getMessage(), e.getFileName(), e.getMaxSize());
         } catch (final Throwable e) {
             if (LOGGER.isLoggable(Level.SEVERE)) {
                 LOGGER.log(Level.SEVERE, "Error while executing Actions task", e);
             }
             throw new Exception(e.getMessage(), e);
         }
-
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - executeActions - end");
+        }
         return urlContext;
     }
 
@@ -550,6 +724,10 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      */
     @SuppressWarnings("unchecked")
     public FormURLComponents getNextFormURLParameters(final String formId, Map<String, Object> context) throws FormNotFoundException {
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getNextFormURLParameters - start");
+        }
         final HttpServletRequest request = (HttpServletRequest) context.get(FormServiceProviderUtil.REQUEST);
         Map<String, Object> urlContext = (Map<String, Object>) context.get(FormServiceProviderUtil.URL_CONTEXT);
         ProcessInstanceUUID processInstanceUUID = null;
@@ -599,6 +777,10 @@ public class FormServiceProviderImpl implements FormServiceProvider {
                 urlComponents.setUrlContext(newURLContext);
             }
         }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getNextFormURLParameters - end");
+        }
         return urlComponents;
     }
 
@@ -606,6 +788,12 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      * {@inheritDoc}
      */
     public Map<String, String> getAttributesToInsert(Map<String, Object> context) throws FormNotFoundException {
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getAttributesToInsert - start");
+        }
+        @SuppressWarnings("unchecked")
         Map<String, Object> urlContext = (Map<String, Object>) context.get(FormServiceProviderUtil.URL_CONTEXT);
         ActivityInstanceUUID activityInstanceUUID = null;
         if (urlContext.get(FormServiceProviderUtil.TASK_UUID) != null) {
@@ -625,6 +813,10 @@ public class FormServiceProviderImpl implements FormServiceProvider {
             }
             throw new FormNotFoundException(message);
         }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getAttributesToInsert - end");
+        }
         return attributes;
     }
 
@@ -633,16 +825,20 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      */
     @Deprecated
     public List<FormValidator> validateField(final List<FormValidator> validators, final String fieldId, final FormFieldValue fieldValue, final Map<String, Object> context) throws FormValidationException, FormNotFoundException {
-    
+
         return validateField(validators, fieldId, fieldValue, null, context);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
     public List<FormValidator> validateField(final List<FormValidator> validators, final String fieldId, final FormFieldValue fieldValue, final String submitButtonId, final Map<String, Object> context) throws FormValidationException, FormNotFoundException {
 
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - validateField - start");
+        }
         ActivityInstanceUUID activityInstanceUUID = null;
         ProcessDefinitionUUID processDefinitionUUID = null;
         ProcessInstanceUUID processInstanceUUID = null;
@@ -681,9 +877,13 @@ public class FormServiceProviderImpl implements FormServiceProvider {
             }
             throw new FormNotFoundException(message);
         }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - validateField - end");
+        }
         return nonCompliantFieldValidators;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -699,6 +899,10 @@ public class FormServiceProviderImpl implements FormServiceProvider {
     @SuppressWarnings("unchecked")
     public List<FormValidator> validatePage(final List<FormValidator> validators, final Map<String, FormFieldValue> fields, final String submitButtonId, final Map<String, Object> context) throws FormValidationException, FormNotFoundException {
 
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - validatePage - start");
+        }
         ActivityInstanceUUID activityInstanceUUID = null;
         ProcessDefinitionUUID processDefinitionUUID = null;
         ProcessInstanceUUID processInstanceUUID = null;
@@ -737,6 +941,10 @@ public class FormServiceProviderImpl implements FormServiceProvider {
             }
             throw new FormNotFoundException(message);
         }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - validatePage - end");
+        }
         return nonCompliantFieldValidators;
     }
 
@@ -744,6 +952,11 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      * {@inheritDoc}
      */
     public Date getDeployementDate(final Map<String, Object> context) throws FormNotFoundException, IOException {
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getDeployementDate - start");
+        }
         Date processDeployementDate = null;
         final ProcessDefinitionUUID processDefinitionUUID = getProcessDefinitionUUID(context);
         try {
@@ -755,7 +968,10 @@ public class FormServiceProviderImpl implements FormServiceProvider {
             }
             throw new FormNotFoundException(message);
         }
-
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getDeployementDate - end");
+        }
         return processDeployementDate;
     }
 
@@ -810,7 +1026,12 @@ public class FormServiceProviderImpl implements FormServiceProvider {
     /**
      * {@inheritDoc}
      */
-    public IApplicationConfigDefAccessor getApplicationConfigDefinition(final Document formDefinitionDocument, final Map<String, Object> context) {
+    public IApplicationConfigDefAccessor getApplicationConfigDefinition(final FormDocument formDefinitionDocument, final Map<String, Object> context) {
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getApplicationConfigDefinition - start");
+        }
         IApplicationConfigDefAccessor applicationConfigDefAccessor = null;
         if (formDefinitionDocument == null) {
             ProcessDefinitionUUID processDefinitionUUID = getProcessDefinitionUUID(context);
@@ -818,16 +1039,29 @@ public class FormServiceProviderImpl implements FormServiceProvider {
         } else {
             applicationConfigDefAccessor = new XMLApplicationConfigDefAccessorImpl(formDefinitionDocument);
         }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getApplicationConfigDefinition - end");
+        }
         return applicationConfigDefAccessor;
     }
 
     /**
      * {@inheritDoc}
      */
-    public IApplicationFormDefAccessor getApplicationFormDefinition(final String formId, final Document formDefinitionDocument, final Map<String, Object> context) throws ApplicationFormDefinitionNotFoundException, InvalidFormDefinitionException {
+    public IApplicationFormDefAccessor getApplicationFormDefinition(final String formId, final FormDocument formDefinitionDocument, final Map<String, Object> context) throws ApplicationFormDefinitionNotFoundException, InvalidFormDefinitionException {
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getApplicationFormDefinition - start");
+        }
         IApplicationFormDefAccessor iApplicationDefAccessor = null;
         final Date applicationDeploymentDate = (Date) context.get(FormServiceProviderUtil.APPLICATION_DEPLOYMENT_DATE);
         iApplicationDefAccessor = getApplicationFormDefinition(formId, formDefinitionDocument, applicationDeploymentDate, context);
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getApplicationFormDefinition - end");
+        }
         return iApplicationDefAccessor;
     }
 
@@ -842,11 +1076,12 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      * @throws ApplicationFormDefinitionNotFoundException
      * @throws InvalidFormDefinitionException
      */
-    protected IApplicationFormDefAccessor getApplicationFormDefinition(final String formId, final Document formDefinitionDocument, final Date applicationDeploymentDate, final Map<String, Object> context) throws ApplicationFormDefinitionNotFoundException,
-            InvalidFormDefinitionException {
+    protected IApplicationFormDefAccessor getApplicationFormDefinition(final String formId, final FormDocument formDefinitionDocument, final Date applicationDeploymentDate, final Map<String, Object> context)
+            throws ApplicationFormDefinitionNotFoundException, InvalidFormDefinitionException {
 
         IApplicationFormDefAccessor formDefAccessor = null;
         final ProcessDefinitionUUID processDefinitionUUID = getProcessDefinitionUUID(context);
+        @SuppressWarnings("unchecked")
         Map<String, Object> urlContext = (Map<String, Object>) context.get(FormServiceProviderUtil.URL_CONTEXT);
         ActivityInstanceUUID activityInstanceUUID = null;
         String activityName = null;
@@ -854,8 +1089,12 @@ public class FormServiceProviderImpl implements FormServiceProvider {
             activityInstanceUUID = new ActivityInstanceUUID(urlContext.get(FormServiceProviderUtil.TASK_UUID).toString());
             activityName = activityInstanceUUID.getActivityName();
         }
-
-        final String formType = getFormType(formId);
+        String formType = null;
+        try {
+            formType = getFormType(formId);
+        } catch (FormNotFoundException e) {
+            throw new ApplicationFormDefinitionNotFoundException(e.getMessage());
+        }
         boolean isRecap = false;
         if (FormServiceProviderUtil.RECAP_FORM_TYPE.equals(formType)) {
             isRecap = true;
@@ -896,6 +1135,11 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      * {@inheritDoc}
      */
     public String getAttachmentFileName(final String attachmentName, final Map<String, Object> context) throws FormNotFoundException {
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getAttachmentFileName - start");
+        }
         final IFormWorkflowAPI workflowAPI = FormAPIFactory.getFormWorkflowAPI();
         ActivityInstanceUUID activityInstanceUUID = null;
         ProcessDefinitionUUID processDefinitionUUID = null;
@@ -903,6 +1147,7 @@ public class FormServiceProviderImpl implements FormServiceProvider {
         String attachmentFileName = null;
         final boolean isCurrentValue = (Boolean) context.get(FormServiceProviderUtil.IS_CURRENT_VALUE);
         try {
+            @SuppressWarnings("unchecked")
             Map<String, Object> urlContext = (Map<String, Object>) context.get(FormServiceProviderUtil.URL_CONTEXT);
             if (urlContext.get(FormServiceProviderUtil.TASK_UUID) != null) {
                 activityInstanceUUID = new ActivityInstanceUUID(urlContext.get(FormServiceProviderUtil.TASK_UUID).toString());
@@ -933,6 +1178,10 @@ public class FormServiceProviderImpl implements FormServiceProvider {
             }
             throw new FormNotFoundException(message);
         }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getAttachmentFileName - end");
+        }
         return attachmentFileName;
 
     }
@@ -946,6 +1195,7 @@ public class FormServiceProviderImpl implements FormServiceProvider {
         boolean isEditMode = false;
         final IFormWorkflowAPI workflowAPI = FormAPIFactory.getFormWorkflowAPI();
         try {
+            @SuppressWarnings("unchecked")
             Map<String, Object> urlContext = (Map<String, Object>) context.get(FormServiceProviderUtil.URL_CONTEXT);
             if (urlContext.get(FormServiceProviderUtil.TASK_UUID) != null) {
                 activityInstanceUUID = new ActivityInstanceUUID(urlContext.get(FormServiceProviderUtil.TASK_UUID).toString());
@@ -977,6 +1227,7 @@ public class FormServiceProviderImpl implements FormServiceProvider {
         boolean isCurrentValue = false;
         final IFormWorkflowAPI workflowAPI = FormAPIFactory.getFormWorkflowAPI();
         try {
+            @SuppressWarnings("unchecked")
             Map<String, Object> urlContext = (Map<String, Object>) context.get(FormServiceProviderUtil.URL_CONTEXT);
             if (urlContext.get(FormServiceProviderUtil.TASK_UUID) != null) {
                 activityInstanceUUID = new ActivityInstanceUUID(urlContext.get(FormServiceProviderUtil.TASK_UUID).toString());
@@ -1019,6 +1270,11 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      */
     @SuppressWarnings("unchecked")
     public Map<String, Object> skipForm(String formID, Map<String, Object> context) throws FormNotFoundException, FormAlreadySubmittedException, IllegalActivityTypeException {
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - skipForm - start");
+        }
         final IFormWorkflowAPI workflowAPI = FormAPIFactory.getFormWorkflowAPI();
         Map<String, Object> urlContext = new HashMap<String, Object>();
         if (context.get(FormServiceProviderUtil.URL_CONTEXT) != null) {
@@ -1062,6 +1318,10 @@ public class FormServiceProviderImpl implements FormServiceProvider {
         } else {
             throw new FormNotFoundException("Unable to skip form " + formID + " The process UUID or task UUID are missing from the URL");
         }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - skipForm - end");
+        }
         return urlContext;
     }
 
@@ -1072,6 +1332,11 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      */
     @SuppressWarnings("unchecked")
     public Map<String, Object> getAnyTodoListForm(final Map<String, Object> context) throws Exception {
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getAnyTodoListForm - start");
+        }
         Map<String, Object> urlContext = new HashMap<String, Object>();
         final IFormWorkflowAPI workflowAPI = FormAPIFactory.getFormWorkflowAPI();
         if (context.get(FormServiceProviderUtil.URL_CONTEXT) != null) {
@@ -1085,7 +1350,11 @@ public class FormServiceProviderImpl implements FormServiceProvider {
         } else if (urlContext.get(FormServiceProviderUtil.INSTANCE_UUID) != null) {
             ProcessInstanceUUID processInstanceUUID = new ProcessInstanceUUID(urlContext.get(FormServiceProviderUtil.INSTANCE_UUID).toString());
             activityInstanceUUID = workflowAPI.getAnyTodoListTaskForProcessInstance(processInstanceUUID);
-        } else {
+        } else if (urlContext.get(FormServiceProviderUtil.THEME) != null) {
+            processDefinitionUUID = new ProcessDefinitionUUID(urlContext.get(FormServiceProviderUtil.THEME).toString());
+            activityInstanceUUID = workflowAPI.getAnyTodoListTaskForProcessDefinition(processDefinitionUUID);
+        }
+        if (activityInstanceUUID == null) {
             final QueryRuntimeAPI queryRuntimeAPI = AccessorUtil.getQueryRuntimeAPI();
             activityInstanceUUID = queryRuntimeAPI.getOneTask(ActivityState.READY);
         }
@@ -1093,6 +1362,7 @@ public class FormServiceProviderImpl implements FormServiceProvider {
         urlContext.remove(FormServiceProviderUtil.INSTANCE_UUID);
         urlContext.remove(FormServiceProviderUtil.TO_DO_LIST);
         if (activityInstanceUUID != null) {
+            urlContext.put(FormServiceProviderUtil.THEME, activityInstanceUUID.getProcessInstanceUUID().getProcessDefinitionUUID().getValue());
             urlContext.put(FormServiceProviderUtil.TASK_UUID, activityInstanceUUID.getValue());
             urlContext.put(FormServiceProviderUtil.FORM_ID, activityInstanceUUID.getActivityDefinitionUUID().getValue() + FormServiceProviderUtil.FORM_ID_SEPARATOR + FormServiceProviderUtil.ENTRY_FORM_TYPE);
         } else {
@@ -1102,6 +1372,10 @@ public class FormServiceProviderImpl implements FormServiceProvider {
             }
             throw new Exception(message);
         }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getAnyTodoListForm - end");
+        }
         return urlContext;
     }
 
@@ -1109,8 +1383,17 @@ public class FormServiceProviderImpl implements FormServiceProvider {
      * {@inheritDoc}
      */
     public ClassLoader getClassloader(final Map<String, Object> context) {
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getClassloader - start");
+        }
         final ProcessDefinitionUUID processDefinitionUUID = getProcessDefinitionUUID(context);
-        return ApplicationResourcesUtils.getProcessClassLoader(processDefinitionUUID);
+        ClassLoader classLoader = ApplicationResourcesUtils.getProcessClassLoader(processDefinitionUUID);
+        if (LOGGER.isLoggable(Level.FINER)) {
+            String time = DATE_FORMAT.format(new Date());
+            LOGGER.log(Level.FINER, "### " + time + " - getClassloader - end");
+        }
+        return classLoader;
     }
 
 }

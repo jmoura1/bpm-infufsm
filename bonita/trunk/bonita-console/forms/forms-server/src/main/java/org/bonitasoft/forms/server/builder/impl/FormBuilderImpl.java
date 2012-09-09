@@ -65,7 +65,7 @@ public class FormBuilderImpl implements IFormBuilder {
     /**
      * the product version constant
      */
-    public static final String PRODUCT_VERSION = "5.6";
+    public static final String PRODUCT_VERSION = "5.7";
 
     /**
      * the product version
@@ -1551,7 +1551,7 @@ public class FormBuilderImpl implements IFormBuilder {
     }
 
     public IFormBuilder addDisplayConditionExpression(final String displayConditionExpression) throws InvalidFormDefinitionException {
-        final String[] displayConditionParentsNames = { XMLForms.WIDGET };
+        final String[] displayConditionParentsNames = { XMLForms.WIDGET, XMLForms.WIDGETS_GROUP };
         try {
             peek(displayConditionParentsNames);
         } catch (final InvalidFormDefinitionException e) {

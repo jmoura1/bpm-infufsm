@@ -5,14 +5,14 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2.0 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.bonitasoft.console.client.model;
 
@@ -79,11 +79,11 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * org.bonitasoft.console.client.model.BonitaFilteredDataSource#getItem(java
      * .lang.Object, org.bonitasoft.console.client.common.data.AsyncHandler)
      */
+    @Override
     public void getItem(final U anUUID, final AsyncHandler<I> aHandler) {
         if (myFilter != null) {
             // Try to limit the number of calls to server.
@@ -143,6 +143,8 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
     @SuppressWarnings("unchecked")
     protected void getItemFromServerAndNotifyChanges(final U anUUID) {
         myRPCItemData.getItem(anUUID, myFilter, new AsyncHandler<I>() {
+
+            @Override
             public void handleFailure(Throwable anT) {
                 final ArrayList<AsyncHandler<I>> theHandlersInQueue = myGetItemHandlers.remove(anUUID);
                 GWT.log("Throwing error to handlers in queue for: " + anUUID);
@@ -153,6 +155,7 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
                 }
             }
 
+            @Override
             public void handleSuccess(I anResult) {
                 if (myKnownItems == null) {
                     myKnownItems = new HashMap<U, I>();
@@ -179,22 +182,22 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * org.bonitasoft.console.client.model.BonitaFilteredDataSource#getItemFilter
      * ()
      */
+    @Override
     public F getItemFilter() {
         return myFilter;
     }
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * org.bonitasoft.console.client.model.BonitaFilteredDataSource#getItems
      * (java .util.List, org.bonitasoft.console.client.common.data.AsyncHandler)
      */
+    @Override
     @SuppressWarnings("unchecked")
     public void getItems(final List<U> aUUIDSelection, final AsyncHandler<List<I>> aHandler) {
         if (myFilter != null) {
@@ -202,6 +205,8 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
                 Window.alert("Querying with an empty selection!");
             }
             myRPCItemData.getItems(aUUIDSelection, myFilter, new AsyncHandler<List<I>>() {
+
+                @Override
                 public void handleFailure(Throwable aT) {
                     if (aT instanceof SessionTimeOutException) {
                         myChanges.fireModelChange(TIMEOUT_PROPERTY, false, true);
@@ -219,6 +224,7 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
                     }
                 }
 
+                @Override
                 public void handleSuccess(List<I> anResult) {
                     if (anResult != null) {
                         if (anResult.size() > 0) {
@@ -228,14 +234,18 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
                             updateItems(anResult);
                         } else {
                             for (U theUUID : aUUIDSelection) {
-                                myKnownItems.remove(theUUID);
+                                if (myKnownItems != null) {
+                                    myKnownItems.remove(theUUID);
+                                }
                             }
                         }
                     }
                     if (aHandler != null) {
                         final ArrayList<I> theResult = new ArrayList<I>();
                         for (U theUUID : aUUIDSelection) {
-                            theResult.add(myKnownItems.get(theUUID));
+                            if (myKnownItems != null && myKnownItems.get(theUUID) != null) {
+                                theResult.add(myKnownItems.get(theUUID));
+                            }
                         }
                         aHandler.handleSuccess(theResult);
                     }
@@ -248,21 +258,21 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * org.bonitasoft.console.client.model.BonitaFilteredDataSource#getSize()
      */
+    @Override
     public int getSize() {
         return mySize;
     }
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * org.bonitasoft.console.client.model.BonitaFilteredDataSource#getVisibleItems
      * ()
      */
+    @Override
     @SuppressWarnings("unchecked")
     public List<U> getVisibleItems() {
         List<U> theResult = null;
@@ -282,10 +292,13 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
         return theResult;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void listItems(final F aFilter, final AsyncHandler<ItemUpdates<I>> aHandler) {
         if (aFilter != null) {
             myRPCItemData.getAllItems(aFilter, new AsyncHandler<ItemUpdates<I>>() {
+
+                @Override
                 public void handleFailure(Throwable aT) {
                     if (aT instanceof SessionTimeOutException) {
                         myChanges.fireModelChange(TIMEOUT_PROPERTY, false, true);
@@ -303,6 +316,7 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
                     }
                 }
 
+                @Override
                 public void handleSuccess(ItemUpdates<I> anResult) {
                     if (anResult != null) {
                         if (myKnownItems == null) {
@@ -329,16 +343,17 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
     /**
      * @return the itemSelection
      */
+    @Override
     public ItemSelection<U> getItemSelection() {
         return myItemSelection;
     }
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * org.bonitasoft.console.client.model.BonitaFilteredDataSource#reload()
      */
+    @Override
     @SuppressWarnings("unchecked")
     public void reload() {
         // Reload asynchronously data from server.
@@ -347,7 +362,7 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
             GWT.log("---RPC (Filter): from " + myFilter.getStartingIndex());
             GWT.log("---RPC (Filter): to   " + (myFilter.getStartingIndex() + myFilter.getMaxElementCount()));
             resetVisibleItems();
-            if(myMessageDataSource!=null) {
+            if (myMessageDataSource != null) {
                 myMessageDataSource.addInfoMessage(messages.loading());
             }
             myRPCItemData.getAllItems(myFilter, myItemsHandler);
@@ -369,15 +384,16 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * org.bonitasoft.console.client.model.BonitaFilteredDataSource#setItemFilter
      * (org.bonitasoft.console.client.ItemFilter)
      */
+    @Override
     public void setItemFilter(F aFilter) {
         myFilter = aFilter;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void deleteItems(final List<U> anItemSelection, final AsyncHandler<ItemUpdates<I>> aHandler) {
         if (myFilter != null && anItemSelection != null && !anItemSelection.isEmpty()) {
@@ -385,6 +401,8 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
             GWT.log("---RPC (Filter): from " + myFilter.getStartingIndex());
             GWT.log("---RPC (Filter): to   " + (myFilter.getStartingIndex() + myFilter.getMaxElementCount()));
             myRPCItemData.deleteItems(anItemSelection, myFilter, myItemsHandler, new AsyncHandler<ItemUpdates<I>>() {
+
+                @Override
                 public void handleFailure(Throwable aT) {
                     if (aT instanceof SessionTimeOutException) {
                         myChanges.fireModelChange(TIMEOUT_PROPERTY, false, true);
@@ -402,6 +420,7 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
                     }
                 }
 
+                @Override
                 public void handleSuccess(ItemUpdates<I> aResult) {
                     if (aHandler != null) {
                         aHandler.handleSuccess(aResult);
@@ -417,24 +436,25 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * org.bonitasoft.console.client.model.BonitaFilteredDataSource#updateItem
      * (org.bonitasoft.console.client.BonitaUUID,
      * org.bonitasoft.console.client.Item,
      * org.bonitasoft.console.client.common.data.AsyncHandler<I>[])
      */
+    @Override
     @SuppressWarnings("unchecked")
     public void updateItem(final U anUUID, I anItem, final AsyncHandler<I> aHandler) {
         if (anUUID != null && anItem != null) {
             GWT.log("RPC: updating item");
             myRPCItemData.updateItem(anUUID, anItem, new AsyncHandler<I>() {
+
                 /*
                  * (non-Javadoc)
-                 * 
                  * @seeorg.bonitasoft.console.client.common.data.AsyncHandler#
                  * handleFailure (java.lang.Throwable)
                  */
+                @Override
                 public void handleFailure(Throwable aT) {
                     if (aT instanceof SessionTimeOutException) {
                         myChanges.fireModelChange(TIMEOUT_PROPERTY, false, true);
@@ -453,6 +473,7 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
                 }
 
+                @Override
                 public void handleSuccess(I result) {
                     if (result != null) {
                         if (myKnownItems == null) {
@@ -474,15 +495,17 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * org.bonitasoft.console.client.model.BonitaFilteredDataSource#addItem(org
      * .bonitasoft.console.client.Item,
      * org.bonitasoft.console.client.common.data.AsyncHandler)
      */
+    @Override
     @SuppressWarnings("unchecked")
     public void addItem(final I anItem, final AsyncHandler<ItemUpdates<I>> aHandler) {
         myRPCItemData.addItem(anItem, myFilter, myItemsHandler, new AsyncHandler<ItemUpdates<I>>() {
+
+            @Override
             public void handleFailure(Throwable aT) {
                 if (aT instanceof SessionTimeOutException) {
                     myChanges.fireModelChange(TIMEOUT_PROPERTY, false, true);
@@ -500,15 +523,16 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
                 }
             }
 
+            @Override
             public void handleSuccess(ItemUpdates<I> result) {
                 if (aHandler != null) {
                     final ItemUpdates<I> theResult = new ItemUpdates<I>(myVisibleItems, myVisibleItems.size());
-                    if(result.getNewlyCreatedItem()!=null) {
-                        theResult.setNewlyCreatedItem(getItem((U)result.getNewlyCreatedItem().getUUID()));
+                    if (result.getNewlyCreatedItem() != null) {
+                        theResult.setNewlyCreatedItem(getItem((U) result.getNewlyCreatedItem().getUUID()));
                     }
                     aHandler.handleSuccess(theResult);
                 }
-                myChanges.fireModelChange(ITEM_CREATED_PROPERTY, false, getItem((U)result.getNewlyCreatedItem().getUUID()));
+                myChanges.fireModelChange(ITEM_CREATED_PROPERTY, false, getItem((U) result.getNewlyCreatedItem().getUUID()));
             }
         });
 
@@ -516,12 +540,12 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * org.bonitasoft.console.client.model.BonitaDataSource#addModelChangeListener
      * (java.lang.String,
      * org.bonitasoft.console.client.events.ModelChangeListener)
      */
+    @Override
     public void addModelChangeListener(String aPropertyName, ModelChangeListener aListener) {
         removeModelChangeListener(aPropertyName, aListener);
         myChanges.addModelChangeListener(aPropertyName, aListener);
@@ -530,17 +554,18 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
     /*
      * (non-Javadoc)
-     * 
      * @seeorg.bonitasoft.console.client.model.BonitaDataSource#
      * removeModelChangeListener (java.lang.String,
      * org.bonitasoft.console.client.events.ModelChangeListener)
      */
+    @Override
     public void removeModelChangeListener(String aPropertyName, ModelChangeListener aListener) {
         myChanges.removeModelChangeListener(aPropertyName, aListener);
     }
 
     class ItemsHandler implements AsyncHandler<ItemUpdates<I>> {
 
+        @Override
         @SuppressWarnings("unchecked")
         public void handleSuccess(ItemUpdates<I> aResult) {
             GWT.log("RPC-response: received new items");
@@ -560,7 +585,7 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
             // update the local data.
             updateItems(aResult.getItems());
-            if(aResult.getNewlyCreatedItem()!=null) {
+            if (aResult.getNewlyCreatedItem() != null) {
                 updateItems(Arrays.asList(aResult.getNewlyCreatedItem()));
             }
 
@@ -581,7 +606,7 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
             // Store the total size.
             mySize = aResult.getNbOfItems();
-            if(myMessageDataSource!=null) {
+            if (myMessageDataSource != null) {
                 myMessageDataSource.addInfoMessage(patterns.lastTimeRefreshed(DateTimeFormat.getFormat(constants.timeShortFormat()).format(new Date())));
             }
             myChanges.fireModelChange(ITEM_LIST_PROPERTY, theOldValue, myVisibleItems);
@@ -590,11 +615,11 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
         /*
          * (non-Javadoc)
-         * 
          * @see
          * org.bonitasoft.console.client.common.data.AsyncHandler#handleFailure
          * (java.lang.Throwable)
          */
+        @Override
         public void handleFailure(Throwable aT) {
             isLoading = false;
             if (aT instanceof SessionTimeOutException) {
@@ -630,11 +655,11 @@ public class DefaultFilteredDataSourceImpl<U extends BonitaUUID, I extends Item,
 
     /*
      * (non-Javadoc)
-     * 
      * @see
      * org.bonitasoft.console.client.model.BonitaFilteredDataSource#getItem(org
      * .bonitasoft.console.client.BonitaUUID)
      */
+    @Override
     public I getItem(U anUUID) {
         if (myKnownItems != null) {
             return myKnownItems.get(anUUID);

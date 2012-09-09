@@ -18,6 +18,8 @@ package org.bonitasoft.forms.server.accessor.widget;
 
 import java.util.Date;
 
+import javax.xml.xpath.XPath;
+
 import org.bonitasoft.forms.server.accessor.widget.impl.EngineWidgetBuilderImplFactory;
 import org.bonitasoft.forms.server.accessor.widget.impl.XMLWidgetBuilderImpl;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
@@ -28,8 +30,8 @@ import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
  */
 public class WidgetBuilderFactory {
 
-    public static IXMLWidgetBuilder getXMLWidgetBuilder(final ProcessDefinitionUUID processDefinitionUUID, final String locale, final Date processDeployementDate) {
-        return XMLWidgetBuilderImpl.getInstance();
+    public static IXMLWidgetBuilder getXMLWidgetBuilder(final XPath xpathEvaluator, final ProcessDefinitionUUID processDefinitionUUID, final String locale, final Date processDeployementDate) {
+        return new XMLWidgetBuilderImpl(xpathEvaluator);
     }
     
     /**

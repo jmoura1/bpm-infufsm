@@ -100,7 +100,7 @@ public class RichTextWidget extends Composite {
         this.isEnabled = isEnabled;
         richTextArea.setEnabled(isEnabled);
         richTextToolbar.setVisible(isEnabled);
-        if (isEnabled) {
+        if (!isEnabled) {
             richTextArea.addStyleName("bonita_richTextArea_disabled");
         }
     }

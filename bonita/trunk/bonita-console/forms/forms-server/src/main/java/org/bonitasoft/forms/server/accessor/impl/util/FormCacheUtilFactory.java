@@ -30,14 +30,14 @@ public class FormCacheUtilFactory {
     private static Map<String, FormCacheUtil> map = new HashMap<String, FormCacheUtil>();
     
     /**
-     * Get FormCacheUtil of different Domain
-     * @return FormCacheUtil
+     * Get FormCacheUtilExt for the current domain
+     * @return FormCacheUtilExt
      */
-    public static FormCacheUtil getTenancyFormCacheUtil() {
+    public synchronized static FormCacheUtil getTenancyFormCacheUtil(){
         String domain = ThreadLocalManager.getDomain();
         if(!map.containsKey(domain)){
             map.put(domain, new FormCacheUtil());
-        }
+        } 
         return map.get(domain);
     }
 }

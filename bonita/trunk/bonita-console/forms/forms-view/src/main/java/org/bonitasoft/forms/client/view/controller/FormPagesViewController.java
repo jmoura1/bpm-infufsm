@@ -5,14 +5,14 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2.0 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.bonitasoft.forms.client.view.controller;
 
@@ -41,6 +41,7 @@ import org.bonitasoft.forms.client.model.FormWidget;
 import org.bonitasoft.forms.client.model.HtmlTemplate;
 import org.bonitasoft.forms.client.model.WidgetType;
 import org.bonitasoft.forms.client.model.exception.FileTooBigException;
+import org.bonitasoft.forms.client.model.exception.FormAlreadySubmittedException;
 import org.bonitasoft.forms.client.model.exception.SessionTimeOutException;
 import org.bonitasoft.forms.client.rpc.FormsServiceAsync;
 import org.bonitasoft.forms.client.view.SupportedFieldTypes;
@@ -48,13 +49,19 @@ import org.bonitasoft.forms.client.view.common.DOMUtils;
 import org.bonitasoft.forms.client.view.common.RpcFormsServices;
 import org.bonitasoft.forms.client.view.common.URLUtils;
 import org.bonitasoft.forms.client.view.common.URLUtilsFactory;
+import org.bonitasoft.forms.client.view.widget.ElementAttributeSupport;
 import org.bonitasoft.forms.client.view.widget.FormButtonWidget;
 import org.bonitasoft.forms.client.view.widget.FormFieldWidget;
 import org.bonitasoft.forms.client.view.widget.FormMessageWidget;
 import org.bonitasoft.forms.client.view.widget.FormValidationMessageWidget;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.History;
@@ -78,13 +85,15 @@ public class FormPagesViewController {
     /**
      * action type after a form validation
      */
-    protected static enum ACTION_TYPE {PREVIOUS, NEXT, SUBMIT};
+    protected static enum ACTION_TYPE {
+        PREVIOUS, NEXT, SUBMIT
+    };
 
     /**
      * mandatory form field symbol
      */
     protected String mandatoryFieldSymbol;
-    
+
     /**
      * mandatory form field label
      */
@@ -94,12 +103,12 @@ public class FormPagesViewController {
      * mandatory form field symbol classes
      */
     protected String mandatoryFieldClasses;
-    
+
     /**
      * login service
      */
     private final LoginServiceAsync loginServiceAsync;
-    
+
     /**
      * forms RPC service
      */
@@ -109,7 +118,7 @@ public class FormPagesViewController {
      * Utility Class form DOM manipulation
      */
     protected DOMUtils domUtils = DOMUtils.getInstance();
-    
+
     /**
      * Utility Class form URL manipulation
      */
@@ -119,12 +128,12 @@ public class FormPagesViewController {
      * index of the currently displayed page in the list of pages ids
      */
     protected int currentPageIndex = 0;
-    
+
     /**
      * the pressed submit button
      */
     protected Widget pressedButton;
-    
+
     /**
      * the pressed label buttons
      */
@@ -160,7 +169,7 @@ public class FormPagesViewController {
      * Map of form messages already displayed in the page flow
      */
     protected Map<String, FormMessageWidget> messageWidgets = new HashMap<String, FormMessageWidget>();
-    
+
     /**
      * Map of form iframes already displayed in the page flow
      */
@@ -170,7 +179,7 @@ public class FormPagesViewController {
      * Map of the flow's widget values
      */
     protected Map<String, FormFieldValue> widgetValues = new HashMap<String, FormFieldValue>();
-    
+
     /**
      * Handler allowing to display a page after the RPC call retrieving its
      * definition
@@ -186,32 +195,33 @@ public class FormPagesViewController {
      * Handler allowing to display the next form
      */
     protected NextFormHandler nextFormHandler = new NextFormHandler();
-    
+
     /**
      * application template panel (can be null in form only mode)
      */
     protected HTMLPanel applicationHTMLPanel;
-    
+
     /**
      * current page template panel
      */
     protected HTMLPanel pageHTMLPanel;
-    
+
     /**
      * The logged in user
      */
     protected User user;
 
     protected String formID;
-    
+
     protected String elementId;
-    
-    protected Map<String,Object> urlContext ;
-    
+
+    protected Map<String, Object> urlContext;
+
     /**
      * Constructor
      */
-    public FormPagesViewController(final String formID, final Map<String,Object> contextMap,final FormPage firstPage, final HTMLPanel applicationHTMLPanel, final User user ,final String elementId) {
+    public FormPagesViewController(final String formID, final Map<String, Object> contextMap, final FormPage firstPage, final HTMLPanel applicationHTMLPanel,
+            final User user, final String elementId) {
 
         this.user = user;
         this.formID = formID;
@@ -229,7 +239,8 @@ public class FormPagesViewController {
     /**
      * Display the page at the given index
      * 
-     * @param newIndex index of the page in the page list
+     * @param newIndex
+     *            index of the page in the page list
      */
     public void displayPage(final int newIndex) throws IndexOutOfBoundsException {
 
@@ -252,7 +263,7 @@ public class FormPagesViewController {
                     final Map<String, FormFieldValue> fieldValues = new HashMap<String, FormFieldValue>();
                     fieldValues.putAll(widgetValues);
                     if (formID != null) {
-                        formsServiceAsync.getFormNextPage(formID,urlContext, nextPageExpression, fieldValues, formsPageHandler);
+                        formsServiceAsync.getFormNextPage(formID, urlContext, nextPageExpression, fieldValues, formsPageHandler);
                     }
                 }
             }
@@ -261,7 +272,7 @@ public class FormPagesViewController {
             throw new IndexOutOfBoundsException("No page was found for index " + newIndex);
         }
     }
-    
+
     /**
      * Handler allowing to display the form
      */
@@ -271,7 +282,7 @@ public class FormPagesViewController {
          * {@inheritDoc}
          */
         public void onFailure(final Throwable t) {
-            
+
             if (t instanceof SessionTimeOutException) {
                 if (!domUtils.consoleRefreshAndRedirectToInbox()) {
                     Window.Location.reload();
@@ -279,7 +290,8 @@ public class FormPagesViewController {
             } else {
                 final String errorMessage = FormsResourceBundle.getErrors().pageRetrievalError();
                 if (formID != null) {
-                    formsServiceAsync.getApplicationErrorTemplate(formID, urlContext,new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage, t,elementId));
+                    formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel,
+                            errorMessage, t, elementId));
                 }
             }
             enableButton(pressedButton);
@@ -289,45 +301,72 @@ public class FormPagesViewController {
          * {@inheritDoc}
          */
         public void onSuccess(final FormPage formPage) {
-        	
-        	final String pageId = formPage.getPageId();
-        	followedPagesIds.add(pageId);
-        	boolean hasAlreadyBeenDisplayed = false;
-        	if (formPages.get(pageId) != null) {
-        	    hasAlreadyBeenDisplayed = true;
-        	}
-    	    formPages.put(pageId, formPage);
-            buildPage(formPage, hasAlreadyBeenDisplayed, true);
+
+            try {
+                RequestBuilder theRequestBuilder;
+                final String theURL = urlUtils.buildLayoutURL(formPage.getPageTemplate().getBodyContentId(), (String) urlContext.get(URLUtils.TASK_ID_PARAM),
+                        true);
+                GWT.log("Calling the Form Layout Download Servlet with query: " + theURL);
+                theRequestBuilder = new RequestBuilder(RequestBuilder.GET, theURL);
+                theRequestBuilder.setCallback(new RequestCallback() {
+
+                    public void onError(Request aRequest, Throwable anException) {
+                        final String errorMessage = FormsResourceBundle.getErrors().applicationConfigRetrievalError();
+                        formsServiceAsync.getApplicationErrorTemplate(formPage.getPageId(), urlContext, new ErrorPageHandler(null, formPage.getPageId(),
+                                errorMessage, anException, elementId));
+                    }
+
+                    public void onResponseReceived(Request aRequest, Response aResponse) {
+                        final String pageId = formPage.getPageId();
+                        followedPagesIds.add(pageId);
+                        boolean hasAlreadyBeenDisplayed = false;
+                        if (formPages.get(pageId) != null) {
+                            hasAlreadyBeenDisplayed = true;
+                        }
+                        formPage.getPageTemplate().setBodyContent(aResponse.getText());
+                        formPages.put(pageId, formPage);
+                        buildPage(formPage, hasAlreadyBeenDisplayed, true);
+                    }
+                });
+                theRequestBuilder.send();
+            } catch (Exception e) {
+                Window.alert("Error while trying to query the form layout :" + e.getMessage());
+            }
+
         }
     }
 
     /**
      * Build the page (template + form fields)
      * 
-     * @param formPage the page definition
-     * @param hasAlreadyBeenDisplayed indicates whether the page has already been displayed or not
-     * @param isNextPage indicate if the page to display is the next page
+     * @param formPage
+     *            the page definition
+     * @param hasAlreadyBeenDisplayed
+     *            indicates whether the page has already been displayed or not
+     * @param isNextPage
+     *            indicate if the page to display is the next page
      */
     protected void buildPage(final FormPage formPage, final boolean hasAlreadyBeenDisplayed, final boolean isNextPage) {
 
         enableButton(pressedButton);
         final HtmlTemplate pageTemplate = formPage.getPageTemplate();
         if (pageHTMLPanel != null) {
-        	if(applicationHTMLPanel != null){
-        		applicationHTMLPanel.remove(pageHTMLPanel);
-        	}
+            if (applicationHTMLPanel != null) {
+                applicationHTMLPanel.remove(pageHTMLPanel);
+            }
         }
         pageHTMLPanel = new HTMLPanel(pageTemplate.getBodyContent());
-        final String onloadAttributeValue = domUtils.insertPageTemplate(pageTemplate.getHeadNodes(), pageHTMLPanel, pageTemplate.getBodyAttributes(), applicationHTMLPanel, elementId);
+        final String onloadAttributeValue = domUtils.insertPageTemplate(pageTemplate.getHeadNodes(), pageHTMLPanel, pageTemplate.getBodyAttributes(),
+                applicationHTMLPanel, elementId);
         final Element pageLabelElement = DOM.getElementById(DOMUtils.PAGE_LABEL_ELEMENT_ID);
         if (pageLabelElement != null) {
             String pageLabel = formPage.getPageLabel();
-            if(pageLabel.startsWith("#")) {
-            	pageLabel = FormsResourceBundle.getMessages().caseStartLabelPrefix() + " " + pageLabel.substring(1);
+            if (pageLabel.startsWith("#")) {
+                pageLabel = FormsResourceBundle.getMessages().caseStartLabelPrefix() + " " + pageLabel.substring(1);
             }
             domUtils.insertInElement(pageHTMLPanel, DOMUtils.PAGE_LABEL_ELEMENT_ID, pageLabel, !formPage.allowHTMLInLabel());
         }
-        
+
         if (FormType.entry == formPage.getFormType()) {
             buildEditMode(pageHTMLPanel, formPage, hasAlreadyBeenDisplayed, isNextPage, onloadAttributeValue);
             final String autoSubmit = (String) urlContext.get(URLUtils.AUTO_SUBMIT_PARAM);
@@ -342,18 +381,25 @@ public class FormPagesViewController {
             buildViewMode(pageHTMLPanel, formPage, hasAlreadyBeenDisplayed, isNextPage, onloadAttributeValue);
         }
         resizeFrame();
-        
+
     }
 
     /**
      * Insert the widgets in the page for the view mode
-     * @param pageHTMLPanel the HTMLPanel
-     * @param formPage the page definition
-     * @param hasAlreadyBeenDisplayed indicates whether the page has already been displayed or not
-     * @param isNextPage indicate if the page to display is the next page
-     * @param onloadAttributeValue the onload attribute value if it exists
+     * 
+     * @param pageHTMLPanel
+     *            the HTMLPanel
+     * @param formPage
+     *            the page definition
+     * @param hasAlreadyBeenDisplayed
+     *            indicates whether the page has already been displayed or not
+     * @param isNextPage
+     *            indicate if the page to display is the next page
+     * @param onloadAttributeValue
+     *            the onload attribute value if it exists
      */
-    protected void buildViewMode(final HTMLPanel pageHTMLPanel, final FormPage formPage, final boolean hasAlreadyBeenDisplayed, final boolean isNextPage, final String onloadAttributeValue) {
+    protected void buildViewMode(final HTMLPanel pageHTMLPanel, final FormPage formPage, final boolean hasAlreadyBeenDisplayed, final boolean isNextPage,
+            final String onloadAttributeValue) {
 
         final List<FormWidget> formWidgets = formPage.getFormWidgets();
         for (final FormWidget formWidgetData : formWidgets) {
@@ -372,7 +418,7 @@ public class FormPagesViewController {
                     buttonWidgets.put(widgetId, formButtonWidget);
                 }
                 insertWidget(pageHTMLPanel, formWidgetData, formButtonWidget, "bonita_form_button_entry");
-            // for text messages
+                // for text messages
             } else if (formWidgetData.getType().equals(WidgetType.MESSAGE)) {
                 FormMessageWidget formMessageWidget = null;
                 if (getValueFromHistory(hasAlreadyBeenDisplayed, isNextPage, formWidgetData)) {
@@ -382,13 +428,13 @@ public class FormPagesViewController {
                     messageWidgets.put(widgetId, formMessageWidget);
                 }
                 insertWidget(pageHTMLPanel, formWidgetData, formMessageWidget, "bonita_form_entry");
-            // for iframes
+                // for iframes
             } else if (formWidgetData.getType().equals(WidgetType.IFRAME)) {
                 Frame formFrameWidget = null;
                 if (getValueFromHistory(hasAlreadyBeenDisplayed, isNextPage, formWidgetData)) {
                     formFrameWidget = frameWidgets.get(widgetId);
                 } else {
-                    formFrameWidget = new Frame((String)formWidgetData.getInitialFieldValue().getValue());
+                    formFrameWidget = new Frame((String) formWidgetData.getInitialFieldValue().getValue());
                     frameWidgets.put(widgetId, formFrameWidget);
                 }
                 formFrameWidget.setStyleName("bonita_iframe");
@@ -399,15 +445,16 @@ public class FormPagesViewController {
                 final Element formFrameElement = formFrameWidget.getElement();
                 formFrameElement.setAttribute("frameBorder", "0");
                 formFrameElement.setAttribute("allowTransparency", "true");
+                addHTMLAttributes(formFrameWidget, formWidgetData);
                 insertWidget(pageHTMLPanel, formWidgetData, formFrameWidget, "bonita_form_entry");
-            // for form fields (Widgets other that buttons and text)
+                // for form fields (Widgets other that buttons and text)
             } else {
                 if (formWidgetData.isViewPageWidget() || formWidgetData.getVariableBound() != null) {
                     FormFieldWidget formFieldWidget = null;
                     if (getValueFromHistory(hasAlreadyBeenDisplayed, isNextPage, formWidgetData)) {
                         formFieldWidget = fieldWidgets.get(widgetId);
                     } else {
-                        formFieldWidget = new FormFieldWidget(formWidgetData,urlContext, mandatoryFieldSymbol, mandatoryFieldClasses);
+                        formFieldWidget = new FormFieldWidget(formWidgetData, urlContext, mandatoryFieldSymbol, mandatoryFieldClasses);
                         fieldWidgets.put(widgetId, formFieldWidget);
                     }
                     insertWidget(pageHTMLPanel, formWidgetData, formFieldWidget, "bonita_form_entry");
@@ -418,16 +465,28 @@ public class FormPagesViewController {
             domUtils.javascriptEval(onloadAttributeValue);
         }
     }
+    
+    protected void addHTMLAttributes(final Widget fieldWidget, final FormWidget formWidgetData) {
+    	final ElementAttributeSupport elementAttributeSupport = new ElementAttributeSupport();
+    	elementAttributeSupport.addHtmlAttributes(fieldWidget, formWidgetData.getHtmlAttributes());
+    }
 
     /**
      * Insert the widgets in the page for the edit mode
-     * @param pageHTMLPanel the HTMLPanel
-     * @param formPage the page definition
-     * @param hasAlreadyBeenDisplayed indicates whether the page has already been displayed or not
-     * @param isNextPage indicate if the page to display is the next page
-     * @param onloadAttributeValue the onload attribute value if it exists
+     * 
+     * @param pageHTMLPanel
+     *            the HTMLPanel
+     * @param formPage
+     *            the page definition
+     * @param hasAlreadyBeenDisplayed
+     *            indicates whether the page has already been displayed or not
+     * @param isNextPage
+     *            indicate if the page to display is the next page
+     * @param onloadAttributeValue
+     *            the onload attribute value if it exists
      */
-    protected void buildEditMode(final HTMLPanel pageHTMLPanel, final FormPage formPage, final boolean hasAlreadyBeenDisplayed, final boolean isNextPage, final String onloadAttributeValue) {
+    protected void buildEditMode(final HTMLPanel pageHTMLPanel, final FormPage formPage, final boolean hasAlreadyBeenDisplayed, final boolean isNextPage,
+            final String onloadAttributeValue) {
 
         final List<FormWidget> formWidgets = formPage.getFormWidgets();
         for (final FormWidget formWidgetData : formWidgets) {
@@ -446,7 +505,7 @@ public class FormPagesViewController {
                     buttonWidgets.put(widgetId, formButtonWidget);
                 }
                 insertWidget(pageHTMLPanel, formWidgetData, formButtonWidget, "bonita_form_button_entry");
-            // for text messages
+                // for text messages
             } else if (formWidgetData.getType().equals(WidgetType.MESSAGE)) {
                 FormMessageWidget formMessageWidget = null;
                 if (getValueFromHistory(hasAlreadyBeenDisplayed, isNextPage, formWidgetData)) {
@@ -456,13 +515,13 @@ public class FormPagesViewController {
                     messageWidgets.put(widgetId, formMessageWidget);
                 }
                 insertWidget(pageHTMLPanel, formWidgetData, formMessageWidget, "bonita_form_entry");
-            // for iframes
+                // for iframes
             } else if (formWidgetData.getType().equals(WidgetType.IFRAME)) {
                 Frame formFrameWidget = null;
                 if (getValueFromHistory(hasAlreadyBeenDisplayed, isNextPage, formWidgetData)) {
                     formFrameWidget = frameWidgets.get(widgetId);
                 } else {
-                    formFrameWidget = new Frame((String)formWidgetData.getInitialFieldValue().getValue());
+                    formFrameWidget = new Frame((String) formWidgetData.getInitialFieldValue().getValue());
                     frameWidgets.put(widgetId, formFrameWidget);
                 }
                 formFrameWidget.setStyleName("bonita_iframe");
@@ -473,10 +532,11 @@ public class FormPagesViewController {
                 final Element formFrameElement = formFrameWidget.getElement();
                 formFrameElement.setAttribute("frameBorder", "0");
                 formFrameElement.setAttribute("allowTransparency", "true");
+                addHTMLAttributes(formFrameWidget, formWidgetData);
                 insertWidget(pageHTMLPanel, formWidgetData, formFrameWidget, "bonita_form_entry");
-            // for form fields (Widgets other that buttons and text)
+                // for form fields (Widgets other that buttons and text)
             } else {
-                //set field value from the URL
+                // set field value from the URL
                 if (!formWidgetData.isReadOnly()) {
                     setFieldValueFromURL(formWidgetData, widgetId);
                 }
@@ -494,30 +554,39 @@ public class FormPagesViewController {
             domUtils.javascriptEval(onloadAttributeValue);
         }
     }
-    
+
     /**
      * Check if the value of the field should be retrieved from the history or recalculated
-     * @param hasAlreadyBeenDisplayed indicates whether the page has already been displayed or not
-     * @param isNextPage indicate if the page to display is the next page
-     * @param formWidgetData the widget definition
+     * 
+     * @param hasAlreadyBeenDisplayed
+     *            indicates whether the page has already been displayed or not
+     * @param isNextPage
+     *            indicate if the page to display is the next page
+     * @param formWidgetData
+     *            the widget definition
      * @return true if the value of the field should be retrieved from the history, false otherwise
      */
     protected boolean getValueFromHistory(final boolean hasAlreadyBeenDisplayed, final boolean isNextPage, final FormWidget formWidgetData) {
         if (isNextPage) {
-            String initialValueExpr = formWidgetData.getInitialValueExpression();
-            String availableValuesExpr = formWidgetData.getAvailableValuesExpression();
-            return hasAlreadyBeenDisplayed && !(initialValueExpr != null && initialValueExpr.contains("${")) && !(availableValuesExpr != null && availableValuesExpr.contains("${"));
+            String initialValueExpressionId = formWidgetData.getInitialValueExpressionId();
+            String availableValuesExpressionId = formWidgetData.getAvailableValuesExpressionId();
+            return hasAlreadyBeenDisplayed && initialValueExpressionId == null && availableValuesExpressionId == null;
         } else {
             return true;
         }
     }
-    
+
     /**
      * Insert the widget in the page
-     * @param pageHTMLPanel the HTMLPanel
-     * @param formWidgetData the widget definition
-     * @param widget the widget to insert
-     * @param containerStyle the style to apply to the container
+     * 
+     * @param pageHTMLPanel
+     *            the HTMLPanel
+     * @param formWidgetData
+     *            the widget definition
+     * @param widget
+     *            the widget to insert
+     * @param containerStyle
+     *            the style to apply to the container
      */
     protected void insertWidget(final HTMLPanel pageHTMLPanel, final FormWidget formWidgetData, final Widget widget, final String containerStyle) {
         if (Boolean.parseBoolean(formWidgetData.getDisplayConditionExpression())) {
@@ -530,51 +599,54 @@ public class FormPagesViewController {
             }
         }
     }
-    
+
     /**
      * Check in the URL if the initial value of the field is specified and override it
-     * @param formWidgetData the widget data
-     * @param widgetId the id of the widget
+     * 
+     * @param formWidgetData
+     *            the widget data
+     * @param widgetId
+     *            the id of the widget
      */
     protected void setFieldValueFromURL(final FormWidget formWidgetData, final String widgetId) {
-        
-        final String widgetValueInURL = Window.Location.getParameter(widgetId);
-        if (widgetValueInURL != null) {
+        final Object widgetValueObjectInURL = urlContext.get(widgetId);
+        if (widgetValueObjectInURL != null) {
+            final String widgetValueInURL = (String) widgetValueObjectInURL;
             try {
                 switch (formWidgetData.getType()) {
-                case TEXTBOX:
-                case TEXTAREA:
-                case LISTBOX_SIMPLE:
-                case RADIOBUTTON_GROUP:
-                case PASSWORD:
-                case SUGGESTBOX:
-                case SUGGESTBOX_ASYNC:
-                case HIDDEN:
-                    formWidgetData.getInitialFieldValue().setValue(widgetValueInURL);
-                    break;
-                case DATE:
-                    final Long millisWidgetValueInURL = Long.valueOf(widgetValueInURL);
-                    final Date dateFieldValue = new Date(millisWidgetValueInURL);
-                    formWidgetData.getInitialFieldValue().setValue(dateFieldValue);
-                    break;
-                case DURATION:
-                    final Long longWidgetValueInURL = Long.valueOf(widgetValueInURL);
-                    formWidgetData.getInitialFieldValue().setValue(longWidgetValueInURL);
-                    break;
-                case CHECKBOX:
-                    final Boolean booleanWidgetValueInURL = Boolean.valueOf(widgetValueInURL);
-                    formWidgetData.getInitialFieldValue().setValue(booleanWidgetValueInURL);
-                    break;
-                case LISTBOX_MULTIPLE:
-                case CHECKBOX_GROUP:
-                case TABLE:
-                    final String[] arrayWidgetValueInURL = widgetValueInURL.split(",");
-                    final List<String> listWidgetValueInURL = Arrays.asList(arrayWidgetValueInURL);
-                    formWidgetData.getInitialFieldValue().setValue((Serializable) listWidgetValueInURL);
-                    break;
-                default:
-                    //file upload widgets are not supported
-                    break;
+                    case TEXTBOX:
+                    case TEXTAREA:
+                    case LISTBOX_SIMPLE:
+                    case RADIOBUTTON_GROUP:
+                    case PASSWORD:
+                    case SUGGESTBOX:
+                    case SUGGESTBOX_ASYNC:
+                    case HIDDEN:
+                        formWidgetData.getInitialFieldValue().setValue(widgetValueInURL);
+                        break;
+                    case DATE:
+                        final Long millisWidgetValueInURL = Long.valueOf(widgetValueInURL);
+                        final Date dateFieldValue = new Date(millisWidgetValueInURL);
+                        formWidgetData.getInitialFieldValue().setValue(dateFieldValue);
+                        break;
+                    case DURATION:
+                        final Long longWidgetValueInURL = Long.valueOf(widgetValueInURL);
+                        formWidgetData.getInitialFieldValue().setValue(longWidgetValueInURL);
+                        break;
+                    case CHECKBOX:
+                        final Boolean booleanWidgetValueInURL = Boolean.valueOf(widgetValueInURL);
+                        formWidgetData.getInitialFieldValue().setValue(booleanWidgetValueInURL);
+                        break;
+                    case LISTBOX_MULTIPLE:
+                    case CHECKBOX_GROUP:
+                    case TABLE:
+                        final String[] arrayWidgetValueInURL = widgetValueInURL.split(",");
+                        final List<String> listWidgetValueInURL = Arrays.asList(arrayWidgetValueInURL);
+                        formWidgetData.getInitialFieldValue().setValue((Serializable) listWidgetValueInURL);
+                        break;
+                    default:
+                        // file upload widgets are not supported
+                        break;
                 }
             } catch (final Exception e) {
                 // Do nothing (the field will be set with it's original initialvalue)
@@ -584,10 +656,11 @@ public class FormPagesViewController {
 
     /**
      * Set a button's label and title
+     * 
      * @param formWidgetData
      */
     protected void setButtonLabel(final FormWidget formWidgetData) {
-        
+
         if (formWidgetData.getLabel().equals("#previousPageButtonLabel")) {
             final String previousButtonLabel = FormsResourceBundle.getMessages().previousPageButtonLabel();
             formWidgetData.setLabel(previousButtonLabel);
@@ -616,17 +689,17 @@ public class FormPagesViewController {
 
         final WidgetType buttonType = formButtonWidget.getWidgetType();
         switch (buttonType) {
-        case BUTTON_PREVIOUS:
-            formButtonWidget.addClickHandler(new PreviousPageClickHandler(isEditMode));
-            break;
-        case BUTTON_NEXT:
-            formButtonWidget.addClickHandler(new NextPageClickHandler(isEditMode));
-            break;
-        case BUTTON_SUBMIT:
-            formButtonWidget.addClickHandler(submitClickHandler);
-            break;
-        default:
-            break;
+            case BUTTON_PREVIOUS:
+                formButtonWidget.addClickHandler(new PreviousPageClickHandler(isEditMode));
+                break;
+            case BUTTON_NEXT:
+                formButtonWidget.addClickHandler(new NextPageClickHandler(isEditMode));
+                break;
+            case BUTTON_SUBMIT:
+                formButtonWidget.addClickHandler(submitClickHandler);
+                break;
+            default:
+                break;
         }
     }
 
@@ -641,7 +714,7 @@ public class FormPagesViewController {
          * @param editMode
          */
         public NextPageClickHandler(final boolean editMode) {
-            
+
             this.editMode = editMode;
         }
 
@@ -651,8 +724,8 @@ public class FormPagesViewController {
         public void onClick(final ClickEvent event) {
 
             final Object source = event.getSource();
-            if (!(source instanceof Label && pressedLabelButtons.contains((Label)source))) {
-                disableButton((Widget)source);
+            if (!(source instanceof Label && pressedLabelButtons.contains((Label) source))) {
+                disableButton((Widget) source);
                 if (editMode) {
                     validatePage(ACTION_TYPE.NEXT);
                 } else {
@@ -664,7 +737,8 @@ public class FormPagesViewController {
                         displayPage(newIndex);
                     } catch (final IndexOutOfBoundsException e) {
                         final String errorMessage = FormsResourceBundle.getErrors().pageIndexError(newIndex);
-                        formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage,elementId));
+                        formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID,
+                                pageHTMLPanel, errorMessage, elementId));
                         enableButton(pressedButton);
                     }
                 }
@@ -692,8 +766,8 @@ public class FormPagesViewController {
         public void onClick(final ClickEvent event) {
 
             final Object source = event.getSource();
-            if (!(source instanceof Label && pressedLabelButtons.contains((Label)source))) {
-                disableButton((Widget)source);
+            if (!(source instanceof Label && pressedLabelButtons.contains((Label) source))) {
+                disableButton((Widget) source);
                 final FormPage formPage = formPages.get(followedPagesIds.get(currentPageIndex));
                 recordValues(formPage.getFormWidgets());
                 final int newIndex = currentPageIndex - 1;
@@ -702,7 +776,8 @@ public class FormPagesViewController {
                     displayPage(newIndex);
                 } catch (final IndexOutOfBoundsException e) {
                     final String errorMessage = FormsResourceBundle.getErrors().pageIndexError(newIndex);
-                    formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage,elementId));
+                    formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel,
+                            errorMessage, elementId));
                     enableButton(pressedButton);
                 }
             }
@@ -718,46 +793,52 @@ public class FormPagesViewController {
          * submit the form
          */
         public void onClick(final ClickEvent event) {
-            
+
             final Object source = event.getSource();
-            if (!(source instanceof Label && pressedLabelButtons.contains((Label)source))) {
-                disableButton((Widget)source);
-                validatePage(ACTION_TYPE.SUBMIT);  
+            if (!(source instanceof Label && pressedLabelButtons.contains((Label) source))) {
+                disableButton((Widget) source);
+                validatePage(ACTION_TYPE.SUBMIT);
             }
-            
+
         }
     }
-    
+
     /**
      * Disable the button that was clicked
-     * @param button the button that was pressed
+     * 
+     * @param button
+     *            the button that was pressed
      */
     protected void disableButton(final Widget button) {
         if (button instanceof Button) {
-            ((Button)button).setEnabled(false);
+            ((Button) button).setEnabled(false);
         } else if (button instanceof Label) {
-            pressedLabelButtons.add((Label)button);
+            pressedLabelButtons.add((Label) button);
         }
         pressedButton = button;
     }
-    
+
     /**
      * Enable the button that was clicked
-     * @param button the button that was pressed
+     * 
+     * @param button
+     *            the button that was pressed
      */
     protected void enableButton(final Widget button) {
         if (button != null) {
             if (button instanceof Button) {
-                ((Button)button).setEnabled(true);
+                ((Button) button).setEnabled(true);
             } else if (button instanceof Label) {
-                pressedLabelButtons.remove((Label)button);
+                pressedLabelButtons.remove((Label) button);
             }
         }
     }
-    
+
     /**
      * Records a page's fields
-     * @param formWidgets the list of form widgets
+     * 
+     * @param formWidgets
+     *            the list of form widgets
      */
     protected void recordValues(final List<FormWidget> formWidgets) {
 
@@ -783,39 +864,42 @@ public class FormPagesViewController {
 
         // deals with the mandatory fields
         validateMandatoryFieldWidgets(formPage.getFormWidgets());
-        
+
         // evaluates the number of widget validations to performs and store the
         // widgets to validate
         final List<FormWidget> formWidgetsToValidate = getFormWidgetsToValidate(formPage.getFormWidgets());
 
         final List<FormValidator> pageValidators = formPage.getPageValidators();
-        
+
         final String submitButtonId = pressedButton.getElement().getParentElement().getParentElement().getId();
-        
+
         // fields validation
         if (!formWidgetsToValidate.isEmpty()) {
-        	final Map<String, List<FormValidator>> validators = new HashMap<String, List<FormValidator>>();
+            final Map<String, List<FormValidator>> validators = new HashMap<String, List<FormValidator>>();
             for (final FormWidget formWidget : formWidgetsToValidate) {
-            	cleanValidatorsMessages(formWidget.getValidators());
-            	if(Boolean.valueOf(formWidget.getDisplayConditionExpression())){
-            		validators.put(formWidget.getId(), formWidget.getValidators());
-            	}
+                cleanValidatorsMessages(formWidget.getValidators());
+                if (Boolean.valueOf(formWidget.getDisplayConditionExpression())) {
+                    validators.put(formWidget.getId(), formWidget.getValidators());
+                }
             }
-            
-        	formsServiceAsync.validateFormFields(formID, urlContext, validators, widgetValues, submitButtonId, new FormFieldValidatorHandler(actionAfterValidation, formPage.getPageValidators()));
+
+            formsServiceAsync.validateFormFields(formID, urlContext, validators, widgetValues, submitButtonId, new FormFieldValidatorHandler(
+                    actionAfterValidation, formPage.getPageValidators()));
         } else if (!pageValidators.isEmpty()) {
             cleanValidatorsMessages(pageValidators);
-            formsServiceAsync.validateFormPage(formID, urlContext, pageValidators, widgetValues, submitButtonId, new FormPageValidatorHandler(actionAfterValidation));
+            formsServiceAsync.validateFormPage(formID, urlContext, pageValidators, widgetValues, submitButtonId, new FormPageValidatorHandler(
+                    actionAfterValidation));
         } else if (isCurrentPageValid) {
-        	submitForm(actionAfterValidation);
+            submitForm(actionAfterValidation);
         } else {
             resizeFrame();
             enableButton(pressedButton);
         }
     }
-    
+
     /**
      * Validate the compliance of a list of widgets with their mandatory attributes
+     * 
      * @param formWidget
      */
     protected void validateMandatoryFieldWidgets(final List<FormWidget> formWidgets) {
@@ -826,28 +910,25 @@ public class FormPagesViewController {
             }
         }
     }
-    
+
     /**
      * Validate the compliance of a widget with its mandatory attribute
+     * 
      * @param mandatoryFieldWidget
      */
     protected void validateMandatoryField(final FormFieldWidget mandatoryFieldWidget) {
-		if (!mandatoryFieldWidget.isVisible()) {
-			return;
-		}
+        if (!mandatoryFieldWidget.isVisible()) {
+            return;
+        }
         mandatoryFieldWidget.setMandatoryLabel(mandatoryFieldSymbol);
         final FormFieldValue fieldValue = mandatoryFieldWidget.getValue();
-        if (((fieldValue.getValueType().equals(SupportedFieldTypes.JAVA_STRING_CLASSNAME) 
-                || fieldValue.getValueType().equals(SupportedFieldTypes.JAVA_FILE_CLASSNAME)) 
-                    && (fieldValue.getValue() == null || ((String)fieldValue.getValue()).length() == 0))
-                || (fieldValue.getValueType().equals(SupportedFieldTypes.JAVA_BOOLEAN_CLASSNAME) 
-                    && ((Boolean)fieldValue.getValue()).equals(Boolean.FALSE))
-                || (fieldValue.getValueType().equals(SupportedFieldTypes.JAVA_COLLECTION_CLASSNAME) 
-                    && (fieldValue.getValue() == null || ((Collection<?>)fieldValue.getValue()).isEmpty()))
-                || (fieldValue.getValueType().equals(SupportedFieldTypes.JAVA_LONG_CLASSNAME) 
-                    && ((Long)fieldValue.getValue()).equals(Long.valueOf(0L)))
-                || (fieldValue.getValueType().equals(SupportedFieldTypes.JAVA_DATE_CLASSNAME) 
-                        && fieldValue.getValue() == null)) {
+        if (((fieldValue.getValueType().equals(SupportedFieldTypes.JAVA_STRING_CLASSNAME) || fieldValue.getValueType().equals(
+                SupportedFieldTypes.JAVA_FILE_CLASSNAME)) && (fieldValue.getValue() == null || ((String) fieldValue.getValue()).length() == 0))
+                || (fieldValue.getValueType().equals(SupportedFieldTypes.JAVA_BOOLEAN_CLASSNAME) && ((Boolean) fieldValue.getValue()).equals(Boolean.FALSE))
+                || (fieldValue.getValueType().equals(SupportedFieldTypes.JAVA_COLLECTION_CLASSNAME) && (fieldValue.getValue() == null || ((Collection<?>) fieldValue
+                        .getValue()).isEmpty()))
+                || (fieldValue.getValueType().equals(SupportedFieldTypes.JAVA_LONG_CLASSNAME) && ((Long) fieldValue.getValue()).equals(Long.valueOf(0L)))
+                || (fieldValue.getValueType().equals(SupportedFieldTypes.JAVA_DATE_CLASSNAME) && fieldValue.getValue() == null)) {
             if (mandatoryFieldLabel.equals("#defaultMandatoryFieldLabel")) {
                 mandatoryFieldLabel = FormsResourceBundle.getMessages().defaultMandatoryFieldLabel();
             }
@@ -858,6 +939,7 @@ public class FormPagesViewController {
 
     /**
      * Get the form field widgets to validate
+     * 
      * @param formWidgets
      * @return the {@link List} of {@link FormWidget} to validate
      */
@@ -875,26 +957,26 @@ public class FormPagesViewController {
         }
         return formWidgetsToValidate;
     }
-    
+
     /**
      * Remove the validation messages of the given validators from the page
      * 
      * @param validators
      */
     protected void cleanValidatorsMessages(final List<FormValidator> validators) {
-        
+
         for (final FormValidator formValidator : validators) {
-        	final Element validatorEle = DOM.getElementById(formValidator.getId());
+            final Element validatorEle = DOM.getElementById(formValidator.getId());
             if (validatorEle != null) {
-            	DOM.setInnerHTML(validatorEle, "");
+                DOM.setInnerHTML(validatorEle, "");
             }
         }
     }
-    
+
     protected void submitForm(final ACTION_TYPE actionAfterValidation) {
         if (actionAfterValidation.equals(ACTION_TYPE.SUBMIT)) {
             final String submitButtonId = pressedButton.getElement().getParentElement().getParentElement().getId();
-            formsServiceAsync.executeActions(formID, urlContext, widgetValues, followedPagesIds, submitButtonId,  new FormSubmissionHandler());
+            formsServiceAsync.executeActions(formID, urlContext, widgetValues, followedPagesIds, submitButtonId, new FormSubmissionHandler());
         } else {
             int newIndex = currentPageIndex;
             if (actionAfterValidation.equals(ACTION_TYPE.PREVIOUS)) {
@@ -908,9 +990,11 @@ public class FormPagesViewController {
             } catch (final IndexOutOfBoundsException e) {
                 final String errorMessage = FormsResourceBundle.getErrors().pageIndexError(newIndex);
                 if (formID != null) {
-                    formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage,elementId));
+                    formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel,
+                            errorMessage, elementId));
                 } else {
-                    formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage,elementId));
+                    formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel,
+                            errorMessage, elementId));
                 }
             }
         }
@@ -935,7 +1019,7 @@ public class FormPagesViewController {
          * {@inheritDoc}
          */
         public void onFailure(final Throwable t) {
-            
+
             if (t instanceof SessionTimeOutException) {
                 if (!domUtils.consoleRefreshAndRedirectToInbox()) {
                     Window.Location.reload();
@@ -943,9 +1027,11 @@ public class FormPagesViewController {
             } else {
                 final String errorMessage = FormsResourceBundle.getErrors().fieldValidationError();
                 if (formID != null) {
-                    formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage,elementId));
+                    formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel,
+                            errorMessage, elementId));
                 } else {
-                    formsServiceAsync.getApplicationErrorTemplate(formID,urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage,elementId));
+                    formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel,
+                            errorMessage, elementId));
                 }
             }
             enableButton(pressedButton);
@@ -957,9 +1043,9 @@ public class FormPagesViewController {
         public void onSuccess(final Map<String, List<FormValidator>> fieldValidators) {
 
             if (!fieldValidators.isEmpty()) {
-            	for (final Entry<String, List<FormValidator>> fieldValidatorsEntry : fieldValidators.entrySet()) {
+                for (final Entry<String, List<FormValidator>> fieldValidatorsEntry : fieldValidators.entrySet()) {
                     // set the focus on the first invalid form field
-            		final FormFieldWidget fieldWidget = fieldWidgets.get(fieldValidatorsEntry.getKey());
+                    final FormFieldWidget fieldWidget = fieldWidgets.get(fieldValidatorsEntry.getKey());
                     if (isCurrentPageValid) {
                         if (fieldWidget != null) {
                             fieldWidget.setFocusOn();
@@ -970,21 +1056,22 @@ public class FormPagesViewController {
                         final FormValidationMessageWidget formValidationMessageWidget = new FormValidationMessageWidget(fieldValidator, false);
                         final String validatorId = fieldValidator.getId();
                         final Element validatorElement = DOM.getElementById(validatorId);
-                        if(validatorElement != null) {
-                        	DOM.appendChild(validatorElement, formValidationMessageWidget.getElement());
+                        if (validatorElement != null) {
+                            DOM.appendChild(validatorElement, formValidationMessageWidget.getElement());
                         } else {
                             Window.alert("An element with id " + validatorId + " is missing from the page template.");
                         }
                     }
-				}
+                }
             }
             // once the fields validation is over perform the page validation
             if (!pageValidators.isEmpty()) {
-	            cleanValidatorsMessages(pageValidators);
-	            final String submitButtonId = pressedButton.getElement().getParentElement().getParentElement().getId();
-	            formsServiceAsync.validateFormPage(formID, urlContext, pageValidators, widgetValues, submitButtonId, new FormPageValidatorHandler(actionAfterValidation));
+                cleanValidatorsMessages(pageValidators);
+                final String submitButtonId = pressedButton.getElement().getParentElement().getParentElement().getId();
+                formsServiceAsync.validateFormPage(formID, urlContext, pageValidators, widgetValues, submitButtonId, new FormPageValidatorHandler(
+                        actionAfterValidation));
             } else if (isCurrentPageValid) {
-            	submitForm(actionAfterValidation);
+                submitForm(actionAfterValidation);
             } else {
                 resizeFrame();
                 enableButton(pressedButton);
@@ -1016,9 +1103,11 @@ public class FormPagesViewController {
             } else {
                 final String errorMessage = FormsResourceBundle.getErrors().pageValidationError();
                 if (formID != null) {
-                    formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage,elementId));
+                    formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel,
+                            errorMessage, elementId));
                 } else {
-                    formsServiceAsync.getApplicationErrorTemplate(formID,urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage,elementId));
+                    formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel,
+                            errorMessage, elementId));
                 }
             }
             enableButton(pressedButton);
@@ -1034,7 +1123,7 @@ public class FormPagesViewController {
                 for (final FormValidator pageValidator : pageValidators) {
                     final FormValidationMessageWidget formValidationMessageWidget = new FormValidationMessageWidget(pageValidator, true);
                     final String validatorId = pageValidator.getId();
-                    if(RootPanel.get(validatorId) != null) {
+                    if (RootPanel.get(validatorId) != null) {
                         RootPanel.get(validatorId).add(formValidationMessageWidget);
                     } else {
                         Window.alert("An element with id " + validatorId + " is missing from the page template.");
@@ -1043,7 +1132,7 @@ public class FormPagesViewController {
             }
             // action
             if (isCurrentPageValid) {
-            	submitForm(actionAfterValidation);
+                submitForm(actionAfterValidation);
             } else {
                 resizeFrame();
                 enableButton(pressedButton);
@@ -1073,7 +1162,7 @@ public class FormPagesViewController {
             }
         }
     }
-    
+
     /**
      * Handler to deal with what happens after a form submission
      */
@@ -1084,10 +1173,14 @@ public class FormPagesViewController {
          */
         public void onFailure(final Throwable t) {
 
-            if (t instanceof FileTooBigException) {
+            if (t instanceof FormAlreadySubmittedException) {
+                final String errorMessage = FormsResourceBundle.getErrors().formAlreadySubmittedOrCanceledError();
+                formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage, elementId));
+            } else if (t instanceof FileTooBigException) {
                 final String fileName = ((FileTooBigException) t).getFileName();
+                final String maxSize = ((FileTooBigException) t).getMaxSize();
                 if (fileName != null) {
-                    Window.alert(FormsResourceBundle.getErrors().fileTooBigErrorWithName(fileName));
+                    Window.alert(FormsResourceBundle.getErrors().fileTooBigErrorWithNameAndSize(fileName, maxSize));
                 } else {
                     Window.alert(FormsResourceBundle.getErrors().fileTooBigError());
                 }
@@ -1097,7 +1190,8 @@ public class FormPagesViewController {
                 }
             } else {
                 final String errorMessage = FormsResourceBundle.getErrors().formSubmissionError();
-                formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage, elementId));
+                formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel,
+                        errorMessage, elementId));
             }
             enableButton(pressedButton);
         }
@@ -1121,12 +1215,12 @@ public class FormPagesViewController {
             }
         }
     }
-    
-    
+
     /**
      * Handler allowing to display the next form
      */
     protected class NextFormHandler implements AsyncCallback<FormURLComponents> {
+
         /**
          * {@inheritDoc}
          */
@@ -1137,9 +1231,11 @@ public class FormPagesViewController {
             } else {
                 final String errorMessage = FormsResourceBundle.getErrors().nextTaskRetrievalError();
                 if (formID != null) {
-                    formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage, elementId));
+                    formsServiceAsync.getApplicationErrorTemplate(errorMessage, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel,
+                            errorMessage, elementId));
                 } else {
-                    formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel, errorMessage, elementId));
+                    formsServiceAsync.getApplicationErrorTemplate(formID, urlContext, new ErrorPageHandler(applicationHTMLPanel, formID, pageHTMLPanel,
+                            errorMessage, elementId));
                 }
             }
         }
@@ -1151,11 +1247,12 @@ public class FormPagesViewController {
 
             if (nextFormURL != null) {
                 final String applicationURL = nextFormURL.getApplicationURL();
-               
                 final Map<String, Object> urlContextMap = nextFormURL.getUrlContext();
-                if (applicationURL != null) {
+                if (urlContextMap != null) {
                     urlContext.clear();
                     urlContext.putAll(urlContextMap);
+                }
+                if (applicationURL != null) {
                     final String url = urlUtils.getFormRedirectionUrl(applicationURL, urlContext);
                     String processInstanceUUIDStr = null;
                     if (urlContext.get(URLUtils.INSTANCE_ID_PARAM) != null) {
@@ -1174,23 +1271,20 @@ public class FormPagesViewController {
                     }
                 } else {
                     if (!domUtils.consoleRefresh()) {
-                        if (urlContextMap != null) {
-                            urlContext.clear();
-                            urlContext.putAll(urlContextMap);
-                            final String hash = urlUtils.getFormRedirectionHash(urlContext);
-                            History.newItem(hash);
-                        }
+                        final String hash = urlUtils.getFormRedirectionHash(urlContext);
+                        History.newItem(hash);
                     }
                 }
             } else {
                 if (!domUtils.consoleRefreshAndRedirectToInbox()) {
                     final String defaultConfirmationMessage = FormsResourceBundle.getMessages().submissionConfirmationMessage();
-                    formsServiceAsync.getFormConfirmationTemplate(formID, urlContext, new ConfirmationPageHandler(applicationHTMLPanel, elementId, pageHTMLPanel, defaultConfirmationMessage, formID, urlContext));
+                    formsServiceAsync.getFormConfirmationTemplate(formID, urlContext, new ConfirmationPageHandler(applicationHTMLPanel, elementId,
+                            pageHTMLPanel, defaultConfirmationMessage, formID, urlContext));
                 }
             }
         }
     }
-    
+
     protected class GetTokenAsyncCallback implements AsyncCallback<String> {
 
         protected String url;
@@ -1216,25 +1310,26 @@ public class FormPagesViewController {
             }
         }
     }
-    
+
     /**
      * If the page is containned in a form, resize the frame to fit the page height
      */
-    protected void resizeFrame () {
-        
+    protected void resizeFrame() {
+
         final Timer timer = new Timer() {
+
             @Override
             public void run() {
                 if (domUtils.isPageInFrame()) {
                     if (formID != null) {
-                    	final String frameIdString = formID.split("$")[0];
-                    	for(int i = frameIdString.length(); i>0;i--){
-                    		final String frameId = frameIdString.substring(0,i);
-                    		if(domUtils.resizeFrame(frameId)){
-                    			break;
-                    		};
-                    	}
-                    } 
+                        final String frameIdString = formID.split("$")[0];
+                        for (int i = frameIdString.length(); i > 0; i--) {
+                            final String frameId = frameIdString.substring(0, i);
+                            if (domUtils.resizeFrame(frameId)) {
+                                break;
+                            };
+                        }
+                    }
                 }
             }
         };

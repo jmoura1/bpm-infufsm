@@ -104,6 +104,9 @@ public class FormMigrationManager {
         } catch (final SAXException e) {
             LOGGER.log(Level.SEVERE, "Error while transforming the forms.xml ", e);
             throw new SAXException(e);
+        } catch (final Throwable t) {
+            LOGGER.log(Level.SEVERE, "Error during the migration. " + t.getMessage());
+            throw new Exception(t);
         } finally {
             logout();
             System.exit(1);

@@ -223,7 +223,7 @@ public class MonitoringViewConfigurationWidget extends BonitaPanel {
             final List<String> theDesignListIDs = new ArrayList<String>();
             final List<Integer> reportIds = new ArrayList<Integer>(); //list of reports to remove
             // browse item in reverse order.
-            for (int i = 0; i < myMonitoringViewDesignListBox.getItemCount(); i++) {
+            for (int i = myMonitoringViewDesignListBox.getItemCount() - 1; i >= 0; i--) {
                 if (!myMonitoringViewDesignListBox.isItemSelected(i)) {
                     theDesignList.add(new ReportUUID(myMonitoringViewDesignListBox.getValue(i)));
                     theDesignListIDs.add(myMonitoringViewDesignListBox.getValue(i));

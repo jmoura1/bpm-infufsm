@@ -18,6 +18,7 @@ package org.bonitasoft.console.client.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.bonitasoft.console.client.BonitaUUID;
 import org.bonitasoft.console.client.cases.CaseItem;
@@ -55,6 +56,8 @@ import org.bonitasoft.console.client.model.steps.StepItemDataSource;
 import org.bonitasoft.console.client.model.steps.StepItemDataSourceImpl;
 import org.bonitasoft.console.client.steps.StepItem;
 import org.bonitasoft.console.client.users.UserProfile;
+import org.bonitasoft.console.client.users.UserUUID;
+import org.bonitasoft.forms.client.view.common.URLUtils;
 
 import com.google.gwt.user.client.Window;
 
@@ -158,7 +161,19 @@ public class DataModel implements ModelChangeListener, MessageDataSource {
             // The cases have been updated using the step data source. Sync
             // data.
             // would be better to call reloadCases(theCase).
-            myCaseDataSource.reload();
+        	final Set<UserUUID> theCandidates = (Set<UserUUID>) anEvent.getNewValue();
+        	final String uiMode = Window.Location.getParameter(URLUtils.UI);
+        	boolean isCandidate = false;
+        	for(final UserUUID userUUID : theCandidates) {
+        		if(uiMode.equals("admin") && myUserProfile.isAdmin() || userUUID.getValue().equals(myUserProfile.getUsername())) {
+        			isCandidate = true;
+        			break;
+        		}
+        	}
+        	
+			if (!isCandidate) {
+				((CaseDataSourceImpl)myCaseDataSource).sendRedirectToCurrentPosition(theCandidates);
+			}
         } else if (StepItemDataSource.STEP_SKIPPED_PROPERTY.equals(anEvent.getPropertyName())) {
             CaseUUID theStepCase = (CaseUUID) anEvent.getNewValue();
             if (theStepCase != null) {

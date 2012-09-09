@@ -30,13 +30,14 @@ import org.bonitasoft.forms.client.model.TransientData;
 import org.bonitasoft.forms.server.accessor.DefaultFormsPropertiesFactory;
 import org.bonitasoft.forms.server.accessor.IApplicationConfigDefAccessor;
 import org.bonitasoft.forms.server.accessor.IApplicationFormDefAccessor;
-import org.bonitasoft.forms.server.accessor.impl.util.XPathUtil;
+import org.bonitasoft.forms.server.accessor.impl.util.FormDocument;
+import org.bonitasoft.forms.server.accessor.impl.util.XMLUtil;
+import org.bonitasoft.forms.server.accessor.widget.IXMLWidgetBuilder;
 import org.bonitasoft.forms.server.accessor.widget.WidgetBuilderFactory;
 import org.bonitasoft.forms.server.constants.XMLForms;
 import org.bonitasoft.forms.server.exception.ApplicationFormDefinitionNotFoundException;
 import org.bonitasoft.forms.server.exception.InvalidFormDefinitionException;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -47,7 +48,7 @@ import org.w3c.dom.NodeList;
  * @author Anthony Birembaut, Haojie Yuan
  * 
  */
-public class XMLApplicationFormDefAccessorImpl extends XPathUtil implements IApplicationFormDefAccessor {
+public class XMLApplicationFormDefAccessorImpl extends XMLUtil implements IApplicationFormDefAccessor {
 
     /**
      * Logger
@@ -57,7 +58,7 @@ public class XMLApplicationFormDefAccessorImpl extends XPathUtil implements IApp
     /**
      * DOM representation of the XML file
      */
-    private final Document document;
+    private final FormDocument formDocument;
 
     /**
      * The xpath query to get the process node
@@ -90,17 +91,29 @@ public class XMLApplicationFormDefAccessorImpl extends XPathUtil implements IApp
     protected boolean isEditMode;
 
     /**
+     * XML widget builder
+     */
+    protected IXMLWidgetBuilder xmlWidgetBuilder;
+
+    /**
+     * the process definition UUID
+     */
+    protected ProcessDefinitionUUID processDefinitionUUID;
+
+    /**
      * 
      * Default constructor.
      * 
      * @param formId
-     * @param document
+     * @param formDocument
      * @param applicationDeploymentDate
      * @throws ApplicationFormDefinitionNotFoundException
+     * @throws InvalidFormDefinitionException 
      */
-    public XMLApplicationFormDefAccessorImpl(final String formId, final Document document, final String locale, final Date applicationDeploymentDate) throws ApplicationFormDefinitionNotFoundException {
+    public XMLApplicationFormDefAccessorImpl(final String formId, final FormDocument formDocument, final String locale, final Date applicationDeploymentDate) throws ApplicationFormDefinitionNotFoundException, InvalidFormDefinitionException {
 
-        this.document = document;
+        super(formDocument.getXpathEvaluator());
+        this.formDocument = formDocument;
         this.applicationDeploymentDate = applicationDeploymentDate;
         this.locale = locale;
 
@@ -125,6 +138,8 @@ public class XMLApplicationFormDefAccessorImpl extends XPathUtil implements IApp
             }
             throw new ApplicationFormDefinitionNotFoundException(message);
         }
+        processDefinitionUUID = getProcessDefinitionUUIDFromXML();
+        xmlWidgetBuilder = WidgetBuilderFactory.getXMLWidgetBuilder(formDocument.getXpathEvaluator(), processDefinitionUUID, locale, applicationDeploymentDate);
     }
 
     /**
@@ -133,7 +148,7 @@ public class XMLApplicationFormDefAccessorImpl extends XPathUtil implements IApp
     public List<String> getPages() {
         final List<String> pages = new ArrayList<String>();
 
-        final Node applicationNode = getNodeByXpath(document, applicationXpath);
+        final Node applicationNode = getNodeByXpath(formDocument.getDocument(), applicationXpath);
         if (applicationNode == null) {
             if (LOGGER.isLoggable(Level.SEVERE)) {
                 LOGGER.log(Level.SEVERE, "Failed to parse the forms definition file. query : " + applicationXpath);
@@ -260,7 +275,7 @@ public class XMLApplicationFormDefAccessorImpl extends XPathUtil implements IApp
      */
     protected Node getFormNode(final String formId) {
         final String xpath = getFormPageXpath(formId);
-        return getNodeByXpath(document, xpath);
+        return getNodeByXpath(formDocument.getDocument(), xpath);
     }
 
     /**
@@ -299,8 +314,7 @@ public class XMLApplicationFormDefAccessorImpl extends XPathUtil implements IApp
             }
             throw new InvalidFormDefinitionException(errorMessage);
         } else {
-            final ProcessDefinitionUUID processDefinitionUUID = getProcessDefinitionUUIDFromXML();
-            widgets = WidgetBuilderFactory.getXMLWidgetBuilder(processDefinitionUUID, locale, applicationDeploymentDate).getPageWidgets(pageNode, isEditMode);
+            widgets = xmlWidgetBuilder.getPageWidgets(pageNode, isEditMode);
         }
         return widgets;
     }
@@ -320,8 +334,7 @@ public class XMLApplicationFormDefAccessorImpl extends XPathUtil implements IApp
             }
             throw new InvalidFormDefinitionException(errorMessage);
         } else {
-            final ProcessDefinitionUUID processDefinitionUUID = getProcessDefinitionUUIDFromXML();
-            pageValidators = WidgetBuilderFactory.getXMLWidgetBuilder(processDefinitionUUID, locale, applicationDeploymentDate).getPageValidators(pageNode);
+            pageValidators = xmlWidgetBuilder.getPageValidators(pageNode);
         }
         return pageValidators;
     }
@@ -449,7 +462,7 @@ public class XMLApplicationFormDefAccessorImpl extends XPathUtil implements IApp
      * @throws InvalidFormDefinitionException
      */
     protected ProcessDefinitionUUID getProcessDefinitionUUIDFromXML() throws InvalidFormDefinitionException {
-        final IApplicationConfigDefAccessor applicationConfigFormDefinition = new XMLApplicationConfigDefAccessorImpl(document);
+        final IApplicationConfigDefAccessor applicationConfigFormDefinition = new XMLApplicationConfigDefAccessorImpl(formDocument);
         if (applicationConfigFormDefinition instanceof XMLApplicationConfigDefAccessorImpl) {
             final String name = applicationConfigFormDefinition.getApplicationName();
             final String version = applicationConfigFormDefinition.getApplicationVersion();
@@ -464,8 +477,7 @@ public class XMLApplicationFormDefAccessorImpl extends XPathUtil implements IApp
      */
     public List<FormAction> getActions(final String pageId) throws InvalidFormDefinitionException, ApplicationFormDefinitionNotFoundException {
 
-        final ProcessDefinitionUUID processDefinitionUUID = getProcessDefinitionUUIDFromXML();
-        return WidgetBuilderFactory.getXMLWidgetBuilder(processDefinitionUUID, locale, applicationDeploymentDate).getActions(formNode, pageId);
+        return xmlWidgetBuilder.getActions(formNode, pageId);
     }
 
     /**

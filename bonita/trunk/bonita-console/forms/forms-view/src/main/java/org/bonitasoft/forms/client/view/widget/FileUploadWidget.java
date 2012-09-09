@@ -72,7 +72,7 @@ public class FileUploadWidget extends Composite {
     protected String uploadedFilePath;
     
     protected String attachmentName;
-    
+
     /**
      * Constructor
      * @param contextMap 
@@ -251,6 +251,10 @@ public class FileUploadWidget extends Composite {
             } else {
                 realFileName = filePath;
             }
+            final int divIndex = realFileName.indexOf("<div");
+            if(divIndex > 0 ){
+            	realFileName = realFileName.substring(0, divIndex);
+            }
             loadingImage.setVisible(false);
             fileDownloadWidget.setFilePath(uploadedFilePath, realFileName);
             fileDownloadWidget.setVisible(true);
@@ -275,5 +279,9 @@ public class FileUploadWidget extends Composite {
         flowPanel.remove(formPanel);
         flowPanel.remove(buttonPanel);
         fileDownloadWidget.setVisible(true);
+    }
+    
+    public String getAttachmentName() {
+        return attachmentName;
     }
 }

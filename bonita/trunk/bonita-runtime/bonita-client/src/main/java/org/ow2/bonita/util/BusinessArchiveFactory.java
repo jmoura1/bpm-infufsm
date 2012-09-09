@@ -72,8 +72,11 @@ public final class BusinessArchiveFactory {
           File tempDir = Misc.createDirectories(BonitaConstants.getTemporaryFolder());
           File xpdlFile = Misc.createTempFile("xpdl", null, tempDir);
           Misc.getFile(xpdlFile, resource.getValue());
-          process = ProcessBuilder.createProcessFromXpdlFile(xpdlFile.toURL());
-          xpdlFile.delete();
+          try {
+            process = ProcessBuilder.createProcessFromXpdlFile(xpdlFile.toURL());
+          } finally {
+            xpdlFile.delete();
+          }
         }
       } else if (resource.getKey().equals(BusinessArchiveImpl.PROCESS_RESOURCE_NAME)) {
         if (deserializeProcess) {
@@ -81,8 +84,11 @@ public final class BusinessArchiveFactory {
           File xmlDefFile = Misc.createTempFile("xmlDef", null, tempDir);
           Misc.getFile(xmlDefFile, resource.getValue());
           Properties contextProperties = createPropertiesFromResources(resources);
-          process = ProcessBuilder.createProcessFromXmlDefFile(xmlDefFile.toURL(), contextProperties);
-          xmlDefFile.delete();
+          try {
+            process = ProcessBuilder.createProcessFromXmlDefFile(xmlDefFile.toURL(), contextProperties);
+          } finally {
+            xmlDefFile.delete();
+          }
         }
       } else {
         newResources.put(resource.getKey(), resource.getValue());

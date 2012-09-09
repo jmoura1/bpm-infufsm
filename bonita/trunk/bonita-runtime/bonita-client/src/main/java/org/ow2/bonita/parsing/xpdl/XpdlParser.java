@@ -21,7 +21,6 @@ import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.ow2.bonita.facade.def.majorElement.ProcessDefinition;
 import org.ow2.bonita.parsing.xpdl.binding.ActivityBinding;
 import org.ow2.bonita.parsing.xpdl.binding.DataFieldBinding;
 import org.ow2.bonita.parsing.xpdl.binding.ParticipantBinding;
@@ -44,129 +43,123 @@ import org.w3c.dom.Element;
  * @author Marc Blachon, Guillaume Porcher, Charles Souillard, Miguel Valdes, Pierre Vigneras
  */
 public class XpdlParser extends Parser {
-	private static final Logger LOG = Logger.getLogger(XpdlParser.class.getName());
+  private static final Logger LOG = Logger.getLogger(XpdlParser.class.getName());
 
-	public static final String CATEGORY_MAJOR_ELT = "majorElements";
+  public static final String CATEGORY_MAJOR_ELT = "majorElements";
 
-	/** path to the directory containing all xsd files. */
-	private static final String RESSOURCES_DIR = "";
+  /** path to the directory containing all xsd files. */
+  private static final String RESSOURCES_DIR = "";
 
-	/** all schema resources used to parse xpdl files. */
-	private static final String[] SCHEMA_RESOURCES = {
-		RESSOURCES_DIR + XmlConstants.XML_SCHEMA,
-		RESSOURCES_DIR + XmlConstants.XPDL_1_0_SCHEMA};
+  /** all schema resources used to parse xpdl files. */
+  private static final String[] SCHEMA_RESOURCES = { RESSOURCES_DIR + XmlConstants.XML_SCHEMA,
+      RESSOURCES_DIR + XmlConstants.XPDL_1_0_SCHEMA };
 
-	public static final Bindings DEFAULT_BINDINGS = getDefaultBindings();
+  public static final Bindings DEFAULT_BINDINGS = getDefaultBindings();
 
-	// the default entities are initialized at the bottom of this file.
-	private static final Map<String, Entity> defaultEntities = getDefaultEntities();
+  // the default entities are initialized at the bottom of this file.
+  private static final Map<String, Entity> DEFAULT_ENTITIES = getDefaultEntities();
 
-	/** schema document URIs as stringsF */
-	private static final String[] schemaSources = getSchemaSources();
+  /** schema document URIs as stringsF */
+  private static final String[] SCHEMA_SOURCES = getSchemaSources();
 
-	public XpdlParser() {
-		super(DEFAULT_BINDINGS, defaultEntities);
-	}
+  public XpdlParser() {
+    super(DEFAULT_BINDINGS, DEFAULT_ENTITIES);
+  }
 
-	@Override
-	public Object parseDocumentElement(Element packageElement, Parse parse) {
-		final String packageNS = packageElement.getNamespaceURI();
-		if (!XmlConstants.XPDL_1_0_NS.equals(packageNS)) {
-			String message = ExceptionManager.getInstance().getMessage("bpx_XP_1", packageNS);
-			throw new BonitaRuntimeException(message);
-		}
+  @Override
+  public Object parseDocumentElement(final Element packageElement, final Parse parse) {
+    final String packageNS = packageElement.getNamespaceURI();
+    if (!XmlConstants.XPDL_1_0_NS.equals(packageNS)) {
+      final String message = ExceptionManager.getInstance().getMessage("bpx_XP_1", packageNS);
+      throw new BonitaRuntimeException(message);
+    }
 
-		final Element processesContainer = XmlUtil.element(packageElement, "WorkflowProcesses");
-		if (processesContainer == null) {
-			String message = ExceptionManager.getInstance().getMessage("bpx_XP_3");
-		      throw new BonitaRuntimeException(message);
-		}
-		final List<Element> processes = XmlUtil.elements(processesContainer, "WorkflowProcess");
-		if (processes != null) {
-			if (processes.size() > 1) {
-				String message = ExceptionManager.getInstance().getMessage("bpx_XP_4");
-			  throw new BonitaRuntimeException(message);
-			}
-		}
-		final Element processElement = processes.get(0);
-		return (ProcessDefinition) parseElement(processElement, parse, CATEGORY_MAJOR_ELT);
-	}
+    final Element processesContainer = XmlUtil.element(packageElement, "WorkflowProcesses");
+    if (processesContainer == null) {
+      final String message = ExceptionManager.getInstance().getMessage("bpx_XP_3");
+      throw new BonitaRuntimeException(message);
+    }
+    final List<Element> processes = XmlUtil.elements(processesContainer, "WorkflowProcess");
+    if (processes != null && processes.size() > 1) {
+      final String message = ExceptionManager.getInstance().getMessage("bpx_XP_4");
+      throw new BonitaRuntimeException(message);
+    }
+    final Element processElement = processes.get(0);
+    return parseElement(processElement, parse, CATEGORY_MAJOR_ELT);
+  }
 
-	public synchronized DocumentBuilderFactory getDocumentBuilderFactory() {
-		documentBuilderFactory = newDocumentBuilderFactory();
-		documentBuilderFactory.setNamespaceAware(true);
-		documentBuilderFactory.setValidating(true);
-		// ignore white space can only be set if parser is validating
-		documentBuilderFactory.setIgnoringElementContentWhitespace(false);
-		// select xml schema as the schema language (a.o.t. DTD)
-		documentBuilderFactory.setAttribute(
-				XmlConstants.JAXP_SCHEMALANGUAGE,
-				XmlConstants.XML_NS);
-		// set schema sources
-		documentBuilderFactory.setAttribute(XmlConstants.JAXP_SCHEMASOURCE, schemaSources);
-		return documentBuilderFactory;
-	}
+  @Override
+  public synchronized DocumentBuilderFactory getDocumentBuilderFactory() {
+    documentBuilderFactory = newDocumentBuilderFactory();
+    documentBuilderFactory.setNamespaceAware(true);
+    documentBuilderFactory.setValidating(true);
+    // ignore white space can only be set if parser is validating
+    documentBuilderFactory.setIgnoringElementContentWhitespace(false);
+    // select XML schema as the schema language (a.o.t. DTD)
+    documentBuilderFactory.setAttribute(XmlConstants.JAXP_SCHEMALANGUAGE, XmlConstants.XML_NS);
+    // set schema sources
+    documentBuilderFactory.setAttribute(XmlConstants.JAXP_SCHEMASOURCE, SCHEMA_SOURCES);
+    return documentBuilderFactory;
+  }
 
-	/** factory method for the default bindings */
-	private static Bindings getDefaultBindings() {
-		final Bindings defaultBindings = new Bindings();
+  /** factory method for the default bindings */
+  private static Bindings getDefaultBindings() {
+    final Bindings defaultBindings = new Bindings();
 
-		//defaultBindings.addBinding(new PackageBinding());
-		defaultBindings.addBinding(new ParticipantBinding());
-		defaultBindings.addBinding(new DataFieldBinding());
-		defaultBindings.addBinding(new WorkflowProcessBinding());
-		defaultBindings.addBinding(new ActivityBinding());
-		defaultBindings.addBinding(new TransitionBinding());
+    // defaultBindings.addBinding(new PackageBinding());
+    defaultBindings.addBinding(new ParticipantBinding());
+    defaultBindings.addBinding(new DataFieldBinding());
+    defaultBindings.addBinding(new WorkflowProcessBinding());
+    defaultBindings.addBinding(new ActivityBinding());
+    defaultBindings.addBinding(new TransitionBinding());
 
-		return defaultBindings;
-	}
+    return defaultBindings;
+  }
 
-	/** factory method for the default entities */
-	private static Map<String, Entity> getDefaultEntities() {
-		final Map<String, Entity> defaultSchemaCatalog = new HashMap<String, Entity>();
-		final ClassLoader resourceLoader = XpdlParser.class.getClassLoader();
-		defaultSchemaCatalog.put(XmlConstants.XML_NS, new UrlEntity(
-				XmlConstants.XML_SCHEMA, resourceLoader));
-		defaultSchemaCatalog.put(XmlConstants.XML_NS2, new UrlEntity(
-				XmlConstants.XML_SCHEMA, resourceLoader));
-		defaultSchemaCatalog.put(XmlConstants.XPDL_1_0_NS, new UrlEntity(
-				XmlConstants.XPDL_1_0_SCHEMA, resourceLoader));
-		return defaultSchemaCatalog;
-	}
+  /** factory method for the default entities */
+  private static Map<String, Entity> getDefaultEntities() {
+    final Map<String, Entity> defaultSchemaCatalog = new HashMap<String, Entity>();
+    final ClassLoader resourceLoader = XpdlParser.class.getClassLoader();
+    defaultSchemaCatalog.put(XmlConstants.XML_NS, new UrlEntity(XmlConstants.XML_SCHEMA, resourceLoader));
+    defaultSchemaCatalog.put(XmlConstants.XML_NS2, new UrlEntity(XmlConstants.XML_SCHEMA, resourceLoader));
+    defaultSchemaCatalog.put(XmlConstants.XPDL_1_0_NS, new UrlEntity(XmlConstants.XPDL_1_0_SCHEMA, resourceLoader));
+    return defaultSchemaCatalog;
+  }
 
-	private static String[] getSchemaSources() {
-	  final String[] tab = new String[SCHEMA_RESOURCES.length];
-	  final ClassLoader resourceLoader = XpdlParser.class.getClassLoader();
-		for (int i = 0; i < SCHEMA_RESOURCES.length; i++) {
-			tab[i] = resourceLoader.getResource(SCHEMA_RESOURCES[i]).toExternalForm();
-		}
-		return tab;
-	}
+  private static String[] getSchemaSources() {
+    final String[] tab = new String[SCHEMA_RESOURCES.length];
+    final ClassLoader resourceLoader = XpdlParser.class.getClassLoader();
+    for (int i = 0; i < SCHEMA_RESOURCES.length; i++) {
+      tab[i] = resourceLoader.getResource(SCHEMA_RESOURCES[i]).toExternalForm();
+    }
+    return tab;
+  }
 
-	/** throws an exception with appropriate message in case the parse contains
-	 * errors or fatal errors.  This method also logs the problems with severity
-	 * 'warning'. */
-	public void checkProblems(String description, Parse parse) {
-		if (parse.hasProblems()) {
-			StringBuffer errorMsg = null;
-			for (Problem p : parse.getProblems()) {
-				if (p.getSeverity().equals(Problem.SEVERITY_ERROR) || p.getSeverity().equals(Problem.SEVERITY_FATALERROR)) {
-					if (errorMsg == null) {
-						errorMsg = new StringBuffer();
-					}
-					errorMsg.append(Misc.LINE_SEPARATOR).append("  ").append(p.toString());
-					if (p.getCause() != null) {
-						LOG.log(Level.SEVERE, p.toString(), p.getCause());
-					} else {
-						LOG.severe(p.toString());
-					}
-				} else {
-					LOG.warning(p.toString());
-				}
-			}
-			if (errorMsg != null) {
-				throw new BonitaRuntimeException("errors during parsing of " + description + ": " + errorMsg);
-			}
-		}
-	}
+  /**
+   * throws an exception with appropriate message in case the parse contains errors or fatal errors. This method also
+   * logs the problems with severity 'warning'.
+   */
+  public void checkProblems(final String description, final Parse parse) {
+    if (parse.hasProblems()) {
+      StringBuffer errorMsg = null;
+      for (final Problem p : parse.getProblems()) {
+        if (p.getSeverity().equals(Problem.SEVERITY_ERROR) || p.getSeverity().equals(Problem.SEVERITY_FATALERROR)) {
+          if (errorMsg == null) {
+            errorMsg = new StringBuffer();
+          }
+          errorMsg.append(Misc.LINE_SEPARATOR).append("  ").append(p.toString());
+          if (p.getCause() != null) {
+            LOG.log(Level.SEVERE, p.toString(), p.getCause());
+          } else {
+            LOG.severe(p.toString());
+          }
+        } else {
+          LOG.warning(p.toString());
+        }
+      }
+      if (errorMsg != null) {
+        throw new BonitaRuntimeException("errors during parsing of " + description + ": " + errorMsg);
+      }
+    }
+  }
 }

@@ -15,17 +15,12 @@ package org.ow2.bonita.connector.core.desc;
 
 /**
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public abstract class Widget extends WidgetComponent {
-  
-  public Widget(String labelId, Setter setter) {
+
+  public Widget(final String labelId, final Setter setter) {
     super(labelId, setter);
   }
-  
-  @Override
-  public boolean equals(Object obj) {
-    boolean equals = super.equals(obj);
-    return equals && obj instanceof Widget;
-  }
+
 }

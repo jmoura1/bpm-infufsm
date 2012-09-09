@@ -16,13 +16,13 @@ package org.ow2.bonita.connector.core.desc;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class WidgetComponent extends Component {
 
-  private Setter setter;
-  
-  public WidgetComponent(String labelId, Setter setter) {
+  private final Setter setter;
+
+  public WidgetComponent(final String labelId, final Setter setter) {
     super(labelId);
     this.setter = setter;
   }
@@ -30,4 +30,35 @@ public class WidgetComponent extends Component {
   public Setter getSetter() {
     return setter;
   }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + (setter == null ? 0 : setter.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final WidgetComponent other = (WidgetComponent) obj;
+    if (setter == null) {
+      if (other.setter != null) {
+        return false;
+      }
+    } else if (!setter.equals(other.setter)) {
+      return false;
+    }
+    return true;
+  }
+
 }

@@ -54,13 +54,18 @@ public class DbJournal extends AbstractDbQuerier implements Journal {
     super(persistenceServiceName);
   }
 
-  protected JournalDbSession getDbSession() {
+  public JournalDbSession getDbSession() {
     return EnvTool.getJournalDbSession(getPersistenceServiceName());
   }
 
   public void remove(final InternalProcessDefinition pack) {
     Misc.checkArgsNotNull(pack);
     getDbSession().delete(pack);
+  }
+  
+  public void removeExecution(long id) {
+    Misc.checkArgsNotNull(id);
+	getDbSession().deleteExecution(id);
   }
 
   public void remove(final InternalProcessInstance processInst) {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010  BonitaSoft S.A.
+ * Copyright (C) 2010 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -17,6 +17,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.ow2.bonita.connector.core.ConnectorTests;
+import org.ow2.bonita.deployment.BARVersionTest;
 import org.ow2.bonita.expression.ExpressionTests;
 import org.ow2.bonita.util.UtilTests;
 
@@ -32,6 +33,7 @@ public class AllTests {
     suite.addTest(ExpressionTests.suite());
     suite.addTest(ConnectorTests.suite());
     suite.addTest(UtilTests.suite());
+    suite.addTestSuite(BARVersionTest.class);
     return suite;
   }
 

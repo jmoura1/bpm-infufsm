@@ -39,62 +39,63 @@ public class SerializableToBytesConverter implements Converter {
 
   private static final long serialVersionUID = 1L;
 
-  public boolean supports(Object value) {
+  @Override
+  public boolean supports(final Object value) {
     return value == null || Serializable.class.isAssignableFrom(value.getClass());
   }
 
-  public Object convert(Object o) {
+  @Override
+  public Object convert(final Object o) {
     byte[] bytes = null;
     ObjectOutputStream oos = null;
     try {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
       oos = new ObjectOutputStream(baos);
       oos.writeObject(o);
       oos.flush();
       bytes = baos.toByteArray();
-    } catch (IOException e) {
-      String message = ExceptionManager.getInstance().getFullMessage("bp_STBC_1", o);
+    } catch (final IOException e) {
+      final String message = ExceptionManager.getInstance().getFullMessage("bp_STBC_1", o);
       throw new BonitaRuntimeException(message, e);
     } finally {
       try {
         if (oos != null) {
           oos.close();
         }
-      } catch (IOException e) {
-        String message = ExceptionManager.getInstance().getFullMessage("bp_STBC_1", o);
+      } catch (final IOException e) {
+        final String message = ExceptionManager.getInstance().getFullMessage("bp_STBC_1", o);
         throw new BonitaRuntimeException(message, e);
       }
     }
     return bytes;
   }
 
-  public Object revert(Object o) {
-    byte[] bytes = (byte[]) o;
+  @Override
+  public Object revert(final Object o) {
+    final byte[] bytes = (byte[]) o;
     ObjectInputStream ois = null;
     try {
-      ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+      final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
       ois = new ObjectInputStream(bais) {
 
         @Override
-        protected Class< ? > resolveClass(final ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+        protected Class<?> resolveClass(final ObjectStreamClass desc) throws IOException, ClassNotFoundException {
           final String className = desc.getName();
-          ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-          Class< ? > clazz = Class.forName(className, true, classLoader);
-          return clazz;
+          final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+          return Class.forName(className, true, classLoader);
         }
       };
 
-      Object object = ois.readObject();
-      return object;
-    } catch (Exception e) {
-      String message = ExceptionManager.getInstance().getFullMessage("bp_STBC_2");
+      return ois.readObject();
+    } catch (final Exception e) {
+      final String message = ExceptionManager.getInstance().getFullMessage("bp_STBC_2");
       throw new BonitaRuntimeException(message, e);
     } finally {
       if (ois != null) {
         try {
           ois.close();
-        } catch (IOException e) {
-          String message = ExceptionManager.getInstance().getFullMessage("bp_STBC_2");
+        } catch (final IOException e) {
+          final String message = ExceptionManager.getInstance().getFullMessage("bp_STBC_2");
           throw new BonitaRuntimeException(message, e);
         }
       }

@@ -33,24 +33,26 @@ import org.ow2.bonita.util.Misc;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class ConnectorAPI {
 
   protected final static String OTHER_CATEGORY = "Other";
   protected final static String OTHER_ICON = "org/ow2/bonita/connector/core/other.png";
-  public static final Category other = new Category(OTHER_CATEGORY, OTHER_ICON, Thread.currentThread().getContextClassLoader());
+  public static final Category other = new Category(OTHER_CATEGORY, OTHER_ICON, Thread.currentThread()
+      .getContextClassLoader());
 
-  private List<ConnectorDescription> connectors;
+  private final List<ConnectorDescription> connectors;
   private Locale currentLocale;
-  private ClassLoader classLoader;
-  private Collection<ConnectorException> exceptions;
+  private final ClassLoader classLoader;
+  private final Collection<ConnectorException> exceptions;
 
-  public ConnectorAPI(ClassLoader classLoader, List<String> classNames) throws Exception {
+  public ConnectorAPI(final ClassLoader classLoader, final List<String> classNames) throws Exception {
     this(classLoader, classNames, Locale.getDefault());
   }
 
-  public ConnectorAPI(ClassLoader classLoader, List<String> classNames, Locale locale) throws Exception {
+  public ConnectorAPI(final ClassLoader classLoader, final List<String> classNames, final Locale locale)
+      throws Exception {
     Misc.checkArgsNotNull(classLoader, classNames, locale);
     this.currentLocale = locale;
     this.connectors = new ArrayList<ConnectorDescription>();
@@ -59,9 +61,9 @@ public class ConnectorAPI {
     getConnectors(classNames);
   }
 
-  private void getConnectors(List<String> classNames) throws Exception {
-    for (String className : classNames) {
-      Class<?> javaClass = getClass(className);
+  private void getConnectors(final List<String> classNames) throws Exception {
+    for (final String className : classNames) {
+      final Class<?> javaClass = getClass(className);
       if (javaClass != null) {
         addClass(javaClass);
       }
@@ -71,40 +73,41 @@ public class ConnectorAPI {
   private Class<?> getClass(final String className) {
     try {
       return classLoader.loadClass(className);
-    } catch (Throwable e) {
-      ConnectorException exception = new ConnectorException(e, "Cannot load " + className, null);
+    } catch (final Throwable e) {
+      final ConnectorException exception = new ConnectorException(e, "Cannot load " + className, null);
       exceptions.add(exception);
       return null;
     }
   }
 
   @SuppressWarnings("unchecked")
-  private void addClass(Class<?> javaClass) {
+  private void addClass(final Class<?> javaClass) {
     try {
       if (isAnInstanceOfConnector(javaClass)) {
-        ConnectorDescription temp = new ConnectorDescription((Class<? extends Connector>)javaClass, currentLocale);
-        String id = temp.getId();
+        final ConnectorDescription temp = new ConnectorDescription((Class<? extends Connector>) javaClass,
+            currentLocale);
+        final String id = temp.getId();
         if (idExists(id)) {
           exceptions.add(new ConnectorException("Cannot load " + javaClass.getName() + " because a similar id exists",
               id, javaClass.getName(), null));
         }
         connectors.add(temp);
       }
-    } catch (ConnectorException e) {
+    } catch (final ConnectorException e) {
       exceptions.add(e);
-    } catch (Throwable e) {
+    } catch (final Throwable e) {
       String className = "null";
       if (javaClass != null) {
         className = javaClass.getName();
       }
-      ConnectorException exception = new ConnectorException(e, className, null);
+      final ConnectorException exception = new ConnectorException(e, className, null);
       exceptions.add(exception);
     }
   }
 
-  private boolean idExists(String id) {
+  private boolean idExists(final String id) {
     boolean exists = false;
-    for (ConnectorDescription connector : connectors) {
+    for (final ConnectorDescription connector : connectors) {
       if (id.equals(connector.getId())) {
         exists = true;
         break;
@@ -118,11 +121,11 @@ public class ConnectorAPI {
   }
 
   public List<ConnectorDescription> getJavaConnectors() {
-    List<ConnectorDescription> javaconnectors = new ArrayList<ConnectorDescription>();
-    for (ConnectorDescription connector : connectors) {
-      Class<? extends Connector> clazz = connector.getConnectorClass();
-      if (isAConnector(clazz) && !isMapper(clazz) && !isMultiInstantiator(clazz)
-          && !isInstantiator(clazz) && !isJoinChecker(clazz)) {
+    final List<ConnectorDescription> javaconnectors = new ArrayList<ConnectorDescription>();
+    for (final ConnectorDescription connector : connectors) {
+      final Class<? extends Connector> clazz = connector.getConnectorClass();
+      if (isAConnector(clazz) && !isMapper(clazz) && !isMultiInstantiator(clazz) && !isInstantiator(clazz)
+          && !isJoinChecker(clazz)) {
         javaconnectors.add(connector);
       }
     }
@@ -130,9 +133,9 @@ public class ConnectorAPI {
   }
 
   public List<ConnectorDescription> getRoleResolvers() {
-    List<ConnectorDescription> roleResolvers = new ArrayList<ConnectorDescription>();
-    for (ConnectorDescription connector : connectors) {
-      Class<? extends Connector> clazz = connector.getConnectorClass();
+    final List<ConnectorDescription> roleResolvers = new ArrayList<ConnectorDescription>();
+    for (final ConnectorDescription connector : connectors) {
+      final Class<? extends Connector> clazz = connector.getConnectorClass();
       if (isRoleResolver(clazz)) {
         roleResolvers.add(connector);
       }
@@ -141,9 +144,9 @@ public class ConnectorAPI {
   }
 
   public List<ConnectorDescription> getFilters() {
-    List<ConnectorDescription> filters = new ArrayList<ConnectorDescription>();
-    for (ConnectorDescription connector : connectors) {
-      Class<? extends Connector> clazz = connector.getConnectorClass();
+    final List<ConnectorDescription> filters = new ArrayList<ConnectorDescription>();
+    for (final ConnectorDescription connector : connectors) {
+      final Class<? extends Connector> clazz = connector.getConnectorClass();
       if (isFilter(clazz)) {
         filters.add(connector);
       }
@@ -153,9 +156,9 @@ public class ConnectorAPI {
 
   @Deprecated
   public List<ConnectorDescription> getMultiInstantiators() {
-    List<ConnectorDescription> multis = new ArrayList<ConnectorDescription>();
-    for (ConnectorDescription connector : connectors) {
-      Class<? extends Connector> clazz = connector.getConnectorClass();
+    final List<ConnectorDescription> multis = new ArrayList<ConnectorDescription>();
+    for (final ConnectorDescription connector : connectors) {
+      final Class<? extends Connector> clazz = connector.getConnectorClass();
       if (isMultiInstantiator(clazz)) {
         multis.add(connector);
       }
@@ -164,9 +167,9 @@ public class ConnectorAPI {
   }
 
   public List<ConnectorDescription> getInstantiators() {
-    List<ConnectorDescription> instantiators = new ArrayList<ConnectorDescription>();
-    for (ConnectorDescription connector : connectors) {
-      Class<? extends Connector> clazz = connector.getConnectorClass();
+    final List<ConnectorDescription> instantiators = new ArrayList<ConnectorDescription>();
+    for (final ConnectorDescription connector : connectors) {
+      final Class<? extends Connector> clazz = connector.getConnectorClass();
       if (isInstantiator(clazz)) {
         instantiators.add(connector);
       }
@@ -175,9 +178,9 @@ public class ConnectorAPI {
   }
 
   public List<ConnectorDescription> getJoinCheckers() {
-    List<ConnectorDescription> joinCheckers = new ArrayList<ConnectorDescription>();
-    for (ConnectorDescription connector : connectors) {
-      Class<? extends Connector> clazz = connector.getConnectorClass();
+    final List<ConnectorDescription> joinCheckers = new ArrayList<ConnectorDescription>();
+    for (final ConnectorDescription connector : connectors) {
+      final Class<? extends Connector> clazz = connector.getConnectorClass();
       if (isJoinChecker(clazz)) {
         joinCheckers.add(connector);
       }
@@ -185,93 +188,92 @@ public class ConnectorAPI {
     return joinCheckers;
   }
 
-  private boolean isJoinChecker(Class<?> clazz) {
+  private boolean isJoinChecker(final Class<?> clazz) {
     try {
-      Object connector = clazz.newInstance();
-      return connector instanceof MultipleInstancesJoinChecker;
-    } catch (Throwable e) {
+      return clazz.newInstance() instanceof MultipleInstancesJoinChecker;
+    } catch (final Throwable e) {
       return false;
     }
   }
-  
-  public List<ConnectorDescription> getAllConnectors(String categoryName) {
+
+  public List<ConnectorDescription> getAllConnectors(final String categoryName) {
     return getConnectors(connectors, categoryName);
   }
 
-  public List<ConnectorDescription> getJavaConnectors(String categoryName) {
-    List<ConnectorDescription> javaConnectors = getJavaConnectors();
+  public List<ConnectorDescription> getJavaConnectors(final String categoryName) {
+    final List<ConnectorDescription> javaConnectors = getJavaConnectors();
     return getConnectors(javaConnectors, categoryName);
   }
 
-  public List<ConnectorDescription> getRoleResolverConnectors(String categoryName) {
-    List<ConnectorDescription> roleMappers = getRoleResolvers();
+  public List<ConnectorDescription> getRoleResolverConnectors(final String categoryName) {
+    final List<ConnectorDescription> roleMappers = getRoleResolvers();
     return getConnectors(roleMappers, categoryName);
   }
 
-  public List<ConnectorDescription> getFilterConnectors(String categoryName) {
-    List<ConnectorDescription> mappers = getFilters();
+  public List<ConnectorDescription> getFilterConnectors(final String categoryName) {
+    final List<ConnectorDescription> mappers = getFilters();
     return getConnectors(mappers, categoryName);
   }
 
   @Deprecated
-  public List<ConnectorDescription> getMultiInstantiatorConnectors(String categoryName) {
-    List<ConnectorDescription> multi = getMultiInstantiators();
+  public List<ConnectorDescription> getMultiInstantiatorConnectors(final String categoryName) {
+    final List<ConnectorDescription> multi = getMultiInstantiators();
     return getConnectors(multi, categoryName);
   }
 
-  public List<ConnectorDescription> getInstantiatorConnectors(String categoryName) {
-    List<ConnectorDescription> multi = getInstantiators();
+  public List<ConnectorDescription> getInstantiatorConnectors(final String categoryName) {
+    final List<ConnectorDescription> multi = getInstantiators();
     return getConnectors(multi, categoryName);
   }
 
-  public List<ConnectorDescription> getJoinCheckerConnectors(String categoryName) {
-    List<ConnectorDescription> multi = getJoinCheckers();
+  public List<ConnectorDescription> getJoinCheckerConnectors(final String categoryName) {
+    final List<ConnectorDescription> multi = getJoinCheckers();
     return getConnectors(multi, categoryName);
   }
 
-  private List<ConnectorDescription> getConnectors(List<ConnectorDescription> list, String categoryName) {
-    List<ConnectorDescription> connectors = new ArrayList<ConnectorDescription>();
-    for (ConnectorDescription connector : list) {
-      List<Category> categories = connector.getCategories();
-      for (Category category : categories) {
+  private List<ConnectorDescription> getConnectors(final List<ConnectorDescription> list, final String categoryName) {
+    final List<ConnectorDescription> connectors = new ArrayList<ConnectorDescription>();
+    for (final ConnectorDescription connector : list) {
+      final List<Category> categories = connector.getCategories();
+      for (final Category category : categories) {
         String categ = getPropertyValue(connector.getConnectorClass(), category.getName());
         if (categ == null) {
           categ = category.getName();
         }
         if (categoryName.equals(categ)) {
           connectors.add(connector);
-        } 
+        }
       }
     }
     return connectors;
   }
 
-  public ConnectorDescription getConnector(String id) {
+  public ConnectorDescription getConnector(final String id) {
     return getConnector(connectors, id);
   }
 
-  public ConnectorDescription getRoleResolverConnector(String id) {
-    List<ConnectorDescription> roleMappers = getRoleResolvers();
+  public ConnectorDescription getRoleResolverConnector(final String id) {
+    final List<ConnectorDescription> roleMappers = getRoleResolvers();
     return getConnector(roleMappers, id);
   }
 
-  public ConnectorDescription getJavaConnector(String id) {
-    List<ConnectorDescription> javaConnectors = getJavaConnectors();
+  public ConnectorDescription getJavaConnector(final String id) {
+    final List<ConnectorDescription> javaConnectors = getJavaConnectors();
     return getConnector(javaConnectors, id);
   }
 
-  public ConnectorDescription getFilterConnector(String id) {
-    List<ConnectorDescription> mappers = getFilters();
+  public ConnectorDescription getFilterConnector(final String id) {
+    final List<ConnectorDescription> mappers = getFilters();
     return getConnector(mappers, id);
   }
 
-  private ConnectorDescription getConnector(List<ConnectorDescription> list, String id) {
+  private ConnectorDescription getConnector(final List<ConnectorDescription> list, final String id) {
     ConnectorDescription desc = null;
-    int size = list.size();
+    final int size = list.size();
     int i = 0;
     boolean found = false;
     while (i < size && !found) {
-      ConnectorDescription temp = list.get(i);
+      final ConnectorDescription temp = list.get(i);
       if (id.equals(temp.getId())) {
         desc = temp;
         found = true;
@@ -289,45 +291,45 @@ public class ConnectorAPI {
   }
 
   public List<Category> getJavaConnectorsCategories() {
-    List<ConnectorDescription> javaConnectors = getJavaConnectors();
+    final List<ConnectorDescription> javaConnectors = getJavaConnectors();
     return getCategories(javaConnectors);
   }
 
   public List<Category> getRoleResolversCategories() {
-    List<ConnectorDescription> roleMappers = getRoleResolvers();
+    final List<ConnectorDescription> roleMappers = getRoleResolvers();
     return getCategories(roleMappers);
   }
 
   public List<Category> getFiltersCategories() {
-    List<ConnectorDescription> mappers = getFilters();
+    final List<ConnectorDescription> mappers = getFilters();
     return getCategories(mappers);
   }
 
   @Deprecated
   public List<Category> getMulitInstantiatorCategories() {
-    List<ConnectorDescription> multis = getMultiInstantiators();
+    final List<ConnectorDescription> multis = getMultiInstantiators();
     return getCategories(multis);
   }
 
   public List<Category> getInstantiatorCategories() {
-    List<ConnectorDescription> multis = getInstantiators();
+    final List<ConnectorDescription> multis = getInstantiators();
     return getCategories(multis);
   }
 
   public List<Category> getJoinCheckerCategories() {
-    List<ConnectorDescription> multis = getJoinCheckers();
+    final List<ConnectorDescription> multis = getJoinCheckers();
     return getCategories(multis);
   }
 
-  private Map<String, String> getCategoriesMap(List<ConnectorDescription> list) {
-    Map<String, String> categories = new HashMap<String, String>();
-    for (ConnectorDescription connector : list) {
-      List<Category> connectorCategories = connector.getCategories();
+  private Map<String, String> getCategoriesMap(final List<ConnectorDescription> list) {
+    final Map<String, String> categories = new HashMap<String, String>();
+    for (final ConnectorDescription connector : list) {
+      final List<Category> connectorCategories = connector.getCategories();
       if (connectorCategories.isEmpty()) {
         connectorCategories.add(other);
       }
-      for (Category category : connectorCategories) {
-        String categoryId = category.getName();
+      for (final Category category : connectorCategories) {
+        final String categoryId = category.getName();
         String categoryName = connector.getCategoryName(categoryId);
         if (categoryName == null) {
           categoryName = categoryId;
@@ -335,8 +337,8 @@ public class ConnectorAPI {
         if (!categories.containsKey(categoryName)) {
           categories.put(categoryName, category.getIconPath());
         } else {
-          String icon = categories.get(categoryName);
-          InputStream categoryIcon = category.getIcon();
+          final String icon = categories.get(categoryName);
+          final InputStream categoryIcon = category.getIcon();
           if (icon == null && categoryIcon != null) {
             categories.put(categoryName, category.getIconPath());
           }
@@ -346,38 +348,38 @@ public class ConnectorAPI {
     return categories;
   }
 
-  private List<Category> getCategories(List<ConnectorDescription> list) {
-    Map<String, String> categoriesMap = getCategoriesMap(list);
-    Set<String> categoryNames = categoriesMap.keySet();
-    List<String> cat = new ArrayList<String>(categoryNames);
+  private List<Category> getCategories(final List<ConnectorDescription> list) {
+    final Map<String, String> categoriesMap = getCategoriesMap(list);
+    final Set<String> categoryNames = categoriesMap.keySet();
+    final List<String> cat = new ArrayList<String>(categoryNames);
     Collections.sort(cat);
-    List<Category> categories = new ArrayList<Category>();
-    for (String categoryName : cat) {
-      String icon = categoriesMap.get(categoryName);
-      Category category = new Category(categoryName, icon, classLoader);
+    final List<Category> categories = new ArrayList<Category>();
+    for (final String categoryName : cat) {
+      final String icon = categoriesMap.get(categoryName);
+      final Category category = new Category(categoryName, icon, classLoader);
       categories.add(category);
     }
     return categories;
   }
 
-  private String getPropertyValue(Class<? extends Connector> connectorClass, String property) {
+  private String getPropertyValue(final Class<? extends Connector> connectorClass, final String property) {
     try {
-      ResourceBundle bundle =
-        ResourceBundle.getBundle(connectorClass.getName(), currentLocale, connectorClass.getClassLoader());
+      final ResourceBundle bundle = ResourceBundle.getBundle(connectorClass.getName(), currentLocale,
+          connectorClass.getClassLoader());
       return bundle.getString(property);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return null;
     }
   }
 
-  private boolean isAnInstanceOfConnector(Class<?> c) {
+  private boolean isAnInstanceOfConnector(final Class<?> c) {
     if (Modifier.isAbstract(c.getModifiers()) || c.equals(Connector.class)) {
       return false;
     }
     return isAConnector(c);
   }
 
-  private boolean isAssignable(Class<?> clazz, Class<?> assignableClass) {
+  private boolean isAssignable(final Class<?> clazz, final Class<?> assignableClass) {
     if (assignableClass.equals(clazz)) {
       return true;
     }
@@ -388,31 +390,31 @@ public class ConnectorAPI {
     return false;
   }
 
-  private boolean isAConnector(Class<?> c) {
+  private boolean isAConnector(final Class<?> c) {
     return isAssignable(c, Connector.class);
   }
 
-  private boolean isMapper(Class<?> clazz) {
+  private boolean isMapper(final Class<?> clazz) {
     return isAssignable(clazz, Mapper.class);
   }
 
-  private boolean isFilter(Class<?> clazz) {
+  private boolean isFilter(final Class<?> clazz) {
     return isAssignable(clazz, Filter.class);
   }
 
-  private boolean isRoleResolver(Class<?> clazz) {
+  private boolean isRoleResolver(final Class<?> clazz) {
     return isAssignable(clazz, RoleResolver.class);
   }
 
-  private boolean isMultiInstantiator(Class<?> clazz) {
+  private boolean isMultiInstantiator(final Class<?> clazz) {
     return isAssignable(clazz, MultiInstantiator.class);
   }
 
-  private boolean isInstantiator(Class<?> clazz) {
+  private boolean isInstantiator(final Class<?> clazz) {
     return isAssignable(clazz, MultipleInstancesInstantiator.class);
   }
 
-  public void setCurrentLocale(Locale currentLocale) {
+  public void setCurrentLocale(final Locale currentLocale) {
     this.currentLocale = currentLocale;
   }
 

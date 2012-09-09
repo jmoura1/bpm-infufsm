@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011  BonitaSoft S.A.
+ * Copyright (C) 2011-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -25,35 +25,31 @@ import org.ow2.bonita.util.BonitaRuntimeException;
 
 /**
  * @author Elias Ricken de Medeiros
- *
+ * 
  */
 public class BonitaClientErrorInterceptor implements ClientErrorInterceptor {
 
-  public void handle(ClientResponse<?> response) throws RuntimeException {
-    try
-    {
-      BaseClientResponse<?> r = (BaseClientResponse<?>) response;
-      InputStream stream = r.getStreamFactory().getInputStream();
+  @Override
+  public void handle(final ClientResponse<?> response) throws RuntimeException {
+    try {
+      final BaseClientResponse<?> r = (BaseClientResponse<?>) response;
+      final InputStream stream = r.getStreamFactory().getInputStream();
       stream.reset();
-      
-      Object entity = response.getEntity(Object.class);
+
+      final Object entity = response.getEntity(Object.class);
       if (entity instanceof RuntimeException) {
-        RuntimeException exception = (RuntimeException) entity;
-        throw exception;  
+        final RuntimeException exception = (RuntimeException) entity;
+        throw exception;
       }
       if (entity instanceof Exception) {
-        Exception exception = (Exception) entity;
+        final Exception exception = (Exception) entity;
         throw new RESTBonitaRuntimeExceptionWrapper(exception);
       }
-    
-      if(Status.FORBIDDEN.equals(response.getResponseStatus().getStatusCode()))
-      {
+      if (Status.FORBIDDEN.getStatusCode() == response.getResponseStatus().getStatusCode()) {
         throw new BonitaRuntimeException("Forbidden returned");
       }
-    
-    }
-    catch (IOException e)
-    {
+
+    } catch (final IOException e) {
       new BonitaRuntimeException("Error while reading client response", e);
     }
     // RESTEasy will throw the original ClientResponseFailure

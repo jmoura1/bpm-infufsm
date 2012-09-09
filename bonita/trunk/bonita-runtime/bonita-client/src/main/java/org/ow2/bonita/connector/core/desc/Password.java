@@ -16,18 +16,18 @@ package org.ow2.bonita.connector.core.desc;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class Password extends Text {
 
-  public Password(String labelId, Setter setter, int size,
-      int maxChar) {
+  public Password(final String labelId, final Setter setter, final int size, final int maxChar) {
     super(labelId, setter, size, maxChar);
   }
 
   @Override
-  public boolean equals(Object obj) {
-    boolean equals = super.equals(obj);
-    return (equals && obj instanceof Password);
+  public boolean equals(final Object obj) {
+    final boolean equals = super.equals(obj);
+    return equals && obj instanceof Password;
   }
+
 }

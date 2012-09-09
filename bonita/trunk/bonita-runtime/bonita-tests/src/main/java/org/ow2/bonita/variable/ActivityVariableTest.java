@@ -15,6 +15,7 @@ package org.ow2.bonita.variable;
 
 import java.net.URL;
 import java.util.Collection;
+import java.util.Formatter;
 import java.util.Set;
 
 import org.bonitasoft.connectors.bonita.SetVarConnector;
@@ -32,26 +33,37 @@ import org.ow2.bonita.util.BonitaRuntimeException;
 import org.ow2.bonita.util.ProcessBuilder;
 
 /**
- * Testing activity variables (string and enumeration types)
- * by using StartMode=Manual (task behavior)
- * taking in account :
- *     propagation parameter,
- *     split, join for execution
- * Variables are defined either into WFProcess or Package
+ * Testing activity variables (string and enumeration types) by using StartMode=Manual (task behavior) taking in account
+ * : propagation parameter, split, join for execution Variables are defined either into WFProcess or Package
  */
 public class ActivityVariableTest extends VariableTestCase {
 
+  public void testUnpersistableVariable() throws Exception {
+    ProcessDefinition process = ProcessBuilder.createProcess("Unpersistable", "1.0")
+        .addObjectData("var1", Formatter.class.getName(), "${new Formatter()}").addHuman(getLogin())
+        .addHumanTask("step", getLogin()).done();
+
+    process = getManagementAPI().deploy(getBusinessArchive(process));
+    final ProcessDefinitionUUID processUUID = process.getUUID();
+    try {
+      getRuntimeAPI().instantiateProcess(processUUID);
+      fail("The variable value is not Serializable");
+    } catch (final BonitaRuntimeException e) {
+      getManagementAPI().deleteProcess(processUUID);
+    }
+  }
+
   // check that activity variables (string and enumeration) defined
-  // into  WFProcess are :
-  //      - available within the execution pointing to node with the given activity Id
-  //        according the extended attribute
-  //      - propagated according the extended attribute
+  // into WFProcess are :
+  // - available within the execution pointing to node with the given activity Id
+  // according the extended attribute
+  // - propagated according the extended attribute
 
   public void testActivityVariablesIntoWFProcess() throws BonitaException {
-    URL xpdlUrl = ActivityVariableTest.class.getResource("varActivityIntoWFProcess.xpdl");
-    ProcessDefinition process = getManagementAPI().deploy(getBusinessArchiveFromXpdl(xpdlUrl));
-    ProcessDefinitionUUID processUUID = process.getUUID();
-    ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(processUUID);
+    final URL xpdlUrl = ActivityVariableTest.class.getResource("varActivityIntoWFProcess.xpdl");
+    final ProcessDefinition process = getManagementAPI().deploy(getBusinessArchiveFromXpdl(xpdlUrl));
+    final ProcessDefinitionUUID processUUID = process.getUUID();
+    final ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(processUUID);
 
     // Check variables within execution pointing to act1 node
     Collection<ActivityInstance> acts = getQueryRuntimeAPI().getActivityInstances(instanceUUID, "act1");
@@ -60,11 +72,11 @@ public class ActivityVariableTest extends VariableTestCase {
     assertNotNull(activityInst);
 
     assertTrue(getQueryRuntimeAPI().getActivityInstanceVariables(activityInst.getUUID()).isEmpty());
-    checkStopped(instanceUUID, new String[]{});
+    checkStopped(instanceUUID, new String[] {});
 
     // start & terminate "act1" task
     executeTask(instanceUUID, "act1");
-    checkStopped(instanceUUID, new String[]{"act1"});
+    checkStopped(instanceUUID, new String[] { "act1" });
 
     acts = getQueryRuntimeAPI().getActivityInstances(instanceUUID, "act2");
     assertEquals(1, acts.size());
@@ -83,52 +95,46 @@ public class ActivityVariableTest extends VariableTestCase {
     assertNotNull(activityInst);
 
     checkVariables(getQueryRuntimeAPI(), activityInst.getUUID(), 0);
-    checkStopped(instanceUUID, new String[]{"act1", "act2"});
+    checkStopped(instanceUUID, new String[] { "act1", "act2" });
 
     // start & terminate "act3" task
     executeTask(instanceUUID, "act3");
-    checkExecutedOnce(instanceUUID, new String[]{"act1", "act2", "act3"});
+    checkExecutedOnce(instanceUUID, new String[] { "act1", "act2", "act3" });
 
     getRuntimeAPI().deleteProcessInstance(instanceUUID);
     getManagementAPI().disable(processUUID);
     getManagementAPI().deleteProcess(processUUID);
   }
-  
+
   public void testSetVariableInHumanTaskAfterAutomaticActivity() throws BonitaException {
     // Secondly, when an automated task follows a manual task, we encounter weird behaviour. Even if the
     // previous activity was finished, when whe are in onEnter hook, set local variable is not possible.
-    // Following code throws an activityinstancenotfound even if the activity id is the one of activity passed to hook ...
+    // Following code throws an activityinstancenotfound even if the activity id is the one of activity passed to hook
+    // ...
     // AccessorUtil.getAPIAccessor().getRuntimeAPI().setVariable(activityInstance.getUUID(), "varKnownUser", false);
-    ProcessDefinition process = ProcessBuilder.createProcess("p", "1.0")
-    .addHuman(getLogin())
-    .addHumanTask("t1", getLogin())
-    .addSystemTask("t2")
-      .addStringData("var", "initial")
-      .addConnector(Event.automaticOnEnter, SetVarConnector.class.getName(), true)
-        .addInputParameter("setVariableName", "var")
-        .addInputParameter("setValue", "newvalue")
-    .addHumanTask("t3", getLogin())
-    .addTransition("t1_t2", "t1", "t2")
-    .addTransition("t2_t3", "t2", "t3")
-    .done();
-    
+    ProcessDefinition process = ProcessBuilder.createProcess("p", "1.0").addHuman(getLogin())
+        .addHumanTask("t1", getLogin()).addSystemTask("t2").addStringData("var", "initial")
+        .addConnector(Event.automaticOnEnter, SetVarConnector.class.getName(), true)
+        .addInputParameter("setVariableName", "var").addInputParameter("setValue", "newvalue")
+        .addHumanTask("t3", getLogin()).addTransition("t1_t2", "t1", "t2").addTransition("t2_t3", "t2", "t3").done();
+
     process = getManagementAPI().deploy(getBusinessArchive(process, null, SetVarConnector.class));
-    ProcessDefinitionUUID processUUID = process.getUUID();
-    
-    ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(processUUID);
-    
+    final ProcessDefinitionUUID processUUID = process.getUUID();
+
+    final ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(processUUID);
+
     Collection<TaskInstance> tasks = getQueryRuntimeAPI().getTaskList(instanceUUID, ActivityState.READY);
     assertEquals(1, tasks.size());
-    ActivityInstanceUUID t1UUID = tasks.iterator().next().getUUID();
+    final ActivityInstanceUUID t1UUID = tasks.iterator().next().getUUID();
     getRuntimeAPI().startTask(t1UUID, true);
     getRuntimeAPI().finishTask(t1UUID, true);
-    
+
     tasks = getQueryRuntimeAPI().getTaskList(instanceUUID, ActivityState.READY);
     assertEquals(1, tasks.size());
-    
-    Collection<ActivityInstance> activities = getQueryRuntimeAPI().getActivityInstances(instanceUUID);
+
+    final Collection<ActivityInstance> activities = getQueryRuntimeAPI().getActivityInstances(instanceUUID);
     ActivityInstanceUUID t2UUID = null;
-    for (ActivityInstance activity : activities) {
+    for (final ActivityInstance activity : activities) {
       if (activity.getActivityName().equals("t2")) {
         t2UUID = activity.getUUID();
         break;
@@ -136,27 +142,22 @@ public class ActivityVariableTest extends VariableTestCase {
     }
     assertNotNull(t2UUID);
     assertEquals("newvalue", getQueryRuntimeAPI().getActivityInstanceVariable(t2UUID, "var"));
-    
+
     getManagementAPI().deleteProcess(processUUID);
   }
 
   private ProcessDefinition getProcessWithTwoHumanTasksAndSameVariableName() {
-    return ProcessBuilder.createProcess("vars", "1.0")
-      .addStringData("var", "polo")
-      .addGroup("Initiator")
-        .addGroupResolver(ProcessInitiatorRoleResolver.class.getName())
-      .addHumanTask("first", "Initiator")
-        .addStringData("var", "pool")
-      .addHumanTask("second", "Initiator")
-        .addStringData("var", "loop")
-      .addTransition("fs", "first", "second")
-      .done();
+    return ProcessBuilder.createProcess("vars", "1.0").addStringData("var", "polo").addGroup("Initiator")
+        .addGroupResolver(ProcessInitiatorRoleResolver.class.getName()).addHumanTask("first", "Initiator")
+        .addStringData("var", "pool").addHumanTask("second", "Initiator").addStringData("var", "loop")
+        .addTransition("fs", "first", "second").done();
   }
-  
+
   public void testTwoTasksSameVariableName() throws BonitaException {
-    ProcessDefinition process = getManagementAPI().deploy(getBusinessArchive(getProcessWithTwoHumanTasksAndSameVariableName(), null, ProcessInitiatorRoleResolver.class));
-    ProcessDefinitionUUID definitionUUID = process.getUUID();
-    ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(definitionUUID);
+    final ProcessDefinition process = getManagementAPI().deploy(
+        getBusinessArchive(getProcessWithTwoHumanTasksAndSameVariableName(), null, ProcessInitiatorRoleResolver.class));
+    final ProcessDefinitionUUID definitionUUID = process.getUUID();
+    final ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(definitionUUID);
     String var = (String) getQueryRuntimeAPI().getProcessInstanceVariable(instanceUUID, "var");
     assertEquals("polo", var);
 
@@ -177,17 +178,18 @@ public class ActivityVariableTest extends VariableTestCase {
     getManagementAPI().disable(definitionUUID);
     getManagementAPI().deleteProcess(definitionUUID);
   }
-  
+
   public void testTwoTasksSameVariableNameAndSet() throws BonitaException {
-    ProcessDefinition process = getManagementAPI().deploy(getBusinessArchive(getProcessWithTwoHumanTasksAndSameVariableName(), null, ProcessInitiatorRoleResolver.class));
-    ProcessDefinitionUUID definitionUUID = process.getUUID();
-    ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(definitionUUID);
+    final ProcessDefinition process = getManagementAPI().deploy(
+        getBusinessArchive(getProcessWithTwoHumanTasksAndSameVariableName(), null, ProcessInitiatorRoleResolver.class));
+    final ProcessDefinitionUUID definitionUUID = process.getUUID();
+    final ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(definitionUUID);
     String var = (String) getQueryRuntimeAPI().getProcessInstanceVariable(instanceUUID, "var");
     assertEquals("polo", var);
 
     Set<ActivityInstance> activities = getQueryRuntimeAPI().getActivityInstances(instanceUUID, "first");
     ActivityInstance activity = activities.iterator().next();
-    ActivityInstanceUUID activityUUID = activity.getUUID();
+    final ActivityInstanceUUID activityUUID = activity.getUUID();
     var = (String) getQueryRuntimeAPI().getProcessInstanceVariable(instanceUUID, "var");
     assertEquals("polo", var);
     var = (String) getQueryRuntimeAPI().getActivityInstanceVariable(activityUUID, "var");
@@ -197,7 +199,7 @@ public class ActivityVariableTest extends VariableTestCase {
 
     activities = getQueryRuntimeAPI().getActivityInstances(instanceUUID, "second");
     activity = activities.iterator().next();
-    ActivityInstanceUUID activityUUID2 = activity.getUUID();
+    final ActivityInstanceUUID activityUUID2 = activity.getUUID();
     var = (String) getQueryRuntimeAPI().getActivityInstanceVariable(activityUUID, "var");
     assertEquals("coco", var);
     var = (String) getQueryRuntimeAPI().getActivityInstanceVariable(activityUUID2, "var");
@@ -209,36 +211,29 @@ public class ActivityVariableTest extends VariableTestCase {
     getManagementAPI().disable(definitionUUID);
     getManagementAPI().deleteProcess(definitionUUID);
   }
-  
-  public void testTwoSystemTasksSameVariableNameAndSet() throws BonitaException {
-    ProcessDefinition definition =
-      ProcessBuilder.createProcess("vars", "1.0")
-      .addStringData("var", "polo")
-      .addSystemTask("first")
-        .addStringData("var", "pool")
-        .addConnector(Event.automaticOnEnter, SetVarConnector.class.getName(), true)
-          .addInputParameter("setVariableName", "var")
-          .addInputParameter("setValue", "hello")
-      .addSystemTask("second")
-        .addStringData("var", "loop")
-        .addConnector(Event.automaticOnEnter, SetVarConnector.class.getName(), true)
-          .addInputParameter("setVariableName", "var")
-          .addInputParameter("setValue", "ehlo")
-      .addTransition("fs", "first", "second")
-      .done();
 
-    ProcessDefinition process = getManagementAPI().deploy(getBusinessArchive(definition, null, SetVarConnector.class));
-    ProcessDefinitionUUID definitionUUID = process.getUUID();
-    ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(definitionUUID);
+  public void testTwoSystemTasksSameVariableNameAndSet() throws BonitaException {
+    final ProcessDefinition definition = ProcessBuilder.createProcess("vars", "1.0").addStringData("var", "polo")
+        .addSystemTask("first").addStringData("var", "pool")
+        .addConnector(Event.automaticOnEnter, SetVarConnector.class.getName(), true)
+        .addInputParameter("setVariableName", "var").addInputParameter("setValue", "hello").addSystemTask("second")
+        .addStringData("var", "loop").addConnector(Event.automaticOnEnter, SetVarConnector.class.getName(), true)
+        .addInputParameter("setVariableName", "var").addInputParameter("setValue", "ehlo")
+        .addTransition("fs", "first", "second").done();
+
+    final ProcessDefinition process = getManagementAPI().deploy(
+        getBusinessArchive(definition, null, SetVarConnector.class));
+    final ProcessDefinitionUUID definitionUUID = process.getUUID();
+    final ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(definitionUUID);
     String var = (String) getQueryRuntimeAPI().getProcessInstanceVariable(instanceUUID, "var");
     assertEquals("polo", var);
 
     Set<ActivityInstance> activities = getQueryRuntimeAPI().getActivityInstances(instanceUUID, "first");
     ActivityInstance activity = activities.iterator().next();
-    ActivityInstanceUUID activityUUID = activity.getUUID();
+    final ActivityInstanceUUID activityUUID = activity.getUUID();
     activities = getQueryRuntimeAPI().getActivityInstances(instanceUUID, "second");
     activity = activities.iterator().next();
-    ActivityInstanceUUID activityUUID2 = activity.getUUID();
+    final ActivityInstanceUUID activityUUID2 = activity.getUUID();
 
     var = (String) getQueryRuntimeAPI().getProcessInstanceVariable(instanceUUID, "var");
     assertEquals("polo", var);
@@ -254,122 +249,95 @@ public class ActivityVariableTest extends VariableTestCase {
 
   public void testSameSystemTaskName() throws BonitaException {
     try {
-      ProcessBuilder.createProcess("vars", "1.0")
-      .addStringData("var", "polo")
-      .addSystemTask("first")
-      .addSystemTask("first")
-      .done();
+      ProcessBuilder.createProcess("vars", "1.0").addStringData("var", "polo").addSystemTask("first")
+          .addSystemTask("first").done();
       fail("Two activities cannot get the same name!");
-    } catch (BonitaRuntimeException e) {
+    } catch (final BonitaRuntimeException e) {
       // ok
     }
   }
 
   public void testSameHumanTaskName() throws BonitaException {
     try {
-      ProcessBuilder.createProcess("vars", "1.0")
-      .addStringData("var", "polo")
-      .addHumanTask("first")
-      .addHumanTask("first")
-      .done();
+      ProcessBuilder.createProcess("vars", "1.0").addStringData("var", "polo").addHumanTask("first")
+          .addHumanTask("first").done();
       fail("Two activities cannot get the same name!");
-    } catch (BonitaRuntimeException e) {
+    } catch (final BonitaRuntimeException e) {
       // ok
     }
   }
 
   public void testSameTaskName() throws BonitaException {
     try {
-      ProcessBuilder.createProcess("vars", "1.0")
-      .addStringData("var", "polo")
-      .addSystemTask("first")
-      .addHumanTask("first")
-      .done();
+      ProcessBuilder.createProcess("vars", "1.0").addStringData("var", "polo").addSystemTask("first")
+          .addHumanTask("first").done();
       fail("Two activities cannot get the same name!");
-    } catch (BonitaRuntimeException e) {
+    } catch (final BonitaRuntimeException e) {
       // ok
     }
   }
 
   public void testDecisionNodeName() throws BonitaException {
     try {
-      ProcessBuilder.createProcess("vars", "1.0")
-      .addStringData("var", "polo")
-      .addDecisionNode("first")
-      .addDecisionNode("first")
-      .done();
+      ProcessBuilder.createProcess("vars", "1.0").addStringData("var", "polo").addDecisionNode("first")
+          .addDecisionNode("first").done();
       fail("Two activities cannot get the same name!");
-    } catch (BonitaRuntimeException e) {
+    } catch (final BonitaRuntimeException e) {
       // ok
     }
   }
 
   public void testDecisionNodeAndTaskName() throws BonitaException {
     try {
-      ProcessBuilder.createProcess("vars", "1.0")
-      .addStringData("var", "polo")
-      .addDecisionNode("first")
-      .addSystemTask("first")
-      .done();
+      ProcessBuilder.createProcess("vars", "1.0").addStringData("var", "polo").addDecisionNode("first")
+          .addSystemTask("first").done();
       fail("Two activities cannot get the same name!");
-    } catch (BonitaRuntimeException e) {
+    } catch (final BonitaRuntimeException e) {
       // ok
     }
   }
 
   public void testSubProcessName() throws BonitaException {
     try {
-      ProcessBuilder.createProcess("vars", "1.0")
-      .addStringData("var", "polo")
-      .addSubProcess("first", "one")
-      .addSubProcess("first", "one")
-      .done();
+      ProcessBuilder.createProcess("vars", "1.0").addStringData("var", "polo").addSubProcess("first", "one")
+          .addSubProcess("first", "one").done();
       fail("Two activities cannot get the same name!");
-    } catch (BonitaRuntimeException e) {
+    } catch (final BonitaRuntimeException e) {
       // ok
     }
   }
 
   public void testSubProcessAndTaskName() throws BonitaException {
     try {
-      ProcessBuilder.createProcess("vars", "1.0")
-      .addStringData("var", "polo")
-      .addSubProcess("first", "one")
-      .addSystemTask("first")
-      .done();
+      ProcessBuilder.createProcess("vars", "1.0").addStringData("var", "polo").addSubProcess("first", "one")
+          .addSystemTask("first").done();
       fail("Two activities cannot get the same name!");
-    } catch (BonitaRuntimeException e) {
+    } catch (final BonitaRuntimeException e) {
       // ok
     }
   }
-  
+
   public void testGroovyVariable() throws Exception {
-    ProcessDefinition process =
-      ProcessBuilder.createProcess("groovy", null)
-        .addStringData("groovy", "${'hello'}")
-        .addStringDataFromScript("groove", "${'groovy'}")
-        .addHuman("john")
-        .addHumanTask("step", "john")
-          .addStringData("activity", "${'hello'}")
-          .addStringDataFromScript("act", "${'groovy'}")
-    .done();
+    ProcessDefinition process = ProcessBuilder.createProcess("groovy", null).addStringData("groovy", "${'hello'}")
+        .addStringDataFromScript("groove", "${'groovy'}").addHuman("john").addHumanTask("step", "john")
+        .addStringData("activity", "${'hello'}").addStringDataFromScript("act", "${'groovy'}").done();
 
     process = getManagementAPI().deploy(getBusinessArchive(process));
-    ProcessDefinitionUUID processUUID = process.getUUID();
+    final ProcessDefinitionUUID processUUID = process.getUUID();
 
-    ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(processUUID);
+    final ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(processUUID);
     String actual = (String) getQueryRuntimeAPI().getProcessInstanceVariable(instanceUUID, "groovy");
     assertEquals("${'hello'}", actual);
     actual = (String) getQueryRuntimeAPI().getProcessInstanceVariable(instanceUUID, "groove");
     assertEquals("groovy", actual);
     loginAs("john", "bpm");
-    Set<TaskInstance> tasks = getQueryRuntimeAPI().getTasks(instanceUUID);
-    ActivityInstanceUUID taskUUID = tasks.iterator().next().getUUID();
+    final Set<TaskInstance> tasks = getQueryRuntimeAPI().getTasks(instanceUUID);
+    final ActivityInstanceUUID taskUUID = tasks.iterator().next().getUUID();
     actual = (String) getQueryRuntimeAPI().getActivityInstanceVariable(taskUUID, "activity");
     assertEquals("${'hello'}", actual);
     actual = (String) getQueryRuntimeAPI().getActivityInstanceVariable(taskUUID, "act");
     assertEquals("groovy", actual);
-    
+
     getRuntimeAPI().deleteProcessInstance(instanceUUID);
     getManagementAPI().deleteProcess(processUUID);
   }

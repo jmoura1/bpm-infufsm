@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010  BonitaSoft S.A.
+ * Copyright (C) 2010-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -18,10 +18,11 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-public class DateUtil {
+public final class DateUtil {
 
   private static ThreadLocal<SimpleDateFormat> DATE_FORMAT_1 = new ThreadLocal<SimpleDateFormat>() {
 
+    @Override
     protected synchronized SimpleDateFormat initialValue() {
       return new SimpleDateFormat("yyyy/MM/dd/HH/mm/ss/SSS");
     }
@@ -30,15 +31,17 @@ public class DateUtil {
 
   private static ThreadLocal<SimpleDateFormat> DATE_FORMAT_2 = new ThreadLocal<SimpleDateFormat>() {
 
+    @Override
     protected synchronized SimpleDateFormat initialValue() {
       return new SimpleDateFormat("yyyy/MM/dd/HH/mm/ss");
     }
 
   };
 
-  //ISO-8601 requires the T between date and time.
+  // ISO-8601 requires the T between date and time.
   private static ThreadLocal<SimpleDateFormat> ISO_8601_FORMAT = new ThreadLocal<SimpleDateFormat>() {
 
+    @Override
     protected synchronized SimpleDateFormat initialValue() {
       return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     }
@@ -59,9 +62,9 @@ public class DateUtil {
         try {
           result = DateUtil.ISO_8601_FORMAT.get().parse(formattedDate);
         } catch (final ParseException e3) {
-        	String message = ExceptionManager.getInstance().getFullMessage("bu_DU_1",
-        			formattedDate, DateUtil.DATE_FORMAT_2.get().toPattern(), DateUtil.DATE_FORMAT_1.get().toPattern(),
-        			DateUtil.ISO_8601_FORMAT.get().toPattern());
+          final String message = ExceptionManager.getInstance().getFullMessage("bu_DU_1", formattedDate,
+              DateUtil.DATE_FORMAT_2.get().toPattern(), DateUtil.DATE_FORMAT_1.get().toPattern(),
+              DateUtil.ISO_8601_FORMAT.get().toPattern());
           throw new IllegalArgumentException(message);
         }
       }
@@ -73,29 +76,28 @@ public class DateUtil {
     return DateUtil.ISO_8601_FORMAT.get().format(date);
   }
 
-  public static Date backTo(Date date, int dayNumber) {
-    Calendar calendar = Calendar.getInstance();
+  public static Date backTo(final Date date, final int dayNumber) {
+    final Calendar calendar = Calendar.getInstance();
     calendar.setTime(date);
     calendar.add(Calendar.DATE, -dayNumber);
     return calendar.getTime();
   }
 
-  public static Date getNextDay(Date date) {
-    Calendar calendar = Calendar.getInstance();
+  public static Date getNextDay(final Date date) {
+    final Calendar calendar = Calendar.getInstance();
     calendar.setTime(date);
     calendar.add(Calendar.DATE, 1);
     return calendar.getTime();
   }
 
-  public static Date getBeginningOfTheDay(Date date) {
-    Calendar calendar = Calendar.getInstance();
+  public static Date getBeginningOfTheDay(final Date date) {
+    final Calendar calendar = Calendar.getInstance();
     calendar.setTime(date);
     calendar.set(Calendar.MILLISECOND, 0);
     calendar.set(Calendar.SECOND, 0);
     calendar.set(Calendar.MINUTE, 0);
     calendar.set(Calendar.HOUR_OF_DAY, 0);
-    Date first = calendar.getTime();
-    return first;
+    return calendar.getTime();
   }
 
 }

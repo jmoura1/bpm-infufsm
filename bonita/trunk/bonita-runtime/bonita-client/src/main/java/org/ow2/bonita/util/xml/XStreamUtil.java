@@ -35,6 +35,7 @@ import org.ow2.bonita.facade.privilege.impl.CustomRuleImpl;
 import org.ow2.bonita.facade.privilege.impl.ProcessRuleImpl;
 import org.ow2.bonita.facade.privilege.impl.RuleImpl;
 import org.ow2.bonita.facade.runtime.ActivityState;
+import org.ow2.bonita.facade.runtime.ConnectorExecutionDescriptor;
 import org.ow2.bonita.facade.runtime.Label;
 import org.ow2.bonita.facade.runtime.impl.ActivityInstanceImpl;
 import org.ow2.bonita.facade.runtime.impl.AssignUpdateImpl;
@@ -65,7 +66,7 @@ import com.thoughtworks.xstream.XStream;
 public class XStreamUtil {
 
 	public static XStream getDefaultXstream(){
-		XStream xstream = new XStream();
+		final XStream xstream = new XStream();
 		xstream.alias("ActivityInstanceUUID", ActivityInstanceUUID.class);
 		xstream.alias("LightProcessInstance", LightProcessInstanceImpl.class);
 		xstream.alias("AttachmentDefinition", AttachmentDefinitionImpl.class);
@@ -108,6 +109,7 @@ public class XStreamUtil {
 		xstream.alias("ActivityRule", ActivityRuleImpl.class);
 		xstream.alias("CustomRule", CustomRuleImpl.class);
 		xstream.alias("CustomRule", CustomRuleImpl.class);
+		xstream.alias("connectorExecutionDescriptor", ConnectorExecutionDescriptor.class);
 		return xstream;
 	}
 

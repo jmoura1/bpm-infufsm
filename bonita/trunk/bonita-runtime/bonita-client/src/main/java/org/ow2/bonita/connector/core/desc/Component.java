@@ -16,18 +16,19 @@
 package org.ow2.bonita.connector.core.desc;
 
 /**
- *
+ * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public abstract class Component {
 
   private String labelId;
 
-//used by XStream
-  protected Component() {}
-  
-  public Component(String labelId) {
+  // used by XStream
+  protected Component() {
+  }
+
+  public Component(final String labelId) {
     super();
     this.labelId = labelId;
   }
@@ -37,12 +38,33 @@ public abstract class Component {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (obj != null && obj instanceof Component) {
-      Component c = (Component) obj;
-      return (this.getLabelId().equals(c.getLabelId()));
-    } else {
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (labelId == null ? 0 : labelId.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
       return false;
     }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Component other = (Component) obj;
+    if (labelId == null) {
+      if (other.labelId != null) {
+        return false;
+      }
+    } else if (!labelId.equals(other.labelId)) {
+      return false;
+    }
+    return true;
   }
+
 }

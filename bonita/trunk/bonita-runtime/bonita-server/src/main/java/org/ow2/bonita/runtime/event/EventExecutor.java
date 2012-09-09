@@ -33,7 +33,7 @@ public class EventExecutor implements Serializable {
   private static final Logger LOG = Logger.getLogger(EventExecutor.class.getName());
   private static final long serialVersionUID = 1L;
 
-  //injected
+  // injected
   transient CommandService commandService;
   int nbrOfThreads = 3;
   int idleMillis = 5000; // default normal poll interval is 5 seconds
@@ -46,7 +46,7 @@ public class EventExecutor implements Serializable {
   private transient EventDispatcherThread dispatcherThread = null;
   private boolean isActive = false;
 
-  //commands
+  // commands
   Command<Long> nextDueDateCommand;
 
   public synchronized void start() {
@@ -62,11 +62,7 @@ public class EventExecutor implements Serializable {
       if (LOG.isLoggable(Level.INFO)) {
         LOG.info("starting event executor threads for event executor '" + name + "'...");
       }
-      threadPool = new ThreadPoolExecutor(nbrOfThreads, 
-          nbrOfThreads, 
-          0L, 
-          TimeUnit.MILLISECONDS,
-          new ArrayBlockingQueue<Runnable>(nbrOfThreads), 
+      threadPool = new ThreadPoolExecutor(nbrOfThreads, nbrOfThreads, 0L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(nbrOfThreads),
           EventRejectionHandler.INSTANCE);
 
       if (LOG.isLoggable(Level.INFO)) {
@@ -81,10 +77,11 @@ public class EventExecutor implements Serializable {
 
     static final EventRejectionHandler INSTANCE = new EventRejectionHandler();
 
-    public void rejectedExecution(Runnable task, ThreadPoolExecutor executor) {
+    @Override
+    public void rejectedExecution(final Runnable task, final ThreadPoolExecutor executor) {
       try {
         executor.getQueue().put(task);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         throw new RejectedExecutionException("queuing " + task + " got interrupted", e);
       }
     }
@@ -112,7 +109,7 @@ public class EventExecutor implements Serializable {
     stop(false);
   }
 
-  public synchronized void stop(boolean join) {
+  public synchronized void stop(final boolean join) {
     if (LOG.isLoggable(Level.INFO)) {
       LOG.info("stopping event executor");
     }
@@ -142,7 +139,7 @@ public class EventExecutor implements Serializable {
           if (LOG.isLoggable(Level.INFO)) {
             LOG.info("Event executor: threadPool termination OK...");
           }
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
           LOG.severe("joining got interrupted");
         }
       }
@@ -183,10 +180,10 @@ public class EventExecutor implements Serializable {
   }
 
   public int getRetries() {
-	return retries;
+    return retries;
   }
 
-  public void setCommandService(CommandService commandService) {
+  public void setCommandService(final CommandService commandService) {
     this.commandService = commandService;
   }
 

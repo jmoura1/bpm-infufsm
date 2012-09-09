@@ -34,10 +34,10 @@ import org.ow2.bonita.facade.APIAccessor;
 import org.ow2.bonita.facade.runtime.ActivityInstance;
 
 /**
- * The abstract class <code>Connector</code> is the superclass of
- * all classes that represent connectors.
+ * The abstract class <code>Connector</code> is the superclass of all classes that represent connectors.
+ * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public abstract class Connector implements TxHook {
 
@@ -50,38 +50,36 @@ public abstract class Connector implements TxHook {
 
   /**
    * Checks whether the Connector is valid and well-formed.
+   * 
    * @param c the Connector Class
    * @return a list of errors if there is any errors; null otherwise
    */
-  public static List<ConnectorError> validateConnector(
-      final Class<? extends Connector> c) {
-    List<ConnectorError> errors = checkRuntimeAnnotations(c);
+  public static List<ConnectorError> validateConnector(final Class<? extends Connector> c) {
+    final List<ConnectorError> errors = checkRuntimeAnnotations(c);
     errors.addAll(checkGraphicalAnnotations(c));
     return errors;
   }
 
-  protected static List<ConnectorError> checkGraphicalAnnotations(
-      final Class<? extends Connector> c) {
+  protected static List<ConnectorError> checkGraphicalAnnotations(final Class<? extends Connector> c) {
     return ConnectorValidator.validateView(c);
   }
 
-  protected static List<ConnectorError> checkRuntimeAnnotations(
-      final Class<? extends Connector> c) {
+  protected static List<ConnectorError> checkRuntimeAnnotations(final Class<? extends Connector> c) {
     return ConnectorValidator.validateRuntime(c);
   }
 
   /**
    * Checks if the field exists in this connector.
+   * 
    * @param c the connector class
    * @param fieldName the field name
    * @return true if the field exist; false otherwise
    */
-  protected static boolean isFieldExist(final Class<? extends Connector> c,
-      final String fieldName) {
+  protected static boolean isFieldExist(final Class<? extends Connector> c, final String fieldName) {
     if (fieldName == null || "".equals(fieldName.trim())) {
       return false;
     }
-    Field field = getField(c, fieldName);
+    final Field field = getField(c, fieldName);
     boolean exist = false;
     if (field != null) {
       exist = true;
@@ -91,12 +89,13 @@ public abstract class Connector implements TxHook {
 
   /**
    * Checks whether the field is set. (different from null)
+   * 
    * @param fieldName the field name
    * @return true if the field is set; false otherwise
    */
   private boolean isFieldSet(final String fieldName) {
-    Field field = getField(this.getClass(), fieldName);
-    Object value = this.getFieldValue(field);
+    final Field field = getField(this.getClass(), fieldName);
+    final Object value = this.getFieldValue(field);
     boolean set = true;
     if (value == null) {
       set = false;
@@ -106,13 +105,13 @@ public abstract class Connector implements TxHook {
 
   /**
    * Checks whether the given field name belongs to an existing connector field
+   * 
    * @param c the connector
    * @param fieldName the field name
    * @return true if the field is a connector one; false otherwise
    */
-  public static boolean fieldExists(final Class<? extends Connector> c,
-      final String fieldName) {
-    Field field = searchField(c, fieldName);
+  public static boolean fieldExists(final Class<? extends Connector> c, final String fieldName) {
+    final Field field = searchField(c, fieldName);
     boolean exists = true;
     if (field == null) {
       exists = false;
@@ -122,6 +121,7 @@ public abstract class Connector implements TxHook {
 
   /**
    * Returns the Field given by its Class and its name.
+   * 
    * @param c the class of the wanted field
    * @param fieldName the name of the wanted field
    * @return the wanted Field
@@ -129,7 +129,7 @@ public abstract class Connector implements TxHook {
   protected static Field getField(final Class<? extends Connector> c, final String fieldName) {
     Field field = searchField(c, fieldName);
     if (field == null) {
-      String upper = getFirstUpperCaseLetterFieldName(fieldName);
+      final String upper = getFirstUpperCaseLetterFieldName(fieldName);
       field = searchField(c, upper);
     }
     return field;
@@ -137,6 +137,7 @@ public abstract class Connector implements TxHook {
 
   /**
    * Searches a Field given by its Class and its name.
+   * 
    * @param c the class of the wanted field
    * @param fieldName the name of the wanted field
    * @return the wanted Field
@@ -145,7 +146,7 @@ public abstract class Connector implements TxHook {
     Field field = null;
     if (c != null) {
       int i = 0;
-      Field[] fields = c.getDeclaredFields();
+      final Field[] fields = c.getDeclaredFields();
       while (i < fields.length && field == null) {
         if (fields[i].getName().equals(fieldName)) {
           field = fields[i];
@@ -162,6 +163,7 @@ public abstract class Connector implements TxHook {
 
   /**
    * Gives the field name from its method name.
+   * 
    * @param methodName the method name of the field
    * @return the field name from its method name
    */
@@ -173,38 +175,39 @@ public abstract class Connector implements TxHook {
     if (methodName.length() < cut) {
       return "";
     }
-    String end = methodName.substring(cut);
-    char c = methodName.charAt(cut - 1);
-    String begin = String.valueOf(c).toLowerCase();
-    return  begin.concat(end);
+    final String end = methodName.substring(cut);
+    final char c = methodName.charAt(cut - 1);
+    final String begin = String.valueOf(c).toLowerCase();
+    return begin.concat(end);
   }
 
   public static String getGetterName(final String fieldName) {
-    StringBuilder builder = new StringBuilder("get");
-    builder.append((String.valueOf(fieldName.charAt(0)).toUpperCase()));
+    final StringBuilder builder = new StringBuilder("get");
+    builder.append(String.valueOf(fieldName.charAt(0)).toUpperCase());
     builder.append(fieldName.substring(1));
     return builder.toString();
   }
 
   private static String getFirstUpperCaseLetterFieldName(final String fieldName) {
-    String end = fieldName.substring(1);
-    char c = fieldName.charAt(0);
-    String begin = String.valueOf(c).toUpperCase();
-    return  begin.concat(end);
+    final String end = fieldName.substring(1);
+    final char c = fieldName.charAt(0);
+    final String begin = String.valueOf(c).toUpperCase();
+    return begin.concat(end);
   }
 
   /**
-   * Execute the content of the <code>Connector</code>.
-   * If the connector contains error an IllegalStateException is thrown
+   * Execute the content of the <code>Connector</code>. If the connector contains error an IllegalStateException is
+   * thrown
+   * 
    * @throws Exception if an exception occurs
    */
   public final void execute() throws Exception {
-    List<ConnectorError> errors = this.validate();
+    final List<ConnectorError> errors = this.validate();
     if (!errors.isEmpty()) {
-      StringBuilder misconfigurationBuilder = new StringBuilder();
-      for (ConnectorError error : errors) {
+      final StringBuilder misconfigurationBuilder = new StringBuilder();
+      for (final ConnectorError error : errors) {
         misconfigurationBuilder.append(error.getField()).append(": ");
-        Exception exception = error.getError();
+        final Exception exception = error.getError();
         if (exception != null) {
           misconfigurationBuilder.append(exception.getMessage());
         } else {
@@ -220,49 +223,49 @@ public abstract class Connector implements TxHook {
 
   /**
    * Execute the specific content of the <code>Connector</code>.
+   * 
    * @throws Exception if an exception occurs
    */
   protected abstract void executeConnector() throws Exception;
 
   /**
    * Checks if field values are well-set.
-   * @return a list containing <code>ConnectorError</code>;
-   * an empty list otherwise
+   * 
+   * @return a list containing <code>ConnectorError</code>; an empty list otherwise
    */
   protected abstract List<ConnectorError> validateValues();
 
   /**
    * Checks if all required fields are set.
-   * @return a list containing <code>ConnectorError</code>;
-   * an empty list otherwise
+   * 
+   * @return a list containing <code>ConnectorError</code>; an empty list otherwise
    */
   public final List<ConnectorError> validate() {
-    List<ConnectorError> errors = new ArrayList<ConnectorError>();
-    ConnectorDescriptor descriptor = ConnectorDescriptorAPI.load(this.getClass());
+    final List<ConnectorError> errors = new ArrayList<ConnectorError>();
+    final ConnectorDescriptor descriptor = ConnectorDescriptorAPI.load(this.getClass());
     if (descriptor != null) {
-      List<Setter> inputs = descriptor.getInputs();
+      final List<Setter> inputs = descriptor.getInputs();
       if (inputs != null) {
-        for (Setter input : inputs) {
+        for (final Setter input : inputs) {
           ConnectorError error = null;
-          String fieldName = getFieldName(input.getSetterName());
-          boolean set = isFieldSet(fieldName);
-          String requiredExpression = input.getRequired();
-          String forbiddenExpression = input.getForbidden();
+          final String fieldName = getFieldName(input.getSetterName());
+          final boolean set = isFieldSet(fieldName);
+          final String requiredExpression = input.getRequired();
+          final String forbiddenExpression = input.getForbidden();
           if (requiredExpression != null) {
-            boolean required = getResultExpression(requiredExpression);
+            final boolean required = getResultExpression(requiredExpression);
             if (required && !set) {
-              error = new ConnectorError(fieldName,
-                  new IllegalArgumentException("This field is required so it must be set."));
+              error = new ConnectorError(fieldName, new IllegalArgumentException(
+                  "This field is required so it must be set."));
               errors.add(error);
-            } 
+            }
           }
 
           if (forbiddenExpression != null) {
-            boolean forbidden = getResultExpression(forbiddenExpression);
+            final boolean forbidden = getResultExpression(forbiddenExpression);
             if (forbidden && set) {
-              error = new ConnectorError(fieldName,
-                  new IllegalArgumentException("This field cannot be set because"
-                      + " of other field values."));
+              error = new ConnectorError(fieldName, new IllegalArgumentException("This field cannot be set because"
+                  + " of other field values."));
               errors.add(error);
             }
           }
@@ -270,7 +273,7 @@ public abstract class Connector implements TxHook {
       }
 
       if (errors.isEmpty()) {
-        List<ConnectorError> errorValues = validateValues();
+        final List<ConnectorError> errorValues = validateValues();
         if (errorValues != null) {
           errors.addAll(errorValues);
         }
@@ -281,6 +284,7 @@ public abstract class Connector implements TxHook {
 
   /**
    * Gives the result of the boolean expression.
+   * 
    * @param expression the boolean expression
    * @return true if the result is OK; false otherwise
    */
@@ -294,17 +298,16 @@ public abstract class Connector implements TxHook {
       operands = operands.replace('&', ' ');
       operands = operands.replace('|', ' ');
       operands = operands.replace('!', ' ');
-      StringTokenizer token = new StringTokenizer(operands);
-      Map<String, Boolean> variables = new HashMap<String, Boolean>();
+      final StringTokenizer token = new StringTokenizer(operands);
+      final Map<String, Boolean> variables = new HashMap<String, Boolean>();
       while (token.hasMoreElements()) {
-        String fieldName = (String) token.nextElement();
+        final String fieldName = (String) token.nextElement();
         if (!variables.containsKey(fieldName)) {
-          Field field = getField(this.getClass(), fieldName);
-          Type type = field.getGenericType();
+          final Field field = getField(this.getClass(), fieldName);
+          final Type type = field.getGenericType();
           boolean set = false;
-          if (type.toString().equals("boolean") ||
-              type.toString().equals("class java.lang.Boolean")) {
-            Object value = getFieldValue(field);
+          if (type.toString().equals("boolean") || type.toString().equals("class java.lang.Boolean")) {
+            final Object value = getFieldValue(field);
             if (value == null) {
               set = false;
             } else {
@@ -318,7 +321,7 @@ public abstract class Connector implements TxHook {
       }
       try {
         result = new ExpressionEvaluator(expression).evaluate(variables);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         LOG.severe(e.getMessage());
       }
     }
@@ -327,6 +330,7 @@ public abstract class Connector implements TxHook {
 
   /**
    * Gives the field value of a <code>Field</code>.
+   * 
    * @param field the Field
    * @return the field value if it exists; null otherwise
    */
@@ -335,7 +339,7 @@ public abstract class Connector implements TxHook {
     field.setAccessible(true);
     try {
       value = field.get(this);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return null;
     }
     return value;
@@ -343,6 +347,7 @@ public abstract class Connector implements TxHook {
 
   /**
    * Returns true if the Connector contains errors.
+   * 
    * @return true if the Connector contains errors; false otherwise
    */
   public final boolean containsErrors() {
@@ -352,32 +357,31 @@ public abstract class Connector implements TxHook {
   /**
    * @see org.ow2.bonita.definition.TxHook#execute(APIAccessor, ActivityInstance)
    */
-  public void execute(APIAccessor accessor,
-      ActivityInstance activityInstance) throws Exception {
+  @Override
+  public void execute(final APIAccessor accessor, final ActivityInstance activityInstance) throws Exception {
     execute();
   }
 
   /**
    * Obtains the setter list of the connector
+   * 
    * @return the list of setters
    */
   public final List<Setter> getSetters() {
-    ConnectorDescriptor descriptor = ConnectorDescriptorAPI.load(this.getClass());
+    final ConnectorDescriptor descriptor = ConnectorDescriptorAPI.load(this.getClass());
     if (descriptor != null) {
       return descriptor.getInputs();
     } else {
-      Method[] methods = getAllSetters();
+      final Method[] methods = getAllSetters();
       if (methods == null) {
         return null;
       }
-      List<Setter> setters = new ArrayList<Setter>();
-      for (Method method : methods) {
-        String methodName = method.getName();
-        /*Class<?>[] classes = method.getParameterTypes();
-    		Object[] object = new Object[classes.length];
-    		for (int i = 0; i < object.length; i++) {
-          object[i] = classes[i].newInstance();
-        }
+      final List<Setter> setters = new ArrayList<Setter>();
+      for (final Method method : methods) {
+        final String methodName = method.getName();
+        /*
+         * Class<?>[] classes = method.getParameterTypes(); Object[] object = new Object[classes.length]; for (int i =
+         * 0; i < object.length; i++) { object[i] = classes[i].newInstance(); }
          */
         setters.add(new Setter(methodName, null, null, method.getParameterTypes()));
       }
@@ -387,61 +391,69 @@ public abstract class Connector implements TxHook {
 
   /**
    * Obtains the getter list of the connector
+   * 
    * @return the list of getters
    */
   public final List<Getter> getGetters() {
-    ConnectorDescriptor descriptor = ConnectorDescriptorAPI.load(this.getClass());
+    final ConnectorDescriptor descriptor = ConnectorDescriptorAPI.load(this.getClass());
     if (descriptor != null) {
       return descriptor.getOutputs();
     } else {
-      Method[] methods = getAllGetters();
+      final Method[] methods = getAllGetters();
       if (methods == null) {
         return null;
       }
-      List<Getter> getters = new ArrayList<Getter>();
-      for (Method method : methods) {
-        String methodName = method.getName();
+      final List<Getter> getters = new ArrayList<Getter>();
+      for (final Method method : methods) {
+        final String methodName = method.getName();
         getters.add(new Getter(getFieldName(methodName)));
       }
       return getters;
     }
   }
 
-  protected <K, V> Map<K, V> bonitaListToMap(List<List<Object>> array, Class<K> key, Class<V> value) {
+  protected <K, V> Map<K, V> bonitaListToMap(final List<List<Object>> array, final Class<K> key, final Class<V> value)
+      throws IllegalArgumentException {
     Map<K, V> map = null;
     if (array != null && array.size() > 0) {
-      map = new HashMap<K, V>();
-      for (List<Object> list : array) {
-        map.put(key.cast(list.get(0)), value.cast(list.get(1)));
+      map = new HashMap<K, V>(array.size());
+      for (final List<Object> list : array) {
+        try {
+          map.put(key.cast(list.get(0)), value.cast(list.get(1)));
+        } catch (final IndexOutOfBoundsException e) {
+          throw new IllegalArgumentException(
+              "Cannot convert the list of list in map because a sub list size is different from 2");
+        }
       }
     }
     return map;
   }
 
-  protected <K, V> Map<K, Object[]> bonitaListToArrayMap(List<List<Object>> array, Class<K> key, Class<V> value) {
+  protected <K, V> Map<K, Object[]> bonitaListToArrayMap(final List<List<Object>> array, final Class<K> key,
+      final Class<V> value) {
     Map<K, Object[]> map = null;
     if (array != null && array.size() > 0) {
       map = new HashMap<K, Object[]>();
-      for (List<Object> list : array) {
-        map.put(key.cast(list.get(0)), new Object[] {value.cast(list.get(1))});
+      for (final List<Object> list : array) {
+        map.put(key.cast(list.get(0)), new Object[] { value.cast(list.get(1)) });
       }
     }
     return map;
   }
 
-  public static Method getMethod(Class<?> connectorClass, String methodName, Class<?>[] paramTypes) {
+  public static Method getMethod(final Class<?> connectorClass, final String methodName, final Class<?>[] paramTypes) {
     try {
       return connectorClass.getMethod(methodName, paramTypes);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       if (paramTypes != null) {
-        Method[] methods = connectorClass.getMethods();
-        for (Method method : methods) {
+        final Method[] methods = connectorClass.getMethods();
+        for (final Method method : methods) {
           if (methodName.equals(method.getName())) {
-            Class<?>[] types = method.getParameterTypes();
+            final Class<?>[] types = method.getParameterTypes();
             boolean check = true;
             for (int i = 0; i < types.length; i++) {
-              if (!(types[i].isAssignableFrom(paramTypes[i]) || paramTypes[i].isAssignableFrom(types[i])
-                  || isWrapped(types[i], paramTypes[i]))) {
+              if (!(types[i].isAssignableFrom(paramTypes[i]) || paramTypes[i].isAssignableFrom(types[i]) || isWrapped(
+                  types[i], paramTypes[i]))) {
                 check = false;
                 break;
               }
@@ -456,37 +468,31 @@ public abstract class Connector implements TxHook {
     }
   }
 
-  private static boolean isWrapped(Class<?> a, Class<?> b) {
-    return (
-        (a.equals(byte.class) && b.equals(Byte.class))
-        || (a.equals(short.class) && b.equals(Short.class))
-        || (a.equals(int.class) && b.equals(Integer.class))
-        || (a.equals(long.class) && b.equals(Long.class))
-        || (a.equals(float.class) && b.equals(Float.class))
-        || (a.equals(double.class) && b.equals(Double.class))
-        || (a.equals(char.class) && b.equals(Character.class))
-        || (a.equals(boolean.class) && b.equals(Boolean.class))
-    );
+  private static boolean isWrapped(final Class<?> a, final Class<?> b) {
+    return a.equals(byte.class) && b.equals(Byte.class) || a.equals(short.class) && b.equals(Short.class)
+        || a.equals(int.class) && b.equals(Integer.class) || a.equals(long.class) && b.equals(Long.class)
+        || a.equals(float.class) && b.equals(Float.class) || a.equals(double.class) && b.equals(Double.class)
+        || a.equals(char.class) && b.equals(Character.class) || a.equals(boolean.class) && b.equals(Boolean.class);
   }
 
-  private static boolean isAGetterMethod(Method m) {
-    String methodName = m.getName();
-    return ((methodName.startsWith("get") || methodName.startsWith("is"))
-        //&& m.getParameterTypes().equals(new Class<?>[0])
-        && m.getReturnType() != null);
+  private static boolean isAGetterMethod(final Method m) {
+    final String methodName = m.getName();
+    return (methodName.startsWith("get") || methodName.startsWith("is"))
+    // && m.getParameterTypes().equals(new Class<?>[0])
+        && m.getReturnType() != null;
   }
 
-  private static boolean isASetterMethod(Method m) {
-    String methodName = m.getName();
-    return (methodName.startsWith("set")
-        //&& m.getReturnType().equals(new Class<?>[0])
-        && m.getParameterTypes() != null);
+  private static boolean isASetterMethod(final Method m) {
+    final String methodName = m.getName();
+    return methodName.startsWith("set")
+    // && m.getReturnType().equals(new Class<?>[0])
+        && m.getParameterTypes() != null;
   }
 
   private Method[] getAllSetters() {
-    List<Method> setters = new ArrayList<Method>();
-    Method[] methods = this.getClass().getDeclaredMethods();
-    for (Method method : methods) {
+    final List<Method> setters = new ArrayList<Method>();
+    final Method[] methods = this.getClass().getDeclaredMethods();
+    for (final Method method : methods) {
       if (isASetterMethod(method)) {
         setters.add(method);
       }
@@ -495,9 +501,9 @@ public abstract class Connector implements TxHook {
   }
 
   private Method[] getAllGetters() {
-    List<Method> getters = new ArrayList<Method>();
-    Method[] methods = this.getClass().getDeclaredMethods();
-    for (Method method : methods) {
+    final List<Method> getters = new ArrayList<Method>();
+    final Method[] methods = this.getClass().getDeclaredMethods();
+    for (final Method method : methods) {
       if (isAGetterMethod(method)) {
         getters.add(method);
       }
@@ -505,12 +511,12 @@ public abstract class Connector implements TxHook {
     return getters.toArray(new Method[0]);
   }
 
-  public static Type getGetterReturnType(Class<? extends Connector> classConnector, String outputName) {
+  public static Type getGetterReturnType(final Class<? extends Connector> classConnector, final String outputName) {
     try {
-      String getterName = Connector.getGetterName(outputName);
-      Method m = classConnector.getMethod(getterName, new Class[0]);
+      final String getterName = Connector.getGetterName(outputName);
+      final Method m = classConnector.getMethod(getterName, new Class[0]);
       return m.getGenericReturnType();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return null;
     }
   }

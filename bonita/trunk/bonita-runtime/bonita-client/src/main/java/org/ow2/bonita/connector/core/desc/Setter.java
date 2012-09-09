@@ -13,25 +13,26 @@
  **/
 package org.ow2.bonita.connector.core.desc;
 
+import java.util.Arrays;
+
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class Setter {
 
-  private String setterName;
-  private String required;
-  private String forbidden;
-  private Object[] parameters;
+  private final String setterName;
+  private final String required;
+  private final String forbidden;
+  private final Object[] parameters;
 
-  public Setter(String setterName, String required, String forbidden,
-      Object[] hostParameter) {
+  public Setter(final String setterName, final String required, final String forbidden, final Object[] hostParameter) {
     super();
     this.setterName = setterName;
     this.required = required;
     this.forbidden = forbidden;
-    this.parameters = hostParameter;
+    parameters = hostParameter;
   }
 
   public String getSetterName() {
@@ -49,4 +50,55 @@ public class Setter {
   public Object[] getParameters() {
     return parameters;
   }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (forbidden == null ? 0 : forbidden.hashCode());
+    result = prime * result + Arrays.hashCode(parameters);
+    result = prime * result + (required == null ? 0 : required.hashCode());
+    result = prime * result + (setterName == null ? 0 : setterName.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Setter other = (Setter) obj;
+    if (forbidden == null) {
+      if (other.forbidden != null) {
+        return false;
+      }
+    } else if (!forbidden.equals(other.forbidden)) {
+      return false;
+    }
+    if (!Arrays.equals(parameters, other.parameters)) {
+      return false;
+    }
+    if (required == null) {
+      if (other.required != null) {
+        return false;
+      }
+    } else if (!required.equals(other.required)) {
+      return false;
+    }
+    if (setterName == null) {
+      if (other.setterName != null) {
+        return false;
+      }
+    } else if (!setterName.equals(other.setterName)) {
+      return false;
+    }
+    return true;
+  }
+
 }

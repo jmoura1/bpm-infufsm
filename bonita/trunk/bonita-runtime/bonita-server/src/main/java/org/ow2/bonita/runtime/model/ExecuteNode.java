@@ -36,34 +36,34 @@ import org.ow2.bonita.util.ExceptionManager;
 
 public class ExecuteNode {
 
-	static final Logger LOG = Logger.getLogger(ExecuteNode.class.getName());
+  static final Logger LOG = Logger.getLogger(ExecuteNode.class.getName());
 
-	public void perform(Execution execution) {
-	  perform(execution, true);
-	}
-	
-  public void perform(Execution execution, boolean checkJoinType) {
-  	InternalActivityDefinition node = execution.getNode();
-  	
-  	if (LOG.isLoggable(Level.FINE)) {
+  public void perform(final Execution execution) {
+    perform(execution, true);
+  }
+
+  public void perform(final Execution execution, final boolean checkJoinType) {
+    final InternalActivityDefinition node = execution.getNode();
+
+    if (LOG.isLoggable(Level.FINE)) {
       LOG.fine(execution.toString() + " executes " + node);
-  	}
+    }
 
-    ExternalActivity activity = node.getBehaviour();
+    final ExternalActivity activity = node.getBehaviour();
 
     try {
       execution.setPropagation(Propagation.UNSPECIFIED);
 
       activity.execute(execution, checkJoinType);
 
-    } catch (Throwable e) {
+    } catch (final Throwable e) {
       if (LOG.isLoggable(Level.WARNING)) {
-        LOG.warning("Activity will be put in the state FAILED due to: " + e);
+        LOG.log(Level.WARNING, "Activity will be put in the state FAILED due to", e);
       }
-      
+
       final Recorder recorder = EnvTool.getRecorder();
       final Collection<Execution> executions = execution.getExecutions();
-      if(executions != null && !executions.isEmpty()) {
+      if (executions != null && !executions.isEmpty()) {
         for (final Execution nextExecution : executions) {
           final InternalActivityInstance activityInstance = nextExecution.getActivityInstance();
           if (activityInstance != null) {
@@ -73,8 +73,8 @@ public class ExecuteNode {
             if (e instanceof RuntimeException) {
               throw (RuntimeException) e;
             } else {
-              String message = ExceptionManager.getInstance().getFullMessage(
-                  "bp_EHI_5", e + ": " + e.getMessage(), e.getMessage());
+              final String message = ExceptionManager.getInstance().getFullMessage("bp_EHI_5",
+                  e + ": " + e.getMessage(), e.getMessage());
               throw new BonitaRuntimeException(message, e);
             }
           }
@@ -83,12 +83,12 @@ public class ExecuteNode {
         if (e instanceof RuntimeException) {
           throw (RuntimeException) e;
         } else {
-          String message = ExceptionManager.getInstance().getFullMessage(
-              "bp_EHI_5", e + ": " + e.getMessage(), e.getMessage());
+          final String message = ExceptionManager.getInstance().getFullMessage("bp_EHI_5", e + ": " + e.getMessage(),
+              e.getMessage());
           throw new BonitaRuntimeException(message, e);
         }
       }
-    
+
     }
 
     if (execution.getPropagation() == Propagation.UNSPECIFIED) {
@@ -96,6 +96,7 @@ public class ExecuteNode {
     }
   }
 
+  @Override
   public String toString() {
     return "execute(node)";
   }

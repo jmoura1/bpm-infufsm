@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2006  Bull S. A. S.
+ * Copyright (C) 2006 Bull S. A. S.
  * Bull, Rue Jean Jaures, B.P.68, 78340, Les Clayes-sous-Bois
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -9,9 +9,8 @@
  * See the GNU Lesser General Public License for more details.
  * You should have received a copy of the GNU Lesser General Public License along with this
  * program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth
- * Floor, Boston, MA  02110-1301, USA.
- * 
- * Modified by Charles Souillard, Matthieu Chaffotte, Nicolas Chabanoles, Elias Ricken de Medeiros - 
+ * Floor, Boston, MA 02110-1301, USA.
+ * Modified by Charles Souillard, Matthieu Chaffotte, Nicolas Chabanoles, Elias Ricken de Medeiros -
  * BonitaSoft S.A.
  **/
 package org.ow2.bonita.persistence.db;
@@ -34,6 +33,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
@@ -66,8 +66,8 @@ import org.ow2.bonita.facade.paging.ProcessInstanceCriterion;
 import org.ow2.bonita.facade.paging.RoleCriterion;
 import org.ow2.bonita.facade.paging.UserCriterion;
 import org.ow2.bonita.facade.privilege.Rule;
-import org.ow2.bonita.facade.privilege.RuleTypePolicy;
 import org.ow2.bonita.facade.privilege.Rule.RuleType;
+import org.ow2.bonita.facade.privilege.RuleTypePolicy;
 import org.ow2.bonita.facade.runtime.ActivityState;
 import org.ow2.bonita.facade.runtime.Category;
 import org.ow2.bonita.facade.runtime.Comment;
@@ -115,48 +115,69 @@ import org.ow2.bonita.util.ProcessInstanceUUIDComparatorDesc;
 import org.ow2.bonita.util.hibernate.GenericEnumUserType;
 
 @SuppressWarnings("deprecation")
-public class DbSessionImpl extends HibernateDbSession implements QuerierDbSession, JournalDbSession, WebDbSession, IdentityDbSession, EventDbSession, PrivilegeDbSession, WebTokenManagementDbSession {
+public class DbSessionImpl extends HibernateDbSession implements QuerierDbSession, JournalDbSession, WebDbSession,
+    IdentityDbSession, EventDbSession, PrivilegeDbSession, WebTokenManagementDbSession {
 
   private static final Logger LOG = Logger.getLogger(DbSessionImpl.class.getName());
 
   private static final int MAX_LOOP = 100;
+
   private static final long PAUSE_TIME_MILLIS = 100L;
 
   private static final String METADATA_TABLE = "BN_METADATA";
-  private static final String INSERT_METADATA_STATEMENT = "insert into " + METADATA_TABLE + " (key_, value_) values (?,'0')";
-  private static final String SELECT_METADATA_STATEMENT = "select value_ from " + METADATA_TABLE + " where key_=?";
-  private static final String LOCK_METADATA_STATEMENT = "update " + METADATA_TABLE + " set value_ = value_ where key_=?";
-  private static final String UPDATE_METADATA = "update " + METADATA_TABLE + " set value_ = ? where key_=?";
-  private static final String REMOVE_METADATA = "delete from " + METADATA_TABLE + " where key_=?";
 
-  public DbSessionImpl(Session session) {
+  private static final String EXECUTION_TABLE = "BN_PVM_EXEC";
+
+  public DbSessionImpl(final Session session) {
     setSession(session);
-    //session.setFlushMode(FlushMode.COMMIT);
+    // session.setFlushMode(FlushMode.COMMIT);
   }
 
   /*
    * QUERIER
    */
-  private static final Type definitionStateUserType =
-    Hibernate.custom(GenericEnumUserType.class, new String[]{"enumClass"}, new String[]{ProcessState.class.getName()});
+  private static final Type DEFINITION_STATE_USER_TYPE = Hibernate.custom(GenericEnumUserType.class,
+      new String[] { "enumClass" }, new String[] { ProcessState.class.getName() });
 
-  private static final Type activityStateUserType =
-    Hibernate.custom(GenericEnumUserType.class, new String[]{"enumClass"}, new String[]{ActivityState.class.getName()});
+  private static final Type ACTIVITY_STATE_USER_TYPE = Hibernate.custom(GenericEnumUserType.class,
+      new String[] { "enumClass" }, new String[] { ActivityState.class.getName() });
 
-  private static final Type instanceStateUserType =
-    Hibernate.custom(GenericEnumUserType.class, new String[]{"enumClass"}, new String[]{InstanceState.class.getName()});
-
-  //private static Type instanceStateUserType =
-  //  Hibernate.custom(GenericEnumUserType.class, new String[]{"enumClass"}, new String[]{InstanceState.class.getName()});
+  private static final Type INSTANCE_STATE_USER_TYPE = Hibernate.custom(GenericEnumUserType.class,
+      new String[] { "enumClass" }, new String[] { InstanceState.class.getName() });
 
   protected static final Version LUCENE_VERSION = SearchUtil.LUCENE_VERSION;
 
-  public long getLockedMetadata(String key) {
-    Connection connection=null;
+  private static String getInsertMetadataStatement(final String schemaPrefix) {
+    return "insert into " + schemaPrefix + METADATA_TABLE + " (key_, value_) values (?,'0')";
+  }
+
+  private static String getSelectMetadataStatement(final String schemaPrefix) {
+    return "select value_ from " + schemaPrefix + METADATA_TABLE + " where key_=?";
+  }
+
+  private static String getLockMetadataStatement(final String schemaPrefix) {
+    return "update " + schemaPrefix + METADATA_TABLE + " set value_ = value_ where key_=?";
+  }
+
+  private static String getUpdateMetadata(final String schemaPrefix) {
+    return "update " + schemaPrefix + METADATA_TABLE + " set value_ = ? where key_=?";
+  }
+
+  private static String getRemoveMetadataStatement(final String schemaPrefix) {
+    return "delete from " + schemaPrefix + METADATA_TABLE + " where key_=?";
+  }
+
+  private static String getRemoveExecution(final String schemaPrefix) {
+    return "delete from " + schemaPrefix + EXECUTION_TABLE + " where dbid_=?";
+  }
+
+  @Override
+  public long getLockedMetadata(final String key) {
+    Connection connection = null;
     try {
       connection = getConnection();
       return getMetadata(connection, key);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       // FIXME find a more appropriate exception type
       throw new BonitaInternalException("Unexpected DB access exception: " + e, e);
     } finally {
@@ -164,15 +185,16 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  public void lockMetadata(String key) {
-    Connection connection=null;
+  @Override
+  public void lockMetadata(final String key) {
+    Connection connection = null;
     try {
       connection = getConnection();
-      boolean locked = lockMetadata(connection, key);
+      final boolean locked = lockMetadata(connection, key);
       if (!locked) {
         createMetadata(connection, key);
       }
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       // FIXME find a more appropriate exception type
       throw new BonitaInternalException("Unexpected DB access exception: " + e, e);
     } finally {
@@ -180,12 +202,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  public void updateLockedMetadata(String key, long value) {    
-    Connection connection=null;
+  @Override
+  public void updateLockedMetadata(final String key, final long value) {
+    Connection connection = null;
     try {
       connection = getConnection();
       updateMetadata(connection, key, value);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       // FIXME find a more appropriate exception type
       throw new BonitaInternalException("Unexpected DB access exception: " + e, e);
     } finally {
@@ -193,12 +216,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  public void removeLockedMetadata(String key) {
-    Connection connection=null;
+  @Override
+  public void removeLockedMetadata(final String key) {
+    Connection connection = null;
     try {
       connection = getConnection();
       removeMetadata(connection, key);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       // FIXME find a more appropriate exception type
       throw new BonitaInternalException("Unexpected DB access exception: " + e, e);
     } finally {
@@ -206,12 +230,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  private void releaseConnection(Connection connection) {
+  private void releaseConnection(final Connection connection) {
     if (connection != null && shouldReleaseConnections()) {
       try {
         connection.close();
-      }
-      catch (SQLException e) {
+      } catch (final SQLException e) {
         if (LOG.isLoggable(Level.FINE)) {
           LOG.fine("SQLException during connection close: " + e);
         }
@@ -220,97 +243,138 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
   }
 
   private boolean shouldReleaseConnections() {
-    return ((SessionFactoryImplementor) session.getSessionFactory()).getSettings().getConnectionReleaseMode() ==
-      ConnectionReleaseMode.AFTER_STATEMENT;
-  } 
+    return ((SessionFactoryImplementor) session.getSessionFactory()).getSettings().getConnectionReleaseMode() == ConnectionReleaseMode.AFTER_STATEMENT;
+  }
 
   private Connection getConnection() {
     return session.connection();
   }
 
-  private long getMetadata(Connection connection, String key) throws SQLException {
-    PreparedStatement selectStmt
-    = connection.prepareStatement(SELECT_METADATA_STATEMENT);
-    selectStmt.setString(1, key);
-
-    ResultSet resultSet = selectStmt.executeQuery();
-    long nb;
-    if (resultSet.next()) {
-      String value = resultSet.getString(1);
-      nb = Long.valueOf(value);
-    } else {
-      throw new IllegalStateException("value not found for key=" + key);
-    }
-
-    resultSet.close();
-    selectStmt.close();
-    return nb;
-  }
-
-  private void updateMetadata(Connection connection, String key, long nb) throws SQLException {
-    PreparedStatement updateStmt = connection.prepareStatement(UPDATE_METADATA);
-    updateStmt.setString(1, String.valueOf(nb));
-    updateStmt.setString(2, key);
-    updateStmt.executeUpdate();
-
-    updateStmt.close();
-  }
-
-  private void removeMetadata(Connection connection, String key) throws SQLException {
-    PreparedStatement updateStmt = connection.prepareStatement(REMOVE_METADATA);
-    updateStmt.setString(1, key);
-    updateStmt.executeUpdate();
-
-    updateStmt.close();
-  }
-
-  private void createMetadata(Connection connection, String key) throws SQLException {
-    int loops = 0;
-    do {
-      PreparedStatement insertStmt = connection.prepareStatement(INSERT_METADATA_STATEMENT);
-      insertStmt.setString(1, key);
+  private long getMetadata(final Connection connection, final String key) throws SQLException {
+    final String schemaPrefix = getSchemaPrefix();
+    final PreparedStatement selectStmt = connection.prepareStatement(getSelectMetadataStatement(schemaPrefix));
+    try {
+      selectStmt.setString(1, key);
+      final ResultSet resultSet = selectStmt.executeQuery();
       try {
+        if (resultSet.next()) {
+          final String value = resultSet.getString(1);
+          return Long.valueOf(value);
+        } else {
+          throw new IllegalStateException("value not found for key=" + key);
+        }
+      } finally {
+        resultSet.close();
+      }
+    } finally {
+      selectStmt.close();
+    }
+  }
+
+  private String getSchemaPrefix() throws SQLException {
+    String schemaPrefix = "";
+    final String defaultSchema = ((SessionFactoryImplementor) session.getSessionFactory()).getSettings()
+        .getDefaultSchemaName();
+    if (defaultSchema != null && !defaultSchema.trim().isEmpty()) {
+      schemaPrefix = defaultSchema + ".";
+    }
+    return schemaPrefix;
+  }
+
+  private void updateMetadata(final Connection connection, final String key, final long nb) throws SQLException {
+    final String schemaName = getSchemaPrefix();
+    final PreparedStatement updateStmt = connection.prepareStatement(getUpdateMetadata(schemaName));
+    try {
+      updateStmt.setString(1, String.valueOf(nb));
+      updateStmt.setString(2, key);
+      updateStmt.executeUpdate();
+    } finally {
+      updateStmt.close();
+    }
+  }
+
+  @Override
+  public void deleteExecution(final long id) {
+    Connection connection = null;
+    try {
+      connection = getConnection();
+      final String schemaName = getSchemaPrefix();
+      final PreparedStatement updateStmt = connection.prepareStatement(getRemoveExecution(schemaName));
+      try {
+        updateStmt.setLong(1, id);
+        updateStmt.executeUpdate();
+      } finally {
+        updateStmt.close();
+      }
+    } catch (final SQLException e) {
+      // FIXME find a more appropriate exception type
+      throw new BonitaInternalException("Unexpected DB access exception: " + e, e);
+    } finally {
+      releaseConnection(connection);
+    }
+  }
+
+  private void removeMetadata(final Connection connection, final String key) throws SQLException {
+    final String schemaName = getSchemaPrefix();
+    final PreparedStatement updateStmt = connection.prepareStatement(getRemoveMetadataStatement(schemaName));
+    try {
+      updateStmt.setString(1, key);
+      updateStmt.executeUpdate();
+    } finally {
+      updateStmt.close();
+    }
+  }
+
+  private void createMetadata(final Connection connection, final String key) throws SQLException {
+    int loops = 0;
+    final String schemaName = getSchemaPrefix();
+    do {
+      final PreparedStatement insertStmt = connection.prepareStatement(getInsertMetadataStatement(schemaName));
+      try {
+        insertStmt.setString(1, key);
         insertStmt.executeUpdate();
         return;
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         if (isConstraintViolation(e)) {
           try {
             Thread.sleep(PAUSE_TIME_MILLIS);
-          } catch (InterruptedException e1) {
+          } catch (final InterruptedException e1) {
             LOG.log(Level.FINE, "interrupted");
           }
           // another process has inserted or is inserting at the same time
-          boolean locked = lockMetadata(connection, key);
+          final boolean locked = lockMetadata(connection, key);
           if (locked) {
             return;
           }
         } else {
           throw e;
         }
-      }
-      finally {
+      } finally {
         insertStmt.close();
       }
       loops++;
     } while (loops < MAX_LOOP);
-    throw new IllegalStateException(" Could not create or lock value for key=" + key + ". Giving up after " + loops + " iterations.");
+    throw new IllegalStateException(" Could not create or lock value for key=" + key + ". Giving up after " + loops
+        + " iterations.");
   }
 
-  private boolean lockMetadata(Connection connection, String key) throws SQLException {
-    PreparedStatement updateStmt;
-    updateStmt = connection.prepareStatement(LOCK_METADATA_STATEMENT);
-    updateStmt.setString(1, key);
-    int updateCount = updateStmt.executeUpdate();
-    updateStmt.close();
-    return updateCount > 0;
+  private boolean lockMetadata(final Connection connection, final String key) throws SQLException {
+    final String schemaName = getSchemaPrefix();
+    final PreparedStatement updateStmt = connection.prepareStatement(getLockMetadataStatement(schemaName));
+    try {
+      updateStmt.setString(1, key);
+      final int updateCount = updateStmt.executeUpdate();
+      return updateCount > 0;
+    } finally {
+      updateStmt.close();
+    }
   }
 
-
-  private boolean isConstraintViolation(SQLException e) {
-    String sqlState = getSqlState(e);
+  private boolean isConstraintViolation(final SQLException e) {
+    final String sqlState = getSqlState(e);
     boolean isConstraintViolation = false;
     if (sqlState != null && sqlState.length() >= 2) {
-      String classCode = sqlState.substring(0, 2);
+      final String classCode = sqlState.substring(0, 2);
       if ("23".equals(classCode)) {
         isConstraintViolation = true;
       }
@@ -318,11 +382,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return isConstraintViolation;
   }
 
-  private String getSqlState(SQLException e) {
+  private String getSqlState(final SQLException e) {
     String sqlState = e.getSQLState();
     if (sqlState == null) {
       if (e.getCause() != null) {
-        SQLException nextException = e.getNextException();
+        final SQLException nextException = e.getNextException();
         if (nextException != null) {
           sqlState = nextException.getSQLState();
         }
@@ -331,185 +395,202 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return sqlState;
   }
 
+  @Override
   public int getNumberOfParentProcessInstances() {
     final Query query = getSession().getNamedQuery("getNumberOfParentProcessInstances");
-    query.setCacheable(true);
+
     return ((Long) query.uniqueResult()).intValue();
   }
 
+  @Override
   public int getNumberOfProcessInstances() {
     final Query query = getSession().getNamedQuery("getNumberOfProcessInstances");
-    query.setCacheable(true);
+
     return ((Long) query.uniqueResult()).intValue();
   }
 
+  @Override
   public int getNumberOfProcesses() {
     final Query query = getSession().getNamedQuery("getNumberOfProcesses");
-    query.setCacheable(true);
+
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<TaskInstance> getUserInstanceTasks(String userId,
-      ProcessInstanceUUID instanceUUID, ActivityState taskState) {
-    Set<TaskInstance> result = new HashSet<TaskInstance>();
-    Query query = getSession().getNamedQuery("getUserInstanceTasksWithState");
-    query.setCacheable(true);
+  @Override
+  public Set<TaskInstance> getUserInstanceTasks(final String userId, final ProcessInstanceUUID instanceUUID,
+      final ActivityState taskState) {
+    final Set<TaskInstance> result = new HashSet<TaskInstance>();
+    final Query query = getSession().getNamedQuery("getUserInstanceTasksWithState");
+
     query.setString("userId", userId);
     query.setString("instanceUUID", instanceUUID.toString());
-    query.setParameter("state", taskState, activityStateUserType);
-    result.addAll(query.list());
+    query.setParameter("state", taskState, ACTIVITY_STATE_USER_TYPE);
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<TaskInstance> getUserTasks(String userId, Collection<ActivityState> taskStates) {
-    Query query = getSession().getNamedQuery("getUserTasksWithStates");
-    query.setCacheable(true);
+  @Override
+  public Set<TaskInstance> getUserTasks(final String userId, final Collection<ActivityState> taskStates) {
+    final Query query = getSession().getNamedQuery("getUserTasksWithStates");
+
     query.setString("userId", userId);
-    query.setParameterList("states", taskStates, activityStateUserType);
-    Set<TaskInstance> result = new HashSet<TaskInstance>();
-    result.addAll(query.list());
+    query.setParameterList("states", taskStates, ACTIVITY_STATE_USER_TYPE);
+    final Set<TaskInstance> result = new HashSet<TaskInstance>();
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<InternalActivityInstance> getActivityInstances(ProcessInstanceUUID instanceUUID, String activityName) {
-    Query query = getSession().getNamedQuery("getActivityInstancesWithName");
-    query.setCacheable(true);
+  @Override
+  public Set<InternalActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID,
+      final String activityName) {
+    final Query query = getSession().getNamedQuery("getActivityInstancesWithName");
+
     query.setString("instanceUUID", instanceUUID.getValue());
     query.setString("name", activityName);
-    Set<InternalActivityInstance> result = new HashSet<InternalActivityInstance>();
-    result.addAll(query.list());
+    final Set<InternalActivityInstance> result = new HashSet<InternalActivityInstance>();
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<InternalActivityInstance> getActivityInstances(ProcessInstanceUUID instanceUUID, String activityName, String iterationId) {
-    Query query = getSession().getNamedQuery("getActivityInstances");
-    query.setCacheable(true);
+  @Override
+  public Set<InternalActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID,
+      final String activityName, final String iterationId) {
+    final Query query = getSession().getNamedQuery("getActivityInstances");
+
     query.setString("instanceUUID", instanceUUID.getValue());
     query.setString("activityName", activityName);
     query.setString("iterationId", iterationId);
-    Set<InternalActivityInstance> result = new HashSet<InternalActivityInstance>();
-    result.addAll(query.list());
+    final Set<InternalActivityInstance> result = new HashSet<InternalActivityInstance>();
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalActivityInstance> getActivityInstancesFromRoot(ProcessInstanceUUID rootInstanceUUID) {
+  public List<InternalActivityInstance> getActivityInstancesFromRoot(final ProcessInstanceUUID rootInstanceUUID) {
     if (rootInstanceUUID == null) {
       return Collections.emptyList();
     }
-    Query query = getSession().getNamedQuery("getActivityInstancesFromRoot");
-    query.setCacheable(true);
+    final Query query = getSession().getNamedQuery("getActivityInstancesFromRoot");
+
     query.setString("rootInstanceUUID", rootInstanceUUID.getValue());
-    return (List<InternalActivityInstance>) query.list();
+    return query.list();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalActivityInstance> getActivityInstancesFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs) {
+  public List<InternalActivityInstance> getActivityInstancesFromRoot(final Set<ProcessInstanceUUID> rootInstanceUUIDs) {
     if (rootInstanceUUIDs == null || rootInstanceUUIDs.isEmpty()) {
       return Collections.emptyList();
     }
-    Collection<String> uuids = new HashSet<String>();
-    for (ProcessInstanceUUID processInstanceUUID : rootInstanceUUIDs) {
+    final Collection<String> uuids = new HashSet<String>();
+    for (final ProcessInstanceUUID processInstanceUUID : rootInstanceUUIDs) {
       uuids.add(processInstanceUUID.getValue());
     }
 
-    Query query = getSession().getNamedQuery("getMatchingActivityInstancesFromRoot");
-    query.setCacheable(true);
+    final Query query = getSession().getNamedQuery("getMatchingActivityInstancesFromRoot");
+
     query.setParameterList("rootInstanceUUIDs", uuids);
-    return (List<InternalActivityInstance>) query.list();
+    return query.list();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Map<ProcessInstanceUUID, InternalActivityInstance> getLastUpdatedActivityInstanceFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs, boolean considerSystemTaks) {
+  public Map<ProcessInstanceUUID, InternalActivityInstance> getLastUpdatedActivityInstanceFromRoot(
+      final Set<ProcessInstanceUUID> rootInstanceUUIDs, final boolean considerSystemTaks) {
     if (rootInstanceUUIDs == null || rootInstanceUUIDs.isEmpty()) {
       return Collections.emptyMap();
     }
 
-    Map<ProcessInstanceUUID, InternalActivityInstance> result = new HashMap<ProcessInstanceUUID, InternalActivityInstance>();
+    final Map<ProcessInstanceUUID, InternalActivityInstance> result = new HashMap<ProcessInstanceUUID, InternalActivityInstance>();
     Query query;
-    for (ProcessInstanceUUID processInstanceUUID : rootInstanceUUIDs) {
-      if(considerSystemTaks){
+    for (final ProcessInstanceUUID processInstanceUUID : rootInstanceUUIDs) {
+      if (considerSystemTaks) {
         query = getSession().getNamedQuery("getMatchingActivityInstancesFromRoot");
       } else {
         query = getSession().getNamedQuery("getMatchingHumanTaskInstancesFromRoot");
       }
 
-      query.setCacheable(true);
       query.setParameterList("rootInstanceUUIDs", Arrays.asList(processInstanceUUID.getValue()));
       query.setMaxResults(1);
 
-      List<InternalActivityInstance> tmp = (List<InternalActivityInstance>)query.list(); 
-      if(tmp!=null && tmp.size()>0){
-        result.put(processInstanceUUID,(InternalActivityInstance)tmp.get(0));    
+      final List<InternalActivityInstance> tmp = query.list();
+      if (tmp != null && !tmp.isEmpty()) {
+        result.put(processInstanceUUID, tmp.get(0));
       }
     }
     return result;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalActivityInstance> getActivityInstancesFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs, ActivityState state) {
+  public List<InternalActivityInstance> getActivityInstancesFromRoot(final Set<ProcessInstanceUUID> rootInstanceUUIDs,
+      final ActivityState state) {
     if (rootInstanceUUIDs == null || rootInstanceUUIDs.isEmpty()) {
       return Collections.emptyList();
     }
-    Collection<String> uuids = new HashSet<String>();
-    for (ProcessInstanceUUID processInstanceUUID : rootInstanceUUIDs) {
+    final Collection<String> uuids = new HashSet<String>();
+    for (final ProcessInstanceUUID processInstanceUUID : rootInstanceUUIDs) {
       uuids.add(processInstanceUUID.getValue());
     }
 
-    Query query = getSession().getNamedQuery("getMatchingActivityInstancesWithStateFromRoot");
-    query.setCacheable(true);
+    final Query query = getSession().getNamedQuery("getMatchingActivityInstancesWithStateFromRoot");
+
     query.setParameterList("rootInstanceUUIDs", uuids);
-    query.setParameter("state", state, activityStateUserType);
-    return (List<InternalActivityInstance>) query.list();
+    query.setParameter("state", state, ACTIVITY_STATE_USER_TYPE);
+    return query.list();
   }
 
-  public TaskInstance getOneTask(String userId, ActivityState taskState) {
-    Query query = getSession().getNamedQuery("getOneTask");
-    query.setCacheable(true);
+  @Override
+  public TaskInstance getOneTask(final String userId, final ActivityState taskState) {
+    final Query query = getSession().getNamedQuery("getOneTask");
+
     query.setString("userId", userId);
-    query.setParameter("state", taskState, activityStateUserType);
+    query.setParameter("state", taskState, ACTIVITY_STATE_USER_TYPE);
     query.setMaxResults(1);
     return (TaskInstance) query.uniqueResult();
   }
 
-  public TaskInstance getOneTask(String userId, ProcessDefinitionUUID processUUID, ActivityState taskState) {
-    Query query = getSession().getNamedQuery("getOneTaskOfProcess");
-    query.setCacheable(true);
+  @Override
+  public TaskInstance getOneTask(final String userId, final ProcessDefinitionUUID processUUID,
+      final ActivityState taskState) {
+    final Query query = getSession().getNamedQuery("getOneTaskOfProcess");
+
     query.setString("userId", userId);
     query.setString("processUUID", processUUID.getValue());
-    query.setParameter("state", taskState, activityStateUserType);
+    query.setParameter("state", taskState, ACTIVITY_STATE_USER_TYPE);
     query.setMaxResults(1);
     return (TaskInstance) query.uniqueResult();
   }
 
-  public TaskInstance getOneTask(String userId, ProcessInstanceUUID instanceUUID, ActivityState taskState) {
-    Query query = getSession().getNamedQuery("getOneTaskOfInstance");
-    query.setCacheable(true);
+  @Override
+  public TaskInstance getOneTask(final String userId, final ProcessInstanceUUID instanceUUID,
+      final ActivityState taskState) {
+    final Query query = getSession().getNamedQuery("getOneTaskOfInstance");
+
     query.setString("userId", userId);
     query.setString("instanceUUID", instanceUUID.getValue());
-    query.setParameter("state", taskState, activityStateUserType);
+    query.setParameter("state", taskState, ACTIVITY_STATE_USER_TYPE);
     query.setMaxResults(1);
     return (TaskInstance) query.uniqueResult();
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<InternalProcessInstance> getUserInstances(String userId) {
-    Query query = getSession().getNamedQuery("getUserInstances");
-    query.setCacheable(true);
+  @Override
+  public Set<InternalProcessInstance> getUserInstances(final String userId) {
+    final Query query = getSession().getNamedQuery("getUserInstances");
+
     query.setString("userId", userId);
-    Set<InternalProcessInstance> result = new HashSet<InternalProcessInstance>();
-    result.addAll(query.list());
+    final Set<InternalProcessInstance> result = new HashSet<InternalProcessInstance>();
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentUserInstances(String userId, int fromIndex, int pageSize) {
+  public List<InternalProcessInstance> getParentUserInstances(final String userId, final int fromIndex,
+      final int pageSize) {
     final Query query = getSession().getNamedQuery("getParentUserInstancesPage");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     query.setString("userId", userId);
@@ -521,9 +602,10 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
 
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentUserInstances(String userId,
-      int startingIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
+  public List<InternalProcessInstance> getParentUserInstances(final String userId, final int startingIndex,
+      final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
     Query query = null;
     switch (pagingCriterion) {
       case LAST_UPDATE_ASC:
@@ -561,7 +643,6 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(startingIndex);
     query.setMaxResults(pageSize);
     query.setString("userId", userId);
@@ -572,61 +653,62 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<InternalProcessInstance> getUserInstances(String userId, Date minStartDate) {
-    Query query = getSession().getNamedQuery("getUserInstancesAfterDate");
-    query.setCacheable(true);
+  @Override
+  public Set<InternalProcessInstance> getUserInstances(final String userId, final Date minStartDate) {
+    final Query query = getSession().getNamedQuery("getUserInstancesAfterDate");
+
     query.setString("userId", userId);
     query.setLong("minStartDate", minStartDate.getTime());
-    Set<InternalProcessInstance> result = new HashSet<InternalProcessInstance>();
-    result.addAll(query.list());
+    final Set<InternalProcessInstance> result = new HashSet<InternalProcessInstance>();
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<InternalProcessInstance> getUserParentInstances(String userId, Date minStartDate) {
-    Query query = getSession().getNamedQuery("getUserParentInstancesAfterDate");
-    query.setCacheable(true);
+  @Override
+  public Set<InternalProcessInstance> getUserParentInstances(final String userId, final Date minStartDate) {
+    final Query query = getSession().getNamedQuery("getUserParentInstancesAfterDate");
+
     query.setString("userId", userId);
     query.setLong("minStartDate", minStartDate.getTime());
-    Set<InternalProcessInstance> result = new HashSet<InternalProcessInstance>();
-    result.addAll(query.list());
+    final Set<InternalProcessInstance> result = new HashSet<InternalProcessInstance>();
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  public Set<InternalProcessInstance> getUserInstancesExcept(String userId, Set<ProcessInstanceUUID> instances) {
+  @Override
+  public Set<InternalProcessInstance> getUserInstancesExcept(final String userId,
+      final Set<ProcessInstanceUUID> instances) {
     if (instances == null || instances.isEmpty()) {
       return getUserInstances(userId);
     }
-    Collection<String> uuids = new HashSet<String>();
-    if (instances != null) {
-      for (ProcessInstanceUUID processInstanceUUID : instances) {
-        uuids.add(processInstanceUUID.getValue());
-      }
+    final Collection<String> uuids = new HashSet<String>();
+    for (final ProcessInstanceUUID processInstanceUUID : instances) {
+      uuids.add(processInstanceUUID.getValue());
     }
-    Query query = getSession().getNamedQuery("getUserInstancesExcept");
-    query.setCacheable(true);
+    final Query query = getSession().getNamedQuery("getUserInstancesExcept");
+
     query.setString("userId", userId);
     return executeSplittedQuery(InternalProcessInstance.class, query, "uuids", uuids);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<InternalActivityInstance> getActivityInstances(ProcessInstanceUUID instanceUUID) {
-    Query query = getSession().getNamedQuery("findActivityInstances");
-    query.setCacheable(true);
+  public Set<InternalActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID) {
+    final Query query = getSession().getNamedQuery("findActivityInstances");
+
     query.setString("instanceUUID", instanceUUID.toString());
-    List<InternalActivityInstance> results = query.list();
+    final List<InternalActivityInstance> results = query.list();
     if (results != null) {
       return new HashSet<InternalActivityInstance>(results);
     }
     return null;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalActivityInstance> getActivityInstances(
-      ProcessInstanceUUID instanceUUID, int fromIndex, int pageSize,
-      ActivityInstanceCriterion pagingCriterion) {
-    Query query = null;  	
+  public List<InternalActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID,
+      final int fromIndex, final int pageSize, final ActivityInstanceCriterion pagingCriterion) {
+    Query query = null;
 
     switch (pagingCriterion) {
       case LAST_UPDATE_ASC:
@@ -634,13 +716,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
       case STARTED_DATE_ASC:
         query = getSession().getNamedQuery("findActivityInstancesOrderByStartedDateAsc");
-        break;			
+        break;
       case ENDED_DATE_ASC:
         query = getSession().getNamedQuery("findActivityInstancesOrderByEndedDateAsc");
         break;
       case NAME_ASC:
         query = getSession().getNamedQuery("findActivityInstancesOrderByNameAsc");
-        break;	
+        break;
       case PRIORITY_ASC:
         query = getSession().getNamedQuery("findActivityInstancesOrderByPriorityAsc");
         break;
@@ -649,13 +731,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
       case STARTED_DATE_DESC:
         query = getSession().getNamedQuery("findActivityInstancesOrderByStartedDateDesc");
-        break;			
+        break;
       case ENDED_DATE_DESC:
         query = getSession().getNamedQuery("findActivityInstancesOrderByEndedDateDesc");
         break;
       case NAME_DESC:
         query = getSession().getNamedQuery("findActivityInstancesOrderByNameDesc");
-        break;	
+        break;
       case PRIORITY_DESC:
         query = getSession().getNamedQuery("findActivityInstancesOrderByPriorityDesc");
         break;
@@ -664,43 +746,45 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setString("instanceUUID", instanceUUID.toString());
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
 
-    List<InternalActivityInstance> results = query.list();
+    final List<InternalActivityInstance> results = query.list();
     if (results != null) {
       return new ArrayList<InternalActivityInstance>(results);
     }
     return null;
   }
 
-  public long getLastProcessInstanceNb(ProcessDefinitionUUID processUUID) {
-    Query query = getSession().getNamedQuery("getLastProcessInstanceNb");
-    query.setCacheable(true);
+  @Override
+  public long getLastProcessInstanceNb(final ProcessDefinitionUUID processUUID) {
+    final Query query = getSession().getNamedQuery("getLastProcessInstanceNb");
+
     query.setString("processUUID", processUUID.getValue());
     query.setMaxResults(1);
-    Long result = (Long) query.uniqueResult();
+    final Long result = (Long) query.uniqueResult();
     if (result == null) {
       return -1;
     }
     return result;
   }
 
-  public InternalProcessInstance getProcessInstance(ProcessInstanceUUID instanceUUID) {
-    Query query = getSession().getNamedQuery("findProcessInstance");
-    query.setCacheable(true);
+  @Override
+  public InternalProcessInstance getProcessInstance(final ProcessInstanceUUID instanceUUID) {
+    final Query query = getSession().getNamedQuery("findProcessInstance");
+
     query.setString("instanceUUID", instanceUUID.toString());
     query.setMaxResults(1);
     return (InternalProcessInstance) query.uniqueResult();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Set<InternalProcessInstance> getProcessInstances() {
     final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
     final Query query = getSession().getNamedQuery("findAllProcessInstances");
-    query.setCacheable(true);
+
     final List<InternalProcessInstance> results = query.list();
     if (results != null) {
       processInsts.addAll(results);
@@ -708,10 +792,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return processInsts;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getProcessInstances(int fromIndex, int pageSize) {
+  public List<InternalProcessInstance> getProcessInstances(final int fromIndex, final int pageSize) {
     final Query query = getSession().getNamedQuery("findAllProcessInstances");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     final List<InternalProcessInstance> results = query.list();
@@ -721,9 +806,10 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getProcessInstances(int fromIndex, int pageSize, 
-      ProcessInstanceCriterion pagingCriterion) {
+  public List<InternalProcessInstance> getProcessInstances(final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
     Query query = null;
     switch (pagingCriterion) {
       case LAST_UPDATE_ASC:
@@ -761,7 +847,6 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     final List<InternalProcessInstance> results = query.list();
@@ -771,10 +856,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getMostRecentProcessInstances(int maxResults, long time) {
+  public List<InternalProcessInstance> getMostRecentProcessInstances(final int maxResults, final long time) {
     final Query query = getSession().getNamedQuery("getMostRecentProcessInstances");
-    query.setCacheable(true);
+
     query.setFirstResult(0);
     query.setLong("time", time);
     query.setMaxResults(maxResults);
@@ -785,9 +871,10 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getMostRecentProcessInstances(
-      int maxResults, long time, ProcessInstanceCriterion pagingCriterion) {
+  public List<InternalProcessInstance> getMostRecentProcessInstances(final int maxResults, final long time,
+      final ProcessInstanceCriterion pagingCriterion) {
     Query query = null;
     switch (pagingCriterion) {
       case LAST_UPDATE_ASC:
@@ -824,7 +911,7 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         query = getSession().getNamedQuery("getMostRecentProcessInstances");
         break;
     }
-    query.setCacheable(true);
+
     query.setFirstResult(0);
     query.setLong("time", time);
     query.setMaxResults(maxResults);
@@ -835,10 +922,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getMostRecentParentProcessInstances(int maxResults, long time) {
+  public List<InternalProcessInstance> getMostRecentParentProcessInstances(final int maxResults, final long time) {
     final Query query = getSession().getNamedQuery("getMostRecentParentProcessInstances");
-    query.setCacheable(true);
+
     query.setFirstResult(0);
     query.setLong("time", time);
     query.setMaxResults(maxResults);
@@ -849,9 +937,10 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getMostRecentParentProcessInstances(
-      int maxResults, long time, ProcessInstanceCriterion pagingCriterion) {
+  public List<InternalProcessInstance> getMostRecentParentProcessInstances(final int maxResults, final long time,
+      final ProcessInstanceCriterion pagingCriterion) {
     Query query = null;
     switch (pagingCriterion) {
       case LAST_UPDATE_ASC:
@@ -889,7 +978,6 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(0);
     query.setLong("time", time);
     query.setMaxResults(maxResults);
@@ -900,31 +988,35 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
-  public List<InternalProcessInstance> getMostRecentMatchingProcessInstances(Collection<ProcessInstanceUUID> instanceUUIDs, int maxResults, long time) {
+  @Override
+  public List<InternalProcessInstance> getMostRecentMatchingProcessInstances(
+      final Collection<ProcessInstanceUUID> instanceUUIDs, final int maxResults, final long time) {
     final Query query = getSession().getNamedQuery("getMostRecentMatchingProcessInstances");
-    query.setCacheable(true);
+
     query.setFirstResult(0);
     query.setLong("time", time);
     query.setMaxResults(maxResults);
 
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessInstanceUUID uuid : instanceUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessInstanceUUID uuid : instanceUUIDs) {
       uuids.add(uuid.toString());
     }
 
-    List<InternalProcessInstance> allInstances = new ArrayList<InternalProcessInstance>();
+    final List<InternalProcessInstance> allInstances = new ArrayList<InternalProcessInstance>();
     allInstances.addAll(executeSplittedQuery(InternalProcessInstance.class, query, "instanceUUIDs", uuids));
     Collections.sort(allInstances, new ProcessInstanceLastUpdateComparator());
-    List<InternalProcessInstance> results = Misc.subList(InternalProcessInstance.class, allInstances, 0, maxResults);
+    final List<InternalProcessInstance> results = Misc.subList(InternalProcessInstance.class, allInstances, 0,
+        maxResults);
     if (results == null) {
       return Collections.emptyList();
     }
     return results;
   }
 
+  @Override
   public List<InternalProcessInstance> getMostRecentMatchingProcessInstances(
-      Set<ProcessInstanceUUID> instanceUUIDs, int maxResults, long time,
-      ProcessInstanceCriterion pagingCriterion) {
+      final Set<ProcessInstanceUUID> instanceUUIDs, final int maxResults, final long time,
+      final ProcessInstanceCriterion pagingCriterion) {
     Query query = null;
     Comparator<InternalProcessInstance> comparator = null;
     switch (pagingCriterion) {
@@ -974,29 +1066,30 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(0);
     query.setLong("time", time);
     query.setMaxResults(maxResults);
 
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessInstanceUUID uuid : instanceUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessInstanceUUID uuid : instanceUUIDs) {
       uuids.add(uuid.toString());
     }
 
-    List<InternalProcessInstance> allInstances = new ArrayList<InternalProcessInstance>();
+    final List<InternalProcessInstance> allInstances = new ArrayList<InternalProcessInstance>();
     allInstances.addAll(executeSplittedQuery(InternalProcessInstance.class, query, "instanceUUIDs", uuids));
     Collections.sort(allInstances, comparator);
-    List<InternalProcessInstance> results = Misc.subList(InternalProcessInstance.class, allInstances, 0, maxResults);
+    final List<InternalProcessInstance> results = Misc.subList(InternalProcessInstance.class, allInstances, 0,
+        maxResults);
     if (results == null) {
       return Collections.emptyList();
     }
     return results;
   }
 
-
-  public List<InternalProcessInstance> getMostRecentProcessesProcessInstances(Collection<ProcessDefinitionUUID> definitionUUIDs, 
-      int maxResults, long time, ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<InternalProcessInstance> getMostRecentProcessesProcessInstances(
+      final Collection<ProcessDefinitionUUID> definitionUUIDs, final int maxResults, final long time,
+      final ProcessInstanceCriterion pagingCriterion) {
     Query query = null;
     Comparator<InternalProcessInstance> comparator = null;
     switch (pagingCriterion) {
@@ -1046,57 +1139,60 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(0);
     query.setLong("time", time);
     query.setMaxResults(maxResults);
 
-    Set<String> uuids = new HashSet<String>();
+    final Set<String> uuids = new HashSet<String>();
     if (definitionUUIDs != null) {
-      for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+      for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
         uuids.add(uuid.toString());
       }
     }
 
-    List<InternalProcessInstance> allInstances = new ArrayList<InternalProcessInstance>();
+    final List<InternalProcessInstance> allInstances = new ArrayList<InternalProcessInstance>();
     allInstances.addAll(executeSplittedQuery(InternalProcessInstance.class, query, "processUUIDs", uuids));
     Collections.sort(allInstances, comparator);
-    List<InternalProcessInstance> results = Misc.subList(InternalProcessInstance.class, allInstances, 0, maxResults);
+    final List<InternalProcessInstance> results = Misc.subList(InternalProcessInstance.class, allInstances, 0,
+        maxResults);
     if (results == null) {
       return Collections.emptyList();
     }
     return results;
   }
 
-  public List<InternalProcessInstance> getMostRecentProcessesProcessInstances(Collection<ProcessDefinitionUUID> definitionUUIDs, int maxResults, long time) {
+  @Override
+  public List<InternalProcessInstance> getMostRecentProcessesProcessInstances(
+      final Collection<ProcessDefinitionUUID> definitionUUIDs, final int maxResults, final long time) {
     final Query query = getSession().getNamedQuery("getMostRecentProcessesProcessInstances");
-    query.setCacheable(true);
+
     query.setFirstResult(0);
     query.setLong("time", time);
     query.setMaxResults(maxResults);
 
-    Set<String> uuids = new HashSet<String>();
+    final Set<String> uuids = new HashSet<String>();
     if (definitionUUIDs != null) {
-      for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+      for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
         uuids.add(uuid.toString());
       }
     }
 
-    List<InternalProcessInstance> allInstances = new ArrayList<InternalProcessInstance>();
+    final List<InternalProcessInstance> allInstances = new ArrayList<InternalProcessInstance>();
     allInstances.addAll(executeSplittedQuery(InternalProcessInstance.class, query, "processUUIDs", uuids));
     Collections.sort(allInstances, new ProcessInstanceLastUpdateComparator());
-    List<InternalProcessInstance> results = Misc.subList(InternalProcessInstance.class, allInstances, 0, maxResults);
+    final List<InternalProcessInstance> results = Misc.subList(InternalProcessInstance.class, allInstances, 0,
+        maxResults);
     if (results == null) {
       return Collections.emptyList();
     }
     return results;
   }
 
-
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstances(int fromIndex, int pageSize) {
+  public List<InternalProcessInstance> getParentProcessInstances(final int fromIndex, final int pageSize) {
     final Query query = getSession().getNamedQuery("getParentInstances");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     final List<InternalProcessInstance> results = query.list();
@@ -1106,18 +1202,19 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstances(int fromIndex,
-      int pageSize, ProcessInstanceCriterion pagingCriterion) {
-    Query query = null;  	
+  public List<InternalProcessInstance> getParentProcessInstances(final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    Query query = null;
     switch (pagingCriterion) {
-      case LAST_UPDATE_ASC:			
+      case LAST_UPDATE_ASC:
         query = getSession().getNamedQuery("getParentInstancesOrderByLastUpdateAsc");
         break;
       case STARTED_DATE_ASC:
         query = getSession().getNamedQuery("getParentInstancesOrderByStartedDateAsc");
         break;
-      case ENDED_DATE_ASC:			
+      case ENDED_DATE_ASC:
         query = getSession().getNamedQuery("getParentInstancesOrderByEndedDateAsc");
         break;
       case INSTANCE_NUMBER_ASC:
@@ -1126,13 +1223,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
       case INSTANCE_UUID_ASC:
         query = getSession().getNamedQuery("getParentInstancesOrderByInstanceUUIDAsc");
         break;
-      case LAST_UPDATE_DESC:			
+      case LAST_UPDATE_DESC:
         query = getSession().getNamedQuery("getParentInstancesOrderByLastUpdateDesc");
         break;
       case STARTED_DATE_DESC:
         query = getSession().getNamedQuery("getParentInstancesOrderByStartedDateDesc");
         break;
-      case ENDED_DATE_DESC:			
+      case ENDED_DATE_DESC:
         query = getSession().getNamedQuery("getParentInstancesOrderByEndedDateDesc");
         break;
       case INSTANCE_NUMBER_DESC:
@@ -1146,7 +1243,6 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     final List<InternalProcessInstance> results = query.list();
@@ -1156,18 +1252,18 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
-  public List<InternalProcessInstance> getParentProcessInstances(
-      Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
-    Query query = null;   
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstances(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    Query query = null;
     switch (pagingCriterion) {
-      case LAST_UPDATE_ASC:     
+      case LAST_UPDATE_ASC:
         query = getSession().getNamedQuery("getParentInstancesFromProcessUUIDsOrderByLastUpdateAsc");
         break;
       case STARTED_DATE_ASC:
         query = getSession().getNamedQuery("getParentInstancesFromProcessUUIDsOrderByStartedDateAsc");
         break;
-      case ENDED_DATE_ASC:      
+      case ENDED_DATE_ASC:
         query = getSession().getNamedQuery("getParentInstancesFromProcessUUIDsOrderByEndedDateAsc");
         break;
       case INSTANCE_NUMBER_ASC:
@@ -1176,13 +1272,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
       case INSTANCE_UUID_ASC:
         query = getSession().getNamedQuery("getParentInstancesFromProcessUUIDsOrderByInstanceUUIDAsc");
         break;
-      case LAST_UPDATE_DESC:      
+      case LAST_UPDATE_DESC:
         query = getSession().getNamedQuery("getParentInstancesFromProcessUUIDsOrderByLastUpdateDesc");
         break;
       case STARTED_DATE_DESC:
         query = getSession().getNamedQuery("getParentInstancesFromProcessUUIDsOrderByStartedDateDesc");
         break;
-      case ENDED_DATE_DESC:     
+      case ENDED_DATE_DESC:
         query = getSession().getNamedQuery("getParentInstancesFromProcessUUIDsOrderByEndedDateDesc");
         break;
       case INSTANCE_NUMBER_DESC:
@@ -1196,33 +1292,33 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : processUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : processUUIDs) {
       uuids.add(uuid.toString());
     }
 
-    final List<InternalProcessInstance> results = executeSplittedQueryList(InternalProcessInstance.class, query, "processUUIDs", uuids);
+    final List<InternalProcessInstance> results = executeSplittedQueryList(InternalProcessInstance.class, query,
+        "processUUIDs", uuids);
     if (results == null) {
       return Collections.emptyList();
     }
     return results;
   }
 
-  public List<InternalProcessInstance> getParentProcessInstancesExcept(
-      Set<ProcessDefinitionUUID> exceptions, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
-    Query query = null;   
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesExcept(final Set<ProcessDefinitionUUID> exceptions,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    Query query = null;
     switch (pagingCriterion) {
-      case LAST_UPDATE_ASC:     
+      case LAST_UPDATE_ASC:
         query = getSession().getNamedQuery("getParentInstancesExceptOrderByLastUpdateAsc");
         break;
       case STARTED_DATE_ASC:
         query = getSession().getNamedQuery("getParentInstancesExceptOrderByStartedDateAsc");
         break;
-      case ENDED_DATE_ASC:      
+      case ENDED_DATE_ASC:
         query = getSession().getNamedQuery("getParentInstancesExceptOrderByEndedDateAsc");
         break;
       case INSTANCE_NUMBER_ASC:
@@ -1231,13 +1327,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
       case INSTANCE_UUID_ASC:
         query = getSession().getNamedQuery("getParentInstancesExceptOrderByInstanceUUIDAsc");
         break;
-      case LAST_UPDATE_DESC:      
+      case LAST_UPDATE_DESC:
         query = getSession().getNamedQuery("getParentInstancesExceptOrderByLastUpdateDesc");
         break;
       case STARTED_DATE_DESC:
         query = getSession().getNamedQuery("getParentInstancesExceptOrderByStartedDateDesc");
         break;
-      case ENDED_DATE_DESC:     
+      case ENDED_DATE_DESC:
         query = getSession().getNamedQuery("getParentInstancesExceptOrderByEndedDateDesc");
         break;
       case INSTANCE_NUMBER_DESC:
@@ -1251,25 +1347,26 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : exceptions) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : exceptions) {
       uuids.add(uuid.toString());
     }
 
-    final List<InternalProcessInstance> results = executeSplittedQueryList(InternalProcessInstance.class, query, "processUUIDs", uuids);
+    final List<InternalProcessInstance> results = executeSplittedQueryList(InternalProcessInstance.class, query,
+        "processUUIDs", uuids);
     if (results == null) {
       return Collections.emptyList();
     }
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessDefinition> getProcesses(int fromIndex, int pageSize) {
+  public List<InternalProcessDefinition> getProcesses(final int fromIndex, final int pageSize) {
     final Query query = getSession().getNamedQuery("getAllProcesses");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     final List<InternalProcessDefinition> results = query.list();
@@ -1279,9 +1376,10 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessDefinition> getProcesses(int fromIndex,
-      int pageSize, ProcessDefinitionCriterion pagingCriterion) {
+  public List<InternalProcessDefinition> getProcesses(final int fromIndex, final int pageSize,
+      final ProcessDefinitionCriterion pagingCriterion) {
     Query query = null;
     switch (pagingCriterion) {
       case NAME_ASC:
@@ -1321,7 +1419,6 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     final List<InternalProcessDefinition> results = query.list();
@@ -1331,31 +1428,35 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
-  public List<InternalProcessInstance> getProcessInstances(Collection<ProcessInstanceUUID> instanceUUIDs, int fromIndex, int pageSize) {
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final Collection<ProcessInstanceUUID> instanceUUIDs,
+      final int fromIndex, final int pageSize) {
     final Query query = getSession().getNamedQuery("findMatchingProcessInstances");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
-    Set<String> uuids = new HashSet<String>();
+    final Set<String> uuids = new HashSet<String>();
     if (instanceUUIDs != null) {
-      for (ProcessInstanceUUID uuid : instanceUUIDs) {
+      for (final ProcessInstanceUUID uuid : instanceUUIDs) {
         uuids.add(uuid.toString());
       }
     }
 
-    List<InternalProcessInstance> allInstances = new ArrayList<InternalProcessInstance>();
+    final List<InternalProcessInstance> allInstances = new ArrayList<InternalProcessInstance>();
     allInstances.addAll(executeSplittedQuery(InternalProcessInstance.class, query, "instanceUUIDs", uuids));
     Collections.sort(allInstances, new ProcessInstanceLastUpdateComparator());
-    List<InternalProcessInstance> results = Misc.subList(InternalProcessInstance.class, allInstances, 0, pageSize);
+    final List<InternalProcessInstance> results = Misc
+        .subList(InternalProcessInstance.class, allInstances, 0, pageSize);
     if (results == null) {
       return Collections.emptyList();
     }
     return results;
   }
 
+  @Override
   public List<InternalProcessInstance> getProcessInstancesWithInstanceUUIDs(
-      Set<ProcessInstanceUUID> instanceUUIDs, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
+      final Set<ProcessInstanceUUID> instanceUUIDs, final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
     Query query = null;
     Comparator<InternalProcessInstance> comparator = null;
     switch (pagingCriterion) {
@@ -1398,37 +1499,39 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
       case INSTANCE_UUID_DESC:
         comparator = new ProcessInstanceUUIDComparatorDesc();
         query = getSession().getNamedQuery("findMatchingProcessInstancesOrderByIntanceUUIDDesc");
-        break;		
+        break;
       case DEFAULT:
         comparator = new ProcessInstanceLastUpdateComparator();
         query = getSession().getNamedQuery("findMatchingProcessInstances");
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
-    Set<String> uuids = new HashSet<String>();
+    final Set<String> uuids = new HashSet<String>();
     if (instanceUUIDs != null) {
-      for (ProcessInstanceUUID uuid : instanceUUIDs) {
+      for (final ProcessInstanceUUID uuid : instanceUUIDs) {
         uuids.add(uuid.toString());
       }
     }
 
-    List<InternalProcessInstance> allInstances = new ArrayList<InternalProcessInstance>();
+    final List<InternalProcessInstance> allInstances = new ArrayList<InternalProcessInstance>();
     allInstances.addAll(executeSplittedQuery(InternalProcessInstance.class, query, "instanceUUIDs", uuids));
     Collections.sort(allInstances, comparator);
-    List<InternalProcessInstance> results = Misc.subList(InternalProcessInstance.class, allInstances, 0, pageSize);
+    final List<InternalProcessInstance> results = Misc
+        .subList(InternalProcessInstance.class, allInstances, 0, pageSize);
     if (results == null) {
       return Collections.emptyList();
     }
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<ProcessInstanceUUID> getLabelsCaseUUIDs(String ownerName, Set<String> labelNames, int fromIndex, int pageSize) {
+  public List<ProcessInstanceUUID> getLabelsCaseUUIDs(final String ownerName, final Set<String> labelNames,
+      final int fromIndex, final int pageSize) {
     final Query query = getSession().getNamedQuery("getLabelsCaseUUIDs");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     query.setString("ownerName", ownerName);
@@ -1436,11 +1539,12 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return query.list();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Set<InternalProcessInstance> getParentInstances() {
     final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
     final Query query = getSession().getNamedQuery("getParentInstances");
-    query.setCacheable(true);
+
     final List<InternalProcessInstance> results = query.list();
     if (results != null) {
       processInsts.addAll(results);
@@ -1448,11 +1552,12 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return processInsts;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Set<ProcessInstanceUUID> getParentInstancesUUIDs() {
     final Set<ProcessInstanceUUID> processInsts = new HashSet<ProcessInstanceUUID>();
     final Query query = getSession().getNamedQuery("getParentInstancesUUIDs");
-    query.setCacheable(true);
+
     final List<ProcessInstanceUUID> results = query.list();
     if (results != null) {
       processInsts.addAll(results);
@@ -1460,21 +1565,22 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return processInsts;
   }
 
-  public Set<InternalProcessInstance> getProcessInstances(Collection<ProcessInstanceUUID> instanceUUIDs) {
+  @Override
+  public Set<InternalProcessInstance> getProcessInstances(final Collection<ProcessInstanceUUID> instanceUUIDs) {
     final Query query = getSession().getNamedQuery("findMatchingProcessInstances");
-    query.setCacheable(true);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessInstanceUUID uuid : instanceUUIDs) {
+
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessInstanceUUID uuid : instanceUUIDs) {
       uuids.add(uuid.toString());
     }
     return executeSplittedQuery(InternalProcessInstance.class, query, "instanceUUIDs", uuids);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<InternalProcessInstance> getProcessInstancesWithTaskState(Collection<ActivityState> activityStates) {
+  public Set<InternalProcessInstance> getProcessInstancesWithTaskState(final Collection<ActivityState> activityStates) {
     final Query getActivitiesQuery = getSession().getNamedQuery("findActivityInstancesWithTaskState");
-    getActivitiesQuery.setCacheable(true);
-    getActivitiesQuery.setParameterList("activityStates", activityStates, activityStateUserType);
+    getActivitiesQuery.setParameterList("activityStates", activityStates, ACTIVITY_STATE_USER_TYPE);
     final List<String> uuids = getActivitiesQuery.list();
 
     final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
@@ -1483,15 +1589,16 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
 
     final Query query = getSession().getNamedQuery("findMatchingProcessInstances");
-    query.setCacheable(true);
+
     return executeSplittedQuery(InternalProcessInstance.class, query, "instanceUUIDs", uuids);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<InternalProcessInstance> getProcessInstancesWithInstanceStates(Collection<InstanceState> instanceStates) {
+  public Set<InternalProcessInstance> getProcessInstancesWithInstanceStates(
+      final Collection<InstanceState> instanceStates) {
     final Query getProcessInstancesQuery = getSession().getNamedQuery("findProcessInstancesWithInstanceStates");
-    getProcessInstancesQuery.setCacheable(true);
-    getProcessInstancesQuery.setParameterList("instanceStates", instanceStates, definitionStateUserType);
+    getProcessInstancesQuery.setParameterList("instanceStates", instanceStates, DEFINITION_STATE_USER_TYPE);
     final List<String> uuids = getProcessInstancesQuery.list();
 
     final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
@@ -1500,15 +1607,16 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
 
     final Query query = getSession().getNamedQuery("findMatchingProcessInstances");
-    query.setCacheable(true);
+
     return executeSplittedQuery(InternalProcessInstance.class, query, "instanceUUIDs", uuids);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Set<InternalProcessInstance> getProcessInstances(final ProcessDefinitionUUID processUUID) {
     final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
     final Query query = getSession().getNamedQuery("findProcessInstances");
-    query.setCacheable(true);
+
     query.setString("processUUID", processUUID.toString());
     final List<InternalProcessInstance> results = query.list();
     if (results != null) {
@@ -1517,13 +1625,15 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return processInsts;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<InternalProcessInstance> getProcessInstances(ProcessDefinitionUUID processUUID, InstanceState instanceState) {
+  public Set<InternalProcessInstance> getProcessInstances(final ProcessDefinitionUUID processUUID,
+      final InstanceState instanceState) {
     final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
     final Query query = getSession().getNamedQuery("findProcessInstancesWithState");
-    query.setCacheable(true);
+
     query.setString("processUUID", processUUID.toString());
-    query.setParameter("state", instanceState, instanceStateUserType);
+    query.setParameter("state", instanceState, INSTANCE_STATE_USER_TYPE);
     final List<InternalProcessInstance> results = query.list();
     if (results != null) {
       processInsts.addAll(results);
@@ -1531,18 +1641,20 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return processInsts;
   }
 
-  public TaskInstance getTaskInstance(ActivityInstanceUUID taskUUID) {
-    Query query = getSession().getNamedQuery("findTaskInstance");
-    query.setCacheable(true);
+  @Override
+  public TaskInstance getTaskInstance(final ActivityInstanceUUID taskUUID) {
+    final Query query = getSession().getNamedQuery("findTaskInstance");
+
     query.setString("taskUUID", taskUUID.toString());
     query.setMaxResults(1);
     return (TaskInstance) query.uniqueResult();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Set<TaskInstance> getTaskInstances(final ProcessInstanceUUID instanceUUID) {
     final Query query = getSession().getNamedQuery("findTaskInstances");
-    query.setCacheable(true);
+
     query.setString("instanceUUID", instanceUUID.toString());
     final Set<TaskInstance> taskInstances = new HashSet<TaskInstance>();
     final List<TaskInstance> results = query.list();
@@ -1552,10 +1664,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return taskInstances;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<TaskInstance> getTaskInstances(final ProcessInstanceUUID instanceUUID, Set<String> taskNames) {
+  public Set<TaskInstance> getTaskInstances(final ProcessInstanceUUID instanceUUID, final Set<String> taskNames) {
     final Query query = getSession().getNamedQuery("getTasksFromNames");
-    query.setCacheable(true);
+
     query.setString("instanceUUID", instanceUUID.getValue());
     query.setParameterList("taskNames", taskNames);
     final Set<TaskInstance> taskInstances = new HashSet<TaskInstance>();
@@ -1578,122 +1691,135 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return null;
   }
 
+  @Override
   public Set<InternalProcessDefinition> getProcesses() {
     final Query query = getSession().getNamedQuery("getAllProcesses");
-    query.setCacheable(true);
+
     return getProcessSet(query);
   }
 
-  public Set<InternalProcessDefinition> getProcesses(String processId) {
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final String processId) {
     final Query query = getSession().getNamedQuery("getProcesses2");
-    query.setCacheable(true);
+
     query.setString("processId", processId);
     return getProcessSet(query);
   }
 
-  public InternalProcessDefinition getProcess(ProcessDefinitionUUID processUUID) {
+  @Override
+  public InternalProcessDefinition getProcess(final ProcessDefinitionUUID processUUID) {
     final Query query = getSession().getNamedQuery("getProcess");
-    query.setCacheable(true);
+
     query.setString("processUUID", processUUID.toString());
     query.setMaxResults(1);
     return (InternalProcessDefinition) query.uniqueResult();
   }
 
-  public InternalProcessDefinition getProcess(String processId, String version) {
+  @Override
+  public InternalProcessDefinition getProcess(final String processId, final String version) {
     final Query query = getSession().getNamedQuery("getProcessFromIdAndVersion");
-    query.setCacheable(true);
+
     query.setString("processId", processId);
     query.setString("version", version);
     return (InternalProcessDefinition) query.uniqueResult();
   }
 
-  public Set<InternalProcessDefinition> getProcesses(ProcessState processState) {
-    Query query = getSession().getNamedQuery("getProcessesFromState");
-    query.setParameter("state", processState, definitionStateUserType);
-    query.setCacheable(true);
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final ProcessState processState) {
+    final Query query = getSession().getNamedQuery("getProcessesFromState");
+    query.setParameter("state", processState, DEFINITION_STATE_USER_TYPE);
+
     return getProcessSet(query);
   }
 
-  public Set<InternalProcessDefinition> getProcesses(String processId, ProcessState processState) {
-    Query query = getSession().getNamedQuery("getProcessesFromProcessIdAndState");
-    query.setParameter("state", processState, definitionStateUserType);
-    query.setCacheable(true);
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final String processId, final ProcessState processState) {
+    final Query query = getSession().getNamedQuery("getProcessesFromProcessIdAndState");
+    query.setParameter("state", processState, DEFINITION_STATE_USER_TYPE);
+
     query.setString("processId", processId);
     return getProcessSet(query);
   }
 
-  public String getLastProcessVersion(String processName) {
-    Query query = getSession().getNamedQuery("getLastProcessVersion");
-    query.setCacheable(true);
+  @Override
+  public String getLastProcessVersion(final String processName) {
+    final Query query = getSession().getNamedQuery("getLastProcessVersion");
+
     query.setString("name", processName);
     query.setMaxResults(1);
     return (String) query.uniqueResult();
   }
 
-  public InternalProcessDefinition getLastProcess(String processId, ProcessState processState) {
-    Query query = getSession().getNamedQuery("getLastProcessFromProcessIdAndState");
-    query.setParameter("state", processState, definitionStateUserType);
-    query.setCacheable(true);
+  @Override
+  public InternalProcessDefinition getLastProcess(final String processId, final ProcessState processState) {
+    final Query query = getSession().getNamedQuery("getLastProcessFromProcessIdAndState");
+    query.setParameter("state", processState, DEFINITION_STATE_USER_TYPE);
+
     query.setString("processId", processId);
     query.setMaxResults(1);
     return (InternalProcessDefinition) query.uniqueResult();
   }
 
-  public InternalActivityInstance getActivityInstance(
-      ProcessInstanceUUID instanceUUID, String activityId, String iterationId, String activityInstanceId, String loopId) {
-    Query query = getSession().getNamedQuery("getActivityInstance");
-    query.setCacheable(true);
+  @Override
+  public InternalActivityInstance getActivityInstance(final ProcessInstanceUUID instanceUUID, final String activityId,
+      final String iterationId, final String activityInstanceId, final String loopId) {
+    final Query query = getSession().getNamedQuery("getActivityInstance");
+
     query.setString("instanceUUID", instanceUUID.toString());
     query.setString("activityId", activityId);
     query.setString("iterationId", iterationId);
     query.setString("activityInstanceId", activityInstanceId);
     query.setString("loopId", loopId);
-    return (InternalActivityInstance)query.uniqueResult();
+    return (InternalActivityInstance) query.uniqueResult();
   }
 
-  public InternalActivityInstance getActivityInstance(
-      ActivityInstanceUUID activityInstanceUUID) {
-    Query query = getSession().getNamedQuery("getActivityInstanceFromUUID");
-    query.setCacheable(true);
+  @Override
+  public InternalActivityInstance getActivityInstance(final ActivityInstanceUUID activityInstanceUUID) {
+    final Query query = getSession().getNamedQuery("getActivityInstanceFromUUID");
+
     query.setString("activityUUID", activityInstanceUUID.toString());
-    return (InternalActivityInstance)query.uniqueResult();
+    return (InternalActivityInstance) query.uniqueResult();
   }
 
-  public ActivityState getActivityInstanceState(ActivityInstanceUUID activityInstanceUUID) {
-    Query query = getSession().getNamedQuery("getActivityInstanceStateFromUUID");
-    query.setCacheable(true);
+  @Override
+  public ActivityState getActivityInstanceState(final ActivityInstanceUUID activityInstanceUUID) {
+    final Query query = getSession().getNamedQuery("getActivityInstanceStateFromUUID");
+
     query.setString("activityUUID", activityInstanceUUID.toString());
-    return (ActivityState)query.uniqueResult();
+    return (ActivityState) query.uniqueResult();
   }
 
-  public InternalActivityDefinition getActivityDefinition(ActivityDefinitionUUID activityDefinitionUUID) {
+  @Override
+  public InternalActivityDefinition getActivityDefinition(final ActivityDefinitionUUID activityDefinitionUUID) {
     final Query query = getSession().getNamedQuery("getActivityDefinition");
-    query.setCacheable(true);
+
     query.setString("activityUUID", activityDefinitionUUID.toString());
     query.setMaxResults(1);
     return (InternalActivityDefinition) query.uniqueResult();
   }
 
+  @Override
   public Execution getExecutionWithEventUUID(final String eventUUID) {
     final Query query = getSession().getNamedQuery("getExecutionWithEventUUID");
-    query.setCacheable(true);
+
     query.setString("eventUUID", eventUUID);
     return (Execution) query.uniqueResult();
   }
 
-  @SuppressWarnings("unchecked")
+  @Override
   public Set<Execution> getExecutions(final ProcessInstanceUUID instanceUUID) {
     final Query query = getSession().getNamedQuery("getInstanceExecutions");
-    query.setCacheable(true);
+
     query.setString("instanceUUID", instanceUUID.getValue());
     final Set<Execution> executions = new HashSet<Execution>();
-    executions.addAll(query.list());
+    CollectionUtils.addAll(executions, query.iterate());
     return executions;
   }
 
+  @Override
   public Execution getExecutionPointingOnNode(final ActivityInstanceUUID activityUUID) {
     final Query query = getSession().getNamedQuery("findInstanceExecutionPointingOnNode");
-    query.setCacheable(true);
+
     query.setString("activityUUID", activityUUID.toString());
     return (Execution) query.uniqueResult();
   }
@@ -1701,132 +1827,126 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
   /*
    * RUNTIME
    */
-  public MetaDataImpl getMetaData(String key) {
+  @Override
+  public MetaDataImpl getMetaData(final String key) {
     final Query query = getSession().getNamedQuery("getMetaData");
-    query.setCacheable(true);
+
     query.setString("key", key);
     return (MetaDataImpl) query.uniqueResult();
   }
 
-  @SuppressWarnings("unchecked")
+  @Override
   public Set<ProcessInstanceUUID> getAllCases() {
-    Set<ProcessInstanceUUID> result = new HashSet<ProcessInstanceUUID>();
-    Query query = getSession().getNamedQuery("getAllCases");
-    query.setCacheable(true);
-    result.addAll(query.list());
+    final Set<ProcessInstanceUUID> result = new HashSet<ProcessInstanceUUID>();
+    final Query query = getSession().getNamedQuery("getAllCases");
+
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  public Set<CaseImpl> getCases(Set<ProcessInstanceUUID> caseUUIDs) {
-    Collection<String> uuids = new HashSet<String>();
+  @Override
+  public Set<CaseImpl> getCases(final Set<ProcessInstanceUUID> caseUUIDs) {
+    final Collection<String> uuids = new HashSet<String>();
     if (caseUUIDs != null) {
-      for (ProcessInstanceUUID processInstanceUUID : caseUUIDs) {
+      for (final ProcessInstanceUUID processInstanceUUID : caseUUIDs) {
         uuids.add(processInstanceUUID.getValue());
       }
     }
-    Query query = getSession().getNamedQuery("getMatchingCases");
-    query.setCacheable(true);
+    final Query query = getSession().getNamedQuery("getMatchingCases");
+
     return executeSplittedQuery(CaseImpl.class, query, "uuids", uuids);
   }
 
-  @SuppressWarnings("unchecked")
+  @Override
   public List<LabelImpl> getUserCustomLabels(final String ownerName) {
 
-    List<LabelImpl> result = new ArrayList<LabelImpl>();
-    Query query = getSession().getNamedQuery("getUserCustomLabels");
-    query.setCacheable(true);
+    final List<LabelImpl> result = new ArrayList<LabelImpl>();
+    final Query query = getSession().getNamedQuery("getUserCustomLabels");
+
     query.setString("ownerName", ownerName);
-    result.addAll(query.list());
+    CollectionUtils.addAll(result, query.iterate());
 
     return result;
   }
 
-  @SuppressWarnings("unchecked")
+  @Override
   public List<LabelImpl> getSystemLabels(final String ownerName) {
 
-    List<LabelImpl> result = new ArrayList<LabelImpl>();
-    Query query = getSession().getNamedQuery("getSystemLabels");
+    final List<LabelImpl> result = new ArrayList<LabelImpl>();
+    final Query query = getSession().getNamedQuery("getSystemLabels");
     query.setString("ownerName", ownerName);
-    query.setCacheable(true);
-    List<LabelImpl> theTempResult = query.list();
-    result.addAll(theTempResult);
+    CollectionUtils.addAll(result, query.iterate());
 
     return result;
   }
 
+  @Override
   public LabelImpl getLabel(final String ownerName, final String labelName) {
     final Query query = getSession().getNamedQuery("getLabelByID");
     query.setString("ownerName", ownerName);
     query.setString("labelName", labelName);
-    query.setCacheable(true);
+
     query.setMaxResults(1);
-    LabelImpl theResult = (LabelImpl) query.uniqueResult();
+    final LabelImpl theResult = (LabelImpl) query.uniqueResult();
 
     return theResult;
   }
 
-  @SuppressWarnings("unchecked")
+  @Override
   public Set<LabelImpl> getLabels(final String ownerName) {
-    Set<LabelImpl> result = new HashSet<LabelImpl>();
-    Query query = getSession().getNamedQuery("getAllLabels");
+    final Set<LabelImpl> result = new HashSet<LabelImpl>();
+    final Query query = getSession().getNamedQuery("getAllLabels");
     query.setString("ownerName", ownerName);
-    query.setCacheable(true);
-    List<LabelImpl> theTempResult = query.list();
-    result.addAll(theTempResult);
+    CollectionUtils.addAll(result, query.iterate());
 
     return result;
   }
 
-
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<LabelImpl> getCaseLabels(String ownerName, ProcessInstanceUUID case_) {
-    //select case.labelName from case where case.ownerName = :ownerName and case.uuid = :caseUUID
-    //select label from label where label.ownerName = :ownerName and label.labelName in (:labelNames)
-
-    Query getUserCases = getSession().getNamedQuery("getUserCases");
+  public Set<LabelImpl> getCaseLabels(final String ownerName, final ProcessInstanceUUID case_) {
+    final Query getUserCases = getSession().getNamedQuery("getUserCases");
     getUserCases.setString("ownerName", ownerName);
     getUserCases.setString("caseId", case_.getValue());
-    getUserCases.setCacheable(true);
-    List<String> caseLabelsNames = getUserCases.list();
-
+    final List<String> caseLabelsNames = getUserCases.list();
     Set<LabelImpl> result = new HashSet<LabelImpl>();
     if (!caseLabelsNames.isEmpty()) {
-      Query query = getSession().getNamedQuery("getLabels");
+      final Query query = getSession().getNamedQuery("getLabels");
       query.setString("ownerName", ownerName);
-      query.setCacheable(true);
+
       result = executeSplittedQuery(LabelImpl.class, query, "labelNames", caseLabelsNames);
     }
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  private <T> Set<T> executeSplittedQuery(Class<T> clazz, final Query query, final String parameterName, final Collection<? extends Object> values) {
+  private <T> Set<T> executeSplittedQuery(final Class<T> clazz, final Query query, final String parameterName,
+      final Collection<? extends Object> values) {
     if (values == null || values.isEmpty()) {
       return Collections.emptySet();
     }
     final Set<T> result = new HashSet<T>();
     if (values.size() <= BonitaConstants.MAX_QUERY_SIZE) {
       query.setParameterList(parameterName, values);
-      List<T> l = query.list();
-      result.addAll(l);
+      CollectionUtils.addAll(result, query.iterate());
       return result;
     }
 
-    List<Collection<Object>> newValues = Misc.splitCollection(values, BonitaConstants.MAX_QUERY_SIZE);
-    for (Collection<Object> set : newValues) {
+    final List<Collection<Object>> newValues = Misc.splitCollection(values, BonitaConstants.MAX_QUERY_SIZE);
+    for (final Collection<Object> set : newValues) {
       query.setParameterList(parameterName, set);
-      List<T> l = query.list();
-      result.addAll(l);
+      CollectionUtils.addAll(result, query.iterate());
     }
     return result;
   }
 
-  private <T> List<T> executeSplittedQueryList(Class<T> clazz, final Query query, final String parameterName, final Collection<? extends Object> values) {
+  private <T> List<T> executeSplittedQueryList(final Class<T> clazz, final Query query, final String parameterName,
+      final Collection<? extends Object> values) {
     return executeSplittedQueryList(clazz, query, parameterName, values, BonitaConstants.MAX_QUERY_SIZE);
   }
 
   @SuppressWarnings("unchecked")
-  private <T> List<T> executeSplittedQueryList(Class<T> clazz, final Query query, final String parameterName, final Collection<? extends Object> values, final int size) {
+  private <T> List<T> executeSplittedQueryList(final Class<T> clazz, final Query query, final String parameterName,
+      final Collection<? extends Object> values, final int size) {
     if (values == null || values.isEmpty()) {
       return Collections.emptyList();
     }
@@ -1836,92 +1956,89 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
       return query.list();
     }
 
-    List<Collection<Object>> newValues = Misc.splitCollection(values, size);
-    for (Collection<Object> set : newValues) {
+    final List<Collection<Object>> newValues = Misc.splitCollection(values, size);
+    for (final Collection<Object> set : newValues) {
       query.setParameterList(parameterName, set);
-      List<T> l = query.list();
-      result.addAll(l);
+      CollectionUtils.addAll(result, query.iterate());
     }
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<CaseImpl> getCases(String ownerName, String labelName) {
-    Set<CaseImpl> result = new HashSet<CaseImpl>();
-    Query query = getSession().getNamedQuery("getLabelCases");
+  @Override
+  public Set<CaseImpl> getCases(final String ownerName, final String labelName) {
+    final Set<CaseImpl> result = new HashSet<CaseImpl>();
+    final Query query = getSession().getNamedQuery("getLabelCases");
     query.setString("ownerName", ownerName);
     query.setString("labelName", labelName);
-    query.setCacheable(true);
-    List<CaseImpl> theTempResult = (List<CaseImpl>) query.list();
-    result.addAll(theTempResult);
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<CaseImpl> getCases(ProcessInstanceUUID case_) {
-    Set<CaseImpl> result = new HashSet<CaseImpl>();
-    Query query = getSession().getNamedQuery("getCases");
+  @Override
+  public Set<CaseImpl> getCases(final ProcessInstanceUUID case_) {
+    final Set<CaseImpl> result = new HashSet<CaseImpl>();
+    final Query query = getSession().getNamedQuery("getCases");
     query.setString("caseId", case_.getValue());
-    query.setCacheable(true);
-    List<CaseImpl> theTempResult = (List<CaseImpl>) query.list();
-    result.addAll(theTempResult);
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  public CaseImpl getCase(ProcessInstanceUUID caseUUID, String ownerName, String labelName) {
-    Query query = getSession().getNamedQuery("getCase");
+  @Override
+  public CaseImpl getCase(final ProcessInstanceUUID caseUUID, final String ownerName, final String labelName) {
+    final Query query = getSession().getNamedQuery("getCase");
     query.setString("caseUUID", caseUUID.getValue());
     query.setString("ownerName", ownerName);
     query.setString("labelName", labelName);
-    query.setCacheable(true);
+
     return (CaseImpl) query.uniqueResult();
   }
 
-  public Set<LabelImpl> getLabels(String ownerName, Set<String> labelsName) {
-    Query query = getSession().getNamedQuery("getLabels");
+  @Override
+  public Set<LabelImpl> getLabels(final String ownerName, final Set<String> labelsName) {
+    final Query query = getSession().getNamedQuery("getLabels");
     query.setString("ownerName", ownerName);
-    query.setCacheable(true);
-    Set<LabelImpl> result = executeSplittedQuery(LabelImpl.class, query, "labelNames", labelsName);
-    return result;
+
+    return executeSplittedQuery(LabelImpl.class, query, "labelNames", labelsName);
   }
 
-  public Set<LabelImpl> getLabels(Set<String> labelsName) {
-    Query query = getSession().getNamedQuery("getLabelsWithName");
-    query.setCacheable(true);
-    Set<LabelImpl> result = executeSplittedQuery(LabelImpl.class, query, "labelNames", labelsName);
-    return result;
+  @Override
+  public Set<LabelImpl> getLabels(final Set<String> labelsName) {
+    final Query query = getSession().getNamedQuery("getLabelsWithName");
+
+    return executeSplittedQuery(LabelImpl.class, query, "labelNames", labelsName);
   }
 
-  public Set<LabelImpl> getLabelsByNameExcept(Set<String> labelNames) {
-    Query query = getSession().getNamedQuery("getLabelsByNameExcept");
-    query.setCacheable(true);
-    Set<LabelImpl> result = executeSplittedQuery(LabelImpl.class, query, "labelNames", labelNames);
-    return result;
+  @Override
+  public Set<LabelImpl> getLabelsByNameExcept(final Set<String> labelNames) {
+    final Query query = getSession().getNamedQuery("getLabelsByNameExcept");
+
+    return executeSplittedQuery(LabelImpl.class, query, "labelNames", labelNames);
   }
 
-
-  public int getCasesNumberWithTwoLabels(String ownerName, String label1Name, String label2Name) {
-    Query query = getSession().getNamedQuery("getCasesNumberWithTwoLabels");
+  @Override
+  public int getCasesNumberWithTwoLabels(final String ownerName, final String label1Name, final String label2Name) {
+    final Query query = getSession().getNamedQuery("getCasesNumberWithTwoLabels");
     query.setString("label1", CaseImpl.buildLabel(ownerName, label1Name));
     query.setString("label2", CaseImpl.buildLabel(ownerName, label2Name));
     query.setReadOnly(true);
 
-    int result = ((Long) query.uniqueResult()).intValue();
-    return result;
+    return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getCasesNumber(String ownerName, String labelName) {
-    Query query = getSession().getNamedQuery("getCasesNumber");
+  @Override
+  public int getCasesNumber(final String ownerName, final String labelName) {
+    final Query query = getSession().getNamedQuery("getCasesNumber");
     query.setString("ownerName", ownerName);
     query.setString("label", labelName);
     query.setReadOnly(true);
-    int result = ((Long) query.uniqueResult()).intValue();
-    return result;
+    return ((Long) query.uniqueResult()).intValue();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<CaseImpl> getCasesWithTwoLabels(String ownerName, String label1Name, String label2Name, int limit) {
-    Query query = getSession().getNamedQuery("getCasesWithTwoLabelsWithLimit");
+  public Set<CaseImpl> getCasesWithTwoLabels(final String ownerName, final String label1Name, final String label2Name,
+      final int limit) {
+    final Query query = getSession().getNamedQuery("getCasesWithTwoLabelsWithLimit");
     query.setString("label1", CaseImpl.buildLabel(ownerName, label1Name));
     query.setString("label2", CaseImpl.buildLabel(ownerName, label2Name));
     query.setReadOnly(true);
@@ -1935,9 +2052,10 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<CaseImpl> getCases(String ownerName, String labelName, int limit) {
-    Query query = getSession().getNamedQuery("getLabelCases");
+  public Set<CaseImpl> getCases(final String ownerName, final String labelName, final int limit) {
+    final Query query = getSession().getNamedQuery("getLabelCases");
     query.setString("ownerName", ownerName);
     query.setString("labelName", labelName);
     query.setMaxResults(limit);
@@ -1949,107 +2067,115 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  public Set<ProcessInstanceUUID> getCases(String ownerName, Set<String> theLabelsName) {
-    Query query = getSession().getNamedQuery("getLabelsCases");
+  @Override
+  public Set<ProcessInstanceUUID> getCases(final String ownerName, final Set<String> theLabelsName) {
+    final Query query = getSession().getNamedQuery("getLabelsCases");
     query.setString("ownerName", ownerName);
-    query.setCacheable(true);
+
     return executeSplittedQuery(ProcessInstanceUUID.class, query, "labelNames", theLabelsName);
   }
 
-  //getAllWebCases
-  //getMatchingCases
+  // getAllWebCases
+  // getMatchingCases
 
+  @Override
   public void deleteAllCases() {
     final Session session = getSession();
-    Query query = session.getNamedQuery("getAllWebCases");
-    query.setCacheable(true);
+    final Query query = session.getNamedQuery("getAllWebCases");
 
-    for (Object webCase : query.list()) {
+    for (final Object webCase : query.list()) {
       session.delete(webCase);
     }
   }
 
-  public void deleteCases(Set<ProcessInstanceUUID> webCases) {
+  @Override
+  public void deleteCases(final Set<ProcessInstanceUUID> webCases) {
     final Session session = getSession();
-    Query query = session.getNamedQuery("getMatchingCases");
-    query.setCacheable(true);
+    final Query query = session.getNamedQuery("getMatchingCases");
 
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessInstanceUUID webCase : webCases) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessInstanceUUID webCase : webCases) {
       uuids.add(webCase.getValue());
     }
-    for (CaseImpl webCase : executeSplittedQuery(CaseImpl.class, query, "uuids", uuids)) {
+    for (final CaseImpl webCase : executeSplittedQuery(CaseImpl.class, query, "uuids", uuids)) {
       session.delete(webCase);
     }
   }
 
-  public Set<ProcessInstanceUUID> getCasesUUIDs(String ownerName, String labelName, Set<ProcessInstanceUUID> cases) {
-    Collection<String> uuids = new HashSet<String>();
+  @Override
+  public Set<ProcessInstanceUUID> getCasesUUIDs(final String ownerName, final String labelName,
+      final Set<ProcessInstanceUUID> cases) {
+    final Collection<String> uuids = new HashSet<String>();
     if (cases != null) {
-      for (ProcessInstanceUUID processInstanceUUID : cases) {
+      for (final ProcessInstanceUUID processInstanceUUID : cases) {
         uuids.add(processInstanceUUID.getValue());
       }
     }
 
-    Query query = getSession().getNamedQuery("getLabelCasesUUIDsSublist");
+    final Query query = getSession().getNamedQuery("getLabelCasesUUIDsSublist");
     query.setString("ownerName", ownerName);
     query.setString("labelName", labelName);
-    query.setCacheable(true);
+
     return executeSplittedQuery(ProcessInstanceUUID.class, query, "caseUUIDs", uuids);
   }
 
-  public Set<ProcessInstanceUUID> getLabelCases(String labelName, Set<ProcessInstanceUUID> caseUUIDs) {
+  @Override
+  public Set<ProcessInstanceUUID> getLabelCases(final String labelName, final Set<ProcessInstanceUUID> caseUUIDs) {
     if (caseUUIDs == null || caseUUIDs.isEmpty()) {
       return Collections.emptySet();
     }
-    Collection<String> uuids = new HashSet<String>();
-    for (ProcessInstanceUUID processInstanceUUID : caseUUIDs) {
+    final Collection<String> uuids = new HashSet<String>();
+    for (final ProcessInstanceUUID processInstanceUUID : caseUUIDs) {
       uuids.add(processInstanceUUID.getValue());
     }
 
-    Query query = getSession().getNamedQuery("getLabelNameCases");
+    final Query query = getSession().getNamedQuery("getLabelNameCases");
     query.setString("labelName", labelName);
-    query.setCacheable(true);
+
     return executeSplittedQuery(ProcessInstanceUUID.class, query, "uuids", uuids);
   }
 
-  public Set<CaseImpl> getLabelCases(String ownerName, Set<String> labelsNames, Set<ProcessInstanceUUID> caseUUIDs) {
+  @Override
+  public Set<CaseImpl> getLabelCases(final String ownerName, final Set<String> labelsNames,
+      final Set<ProcessInstanceUUID> caseUUIDs) {
     if (caseUUIDs == null || caseUUIDs.isEmpty()) {
       return Collections.emptySet();
     }
-    Collection<String> uuids = new HashSet<String>();
-    for (ProcessInstanceUUID processInstanceUUID : caseUUIDs) {
+    final Collection<String> uuids = new HashSet<String>();
+    for (final ProcessInstanceUUID processInstanceUUID : caseUUIDs) {
       uuids.add(processInstanceUUID.getValue());
     }
 
-    Query query = getSession().getNamedQuery("getLabelsNameCases");
+    final Query query = getSession().getNamedQuery("getLabelsNameCases");
     query.setParameterList("labelsNames", labelsNames);
     query.setString("ownerName", ownerName);
-    query.setCacheable(true);
+
     return executeSplittedQuery(CaseImpl.class, query, "uuids", uuids);
   }
 
-  public Set<CaseImpl> getCases(String ownerName, String labelName, Set<ProcessInstanceUUID> caseList) {
-    Collection<String> uuids = new HashSet<String>();
+  @Override
+  public Set<CaseImpl> getCases(final String ownerName, final String labelName, final Set<ProcessInstanceUUID> caseList) {
+    final Collection<String> uuids = new HashSet<String>();
     if (caseList != null) {
-      for (ProcessInstanceUUID processInstanceUUID : caseList) {
+      for (final ProcessInstanceUUID processInstanceUUID : caseList) {
         uuids.add(processInstanceUUID.getValue());
       }
     }
 
-    Query query = getSession().getNamedQuery("getLabelCasesSublist");
+    final Query query = getSession().getNamedQuery("getLabelCasesSublist");
     query.setString("ownerName", ownerName);
     query.setString("labelName", labelName);
-    query.setCacheable(true);
+
     return executeSplittedQuery(CaseImpl.class, query, "caseUUIDs", uuids);
   }
 
-  public List<Integer> getNumberOfExecutingCasesPerDay(Date since, Date to) {
-    List<Integer> executingCases = new ArrayList<Integer>();
+  @Override
+  public List<Integer> getNumberOfExecutingCasesPerDay(Date since, final Date to) {
+    final List<Integer> executingCases = new ArrayList<Integer>();
     while (since.before(to) || since.equals(to)) {
-      Date nextDayBegining = DateUtil.getBeginningOfTheDay(DateUtil.getNextDay(since));
+      final Date nextDayBegining = DateUtil.getBeginningOfTheDay(DateUtil.getNextDay(since));
       final Query query = getSession().getNamedQuery("getNumberOfExecutingCases");
-      query.setCacheable(true);
+
       query.setLong("date", nextDayBegining.getTime());
       executingCases.add(((Long) query.uniqueResult()).intValue());
       since = DateUtil.getNextDay(since);
@@ -2057,13 +2183,14 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return executingCases;
   }
 
-  public List<Integer> getNumberOfFinishedCasesPerDay(Date since, Date to) {
-    List<Integer> finishedCases = new ArrayList<Integer>();
+  @Override
+  public List<Integer> getNumberOfFinishedCasesPerDay(Date since, final Date to) {
+    final List<Integer> finishedCases = new ArrayList<Integer>();
     while (since.before(to) || since.equals(to)) {
-      Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(since);
-      Date nextBeginningOfTheDay = DateUtil.getBeginningOfTheDay(DateUtil.getNextDay(since));
+      final Date beginningOfTheDay = DateUtil.getBeginningOfTheDay(since);
+      final Date nextBeginningOfTheDay = DateUtil.getBeginningOfTheDay(DateUtil.getNextDay(since));
       final Query query = getSession().getNamedQuery("getNumberOfFinishedCases");
-      query.setCacheable(true);
+
       query.setLong("beginningOfTheDay", beginningOfTheDay.getTime());
       query.setLong("nextBeginningOfTheDay", nextBeginningOfTheDay.getTime());
       finishedCases.add(((Long) query.uniqueResult()).intValue());
@@ -2072,12 +2199,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return finishedCases;
   }
 
-  public List<Integer> getNumberOfOpenStepsPerDay(Date since, Date to) {
-    List<Integer> finishedCases = new ArrayList<Integer>();
+  @Override
+  public List<Integer> getNumberOfOpenStepsPerDay(Date since, final Date to) {
+    final List<Integer> finishedCases = new ArrayList<Integer>();
     while (since.before(to) || since.equals(to)) {
-      Date nextDayBegining = DateUtil.getBeginningOfTheDay(DateUtil.getNextDay(since));
+      final Date nextDayBegining = DateUtil.getBeginningOfTheDay(DateUtil.getNextDay(since));
       final Query query = getSession().getNamedQuery("getNumberOfOpenSteps2");
-      query.setCacheable(true);
+
       query.setLong("date", nextDayBegining.getTime());
       finishedCases.add(((Long) query.uniqueResult()).intValue());
       since = DateUtil.getNextDay(since);
@@ -2085,341 +2213,341 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return finishedCases;
   }
 
+  @Override
   public int getNumberOfOpenSteps() {
     final Query query = getSession().getNamedQuery("getNumberOfOpenSteps");
-    query.setCacheable(true);
+
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfOverdueSteps(Date currentDate) {
+  @Override
+  public int getNumberOfOverdueSteps(final Date currentDate) {
     final Query query = getSession().getNamedQuery("getNumberOfOverdueSteps");
-    query.setCacheable(true);
+
     query.setLong("currentDate", currentDate.getTime());
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfStepsAtRisk(Date currentDate, Date atRisk) {
+  @Override
+  public int getNumberOfStepsAtRisk(final Date currentDate, final Date atRisk) {
     final Query query = getSession().getNamedQuery("getNumberOfStepsAtRisk");
-    query.setCacheable(true);
+
     query.setLong("atRisk", atRisk.getTime());
     query.setLong("currentDate", currentDate.getTime());
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfUserOpenSteps(String userId) {
+  @Override
+  public int getNumberOfUserOpenSteps(final String userId) {
     final Query query = getSession().getNamedQuery("getNumberOfUserOpenSteps");
-    query.setCacheable(true);
+
     query.setString("userId", userId);
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfUserOverdueSteps(String userId, Date currentDate) {
+  @Override
+  public int getNumberOfUserOverdueSteps(final String userId, final Date currentDate) {
     final Query query = getSession().getNamedQuery("getNumberOfUserOverdueSteps");
-    query.setCacheable(true);
+
     query.setString("userId", userId);
     query.setLong("currentDate", currentDate.getTime());
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfUserStepsAtRisk(String userId, Date currentDate, Date atRisk) {
+  @Override
+  public int getNumberOfUserStepsAtRisk(final String userId, final Date currentDate, final Date atRisk) {
     final Query query = getSession().getNamedQuery("getNumberOfUserStepsAtRisk");
-    query.setCacheable(true);
+
     query.setString("userId", userId);
     query.setLong("atRisk", atRisk.getTime());
     query.setLong("currentDate", currentDate.getTime());
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfFinishedSteps(int priority, Date since) {
+  @Override
+  public int getNumberOfFinishedSteps(final int priority, final Date since) {
     final Query query = getSession().getNamedQuery("getNumberOfFinishedSteps");
-    query.setCacheable(true);
+
     query.setInteger("priority", priority);
     query.setLong("since", since.getTime());
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfOpenSteps(int priority) {
+  @Override
+  public int getNumberOfOpenSteps(final int priority) {
     final Query query = getSession().getNamedQuery("getNumberOfPriorityOpenSteps");
-    query.setCacheable(true);
+
     query.setInteger("priority", priority);
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfUserFinishedSteps(String userId, int priority, Date since) {
+  @Override
+  public int getNumberOfUserFinishedSteps(final String userId, final int priority, final Date since) {
     final Query query = getSession().getNamedQuery("getNumberOfUserFinishedSteps");
-    query.setCacheable(true);
+
     query.setInteger("priority", priority);
     query.setLong("since", since.getTime());
     query.setString("userId", userId);
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfUserOpenSteps(String userId, int priority) {
+  @Override
+  public int getNumberOfUserOpenSteps(final String userId, final int priority) {
     final Query query = getSession().getNamedQuery("getNumberOfPriorityUserOpenSteps");
-    query.setCacheable(true);
+
     query.setInteger("priority", priority);
     query.setString("userId", userId);
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<IncomingEventInstance> getIncomingEvents(ProcessInstanceUUID instanceUUID) {
-    Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
+  @Override
+  public Set<IncomingEventInstance> getIncomingEvents(final ProcessInstanceUUID instanceUUID) {
+    final Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
     final Query query = getSession().getNamedQuery("getInstanceIncomingEvents");
-    query.setCacheable(true);
+
     query.setString("instanceUUID", instanceUUID.getValue());
-    List<IncomingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<IncomingEventInstance> getPermanentIncomingEvents(ActivityDefinitionUUID activityUUID) {
-    Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
+  @Override
+  public Set<IncomingEventInstance> getPermanentIncomingEvents(final ActivityDefinitionUUID activityUUID) {
+    final Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
     final Query query = getSession().getNamedQuery("getPermanentIncomingEvents");
-    query.setCacheable(true);
+
     query.setString("activityUUID", activityUUID.getValue());
-    List<IncomingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  public IncomingEventInstance getIncomingEvent(ProcessInstanceUUID instanceUUID, String name) {
+  @Override
+  public IncomingEventInstance getIncomingEvent(final ProcessInstanceUUID instanceUUID, final String name) {
     final Query query = getSession().getNamedQuery("getUniqueInstanceIncomingEvent");
-    query.setCacheable(true);
+
     query.setString("instanceUUID", instanceUUID.getValue());
     query.setString("eventName", name);
     return (IncomingEventInstance) query.uniqueResult();
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<IncomingEventInstance> getIncomingEvents(ActivityDefinitionUUID activityUUID) {
-    Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
+  @Override
+  public Set<IncomingEventInstance> getIncomingEvents(final ActivityDefinitionUUID activityUUID) {
+    final Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
     final Query query = getSession().getNamedQuery("getActivityDefinitionIncomingEvents");
-    query.setCacheable(true);
+
     query.setString("activityUUID", activityUUID.getValue());
-    List<IncomingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<IncomingEventInstance> getIncomingEvents(ActivityInstanceUUID activityUUID) {
-    Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
+  @Override
+  public Set<IncomingEventInstance> getIncomingEvents(final ActivityInstanceUUID activityUUID) {
+    final Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
     final Query query = getSession().getNamedQuery("getActivityInstanceIncomingEvents");
-    query.setCacheable(true);
+
     query.setString("activityUUID", activityUUID.getValue());
-    List<IncomingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<IncomingEventInstance> getBoundaryIncomingEvents(ActivityInstanceUUID activityUUID) {
-    Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
+  @Override
+  public Set<IncomingEventInstance> getBoundaryIncomingEvents(final ActivityInstanceUUID activityUUID) {
+    final Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
     final Query query = getSession().getNamedQuery("getActivityBoudaryIncomingEvents");
-    query.setCacheable(true);
+
     query.setString("activityUUID", activityUUID.getValue());
-    List<IncomingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<OutgoingEventInstance> getBoundaryOutgoingEvents(ActivityInstanceUUID activityUUID) {
-    Set<OutgoingEventInstance> result = new HashSet<OutgoingEventInstance>();
+  @Override
+  public Set<OutgoingEventInstance> getBoundaryOutgoingEvents(final ActivityInstanceUUID activityUUID) {
+    final Set<OutgoingEventInstance> result = new HashSet<OutgoingEventInstance>();
     final Query query = getSession().getNamedQuery("getActivityBoundaryOutgoingEvents");
-    query.setCacheable(true);
+
     query.setString("activityUUID", activityUUID.getValue());
-    List<OutgoingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<OutgoingEventInstance> getOutgoingEvents(ProcessInstanceUUID instanceUUID) {
-    Set<OutgoingEventInstance> result = new HashSet<OutgoingEventInstance>();
+  @Override
+  public Set<OutgoingEventInstance> getOutgoingEvents(final ProcessInstanceUUID instanceUUID) {
+    final Set<OutgoingEventInstance> result = new HashSet<OutgoingEventInstance>();
     final Query query = getSession().getNamedQuery("getInstanceOutgoingEvents");
-    query.setCacheable(true);
+
     query.setString("instanceUUID", instanceUUID.getValue());
-    List<OutgoingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
+  @Override
   public Set<OutgoingEventInstance> getOutgoingEvents() {
-    Set<OutgoingEventInstance> result = new HashSet<OutgoingEventInstance>();
+    final Set<OutgoingEventInstance> result = new HashSet<OutgoingEventInstance>();
     final Query query = getSession().getNamedQuery("getOutgoingEvents");
-    query.setCacheable(true);
-    List<OutgoingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<OutgoingEventInstance> getOutgoingEvents(String eventName, String toProcessName, String toActivityName, ActivityInstanceUUID activityUUID) {
-    Set<OutgoingEventInstance> result = new HashSet<OutgoingEventInstance>();
+  @Override
+  public Set<OutgoingEventInstance> getOutgoingEvents(final String eventName, final String toProcessName,
+      final String toActivityName, final ActivityInstanceUUID activityUUID) {
+    final Set<OutgoingEventInstance> result = new HashSet<OutgoingEventInstance>();
     Query query = null;
     query = getSession().getNamedQuery("getOutgoingEventsWithUUID");
     query.setString("processName", toProcessName);
     query.setString("activityName", toActivityName);
     query.setString("activityUUID", activityUUID == null ? null : activityUUID.getValue());
     query.setString("name", eventName);
-    query.setCacheable(true);
-    List<OutgoingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<IncomingEventInstance> getIncomingEvents(String eventName, String toProcessName, String toActivityName, ActivityInstanceUUID actiivtyUUID) {
-    Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
+  @Override
+  public Set<IncomingEventInstance> getIncomingEvents(final String eventName, final String toProcessName,
+      final String toActivityName, final ActivityInstanceUUID actiivtyUUID) {
+    final Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
     final Query query = getSession().getNamedQuery("getIncomingEventsWithUUID");
     query.setString("name", eventName);
     query.setString("processName", toProcessName);
     query.setString("activityName", toActivityName);
     query.setString("activityUUID", actiivtyUUID.getValue());
-    query.setCacheable(true);
-    List<IncomingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<IncomingEventInstance> getSignalIncomingEvents(String signal) {
-    Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
+  @Override
+  public Set<IncomingEventInstance> getSignalIncomingEvents(final String signal) {
+    final Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
     final Query query = getSession().getNamedQuery("getSignalIncomingEvents");
     query.setString("eventName", signal);
-    query.setCacheable(true);
-    List<IncomingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Set<EventInstance> getConsumedEvents() {
     final Set<EventInstance> result = new HashSet<EventInstance>();
 
     final Query oeiQuery = getSession().getNamedQuery("getOutgoingConsumedEvents");
-    oeiQuery.setCacheable(true);
-    result.addAll(oeiQuery.list());
+    CollectionUtils.addAll(result, oeiQuery.iterate());
 
     final Query ieiQuery = getSession().getNamedQuery("getIncomingConsumedEvents");
-    ieiQuery.setCacheable(true);
     result.addAll(ieiQuery.list());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
+  @Override
   public Set<OutgoingEventInstance> getOverdueEvents() {
     final long currentTime = System.currentTimeMillis();
-
     final Set<OutgoingEventInstance> result = new HashSet<OutgoingEventInstance>();
-
     final Query oeiQuery = getSession().getNamedQuery("getOverdueEvents");
     oeiQuery.setLong("current", currentTime);
-    oeiQuery.setCacheable(true);
-    result.addAll(oeiQuery.list());
-
+    CollectionUtils.addAll(result, oeiQuery.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
+  @Override
   public Set<IncomingEventInstance> getIncomingEvents() {
-    Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
+    final Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
     final Query query = getSession().getNamedQuery("getIncomingEvents");
-    query.setCacheable(true);
-    List<IncomingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  public Set<IncomingEventInstance> getActivityIncomingEvents(ActivityInstanceUUID activityUUID) {
-    Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
+  @Override
+  public Set<IncomingEventInstance> getActivityIncomingEvents(final ActivityInstanceUUID activityUUID) {
+    final Set<IncomingEventInstance> result = new HashSet<IncomingEventInstance>();
     final Query query = getSession().getNamedQuery("getActivityIncomingEvents");
     query.setString("activityUUID", activityUUID.getValue());
-    query.setCacheable(true);
-    List<IncomingEventInstance> theTempResult = query.list();
-    result.addAll(theTempResult);
+
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  @SuppressWarnings("unchecked")
+  @Override
   public Set<EventCouple> getEventsCouples() {
     final Query query = getSession().getNamedQuery("getEventsCouples");
-    query.setCacheable(true);
+
     query.setLong("current", System.currentTimeMillis());
     query.setResultTransformer(Transformers.aliasToBean(EventCouple.class));
-    List<EventCouple> couples = query.list();
 
-    Set<EventCouple> result = new HashSet<EventCouple>();
-    result.addAll(couples);
+    final Set<EventCouple> result = new HashSet<EventCouple>();
+    CollectionUtils.addAll(result, query.iterate());
     return result;
   }
 
-  public IncomingEventInstance getIncomingEvent(long incomingId) {
+  @Override
+  public IncomingEventInstance getIncomingEvent(final long incomingId) {
     final Query query = getSession().getNamedQuery("getIncomingEvent");
-    query.setCacheable(true);
+
     query.setLong("id", incomingId);
     return (IncomingEventInstance) query.uniqueResult();
   }
 
-  public OutgoingEventInstance getOutgoingEvent(long outgoingId) {
+  @Override
+  public OutgoingEventInstance getOutgoingEvent(final long outgoingId) {
     final Query query = getSession().getNamedQuery("getOutgoingEvent");
-    query.setCacheable(true);
+
     query.setLong("id", outgoingId);
     return (OutgoingEventInstance) query.uniqueResult();
   }
 
+  @Override
   public Long getNextDueDate() {
     final Query query = getSession().getNamedQuery("getNextDueDate");
-    query.setCacheable(true);
-    query.setMaxResults(1);
-    Object result = query.uniqueResult();
+
+    final Object result = query.uniqueResult();
     if (result != null) {
       return (Long) result;
     }
     return null;
   }
 
-  public Set<InternalProcessDefinition> getProcesses(Set<ProcessDefinitionUUID> definitionUUIDs) {
-    Query query = getSession().getNamedQuery("getProcessesList");
-    query.setCacheable(true);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final Query query = getSession().getNamedQuery("getProcessesList");
+
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     return executeSplittedQuery(InternalProcessDefinition.class, query, "definitionsUUIDs", uuids);
   }
 
-  public Set<InternalProcessDefinition> getProcesses(Set<ProcessDefinitionUUID> definitionUUIDs, ProcessState processState) {
-    Query query = getSession().getNamedQuery("getProcessesListByState");
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final ProcessState processState) {
+    final Query query = getSession().getNamedQuery("getProcessesListByState");
     query.setParameter("state", processState);
-    query.setCacheable(true);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     return executeSplittedQuery(InternalProcessDefinition.class, query, "definitionsUUIDs", uuids);
   }
 
-  public List<InternalProcessDefinition> getProcesses(Set<ProcessDefinitionUUID> definitionUUIDs, int fromIndex, int pageSize) {
+  @Override
+  public List<InternalProcessDefinition> getProcesses(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final int fromIndex, final int pageSize) {
     final Query query = getSession().getNamedQuery("getAllProcessesList");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     return executeSplittedQueryList(InternalProcessDefinition.class, query, "definitionsUUIDs", uuids);
   }
 
-  public List<InternalProcessDefinition> getProcesses(
-      Set<ProcessDefinitionUUID> definitionUUIDs, int fromIndex, int pageSize,
-      ProcessDefinitionCriterion pagingCriterion) {
+  @Override
+  public List<InternalProcessDefinition> getProcesses(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final int fromIndex, final int pageSize, final ProcessDefinitionCriterion pagingCriterion) {
     Query query = null;
     switch (pagingCriterion) {
       case NAME_ASC:
@@ -2459,59 +2587,66 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     return executeSplittedQueryList(InternalProcessDefinition.class, query, "definitionsUUIDs", uuids);
   }
 
-  public InternalProcessDefinition getLastProcess(Set<ProcessDefinitionUUID> definitionUUIDs, ProcessState processState) {
-    Query query = getSession().getNamedQuery("getLastProcessFromProcessSetAndState");
-    query.setParameter("state", processState, definitionStateUserType);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+  @Override
+  public InternalProcessDefinition getLastProcess(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final ProcessState processState) {
+    final Query query = getSession().getNamedQuery("getLastProcessFromProcessSetAndState");
+    query.setParameter("state", processState, DEFINITION_STATE_USER_TYPE);
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
-    query.setCacheable(true);
+
     query.setMaxResults(1);
-    Set<InternalProcessDefinition> result = executeSplittedQuery(InternalProcessDefinition.class, query, "definitionsUUIDs", uuids);
+    final Set<InternalProcessDefinition> result = executeSplittedQuery(InternalProcessDefinition.class, query,
+        "definitionsUUIDs", uuids);
     return result.iterator().next();
   }
 
-  public Set<InternalProcessInstance> getProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs) {
+  @Override
+  public Set<InternalProcessInstance> getProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs) {
     final Query query = getSession().getNamedQuery("getProcessInstancesFromDefinitionUUIDs");
-    query.setCacheable(true);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     return executeSplittedQuery(InternalProcessInstance.class, query, "definitionsUUIDs", uuids);
   }
 
-  public Set<InternalProcessInstance> getUserInstances(String userId, Set<ProcessDefinitionUUID> definitionUUIDs) {
-    Query query = getSession().getNamedQuery("getUserInstancesFromDefinitionUUIDs");
-    query.setCacheable(true);
+  @Override
+  public Set<InternalProcessInstance> getUserInstances(final String userId,
+      final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final Query query = getSession().getNamedQuery("getUserInstancesFromDefinitionUUIDs");
+
     query.setString("userId", userId);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     return executeSplittedQuery(InternalProcessInstance.class, query, "definitionsUUIDs", uuids);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentUserInstances(String userId, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> definitionUUIDs) {
+  public List<InternalProcessInstance> getParentUserInstances(final String userId, final int fromIndex,
+      final int pageSize, final Set<ProcessDefinitionUUID> definitionUUIDs) {
     final Query query = getSession().getNamedQuery("getParentUserInstancesPageFromDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     query.setString("userId", userId);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
@@ -2522,20 +2657,20 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentUserInstances(String userId,
-      int startingIndex, int pageSize,
-      Set<ProcessDefinitionUUID> definitionUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
-    Query query = null;  	
+  public List<InternalProcessInstance> getParentUserInstances(final String userId, final int startingIndex,
+      final int pageSize, final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
+    Query query = null;
     switch (pagingCriterion) {
-      case LAST_UPDATE_ASC:			
+      case LAST_UPDATE_ASC:
         query = getSession().getNamedQuery("getParentUserInstancesPageFromDefinitionUUIDsOrderByLastUpdateAsc");
         break;
       case STARTED_DATE_ASC:
         query = getSession().getNamedQuery("getParentUserInstancesPageFromDefinitionUUIDsOrderByStartedDateAsc");
         break;
-      case ENDED_DATE_ASC:			
+      case ENDED_DATE_ASC:
         query = getSession().getNamedQuery("getParentUserInstancesPageFromDefinitionUUIDsOrderByEndedDateAsc");
         break;
       case INSTANCE_NUMBER_ASC:
@@ -2544,13 +2679,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
       case INSTANCE_UUID_ASC:
         query = getSession().getNamedQuery("getParentUserInstancesPageFromDefinitionUUIDsOrderByInstanceUUIDAsc");
         break;
-      case LAST_UPDATE_DESC:			
+      case LAST_UPDATE_DESC:
         query = getSession().getNamedQuery("getParentUserInstancesPageFromDefinitionUUIDsOrderByLastUpdateDesc");
         break;
       case STARTED_DATE_DESC:
         query = getSession().getNamedQuery("getParentUserInstancesPageFromDefinitionUUIDsOrderByStartedDateDesc");
         break;
-      case ENDED_DATE_DESC:			
+      case ENDED_DATE_DESC:
         query = getSession().getNamedQuery("getParentUserInstancesPageFromDefinitionUUIDsOrderByEndedDateDesc");
         break;
       case INSTANCE_NUMBER_DESC:
@@ -2564,12 +2699,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(startingIndex);
     query.setMaxResults(pageSize);
     query.setString("userId", userId);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
@@ -2580,15 +2714,17 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(String userId, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
     final Query query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserFromDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     query.setString("userId", userId);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
@@ -2599,55 +2735,64 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(
-      String aUserId, int aStartingIndex, int aPageSize,
-      Set<ProcessDefinitionUUID> aVisibleProcessUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
-    Query query = null;  	
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String aUserId,
+      final int aStartingIndex, final int aPageSize, final Set<ProcessDefinitionUUID> aVisibleProcessUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
+    Query query = null;
     switch (pagingCriterion) {
-      case LAST_UPDATE_ASC:			
-        query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByLastUpdateAsc");
+      case LAST_UPDATE_ASC:
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByLastUpdateAsc");
         break;
       case STARTED_DATE_ASC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByStartedDateAsc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByStartedDateAsc");
         break;
-      case ENDED_DATE_ASC:			
-        query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByEndedDateAsc");
+      case ENDED_DATE_ASC:
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByEndedDateAsc");
         break;
       case INSTANCE_NUMBER_ASC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByInstanceNumberAsc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByInstanceNumberAsc");
         break;
       case INSTANCE_UUID_ASC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByInstanceUUIDAsc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByInstanceUUIDAsc");
         break;
-      case LAST_UPDATE_DESC:			
-        query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByLastUpdateDesc");
+      case LAST_UPDATE_DESC:
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByLastUpdateDesc");
         break;
       case STARTED_DATE_DESC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByStartedDateDesc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByStartedDateDesc");
         break;
-      case ENDED_DATE_DESC:			
-        query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByEndedDateDesc");
+      case ENDED_DATE_DESC:
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByEndedDateDesc");
         break;
       case INSTANCE_NUMBER_DESC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByInstanceNumberDesc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByInstanceNumberDesc");
         break;
       case INSTANCE_UUID_DESC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByInstanceUUIDDesc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithActiveUserFromDefinitionUUIDsOrderByInstanceUUIDDesc");
         break;
       case DEFAULT:
         query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserFromDefinitionUUIDs");
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(aStartingIndex);
     query.setMaxResults(aPageSize);
     query.setString("userId", aUserId);
 
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : aVisibleProcessUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : aVisibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
@@ -2658,10 +2803,12 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(String userId, int fromIndex, int pageSize) {
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int fromIndex, final int pageSize) {
     final Query query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUser");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     query.setString("userId", userId);
@@ -2672,19 +2819,19 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(
-      String aUserId, int aStartingIndex, int aPageSize,
-      ProcessInstanceCriterion pagingCriterion) {
-    Query query = null;  	
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String aUserId,
+      final int aStartingIndex, final int aPageSize, final ProcessInstanceCriterion pagingCriterion) {
+    Query query = null;
     switch (pagingCriterion) {
-      case LAST_UPDATE_ASC:			
+      case LAST_UPDATE_ASC:
         query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserOrderByLastUpdateAsc");
         break;
       case STARTED_DATE_ASC:
         query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserOrderByStartedDateAsc");
         break;
-      case ENDED_DATE_ASC:			
+      case ENDED_DATE_ASC:
         query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserOrderByEndedDateAsc");
         break;
       case INSTANCE_NUMBER_ASC:
@@ -2693,13 +2840,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
       case INSTANCE_UUID_ASC:
         query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserOrderByInstanceUUIDAsc");
         break;
-      case LAST_UPDATE_DESC:			
+      case LAST_UPDATE_DESC:
         query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserOrderByLastUpdateDesc");
         break;
       case STARTED_DATE_DESC:
         query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserOrderByStartedDateDesc");
         break;
-      case ENDED_DATE_DESC:			
+      case ENDED_DATE_DESC:
         query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserOrderByEndedDateDesc");
         break;
       case INSTANCE_NUMBER_DESC:
@@ -2713,7 +2860,6 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(aStartingIndex);
     query.setMaxResults(aPageSize);
     query.setString("userId", aUserId);
@@ -2724,14 +2870,17 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, Date currentDate, Date atRisk, int startingIndex, int pageSize,
-      Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-    final Query query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDateFromDefinitionUUIDs");
-    query.setCacheable(true);    
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final Date currentDate, final Date atRisk, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final Query query = getSession().getNamedQuery(
+        "getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDateFromDefinitionUUIDs");
+
     query.setString("userId", userId);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
@@ -2741,19 +2890,21 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     if (results == null) {
       return Collections.emptyList();
     }
-    return new ArrayList<InternalProcessInstance>(getProcessInstances(new HashSet<ProcessInstanceUUID>(results), startingIndex, pageSize));
+    return new ArrayList<InternalProcessInstance>(getProcessInstances(new HashSet<ProcessInstanceUUID>(results),
+        startingIndex, pageSize));
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-      String userId, Date currentDate, Date atRisk, int startingIndex,
-      int pageSize, Set<ProcessDefinitionUUID> visibleProcessUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
-    final Query query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDateFromDefinitionUUIDs");
-    query.setCacheable(true);
+      final String userId, final Date currentDate, final Date atRisk, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs, final ProcessInstanceCriterion pagingCriterion) {
+    final Query query = getSession().getNamedQuery(
+        "getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDateFromDefinitionUUIDs");
+
     query.setString("userId", userId);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
@@ -2763,13 +2914,17 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     if (results == null) {
       return Collections.emptyList();
     }
-    return getProcessInstancesWithInstanceUUIDs(new HashSet<ProcessInstanceUUID>(results), startingIndex, pageSize, pagingCriterion);
+    return getProcessInstancesWithInstanceUUIDs(new HashSet<ProcessInstanceUUID>(results), startingIndex, pageSize,
+        pagingCriterion);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, Date currentDate, Date atRisk, int startingIndex, int pageSize) {
-    final Query query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate");
-    query.setCacheable(true);
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final Date currentDate, final Date atRisk, final int startingIndex, final int pageSize) {
+    final Query query = getSession().getNamedQuery(
+        "getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate");
+
     query.setString("userId", userId);
     query.setLong("atRisk", atRisk.getTime());
     query.setLong("currentDate", currentDate.getTime());
@@ -2777,16 +2932,19 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     if (results == null) {
       return Collections.emptyList();
     }
-    return new ArrayList<InternalProcessInstance>(getProcessInstances(new HashSet<ProcessInstanceUUID>(results), startingIndex, pageSize));
+    return new ArrayList<InternalProcessInstance>(getProcessInstances(new HashSet<ProcessInstanceUUID>(results),
+        startingIndex, pageSize));
 
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-      String userId, Date currentDate, Date atRisk, int startingIndex,
-      int pageSize, ProcessInstanceCriterion pagingCriterion) {
-    final Query query = getSession().getNamedQuery("getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate");
-    query.setCacheable(true);
+      final String userId, final Date currentDate, final Date atRisk, final int startingIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final Query query = getSession().getNamedQuery(
+        "getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate");
+
     query.setString("userId", userId);
     query.setLong("atRisk", atRisk.getTime());
     query.setLong("currentDate", currentDate.getTime());
@@ -2798,13 +2956,16 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         new HashSet<ProcessInstanceUUID>(results), startingIndex, pageSize, pagingCriterion));
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(String userId, Date currentDate, int startingIndex, int pageSize, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final Date currentDate, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
     final Query query = getSession().getNamedQuery("getParentProcessInstancesWithOverdueTasksFromDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setString("userId", userId);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
@@ -2816,16 +2977,16 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return getProcessInstances(new HashSet<ProcessInstanceUUID>(results), startingIndex, pageSize);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(
-      String userId, Date currentDate, int startingIndex, int pageSize,
-      Set<ProcessDefinitionUUID> visibleProcessUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
+  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final Date currentDate, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs, final ProcessInstanceCriterion pagingCriterion) {
     final Query query = getSession().getNamedQuery("getParentProcessInstancesWithOverdueTasksFromDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setString("userId", userId);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
@@ -2834,48 +2995,53 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     if (results == null) {
       return Collections.emptyList();
     }
-    return getProcessInstancesWithInstanceUUIDs(new HashSet<ProcessInstanceUUID>(results), startingIndex, pageSize, pagingCriterion);
+    return getProcessInstancesWithInstanceUUIDs(new HashSet<ProcessInstanceUUID>(results), startingIndex, pageSize,
+        pagingCriterion);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(String userId, Date currentDate, int startingIndex, int pageSize) {
+  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final Date currentDate, final int startingIndex, final int pageSize) {
     final Query query = getSession().getNamedQuery("getParentProcessInstancesWithOverdueTasks");
-    query.setCacheable(true);
+
     query.setString("userId", userId);
     query.setLong("currentDate", currentDate.getTime());
     final List<ProcessInstanceUUID> results = query.list();
     if (results == null) {
       return Collections.emptyList();
     }
-    return getProcessInstances(new HashSet<ProcessInstanceUUID>(results), 
-        startingIndex, pageSize);  
+    return getProcessInstances(new HashSet<ProcessInstanceUUID>(results), startingIndex, pageSize);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(
-      String userId, Date currentDate, int startingIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
+  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final Date currentDate, final int startingIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
     final Query query = getSession().getNamedQuery("getParentProcessInstancesWithOverdueTasks");
-    query.setCacheable(true);
+
     query.setString("userId", userId);
     query.setLong("currentDate", currentDate.getTime());
     final List<ProcessInstanceUUID> results = query.list();
     if (results == null) {
       return Collections.emptyList();
     }
-    return getProcessInstancesWithInstanceUUIDs(new HashSet<ProcessInstanceUUID>(results), 
-        startingIndex, pageSize, pagingCriterion);  
+    return getProcessInstancesWithInstanceUUIDs(new HashSet<ProcessInstanceUUID>(results), startingIndex, pageSize,
+        pagingCriterion);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(String userId, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
     final Query query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     query.setString("userId", userId);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
@@ -2886,54 +3052,63 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(
-      String userId, int startingIndex, int pageSize,
-      Set<ProcessDefinitionUUID> visibleProcessUUIDs,
-      ProcessInstanceCriterion pagingCriterion) {
-    Query query = null;  	
+  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int startingIndex, final int pageSize, final Set<ProcessDefinitionUUID> visibleProcessUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
+    Query query = null;
     switch (pagingCriterion) {
-      case LAST_UPDATE_ASC:			
-        query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByLastUpdateAsc");
+      case LAST_UPDATE_ASC:
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByLastUpdateAsc");
         break;
       case STARTED_DATE_ASC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByStartedDateAsc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByStartedDateAsc");
         break;
-      case ENDED_DATE_ASC:			
-        query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByEndedDateAsc");
+      case ENDED_DATE_ASC:
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByEndedDateAsc");
         break;
       case INSTANCE_NUMBER_ASC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByInstanceNumberAsc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByInstanceNumberAsc");
         break;
       case INSTANCE_UUID_ASC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByInstanceUUIDAsc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByInstanceUUIDAsc");
         break;
       case LAST_UPDATE_DESC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByLastUpdateDesc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByLastUpdateDesc");
         break;
       case STARTED_DATE_DESC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByStartedDateDesc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByStartedDateDesc");
         break;
       case ENDED_DATE_DESC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByEndedDateDesc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByEndedDateDesc");
         break;
       case INSTANCE_NUMBER_DESC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByInstanceNumberDesc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByInstanceNumberDesc");
         break;
       case INSTANCE_UUID_DESC:
-        query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByInstanceUUIDDesc");
+        query = getSession().getNamedQuery(
+            "getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDsOrderByInstanceUUIDDesc");
         break;
       case DEFAULT:
         query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserFromDefinitionUUIDs");
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(startingIndex);
     query.setMaxResults(pageSize);
     query.setString("userId", userId);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
@@ -2941,13 +3116,15 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     if (results == null) {
       return Collections.emptyList();
     }
-    return results;		
+    return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(String userId, int fromIndex, int pageSize) {
+  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int fromIndex, final int pageSize) {
     final Query query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUser");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
     query.setString("userId", userId);
@@ -2958,19 +3135,19 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(
-      String aUserId, int aStartingIndex, int aPageSize,
-      ProcessInstanceCriterion pagingCriterion) {
-    Query query = null;  	
+  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String aUserId,
+      final int aStartingIndex, final int aPageSize, final ProcessInstanceCriterion pagingCriterion) {
+    Query query = null;
     switch (pagingCriterion) {
-      case LAST_UPDATE_ASC:			
+      case LAST_UPDATE_ASC:
         query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserOrderByLastUpdateAsc");
         break;
       case STARTED_DATE_ASC:
         query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserOrderByStartedDateAsc");
         break;
-      case ENDED_DATE_ASC:			
+      case ENDED_DATE_ASC:
         query = getSession().getNamedQuery("getParentProcessInstancesWithInvolvedUserOrderByEndedDateAsc");
         break;
       case INSTANCE_NUMBER_ASC:
@@ -2999,7 +3176,6 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(aStartingIndex);
     query.setMaxResults(aPageSize);
     query.setString("userId", aUserId);
@@ -3010,135 +3186,162 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUser(String userId, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-    final Query query = getSession().getNamedQuery("getNumberOfParentProcessInstancesWithActiveUserFromDefinitionUUIDs");
-    query.setCacheable(true);
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUser(final String userId,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final Query query = getSession()
+        .getNamedQuery("getNumberOfParentProcessInstancesWithActiveUserFromDefinitionUUIDs");
+
     query.setString("userId", userId);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
-    return ((Long)query.uniqueResult()).intValue();
+    return ((Long) query.uniqueResult()).intValue();
 
   }
-  public Integer getNumberOfParentProcessInstancesWithActiveUser(String userId){
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUser(final String userId) {
     final Query query = getSession().getNamedQuery("getNumberOfParentProcessInstancesWithActiveUser");
-    query.setCacheable(true);
+
     query.setString("userId", userId);
-    return ((Long)query.uniqueResult()).intValue();
+    return ((Long) query.uniqueResult()).intValue();
   }
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, Date currentDate, Date atRisk, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-    final Query query = getSession().getNamedQuery("getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDateFromDefinitionUUIDs");
-    query.setCacheable(true);
-    query.setString("userId", userId);
-    query.setLong("atRisk", atRisk.getTime());
-    query.setLong("currentDate", currentDate.getTime());
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
-      uuids.add(uuid.toString());
-    }
-    query.setParameterList("definitionsUUIDs", uuids);
-    return ((Long)query.uniqueResult()).intValue();
-  }
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(final String userId,
+      final Date currentDate, final Date atRisk, final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final Query query = getSession().getNamedQuery(
+        "getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDateFromDefinitionUUIDs");
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, Date currentDate, Date atRisk) {
-    final Query query = getSession().getNamedQuery("getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate");
-    query.setCacheable(true);
     query.setString("userId", userId);
     query.setLong("atRisk", atRisk.getTime());
     query.setLong("currentDate", currentDate.getTime());
-    return ((Long)query.uniqueResult()).intValue();
-  }
-  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(String userId, Date currentDate, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-    final Query query = getSession().getNamedQuery("getNumberOfParentProcessInstancesWithOverdueTasksFromDefinitionUUIDs");
-    query.setCacheable(true);
-    query.setString("userId", userId);
-    query.setLong("currentDate", currentDate.getTime());
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
-    return ((Long)query.uniqueResult()).intValue();
+    return ((Long) query.uniqueResult()).intValue();
   }
 
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(final String userId,
+      final Date currentDate, final Date atRisk) {
+    final Query query = getSession().getNamedQuery(
+        "getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate");
 
-  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(String userId, Date currentDate) {
+    query.setString("userId", userId);
+    query.setLong("atRisk", atRisk.getTime());
+    query.setLong("currentDate", currentDate.getTime());
+    return ((Long) query.uniqueResult()).intValue();
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(final String userId, final Date currentDate,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final Query query = getSession().getNamedQuery(
+        "getNumberOfParentProcessInstancesWithOverdueTasksFromDefinitionUUIDs");
+
+    query.setString("userId", userId);
+    query.setLong("currentDate", currentDate.getTime());
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+      uuids.add(uuid.toString());
+    }
+    query.setParameterList("definitionsUUIDs", uuids);
+    return ((Long) query.uniqueResult()).intValue();
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(final String userId, final Date currentDate) {
     final Query query = getSession().getNamedQuery("getNumberOfParentProcessInstancesWithOverdueTasks");
-    query.setCacheable(true);
+
     query.setString("userId", userId);
     query.setLong("currentDate", currentDate.getTime());
-    return ((Long)query.uniqueResult()).intValue();
+    return ((Long) query.uniqueResult()).intValue();
   }
 
-  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(String userId, Set<ProcessDefinitionUUID> visibleProcessUUIDs){
-    final Query query = getSession().getNamedQuery("getNumberOfParentProcessInstancesWithInvolvedUserFromDefinitionUUIDs");
-    query.setCacheable(true);
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(final String userId,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final Query query = getSession().getNamedQuery(
+        "getNumberOfParentProcessInstancesWithInvolvedUserFromDefinitionUUIDs");
+
     query.setString("userId", userId);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
-    return ((Long)query.uniqueResult()).intValue();
+    return ((Long) query.uniqueResult()).intValue();
   }
 
-  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(String userId){
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(final String userId) {
     final Query query = getSession().getNamedQuery("getNumberOfParentProcessInstancesWithInvolvedUser");
-    query.setCacheable(true);
+
     query.setString("userId", userId);
-    return ((Long)query.uniqueResult()).intValue();
+    return ((Long) query.uniqueResult()).intValue();
   }
-  public Integer getNumberOfParentProcessInstancesWithStartedBy(String userId, Set<ProcessDefinitionUUID> visibleProcessUUIDs){
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithStartedBy(final String userId,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
     final Query query = getSession().getNamedQuery("getNumberOfParentProcessInstancesWithStartedByFromDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setString("userId", userId);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
-    return ((Long)query.uniqueResult()).intValue();
+    return ((Long) query.uniqueResult()).intValue();
   }
-  public Integer getNumberOfParentProcessInstancesWithStartedBy(String userId){
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithStartedBy(final String userId) {
     final Query query = getSession().getNamedQuery("getNumberOfParentProcessInstancesWithStartedBy");
-    query.setCacheable(true);
+
     query.setString("userId", userId);
-    return ((Long)query.uniqueResult()).intValue();
+    return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs) {
+  @Override
+  public int getNumberOfProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs) {
     final Query query = getSession().getNamedQuery("getNumberOfProcessInstancesFromDefinitionUUIDs");
-    query.setCacheable(true);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfParentProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs) {
+  @Override
+  public int getNumberOfParentProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs) {
     final Query query = getSession().getNamedQuery("getNumberOfParentProcessInstancesFromDefinitionUUIDs");
-    query.setCacheable(true);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
     return ((Long) query.uniqueResult()).intValue();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<InternalProcessInstance> getProcessInstancesWithTaskState(Collection<ActivityState> activityStates,
-      Set<ProcessDefinitionUUID> definitionUUIDs) {
-    final Query getActivitiesQuery = getSession().getNamedQuery("findActivityInstancesWithTaskStateAndDefinitionsUUIDs");
-    getActivitiesQuery.setCacheable(true);
-    getActivitiesQuery.setParameterList("activityStates", activityStates, activityStateUserType);
+  public Set<InternalProcessInstance> getProcessInstancesWithTaskState(final Collection<ActivityState> activityStates,
+      final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final Query getActivitiesQuery = getSession()
+        .getNamedQuery("findActivityInstancesWithTaskStateAndDefinitionsUUIDs");
+    getActivitiesQuery.setParameterList("activityStates", activityStates, ACTIVITY_STATE_USER_TYPE);
     List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     getActivitiesQuery.setParameterList("definitionsUUIDs", uuids);
@@ -3148,20 +3351,19 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     if (uuids.isEmpty()) {
       return processInsts;
     }
-
     final Query query = getSession().getNamedQuery("findMatchingProcessInstances");
-    query.setCacheable(true);
     return executeSplittedQuery(InternalProcessInstance.class, query, "instanceUUIDs", uuids);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<InternalProcessInstance> getProcessInstancesWithInstanceStates(Collection<InstanceState> instanceStates,
-      Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-    final Query getProcessInstancesQuery = getSession().getNamedQuery("ProcessInstancesWithInstanceStatesAndDefinitionsUUIDs");
-    getProcessInstancesQuery.setCacheable(true);
-    getProcessInstancesQuery.setParameterList("instanceStates", instanceStates, instanceStateUserType);
+  public Set<InternalProcessInstance> getProcessInstancesWithInstanceStates(
+      final Collection<InstanceState> instanceStates, final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final Query getProcessInstancesQuery = getSession().getNamedQuery(
+        "ProcessInstancesWithInstanceStatesAndDefinitionsUUIDs");
+    getProcessInstancesQuery.setParameterList("instanceStates", instanceStates, INSTANCE_STATE_USER_TYPE);
     List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
+    for (final ProcessDefinitionUUID uuid : visibleProcessUUIDs) {
       uuids.add(uuid.toString());
     }
     getProcessInstancesQuery.setParameterList("definitionsUUIDs", uuids);
@@ -3173,40 +3375,43 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
 
     final Query query = getSession().getNamedQuery("findMatchingProcessInstances");
-    query.setCacheable(true);
+
     return executeSplittedQuery(InternalProcessInstance.class, query, "instanceUUIDs", uuids);
   }
 
-  public TaskInstance getOneTask(String userId, ActivityState taskState, Set<ProcessDefinitionUUID> definitionUUIDs) {
-    Query query = getSession().getNamedQuery("getOneTaskOfProcessFromDefinitionUUIDs");
-    query.setCacheable(true);
+  @Override
+  public TaskInstance getOneTask(final String userId, final ActivityState taskState,
+      final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final Query query = getSession().getNamedQuery("getOneTaskOfProcessFromDefinitionUUIDs");
+
     query.setString("userId", userId);
-    List<String> uuids = new ArrayList<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+    final List<String> uuids = new ArrayList<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("definitionsUUIDs", uuids);
-    query.setParameter("state", taskState, activityStateUserType);
+    query.setParameter("state", taskState, ACTIVITY_STATE_USER_TYPE);
     query.setMaxResults(1);
     return (TaskInstance) query.uniqueResult();
   }
 
-  public List<InternalProcessInstance> getProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs,
-      int fromIndex, int pageSize) {
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final int fromIndex, final int pageSize) {
     final Query query = getSession().getNamedQuery("getProcessInstancesWithDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     return executeSplittedQueryList(InternalProcessInstance.class, query, "definitionsUUIDs", uuids);
   }
 
-
-  public List<InternalProcessInstance> getProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs,
-      int fromIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
     Query query = null;
     switch (pagingCriterion) {
       case LAST_UPDATE_ASC:
@@ -3242,38 +3447,41 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
       case DEFAULT:
         query = getSession().getNamedQuery("getProcessInstancesWithDefinitionUUIDs");
         break;
-    }  	
-    query.setCacheable(true);
+    }
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : definitionUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : definitionUUIDs) {
       uuids.add(uuid.toString());
     }
     return executeSplittedQueryList(InternalProcessInstance.class, query, "definitionsUUIDs", uuids);
   }
 
-  public Rule findRuleByName(String name) {
-    Query query = getSession().getNamedQuery("getRuleByName");
-    query.setCacheable(true);
+  @Override
+  public Rule findRuleByName(final String name) {
+    final Query query = getSession().getNamedQuery("getRuleByName");
+
     query.setString("name", name);
     query.setMaxResults(1);
     return (Rule) query.uniqueResult();
   }
 
-  public Rule getRule(String ruleUUID) {
-    Query query = getSession().getNamedQuery("getRule");
-    query.setCacheable(true);
+  @Override
+  public Rule getRule(final String ruleUUID) {
+    final Query query = getSession().getNamedQuery("getRule");
+
     query.setString("ruleUUID", ruleUUID);
     query.setMaxResults(1);
     return (Rule) query.uniqueResult();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public List<Rule> getRules() {
-    Query query = getSession().getNamedQuery("getAllRules");
-    query.setCacheable(true);
-    List<Rule> results = query.list();
+    final Query query = getSession().getNamedQuery("getAllRules");
+
+    final List<Rule> results = query.list();
     if (results != null) {
       return results;
     } else {
@@ -3281,13 +3489,14 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @Deprecated
   @SuppressWarnings("unchecked")
-  public Set<Rule> findRulesByNames(Set<String> rulesNames) {
-    Query query = getSession().getNamedQuery("findRulesByNames");
-    query.setCacheable(true);
+  public Set<Rule> findRulesByNames(final Set<String> rulesNames) {
+    final Query query = getSession().getNamedQuery("findRulesByNames");
+
     query.setParameterList("names", rulesNames);
-    List<Rule> results = query.list();
+    final List<Rule> results = query.list();
     if (results != null) {
       return new HashSet<Rule>(results);
     } else {
@@ -3295,12 +3504,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Rule> getRules(Collection<String> ruleUUIDs) {
-    Query query = getSession().getNamedQuery("getRules");
-    query.setCacheable(true);
+  public List<Rule> getRules(final Collection<String> ruleUUIDs) {
+    final Query query = getSession().getNamedQuery("getRules");
+
     query.setParameterList("uuids", ruleUUIDs);
-    List<Rule> results = query.list();
+    final List<Rule> results = query.list();
     if (results != null) {
       return results;
     } else {
@@ -3308,127 +3518,121 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Rule> getAllApplicableRules(String userUUID, Collection<String> roleUUIDs, Collection<String> groupUUIDs,
-      Collection<String> membershipUUIDs, String entityID) {
+  public List<Rule> getAllApplicableRules(final String userUUID, final Collection<String> roleUUIDs,
+      final Collection<String> groupUUIDs, final Collection<String> membershipUUIDs, final String entityID) {
 
-    Set<Rule> rules = new HashSet<Rule>();
+    final Set<Rule> rules = new HashSet<Rule>();
     if (userUUID != null) {
-      Query usersQuery = getSession().getNamedQuery("getAllApplicableRulesForUser");
-      usersQuery.setCacheable(true);
+      final Query usersQuery = getSession().getNamedQuery("getAllApplicableRulesForUser");
       usersQuery.setParameter("userUUID", userUUID);
-      List<Rule> userResults = usersQuery.list();
+      final List<Rule> userResults = usersQuery.list();
       if (userResults != null) {
         rules.addAll(userResults);
       }
     }
     if (entityID != null) {
-      Query entityQuery = getSession().getNamedQuery("getAllApplicableRulesForEntity");
-      entityQuery.setCacheable(true);
+      final Query entityQuery = getSession().getNamedQuery("getAllApplicableRulesForEntity");
       entityQuery.setParameter("entityID", entityID);
-      List<Rule> entityResults = entityQuery.list();
+      final List<Rule> entityResults = entityQuery.list();
       if (entityResults != null) {
         rules.addAll(entityResults);
       }
     }
     if (groupUUIDs != null && !groupUUIDs.isEmpty()) {
-      Query groupsQuery = getSession().getNamedQuery("getAllApplicableRulesForGroups");
-      groupsQuery.setCacheable(true);
+      final Query groupsQuery = getSession().getNamedQuery("getAllApplicableRulesForGroups");
       groupsQuery.setParameterList("groupUUIDs", groupUUIDs);
-      List<Rule> groupsResults = groupsQuery.list();
+      final List<Rule> groupsResults = groupsQuery.list();
       if (groupsResults != null) {
         rules.addAll(groupsResults);
       }
     }
     if (roleUUIDs != null && !roleUUIDs.isEmpty()) {
-      Query rolesQuery = getSession().getNamedQuery("getAllApplicableRulesForRoles");
-      rolesQuery.setCacheable(true);
+      final Query rolesQuery = getSession().getNamedQuery("getAllApplicableRulesForRoles");
       rolesQuery.setParameterList("roleUUIDs", roleUUIDs);
-      List<Rule> rolesResults = rolesQuery.list();
+      final List<Rule> rolesResults = rolesQuery.list();
       if (rolesResults != null) {
         rules.addAll(rolesResults);
       }
     }
     if (membershipUUIDs != null && !membershipUUIDs.isEmpty()) {
-      Query membershipsQuery = getSession().getNamedQuery("getAllApplicableRulesForMemberships");
-      membershipsQuery.setCacheable(true);
+      final Query membershipsQuery = getSession().getNamedQuery("getAllApplicableRulesForMemberships");
       membershipsQuery.setParameterList("membershipUUIDs", membershipUUIDs);
-      List<Rule> membershipsResults = membershipsQuery.list();
+      final List<Rule> membershipsResults = membershipsQuery.list();
       if (membershipsResults != null) {
         rules.addAll(membershipsResults);
       }
     }
-    List<Rule> rulesList = new ArrayList<Rule>(rules);
+    final List<Rule> rulesList = new ArrayList<Rule>(rules);
     Collections.sort(rulesList);
     return rulesList;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Rule> getApplicableRules(RuleType ruleType, String userUUID, Collection<String> roleUUIDs,
-      Collection<String> groupUUIDs, Collection<String> membershipUUIDs, String entityID) {
+  public List<Rule> getApplicableRules(final RuleType ruleType, final String userUUID,
+      final Collection<String> roleUUIDs, final Collection<String> groupUUIDs,
+      final Collection<String> membershipUUIDs, final String entityID) {
 
-    Set<Rule> rules = new HashSet<Rule>();
+    final Set<Rule> rules = new HashSet<Rule>();
     if (userUUID != null) {
-      Query usersQuery = getSession().getNamedQuery("getApplicableRulesForUser");
-      usersQuery.setCacheable(true);
+      final Query usersQuery = getSession().getNamedQuery("getApplicableRulesForUser");
       usersQuery.setParameter("ruleType", ruleType.name());
       usersQuery.setParameter("userUUID", userUUID);
-      List<Rule> userResults = usersQuery.list();
+      final List<Rule> userResults = usersQuery.list();
       if (userResults != null) {
         rules.addAll(userResults);
       }
     }
     if (entityID != null) {
-      Query entityQuery = getSession().getNamedQuery("getApplicableRulesForEntity");
-      entityQuery.setCacheable(true);
+      final Query entityQuery = getSession().getNamedQuery("getApplicableRulesForEntity");
       entityQuery.setParameter("ruleType", ruleType.name());
       entityQuery.setParameter("entityID", entityID);
-      List<Rule> entityResults = entityQuery.list();
+      final List<Rule> entityResults = entityQuery.list();
       if (entityResults != null) {
         rules.addAll(entityResults);
       }
     }
     if (groupUUIDs != null && !groupUUIDs.isEmpty()) {
-      Query groupsQuery = getSession().getNamedQuery("getApplicableRulesForGroups");
-      groupsQuery.setCacheable(true);
+      final Query groupsQuery = getSession().getNamedQuery("getApplicableRulesForGroups");
       groupsQuery.setParameter("ruleType", ruleType.name());
       groupsQuery.setParameterList("groupUUIDs", groupUUIDs);
-      List<Rule> groupsResults = groupsQuery.list();
+      final List<Rule> groupsResults = groupsQuery.list();
       if (groupsResults != null) {
         rules.addAll(groupsResults);
       }
     }
     if (roleUUIDs != null && !roleUUIDs.isEmpty()) {
-      Query rolesQuery = getSession().getNamedQuery("getApplicableRulesForRoles");
-      rolesQuery.setCacheable(true);
+      final Query rolesQuery = getSession().getNamedQuery("getApplicableRulesForRoles");
       rolesQuery.setParameter("ruleType", ruleType.name());
       rolesQuery.setParameterList("roleUUIDs", roleUUIDs);
-      List<Rule> rolesResults = rolesQuery.list();
+      final List<Rule> rolesResults = rolesQuery.list();
       if (rolesResults != null) {
         rules.addAll(rolesResults);
       }
     }
     if (membershipUUIDs != null && !membershipUUIDs.isEmpty()) {
-      Query membershipsQuery = getSession().getNamedQuery("getApplicableRulesForMemberships");
-      membershipsQuery.setCacheable(true);
+      final Query membershipsQuery = getSession().getNamedQuery("getApplicableRulesForMemberships");
       membershipsQuery.setParameter("ruleType", ruleType.name());
       membershipsQuery.setParameterList("membershipUUIDs", membershipUUIDs);
-      List<Rule> membershipsResults = membershipsQuery.list();
+      final List<Rule> membershipsResults = membershipsQuery.list();
       if (membershipsResults != null) {
         rules.addAll(membershipsResults);
       }
     }
-    List<Rule> rulesList = new ArrayList<Rule>(rules);
+    final List<Rule> rulesList = new ArrayList<Rule>(rules);
     Collections.sort(rulesList);
     return rulesList;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<Rule> getRulesByType(Set<String> ruleTypes) {
-    Query query = getSession().getNamedQuery("getRuleListByType");
-    query.setCacheable(true);
+  public Set<Rule> getRulesByType(final Set<String> ruleTypes) {
+    final Query query = getSession().getNamedQuery("getRuleListByType");
+
     query.setParameterList("types", ruleTypes);
-    List<Rule> results = query.list();
+    final List<Rule> results = query.list();
     if (results != null) {
       return new HashSet<Rule>(results);
     } else {
@@ -3436,21 +3640,23 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  public RuleTypePolicy getRuleTypePolicy(RuleType ruleType) {
-    Query query = getSession().getNamedQuery("getRuleTypePolicy");
-    query.setCacheable(true);
+  @Override
+  public RuleTypePolicy getRuleTypePolicy(final RuleType ruleType) {
+    final Query query = getSession().getNamedQuery("getRuleTypePolicy");
+
     query.setParameter("type", ruleType.name());
     query.setMaxResults(1);
     return (RuleTypePolicy) query.uniqueResult();
   }
 
+  @Override
   @Deprecated
   @SuppressWarnings("unchecked")
-  public Set<Rule> getAllApplicableRules(String entityID) {
-    Query query = getSession().getNamedQuery("getRuleListByEntity");
-    query.setCacheable(true);
+  public Set<Rule> getAllApplicableRules(final String entityID) {
+    final Query query = getSession().getNamedQuery("getRuleListByEntity");
+
     query.setString("entity", entityID);
-    List<Rule> results = query.list();
+    final List<Rule> results = query.list();
     if (results != null) {
       return new HashSet<Rule>(results);
     } else {
@@ -3458,15 +3664,16 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @Deprecated
   @SuppressWarnings("unchecked")
-  public Set<Rule> getAllApplicableRules(String entityID, RuleType ruleType) {
-    Query query = getSession().getNamedQuery("getRuleListByEntityAndType");
-    query.setCacheable(true);
+  public Set<Rule> getAllApplicableRules(final String entityID, final RuleType ruleType) {
+    final Query query = getSession().getNamedQuery("getRuleListByEntityAndType");
+
     query.setString("entity", entityID);
-    String name = ruleType.name();
+    final String name = ruleType.name();
     query.setString("ruletype", name);
-    List<Rule> results = query.list();
+    final List<Rule> results = query.list();
     if (results != null) {
       return new HashSet<Rule>(results);
     } else {
@@ -3474,22 +3681,23 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  public List<InternalProcessDefinition> getProcessesExcept(
-      Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize) {
+  @Override
+  public List<InternalProcessDefinition> getProcessesExcept(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize) {
     final Query query = getSession().getNamedQuery("getAllProcessesListExcept");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : processUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : processUUIDs) {
       uuids.add(uuid.toString());
     }
     return executeSplittedQueryList(InternalProcessDefinition.class, query, "definitionsUUIDs", uuids);
   }
 
-  public List<InternalProcessDefinition> getProcessesExcept(
-      Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize,
-      ProcessDefinitionCriterion pagingCriterion) {
+  @Override
+  public List<InternalProcessDefinition> getProcessesExcept(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize, final ProcessDefinitionCriterion pagingCriterion) {
     Query query = null;
     switch (pagingCriterion) {
       case NAME_ASC:
@@ -3529,50 +3737,54 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : processUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : processUUIDs) {
       uuids.add(uuid.toString());
     }
     return executeSplittedQueryList(InternalProcessDefinition.class, query, "definitionsUUIDs", uuids);
   }
 
-  public int getNumberOfActivityInstanceComments(ActivityInstanceUUID activityUUID) {
+  @Override
+  public int getNumberOfActivityInstanceComments(final ActivityInstanceUUID activityUUID) {
     final Query query = getSession().getNamedQuery("getNumberOfActivityComments");
-    query.setCacheable(true);
+
     query.setString("activityUUID", activityUUID.getValue());
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfComments(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public int getNumberOfComments(final ProcessInstanceUUID instanceUUID) {
     final Query query = getSession().getNamedQuery("getNumberOfAllComments");
-    query.setCacheable(true);
+
     query.setString("instanceUUID", instanceUUID.getValue());
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfProcessInstanceComments(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public int getNumberOfProcessInstanceComments(final ProcessInstanceUUID instanceUUID) {
     final Query query = getSession().getNamedQuery("getNumberOfInstanceComments");
-    query.setCacheable(true);
+
     query.setString("instanceUUID", instanceUUID.getValue());
     return ((Long) query.uniqueResult()).intValue();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Map<ActivityInstanceUUID, Integer> getNumberOfActivityInstanceComments(Set<ActivityInstanceUUID> activityUUIDs) {
+  public Map<ActivityInstanceUUID, Integer> getNumberOfActivityInstanceComments(
+      final Set<ActivityInstanceUUID> activityUUIDs) {
     final Query query = getSession().getNamedQuery("getActivitiesComments");
-    query.setCacheable(true);
-    List<String> uuids = new ArrayList<String>();
-    for (ActivityInstanceUUID uuid : activityUUIDs) {
+
+    final List<String> uuids = new ArrayList<String>();
+    for (final ActivityInstanceUUID uuid : activityUUIDs) {
       uuids.add(uuid.toString());
     }
     query.setParameterList("uuids", uuids);
-    List<Comment> comments = (List<Comment>) query.list();
+    final List<Comment> comments = query.list();
 
-    Map<ActivityInstanceUUID, Integer> result = new HashMap<ActivityInstanceUUID, Integer>();
-    for (Comment comment : comments) {
+    final Map<ActivityInstanceUUID, Integer> result = new HashMap<ActivityInstanceUUID, Integer>();
+    for (final Comment comment : comments) {
       final ActivityInstanceUUID activityUUID = comment.getActivityUUID();
       if (result.containsKey(activityUUID)) {
         result.put(activityUUID, result.get(activityUUID) + 1);
@@ -3581,38 +3793,41 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
       }
 
     }
-    return  result;
+    return result;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Comment> getActivityInstanceCommentFeed(ActivityInstanceUUID activityUUID) {
+  public List<Comment> getActivityInstanceCommentFeed(final ActivityInstanceUUID activityUUID) {
     final Query query = getSession().getNamedQuery("getActivityComments");
-    query.setCacheable(true);
+
     query.setString("activityUUID", activityUUID.getValue());
-    return (List<Comment>) query.list();
+    return query.list();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Comment> getProcessInstanceCommentFeed(ProcessInstanceUUID instanceUUID) {
+  public List<Comment> getProcessInstanceCommentFeed(final ProcessInstanceUUID instanceUUID) {
     final Query query = getSession().getNamedQuery("getInstanceComments");
-    query.setCacheable(true);
+
     query.setString("instanceUUID", instanceUUID.getValue());
-    return (List<Comment>) query.list();
+    return query.list();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Comment> getCommentFeed(ProcessInstanceUUID instanceUUID) {
+  public List<Comment> getCommentFeed(final ProcessInstanceUUID instanceUUID) {
     final Query query = getSession().getNamedQuery("getAllComments");
-    query.setCacheable(true);
+
     query.setString("instanceUUID", instanceUUID.getValue());
-    return (List<Comment>) query.list();
+    return query.list();
   }
 
-
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Rule> getRules(RuleType ruleType, int fromIndex, int pageSize) {
+  public List<Rule> getRules(final RuleType ruleType, final int fromIndex, final int pageSize) {
     final Query query = getSession().getNamedQuery("getRuleListByExactType");
-    query.setCacheable(true);
+
     query.setString("ruletype", ruleType.name());
     query.setFirstResult(fromIndex);
     query.setMaxResults(pageSize);
@@ -3623,13 +3838,14 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return results;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<String> getAllExceptions(String entityID, RuleType ruleType) {
+  public Set<String> getAllExceptions(final String entityID, final RuleType ruleType) {
     final Query query = getSession().getNamedQuery("getExceptionListByEntityAndRuleType");
     query.setString("entity", entityID);
     query.setString("ruletype", ruleType.name());
-    query.setCacheable(true);
-    List<String> results = query.list();
+
+    final List<String> results = query.list();
     if (results != null) {
       return new HashSet<String>(results);
     } else {
@@ -3638,53 +3854,56 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
 
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Set<ProcessDefinitionUUID> getAllProcessDefinitionUUIDs() {
     final Query query = getSession().getNamedQuery("getAllProcessDefinitionUUIDs");
-    query.setCacheable(true);
-    List<ProcessDefinitionUUID> results = query.list();
+    final List<ProcessDefinitionUUID> results = query.list();
     if (results != null) {
       return new HashSet<ProcessDefinitionUUID>(results);
     } else {
       return Collections.emptySet();
     }
-
   }
 
-  public Set<ProcessDefinitionUUID> getAllProcessDefinitionUUIDsExcept(
-      Set<ProcessDefinitionUUID> processUUIDs) {
+  @Override
+  public Set<ProcessDefinitionUUID> getAllProcessDefinitionUUIDsExcept(final Set<ProcessDefinitionUUID> processUUIDs) {
+    if (processUUIDs == null || processUUIDs.isEmpty()) {
+      return getAllProcessDefinitionUUIDs();
+    }
     final Query query = getSession().getNamedQuery("getAllProcessDefinitionUUIDsExcept");
-    query.setCacheable(true);
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : processUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : processUUIDs) {
       uuids.add(uuid.toString());
     }
     return executeSplittedQuery(ProcessDefinitionUUID.class, query, "definitionsUUIDs", uuids);
-
   }
 
-  public long getNumberOfRules(RuleType ruleType) {
+  @Override
+  public long getNumberOfRules(final RuleType ruleType) {
     final Query query = getSession().getNamedQuery("getNumberOfRulesForType");
     query.setString("ruletype", ruleType.name());
-    query.setCacheable(true);
+
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  //-- Web token management.
-  public WebTemporaryToken getToken(String token) {
+  // -- Web token management.
+  @Override
+  public WebTemporaryToken getToken(final String token) {
     final Query query = getSession().getNamedQuery("getTemporaryTokenFromKey");
     query.setString("tokenKey", token);
-    query.setCacheable(true);
+
     query.setMaxResults(1);
-    return ((WebTemporaryToken) query.uniqueResult());
+    return (WebTemporaryToken) query.uniqueResult();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Set<WebTemporaryToken> getExpiredTokens() {
     final Query query = getSession().getNamedQuery("getExpiredTemporaryTokens");
-    query.setLong("currentDate", new Date().getTime()); 
-    query.setCacheable(true);
-    List<WebTemporaryToken> results = query.list();
+    query.setLong("currentDate", new Date().getTime());
+
+    final List<WebTemporaryToken> results = query.list();
     if (results != null) {
       return new HashSet<WebTemporaryToken>(results);
     } else {
@@ -3692,12 +3911,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<Category> getCategories(Collection<String> categoryNames) {
+  public Set<Category> getCategories(final Collection<String> categoryNames) {
     final Query query = getSession().getNamedQuery("getCategoriesByName");
     query.setParameterList("names", categoryNames);
-    query.setCacheable(true);
-    List<Category> results = query.list();
+
+    final List<Category> results = query.list();
     if (results != null) {
       return new HashSet<Category>(results);
     } else {
@@ -3705,11 +3925,12 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Set<Category> getAllCategories() {
     final Query query = getSession().getNamedQuery("getAllCategories");
-    query.setCacheable(true);
-    List<Category> results = query.list();
+
+    final List<Category> results = query.list();
     if (results != null) {
       return new HashSet<Category>(results);
     } else {
@@ -3717,12 +3938,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<Category> getAllCategoriesExcept(Set<String> uuids) {
+  public Set<Category> getAllCategoriesExcept(final Set<String> uuids) {
     final Query query = getSession().getNamedQuery("getAllCategoriesExcept");
     query.setParameterList("uuids", uuids);
-    query.setCacheable(true);
-    List<Category> results = query.list();
+
+    final List<Category> results = query.list();
     if (results != null) {
       return new HashSet<Category>(results);
     } else {
@@ -3730,19 +3952,20 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<CategoryImpl> getCategoriesByUUIDs(Set<CategoryUUID> uuids) {
+  public Set<CategoryImpl> getCategoriesByUUIDs(final Set<CategoryUUID> uuids) {
     if (uuids == null || uuids.isEmpty()) {
       return Collections.emptySet();
     }
     final Collection<String> ids = new HashSet<String>();
-    for (CategoryUUID categoryUUID : uuids) {
+    for (final CategoryUUID categoryUUID : uuids) {
       ids.add(categoryUUID.getValue());
     }
     final Query query = getSession().getNamedQuery("getCategoriesByUUID");
     query.setParameterList("uuids", ids);
-    query.setCacheable(true);
-    List<CategoryImpl> results = query.list();
+
+    final List<CategoryImpl> results = query.list();
     if (results != null) {
       return new HashSet<CategoryImpl>(results);
     } else {
@@ -3750,19 +3973,21 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  public CategoryImpl getCategoryByUUID(String uuid) {
+  @Override
+  public CategoryImpl getCategoryByUUID(final String uuid) {
     final Query query = getSession().getNamedQuery("getCategoryByUUID");
     query.setString("uuid", uuid);
-    query.setCacheable(true);
-    return (CategoryImpl)query.uniqueResult();
+
+    return (CategoryImpl) query.uniqueResult();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<ProcessDefinitionUUID> getProcessUUIDsFromCategory(String category) {
+  public Set<ProcessDefinitionUUID> getProcessUUIDsFromCategory(final String category) {
     final Query query = getSession().getNamedQuery("getProcessUUIDsFromCategory");
     query.setString("category", category);
-    query.setCacheable(true);
-    List<ProcessDefinitionUUID> results = query.list();
+
+    final List<ProcessDefinitionUUID> results = query.list();
     if (results != null) {
       return new HashSet<ProcessDefinitionUUID>(results);
     } else {
@@ -3774,10 +3999,12 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
    * SEARCH
    */
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Object> search(SearchQueryBuilder query, int firstResult, int maxResults, Class<?> indexClass) {
+  public List<Object> search(final SearchQueryBuilder query, final int firstResult, final int maxResults,
+      final Class<?> indexClass) {
     List<Object> result = new ArrayList<Object>();
-    FullTextQuery hibernateQuery = createFullTextQuery(query, indexClass);
+    final FullTextQuery hibernateQuery = createFullTextQuery(query, indexClass);
     if (hibernateQuery != null) {
       if (firstResult >= 0) {
         hibernateQuery.setFirstResult(firstResult);
@@ -3788,31 +4015,31 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return result;
   }
 
-  public int search(SearchQueryBuilder query, Class<?> indexClass) {
+  @Override
+  public int search(final SearchQueryBuilder query, final Class<?> indexClass) {
     int result = 0;
-    FullTextQuery hibernateQuery = createFullTextQuery(query, indexClass);
+    final FullTextQuery hibernateQuery = createFullTextQuery(query, indexClass);
     if (hibernateQuery != null) {
       result = hibernateQuery.getResultSize();
     }
     return result;
   }
 
-  private FullTextQuery createFullTextQuery(SearchQueryBuilder query, Class<?> indexClass) {
+  private FullTextQuery createFullTextQuery(final SearchQueryBuilder query, final Class<?> indexClass) {
     QueryParser parser = null;
-    String expression = query.getQuery();
+    final String expression = query.getQuery();
     if (!expression.contains("\\:")) {
       parser = new QueryParser(LUCENE_VERSION, query.getIndex().getDefaultField(), new StandardAnalyzer(LUCENE_VERSION));
     } else {
-      List<String> list = query.getIndex().getAllFields();
-      String[] fields = list.toArray(new String[list.size()]);
+      final List<String> list = query.getIndex().getAllFields();
+      final String[] fields = list.toArray(new String[list.size()]);
       parser = new MultiFieldQueryParser(LUCENE_VERSION, fields, new StandardAnalyzer(LUCENE_VERSION));
     }
-    FullTextSession searchSession = Search.getFullTextSession(getSession());
+    final FullTextSession searchSession = Search.getFullTextSession(getSession());
     try {
-      org.apache.lucene.search.Query luceneQuery = parser.parse(query.getQuery());
-      FullTextQuery hibernateQuery = searchSession.createFullTextQuery(luceneQuery, indexClass);
-      return hibernateQuery;
-    } catch (ParseException e) {
+      final org.apache.lucene.search.Query luceneQuery = parser.parse(query.getQuery());
+      return searchSession.createFullTextQuery(luceneQuery, indexClass);
+    } catch (final ParseException e) {
       throw new BonitaRuntimeException(e.getMessage());
     }
   }
@@ -3820,24 +4047,27 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
   /*
    * IDENTITY
    */
-  public RoleImpl findRoleByName(String name) {
+  @Override
+  public RoleImpl findRoleByName(final String name) {
     final Query query = getSession().getNamedQuery("findRoleByName");
-    query.setCacheable(true);
+
     query.setString("roleName", name);
     return (RoleImpl) query.uniqueResult();
   }
 
-  public UserImpl findUserByUsername(String username) {
+  @Override
+  public UserImpl findUserByUsername(final String username) {
     final Query query = getSession().getNamedQuery("findUserByUsername");
-    query.setCacheable(true);
+
     query.setString("username", username);
     return (UserImpl) query.uniqueResult();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<GroupImpl> findGroupsByName(String name) {
+  public Set<GroupImpl> findGroupsByName(final String name) {
     final Query query = getSession().getNamedQuery("findGroupsByName");
-    query.setCacheable(true);
+
     query.setString("groupName", name);
     final List<GroupImpl> results = query.list();
     if (results != null) {
@@ -3847,17 +4077,19 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  public ProfileMetadataImpl findProfileMetadataByName(String metadataName) {
+  @Override
+  public ProfileMetadataImpl findProfileMetadataByName(final String metadataName) {
     final Query query = getSession().getNamedQuery("findProfileMetadataByName");
-    query.setCacheable(true);
+
     query.setString("metadataName", metadataName);
     return (ProfileMetadataImpl) query.uniqueResult();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public List<GroupImpl> getAllGroups() {
     final Query query = getSession().getNamedQuery("getAllGroups");
-    query.setCacheable(true);
+
     final List<GroupImpl> results = query.list();
     if (results != null) {
       return results;
@@ -3866,10 +4098,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Set<MembershipImpl> getAllMemberships() {
     final Query query = getSession().getNamedQuery("getMemberships");
-    query.setCacheable(true);
+
     final List<MembershipImpl> results = query.list();
     if (results != null) {
       return new HashSet<MembershipImpl>(results);
@@ -3878,10 +4111,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public List<ProfileMetadataImpl> getAllProfileMetadata() {
     final Query query = getSession().getNamedQuery("getProfileMetadata");
-    query.setCacheable(true);
+
     final List<ProfileMetadataImpl> results = query.list();
     if (results != null) {
       return results;
@@ -3890,10 +4124,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public List<RoleImpl> getAllRoles() {
     final Query query = getSession().getNamedQuery("getAllRoles");
-    query.setCacheable(true);
+
     final List<RoleImpl> results = query.list();
     if (results != null) {
       return results;
@@ -3902,10 +4137,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public List<UserImpl> getAllUsers() {
     final Query query = getSession().getNamedQuery("getAllUsers");
-    query.setCacheable(true);
+
     final List<UserImpl> results = query.list();
     if (results != null) {
       return results;
@@ -3914,8 +4150,9 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<GroupImpl> getGroupChildren(String parentGroupUUID) {
+  public List<GroupImpl> getGroupChildren(final String parentGroupUUID) {
     final Query query;
     if (parentGroupUUID == null) {
       query = getSession().getNamedQuery("getRootGroups");
@@ -3923,7 +4160,7 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
       query = getSession().getNamedQuery("getGroupChildren");
       query.setString("parentGroupUUID", parentGroupUUID);
     }
-    query.setCacheable(true);
+
     final List<GroupImpl> results = query.list();
     if (results != null) {
       return results;
@@ -3932,18 +4169,20 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  public MembershipImpl findMembershipByRoleAndGroup(String roleUUID, String groupUUID) {
+  @Override
+  public MembershipImpl findMembershipByRoleAndGroup(final String roleUUID, final String groupUUID) {
     final Query query = getSession().getNamedQuery("findMembershipByRoleAndGroup");
-    query.setCacheable(true);
+
     query.setString("roleUUID", roleUUID);
     query.setString("groupUUID", groupUUID);
-    return (MembershipImpl)query.uniqueResult();
+    return (MembershipImpl) query.uniqueResult();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<MembershipImpl> getMembershipsByGroup(String groupUUID) {
+  public Set<MembershipImpl> getMembershipsByGroup(final String groupUUID) {
     final Query query = getSession().getNamedQuery("getMembershipsByGroup");
-    query.setCacheable(true);
+
     query.setString("groupUUID", groupUUID);
     final List<MembershipImpl> results = query.list();
     if (results != null) {
@@ -3953,10 +4192,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<MembershipImpl> getMembershipsByRole(String roleUUID) {
+  public Set<MembershipImpl> getMembershipsByRole(final String roleUUID) {
     final Query query = getSession().getNamedQuery("getMembershipsByRole");
-    query.setCacheable(true);
+
     query.setString("roleUUID", roleUUID);
     final List<MembershipImpl> results = query.list();
     if (results != null) {
@@ -3966,45 +4206,51 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  public GroupImpl getGroup(String groupUUID) {
+  @Override
+  public GroupImpl getGroup(final String groupUUID) {
     final Query query = getSession().getNamedQuery("getGroup");
-    query.setCacheable(true);
+
     query.setString("groupUUID", groupUUID);
     return (GroupImpl) query.uniqueResult();
   }
 
-  public RoleImpl getRole(String roleUUID) {
+  @Override
+  public RoleImpl getRole(final String roleUUID) {
     final Query query = getSession().getNamedQuery("getRole");
-    query.setCacheable(true);
+
     query.setString("roleUUID", roleUUID);
     return (RoleImpl) query.uniqueResult();
   }
 
-  public UserImpl getUser(String userUUID) {
+  @Override
+  public UserImpl getUser(final String userUUID) {
     final Query query = getSession().getNamedQuery("getUser");
-    query.setCacheable(true);
+
     query.setString("userUUID", userUUID);
     return (UserImpl) query.uniqueResult();
   }
 
-  public MembershipImpl getMembership(String membershipUUID) {
+  @Override
+  public MembershipImpl getMembership(final String membershipUUID) {
     final Query query = getSession().getNamedQuery("getMembership");
-    query.setCacheable(true);
+
     query.setString("membershipUUID", membershipUUID);
     return (MembershipImpl) query.uniqueResult();
   }
 
-  public ProfileMetadataImpl getProfileMetadata(String profileMetadataUUID) {
+  @Override
+  public ProfileMetadataImpl getProfileMetadata(final String profileMetadataUUID) {
     final Query query = getSession().getNamedQuery("getProfileMetadataByUUID");
-    query.setCacheable(true);
+
     query.setString("profileMetadataUUID", profileMetadataUUID);
     return (ProfileMetadataImpl) query.uniqueResult();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<UserImpl> getUsersByGroup(String groupUUID) {
+  public List<UserImpl> getUsersByGroup(final String groupUUID) {
     final Query query = getSession().getNamedQuery("getUsersByGroup");
-    query.setCacheable(true);
+
     query.setString("groupUUID", groupUUID);
     final List<UserImpl> results = query.list();
     if (results != null) {
@@ -4014,10 +4260,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<UserImpl> getUsersByMembership(String membershipUUID) {
+  public List<UserImpl> getUsersByMembership(final String membershipUUID) {
     final Query query = getSession().getNamedQuery("getUsersByMembership");
-    query.setCacheable(true);
+
     query.setString("membershipUUID", membershipUUID);
     final List<UserImpl> results = query.list();
     if (results != null) {
@@ -4027,10 +4274,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<UserImpl> getUsersByRole(String roleUUID) {
+  public List<UserImpl> getUsersByRole(final String roleUUID) {
     final Query query = getSession().getNamedQuery("getUsersByRole");
-    query.setCacheable(true);
+
     query.setString("roleUUID", roleUUID);
     final List<UserImpl> results = query.list();
     if (results != null) {
@@ -4040,10 +4288,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<GroupImpl> getGroups(int fromIndex, int numberOfGroups) {
+  public List<GroupImpl> getGroups(final int fromIndex, final int numberOfGroups) {
     final Query query = getSession().getNamedQuery("getAllGroups");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfGroups);
     final List<GroupImpl> results = query.list();
@@ -4054,9 +4303,9 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<GroupImpl> getGroups(int fromIndex, int numberOfGroups,
-      GroupCriterion pagingCriterion) {
+  public List<GroupImpl> getGroups(final int fromIndex, final int numberOfGroups, final GroupCriterion pagingCriterion) {
     Query query = null;
     switch (pagingCriterion) {
       case NAME_ASC:
@@ -4080,7 +4329,6 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfGroups);
     final List<GroupImpl> results = query.list();
@@ -4091,42 +4339,48 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   public int getNumberOfGroups() {
     final Query query = getSession().getNamedQuery("getNumberOfGroups");
-    query.setCacheable(true);
+
     return ((Long) query.uniqueResult()).intValue();
   }
 
+  @Override
   public int getNumberOfRoles() {
     final Query query = getSession().getNamedQuery("getNumberOfRoles");
-    query.setCacheable(true);
+
     return ((Long) query.uniqueResult()).intValue();
   }
 
+  @Override
   public int getNumberOfUsers() {
     final Query query = getSession().getNamedQuery("getNumberOfUsers");
-    query.setCacheable(true);
+
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfUsersByGroup(String groupUUID) {
+  @Override
+  public int getNumberOfUsersByGroup(final String groupUUID) {
     final Query query = getSession().getNamedQuery("getNumberOfUsersByGroup");
-    query.setCacheable(true);
+
     query.setString("groupUUID", groupUUID);
     return ((Long) query.uniqueResult()).intValue();
   }
 
-  public int getNumberOfUsersByRole(String roleUUID) {
+  @Override
+  public int getNumberOfUsersByRole(final String roleUUID) {
     final Query query = getSession().getNamedQuery("getNumberOfUsersByRole");
-    query.setCacheable(true);
+
     query.setString("roleUUID", roleUUID);
     return ((Long) query.uniqueResult()).intValue();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<RoleImpl> getRoles(int fromIndex, int numberOfRoles) {
+  public List<RoleImpl> getRoles(final int fromIndex, final int numberOfRoles) {
     final Query query = getSession().getNamedQuery("getAllRoles");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfRoles);
     final List<RoleImpl> results = query.list();
@@ -4137,9 +4391,9 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<RoleImpl> getRoles(int fromIndex, int numberOfRoles,
-      RoleCriterion pagingCriterion) {
+  public List<RoleImpl> getRoles(final int fromIndex, final int numberOfRoles, final RoleCriterion pagingCriterion) {
     Query query = null;
     switch (pagingCriterion) {
       case NAME_ASC:
@@ -4163,7 +4417,6 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfRoles);
     final List<RoleImpl> results = query.list();
@@ -4174,10 +4427,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<UserImpl> getUsers(int fromIndex, int numberOfUsers) {
+  public List<UserImpl> getUsers(final int fromIndex, final int numberOfUsers) {
     final Query query = getSession().getNamedQuery("getAllUsers");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfUsers);
     final List<UserImpl> results = query.list();
@@ -4188,10 +4442,10 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<UserImpl> getUsers(int fromIndex, int numberOfUsers,
-      UserCriterion pagingCriterion) {
-    Query query = null; 
+  public List<UserImpl> getUsers(final int fromIndex, final int numberOfUsers, final UserCriterion pagingCriterion) {
+    Query query = null;
     switch (pagingCriterion) {
       case FIRST_NAME_ASC:
         query = getSession().getNamedQuery("getAllUsersOderByFirstNameAsc");
@@ -4215,7 +4469,7 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         query = getSession().getNamedQuery("getAllUsers");
         break;
     }
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfUsers);
     final List<UserImpl> results = query.list();
@@ -4226,10 +4480,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<UserImpl> getUsersByGroup(String groupUUID, int fromIndex, int numberOfUsers) {
+  public List<UserImpl> getUsersByGroup(final String groupUUID, final int fromIndex, final int numberOfUsers) {
     final Query query = getSession().getNamedQuery("getUsersByGroup");
-    query.setCacheable(true);
+
     query.setString("groupUUID", groupUUID);
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfUsers);
@@ -4241,10 +4496,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<UserImpl> getUsersByGroup(String groupUUID, int fromIndex,
-      int numberOfUsers, UserCriterion pagingCriterion) {
-    Query query = null; 
+  public List<UserImpl> getUsersByGroup(final String groupUUID, final int fromIndex, final int numberOfUsers,
+      final UserCriterion pagingCriterion) {
+    Query query = null;
     switch (pagingCriterion) {
       case FIRST_NAME_ASC:
         query = getSession().getNamedQuery("getUsersByGroupOrderByFirstNameAsc");
@@ -4269,7 +4525,6 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setString("groupUUID", groupUUID);
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfUsers);
@@ -4281,10 +4536,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<UserImpl> getUsersByRole(String roleUUID, int fromIndex, int numberOfUsers) {
+  public List<UserImpl> getUsersByRole(final String roleUUID, final int fromIndex, final int numberOfUsers) {
     final Query query = getSession().getNamedQuery("getUsersByRole");
-    query.setCacheable(true);
+
     query.setString("roleUUID", roleUUID);
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfUsers);
@@ -4296,10 +4552,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<UserImpl> getUsersByRole(String roleUUID, int fromIndex,
-      int numberOfUsers, UserCriterion pagingCriterion) {
-    Query query = null; 
+  public List<UserImpl> getUsersByRole(final String roleUUID, final int fromIndex, final int numberOfUsers,
+      final UserCriterion pagingCriterion) {
+    Query query = null;
     switch (pagingCriterion) {
       case FIRST_NAME_ASC:
         query = getSession().getNamedQuery("getUsersByRoleOrderByFirstNameAsc");
@@ -4324,7 +4581,6 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setString("roleUUID", roleUUID);
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfUsers);
@@ -4336,10 +4592,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<UserImpl> getUsersByManager(String managerUUID) {
+  public List<UserImpl> getUsersByManager(final String managerUUID) {
     final Query query = getSession().getNamedQuery("getUsersByManager");
-    query.setCacheable(true);
+
     query.setString("managerUUID", managerUUID);
     final List<UserImpl> results = query.list();
     if (results != null) {
@@ -4349,10 +4606,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<UserImpl> getUsersByDelegee(String delegeeUUID) {
+  public List<UserImpl> getUsersByDelegee(final String delegeeUUID) {
     final Query query = getSession().getNamedQuery("getUsersByDelegee");
-    query.setCacheable(true);
+
     query.setString("delegeeUUID", delegeeUUID);
     final List<UserImpl> results = query.list();
     if (results != null) {
@@ -4362,10 +4620,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<ProfileMetadataImpl> getProfileMetadata(int fromIndex, int numberOfMetadata) {
+  public List<ProfileMetadataImpl> getProfileMetadata(final int fromIndex, final int numberOfMetadata) {
     final Query query = getSession().getNamedQuery("getProfileMetadata");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfMetadata);
     final List<ProfileMetadataImpl> results = query.list();
@@ -4376,16 +4635,18 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   public int getNumberOfProfileMetadata() {
     final Query query = getSession().getNamedQuery("getNumberOfProfileMetadata");
-    query.setCacheable(true);
+
     return ((Long) query.uniqueResult()).intValue();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<GroupImpl> getGroupChildren(String parentGroupUUID, int fromIndex, int numberOfGroups) {
+  public List<GroupImpl> getGroupChildren(final String parentGroupUUID, final int fromIndex, final int numberOfGroups) {
     final Query query = getSession().getNamedQuery("getGroupChildren");
-    query.setCacheable(true);
+
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfGroups);
     query.setString("parentGroupUUID", parentGroupUUID);
@@ -4397,9 +4658,10 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<GroupImpl> getGroupChildren(String parentGroupUUID,
-      int fromIndex, int numberOfGroups, GroupCriterion pagingCriterion) {
+  public List<GroupImpl> getGroupChildren(final String parentGroupUUID, final int fromIndex, final int numberOfGroups,
+      final GroupCriterion pagingCriterion) {
     Query query = null;
     switch (pagingCriterion) {
       case NAME_ASC:
@@ -4423,7 +4685,6 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
         break;
     }
 
-    query.setCacheable(true);
     query.setFirstResult(fromIndex);
     query.setMaxResults(numberOfGroups);
     query.setString("parentGroupUUID", parentGroupUUID);
@@ -4435,17 +4696,19 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  public int getNumberOfGroupChildren(String parentGroupUUID) {
+  @Override
+  public int getNumberOfGroupChildren(final String parentGroupUUID) {
     final Query query = getSession().getNamedQuery("getNumberOfGroupChildren");
-    query.setCacheable(true);
+
     query.setString("parentGroupUUID", parentGroupUUID);
     return ((Long) query.uniqueResult()).intValue();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<GroupImpl> getGroups(Collection<String> groupUUIDs) {
+  public List<GroupImpl> getGroups(final Collection<String> groupUUIDs) {
     final Query query = getSession().getNamedQuery("getGroups");
-    query.setCacheable(true);
+
     query.setParameterList("groupUUIDs", groupUUIDs);
     final List<GroupImpl> results = query.list();
     if (results != null) {
@@ -4455,10 +4718,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<MembershipImpl> getMemberships(Collection<String> membershipUUIDs) {
+  public List<MembershipImpl> getMemberships(final Collection<String> membershipUUIDs) {
     final Query query = getSession().getNamedQuery("getMemberships");
-    query.setCacheable(true);
+
     query.setParameterList("membershipUUIDs", membershipUUIDs);
     final List<MembershipImpl> results = query.list();
     if (results != null) {
@@ -4468,10 +4732,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<RoleImpl> getRoles(Collection<String> roleUUIDs) {
+  public List<RoleImpl> getRoles(final Collection<String> roleUUIDs) {
     final Query query = getSession().getNamedQuery("getRoles");
-    query.setCacheable(true);
+
     query.setParameterList("roleUUIDs", roleUUIDs);
     final List<RoleImpl> results = query.list();
     if (results != null) {
@@ -4481,10 +4746,11 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<UserImpl> getUsers(Collection<String> userUUIDs) {
+  public List<UserImpl> getUsers(final Collection<String> userUUIDs) {
     final Query query = getSession().getNamedQuery("getUsers");
-    query.setCacheable(true);
+
     query.setParameterList("userUUIDs", userUUIDs);
     final List<UserImpl> results = query.list();
     if (results != null) {
@@ -4494,12 +4760,13 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public Set<ActivityDefinitionUUID> getProcessTaskUUIDs(ProcessDefinitionUUID definitionUUID) {
+  public Set<ActivityDefinitionUUID> getProcessTaskUUIDs(final ProcessDefinitionUUID definitionUUID) {
     final Query query = getSession().getNamedQuery("getProcessTaskUUIDs");
-    query.setCacheable(true);
+
     query.setString("uuid", definitionUUID.getValue());
-    Set<ActivityDefinitionUUID> activityUUIDs = new HashSet<ActivityDefinitionUUID>();
+    final Set<ActivityDefinitionUUID> activityUUIDs = new HashSet<ActivityDefinitionUUID>();
     final List<ActivityDefinitionUUID> uuids = query.list();
     if (uuids != null) {
       activityUUIDs.addAll(uuids);
@@ -4507,11 +4774,12 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return activityUUIDs;
   }
 
-  public boolean processExists(ProcessDefinitionUUID definitionUUID) {
+  @Override
+  public boolean processExists(final ProcessDefinitionUUID definitionUUID) {
     final Query query = getSession().getNamedQuery("processExists");
-    query.setCacheable(true);
+
     query.setString("uuid", definitionUUID.getValue());
-    Long uuid = (Long) query.uniqueResult();
+    final Long uuid = (Long) query.uniqueResult();
     boolean exists = true;
     if (uuid != 1) {
       exists = false;
@@ -4519,98 +4787,104 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return exists;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getProcessInstancesDuration(Date since, Date until) {
+  public List<Long> getProcessInstancesDuration(final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getProcessInstancesDuration");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
-    List<Long> durations = query.list();
+    final List<Long> durations = query.list();
     if (durations != null) {
       return durations;
     } else {
       return Collections.emptyList();
-    }    
+    }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getProcessInstancesDuration(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  public List<Long> getProcessInstancesDuration(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     final Query query = getSession().getNamedQuery("getProcessInstancesDurationFromDefinitionUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("processUUID", processUUID.getValue());
-    List<Long> durations = query.list();
+    final List<Long> durations = query.list();
     if (durations != null) {
       return durations;
     } else {
       return Collections.emptyList();
-    }  
+    }
   }
 
-  public List<Long> getProcessInstancesDurationFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getProcessInstancesDurationFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getProcessInstancesDurationFromDefinitionUUIDs");
-    query.setCacheable(true);
-    query.setLong("since", since.getTime());
-    query.setLong("until", until.getTime());    
-    Set<String> uuids = new HashSet<String>();    
-    for (ProcessDefinitionUUID uuid : processUUIDs) {
-      uuids.add(uuid.toString());
-    }    
 
-    List<Long> durations = executeSplittedQueryList(Long.class, query, "processUUIDs", uuids);  
+    query.setLong("since", since.getTime());
+    query.setLong("until", until.getTime());
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : processUUIDs) {
+      uuids.add(uuid.toString());
+    }
+
+    final List<Long> durations = executeSplittedQueryList(Long.class, query, "processUUIDs", uuids);
     if (durations != null) {
       Collections.sort(durations);
       return durations;
     } else {
       return Collections.emptyList();
-    }  
+    }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getActivityInstancesExecutionTime(Date since, Date until) {
+  public List<Long> getActivityInstancesExecutionTime(final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getActivityInstancesExecutionTime");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
-    List<Long> executionTimes = query.list();
+    final List<Long> executionTimes = query.list();
     if (executionTimes != null) {
       return executionTimes;
     } else {
       return Collections.emptyList();
-    }  
+    }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getActivityInstancesExecutionTime(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  public List<Long> getActivityInstancesExecutionTime(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     final Query query = getSession().getNamedQuery("getActivityInstancesExecutionTimeFromProcessDefinitionUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("processUUID", processUUID.getValue());
-    List<Long> executionTimes = query.list();
+    final List<Long> executionTimes = query.list();
     if (executionTimes != null) {
       return executionTimes;
     } else {
       return Collections.emptyList();
-    } 
+    }
   }
 
-  public List<Long> getActivityInstancesExecutionTimeFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesExecutionTimeFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getActivityInstancesExecutionTimeFromProcessDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
-    Set<String> uuids = new HashSet<String>();    
-    for (ProcessDefinitionUUID uuid : processUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : processUUIDs) {
       uuids.add(uuid.toString());
-    }    
+    }
 
-    List<Long> executionTimes = executeSplittedQueryList(Long.class, query, "processUUIDs", uuids);  
+    final List<Long> executionTimes = executeSplittedQueryList(Long.class, query, "processUUIDs", uuids);
     if (executionTimes != null) {
       Collections.sort(executionTimes);
       return executionTimes;
@@ -4619,34 +4893,36 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getActivityInstancesExecutionTime(
-      ActivityDefinitionUUID activityUUID, Date since, Date until) {
+  public List<Long> getActivityInstancesExecutionTime(final ActivityDefinitionUUID activityUUID, final Date since,
+      final Date until) {
     final Query query = getSession().getNamedQuery("getActivityInstancesExecutionTimeFromActivityDefinitionUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("activityUUID", activityUUID.getValue());
-    List<Long> executionTimes = query.list();
+    final List<Long> executionTimes = query.list();
     if (executionTimes != null) {
       return executionTimes;
     } else {
       return Collections.emptyList();
-    } 
+    }
   }
 
-  public List<Long> getActivityInstancesExecutionTimeFromActivityUUIDs(
-      Set<ActivityDefinitionUUID> activityUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesExecutionTimeFromActivityUUIDs(final Set<ActivityDefinitionUUID> activityUUIDs,
+      final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getActivityInstancesExecutionTimeFromActivityDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
-    Set<String> uuids = new HashSet<String>();    
-    for (ActivityDefinitionUUID uuid : activityUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ActivityDefinitionUUID uuid : activityUUIDs) {
       uuids.add(uuid.toString());
-    }    
+    }
 
-    List<Long> executionTimes = executeSplittedQueryList(Long.class, query, "activityUUIDs", uuids);  
+    final List<Long> executionTimes = executeSplittedQueryList(Long.class, query, "activityUUIDs", uuids);
     if (executionTimes != null) {
       Collections.sort(executionTimes);
       return executionTimes;
@@ -4655,49 +4931,52 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getTaskInstancesWaitingTime(Date since, Date until) {
+  public List<Long> getTaskInstancesWaitingTime(final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getTaskInstancesWaitingTime");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
-    List<Long> waitingTimes = query.list();
+    final List<Long> waitingTimes = query.list();
     if (waitingTimes != null) {
       return waitingTimes;
     } else {
       return Collections.emptyList();
-    }  
+    }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getTaskInstancesWaitingTime(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  public List<Long> getTaskInstancesWaitingTime(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     final Query query = getSession().getNamedQuery("getTaskInstancesWaitingTimeFromProcessDefinitionUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("processUUID", processUUID.getValue());
-    List<Long> waitingTimes = query.list();
+    final List<Long> waitingTimes = query.list();
     if (waitingTimes != null) {
       return waitingTimes;
     } else {
       return Collections.emptyList();
-    } 
+    }
   }
 
-  public List<Long> getTaskInstancesWaitingTimeFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getTaskInstancesWaitingTimeFromProcessDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
-    Set<String> uuids = new HashSet<String>();    
+    final Set<String> uuids = new HashSet<String>();
 
-    for (ProcessDefinitionUUID uuid : processUUIDs) {
+    for (final ProcessDefinitionUUID uuid : processUUIDs) {
       uuids.add(uuid.toString());
-    }    
+    }
 
-    List<Long> waitingTimes = executeSplittedQueryList(Long.class, query, "processUUIDs", uuids);  
+    final List<Long> waitingTimes = executeSplittedQueryList(Long.class, query, "processUUIDs", uuids);
     if (waitingTimes != null) {
       Collections.sort(waitingTimes);
       return waitingTimes;
@@ -4706,35 +4985,37 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getTaskInstancesWaitingTime(
-      ActivityDefinitionUUID taskUUID, Date since, Date until) {
+  public List<Long> getTaskInstancesWaitingTime(final ActivityDefinitionUUID taskUUID, final Date since,
+      final Date until) {
     final Query query = getSession().getNamedQuery("getTaskInstancesWaitingTimeFromActivityDefinitionUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("activityUUID", taskUUID.getValue());
-    List<Long> waitingTimes = query.list();
+    final List<Long> waitingTimes = query.list();
     if (waitingTimes != null) {
       return waitingTimes;
     } else {
       return Collections.emptyList();
-    } 
+    }
   }
 
-  public List<Long> getTaskInstancesWaitingTimeFromTasksUUIDs(
-      Set<ActivityDefinitionUUID> tasksUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeFromTasksUUIDs(final Set<ActivityDefinitionUUID> tasksUUIDs,
+      final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getTaskInstancesWaitingTimeFromActivityDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
 
-    final Set<String> uuids = new HashSet<String>();    
-    for (ActivityDefinitionUUID uuid : tasksUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ActivityDefinitionUUID uuid : tasksUUIDs) {
       uuids.add(uuid.toString());
-    }    
+    }
 
-    List<Long> waitingTimes = executeSplittedQueryList(Long.class, query, "activityUUIDs", uuids);  
+    final List<Long> waitingTimes = executeSplittedQueryList(Long.class, query, "activityUUIDs", uuids);
     if (waitingTimes != null) {
       Collections.sort(waitingTimes);
       return waitingTimes;
@@ -4743,54 +5024,55 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getTaskInstancesWaitingTimeOfUser(String username,
-      Date since, Date until) {
+  public List<Long> getTaskInstancesWaitingTimeOfUser(final String username, final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getTaskInstancesWaitingTimeOfUser");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("userId", username);
-    List<Long> waitingTimes = query.list();
+    final List<Long> waitingTimes = query.list();
     if (waitingTimes != null) {
       return waitingTimes;
     } else {
       return Collections.emptyList();
-    } 
+    }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getTaskInstancesWaitingTimeOfUser(String username,
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  public List<Long> getTaskInstancesWaitingTimeOfUser(final String username, final ProcessDefinitionUUID processUUID,
+      final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getTaskInstancesWaitingTimeOfUserFromProcessDefinitionUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("processUUID", processUUID.getValue());
     query.setString("userId", username);
-    List<Long> waitingTimes = query.list();
+    final List<Long> waitingTimes = query.list();
     if (waitingTimes != null) {
       return waitingTimes;
     } else {
       return Collections.emptyList();
-    } 
+    }
   }
 
-  public List<Long> getTaskInstancesWaitingTimeOfUserFromProcessUUIDs(
-      String username, Set<ProcessDefinitionUUID> processUUIDs, Date since,
-      Date until) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeOfUserFromProcessUUIDs(final String username,
+      final Set<ProcessDefinitionUUID> processUUIDs, final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getTaskInstancesWaitingTimeOfUserFromProcessDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("userId", username);
 
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : processUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : processUUIDs) {
       uuids.add(uuid.toString());
-    }    
+    }
 
-    List<Long> waitingTimes = executeSplittedQueryList(Long.class, query, "processUUIDs", uuids);  
+    final List<Long> waitingTimes = executeSplittedQueryList(Long.class, query, "processUUIDs", uuids);
     if (waitingTimes != null) {
       Collections.sort(waitingTimes);
       return waitingTimes;
@@ -4799,38 +5081,39 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getTaskInstancesWaitingTimeOfUser(String username,
-      ActivityDefinitionUUID taskUUID, Date since, Date until) {
+  public List<Long> getTaskInstancesWaitingTimeOfUser(final String username, final ActivityDefinitionUUID taskUUID,
+      final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getTaskInstancesWaitingTimeOfUserFromActivityDefinitionUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("activityUUID", taskUUID.getValue());
     query.setString("userId", username);
-    List<Long> waitingTimes = query.list();
+    final List<Long> waitingTimes = query.list();
     if (waitingTimes != null) {
       return waitingTimes;
     } else {
       return Collections.emptyList();
-    } 
+    }
   }
 
-  public List<Long> getTaskInstancesWaitingTimeOfUserFromTaskUUIDs(
-      String username, Set<ActivityDefinitionUUID> taskUUIDs, Date since,
-      Date until) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeOfUserFromTaskUUIDs(final String username,
+      final Set<ActivityDefinitionUUID> taskUUIDs, final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getTaskInstancesWaitingTimeOfUserFromActivityDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("userId", username);
 
-    Set<String> uuids = new HashSet<String>();
-    for (ActivityDefinitionUUID uuid : taskUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ActivityDefinitionUUID uuid : taskUUIDs) {
       uuids.add(uuid.toString());
-    }    
+    }
 
-    List<Long> waitingTimes = executeSplittedQueryList(Long.class, query, "activityUUIDs", uuids);  
+    final List<Long> waitingTimes = executeSplittedQueryList(Long.class, query, "activityUUIDs", uuids);
     if (waitingTimes != null) {
       Collections.sort(waitingTimes);
       return waitingTimes;
@@ -4839,49 +5122,52 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getActivityInstancesDuration(Date since, Date until) {
+  public List<Long> getActivityInstancesDuration(final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getActivityInstancesDuration");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
-    List<Long> duration = query.list();
+    final List<Long> duration = query.list();
     if (duration != null) {
       return duration;
     } else {
       return Collections.emptyList();
-    } 
+    }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getActivityInstancesDuration(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  public List<Long> getActivityInstancesDuration(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     final Query query = getSession().getNamedQuery("getActivityInstancesDurationFromProcessDefinitionUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("processUUID", processUUID.getValue());
-    List<Long> duration = query.list();
+    final List<Long> duration = query.list();
     if (duration != null) {
       return duration;
     } else {
       return Collections.emptyList();
-    } 
+    }
   }
 
-  public List<Long> getActivityInstancesDurationFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesDurationFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getActivityInstancesDurationFromProcessDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
-    query.setLong("until", until.getTime());    
+    query.setLong("until", until.getTime());
 
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : processUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : processUUIDs) {
       uuids.add(uuid.toString());
-    }    
+    }
 
-    List<Long> durations = executeSplittedQueryList(Long.class, query, "processUUIDs", uuids);  
+    final List<Long> durations = executeSplittedQueryList(Long.class, query, "processUUIDs", uuids);
     if (durations != null) {
       Collections.sort(durations);
       return durations;
@@ -4890,35 +5176,37 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public List<Long> getActivityInstancesDuration(
-      ActivityDefinitionUUID activityUUID, Date since, Date until) {
+  public List<Long> getActivityInstancesDuration(final ActivityDefinitionUUID activityUUID, final Date since,
+      final Date until) {
     final Query query = getSession().getNamedQuery("getActivityInstancesDurationFromActivityDefinitionUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("activityUUID", activityUUID.getValue());
-    List<Long> durations = query.list();
+    final List<Long> durations = query.list();
     if (durations != null) {
       return durations;
     } else {
       return Collections.emptyList();
-    } 
+    }
   }
 
-  public List<Long> getActivityInstancesDurationFromActivityUUIDs(
-      Set<ActivityDefinitionUUID> activityUUIDs, Date since, Date until) {
+  @Override
+  public List<Long> getActivityInstancesDurationFromActivityUUIDs(final Set<ActivityDefinitionUUID> activityUUIDs,
+      final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getActivityInstancesDurationFromActivityDefinitionUUIDs");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
-    query.setLong("until", until.getTime());    
+    query.setLong("until", until.getTime());
 
-    Set<String> uuids = new HashSet<String>();
-    for (ActivityDefinitionUUID uuid : activityUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ActivityDefinitionUUID uuid : activityUUIDs) {
       uuids.add(uuid.toString());
-    }    
+    }
 
-    List<Long> durations = executeSplittedQueryList(Long.class, query, "activityUUIDs", uuids);  
+    final List<Long> durations = executeSplittedQueryList(Long.class, query, "activityUUIDs", uuids);
     if (durations != null) {
       Collections.sort(durations);
       return durations;
@@ -4927,56 +5215,61 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public List<Long> getActivityInstancesDurationByActivityType(
-      org.ow2.bonita.facade.def.majorElement.ActivityDefinition.Type activityType,
-      Date since, Date until) {
+      final org.ow2.bonita.facade.def.majorElement.ActivityDefinition.Type activityType, final Date since,
+      final Date until) {
     final Query query = getSession().getNamedQuery("getActivityInstancesDurationByActivityType");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("activityType", activityType.toString());
-    List<Long> durations = query.list();
+    final List<Long> durations = query.list();
     if (durations != null) {
       return durations;
     } else {
       return Collections.emptyList();
-    } 
+    }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public List<Long> getActivityInstancesDurationByActivityType(
-      org.ow2.bonita.facade.def.majorElement.ActivityDefinition.Type activityType,
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
-    final Query query = getSession().getNamedQuery("getActivityInstancesDurationByActivityTypeFromProcessDefinitionUUID");
-    query.setCacheable(true);
+      final org.ow2.bonita.facade.def.majorElement.ActivityDefinition.Type activityType,
+      final ProcessDefinitionUUID processUUID, final Date since, final Date until) {
+    final Query query = getSession().getNamedQuery(
+        "getActivityInstancesDurationByActivityTypeFromProcessDefinitionUUID");
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("activityType", activityType.toString());
     query.setString("processUUID", processUUID.getValue());
-    List<Long> durations = query.list();
+    final List<Long> durations = query.list();
     if (durations != null) {
       return durations;
     } else {
       return Collections.emptyList();
-    } 
+    }
   }
 
+  @Override
   public List<Long> getActivityInstancesDurationByActivityTypeFromProcessUUIDs(
-      org.ow2.bonita.facade.def.majorElement.ActivityDefinition.Type activityType,
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
-    final Query query = getSession().getNamedQuery("getActivityInstancesDurationByActivityTypeFromProcessDefinitionUUIDs");
-    query.setCacheable(true);
+      final org.ow2.bonita.facade.def.majorElement.ActivityDefinition.Type activityType,
+      final Set<ProcessDefinitionUUID> processUUIDs, final Date since, final Date until) {
+    final Query query = getSession().getNamedQuery(
+        "getActivityInstancesDurationByActivityTypeFromProcessDefinitionUUIDs");
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("activityType", activityType.toString());
 
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : processUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : processUUIDs) {
       uuids.add(uuid.toString());
-    }    
+    }
 
-    List<Long> durations = executeSplittedQueryList(Long.class, query, "processUUIDs", uuids);  
+    final List<Long> durations = executeSplittedQueryList(Long.class, query, "processUUIDs", uuids);
     if (durations != null) {
       Collections.sort(durations);
       return durations;
@@ -4985,134 +5278,146 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     }
   }
 
-  public long getNumberOfCreatedProcessInstances(Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedProcessInstances(final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getNumberOfCreatedProcessInstances");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
-    return ((Long) query.uniqueResult());
+    return (Long) query.uniqueResult();
   }
 
-  public long getNumberOfCreatedProcessInstances(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedProcessInstances(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     final Query query = getSession().getNamedQuery("getNumberOfCreatedProcessInstancesFromProcessUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("processUUID", processUUID.getValue());
-    return ((Long) query.uniqueResult());
+    return (Long) query.uniqueResult();
   }
 
-  public long getNumberOfCreatedActivityInstances(Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstances(final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getNumberOfCreatedActivityInstances");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
-    return ((Long) query.uniqueResult());
+    return (Long) query.uniqueResult();
   }
 
-  public long getNumberOfCreatedActivityInstances(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstances(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     final Query query = getSession().getNamedQuery("getNumberOfCreatedActivityInstancesFromProcessUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("processUUID", processUUID.getValue());
-    return ((Long) query.uniqueResult());
+    return (Long) query.uniqueResult();
   }
 
-  public long getNumberOfCreatedActivityInstancesFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstancesFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getNumberOfCreatedActivityInstancesFromProcessUUIDs");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : processUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : processUUIDs) {
       uuids.add(uuid.getValue());
     }
     query.setParameterList("processUUIDs", uuids);
-    return ((Long) query.uniqueResult());
+    return (Long) query.uniqueResult();
   }
 
-  public long getNumberOfCreatedActivityInstances(
-      ActivityDefinitionUUID activityUUID, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstances(final ActivityDefinitionUUID activityUUID, final Date since,
+      final Date until) {
     final Query query = getSession().getNamedQuery("getNumberOfCreatedActivityInstancesFromActivityDefUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("activityUUID", activityUUID.getValue());
-    return ((Long) query.uniqueResult());
+    return (Long) query.uniqueResult();
   }
 
-  public long getNumberOfCreatedActivityInstancesFromActivityUUIDs(
-      Set<ActivityDefinitionUUID> activityUUIDs, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstancesFromActivityUUIDs(final Set<ActivityDefinitionUUID> activityUUIDs,
+      final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getNumberOfCreatedActivityInstancesFromActivityDefUUIDs");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
-    Set<String> uuids = new HashSet<String>();
-    for (ActivityDefinitionUUID uuid : activityUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ActivityDefinitionUUID uuid : activityUUIDs) {
       uuids.add(uuid.getValue());
     }
     query.setParameterList("activityUUIDs", uuids);
-    return ((Long) query.uniqueResult());
+    return (Long) query.uniqueResult();
   }
 
+  @Override
   public long getNumberOfCreatedActivityInstancesByActivityType(
-      org.ow2.bonita.facade.def.majorElement.ActivityDefinition.Type activityType,
-      Date since, Date until) {
+      final org.ow2.bonita.facade.def.majorElement.ActivityDefinition.Type activityType, final Date since,
+      final Date until) {
     final Query query = getSession().getNamedQuery("getNumberOfCreatedActivityInstancesByActivityType");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("activityType", activityType.toString());
-    return ((Long) query.uniqueResult());
+    return (Long) query.uniqueResult();
   }
 
+  @Override
   public long getNumberOfCreatedActivityInstancesByActivityType(
-      org.ow2.bonita.facade.def.majorElement.ActivityDefinition.Type activityType,
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+      final org.ow2.bonita.facade.def.majorElement.ActivityDefinition.Type activityType,
+      final ProcessDefinitionUUID processUUID, final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getNumberOfCreatedActivityInstancesByActivityTypeFromProcessUUID");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("activityType", activityType.toString());
     query.setString("processUUID", processUUID.getValue());
-    return ((Long) query.uniqueResult());
+    return (Long) query.uniqueResult();
   }
 
+  @Override
   public long getNumberOfCreatedActivityInstancesByActivityTypeFromProcessUUIDs(
-      org.ow2.bonita.facade.def.majorElement.ActivityDefinition.Type activityType,
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
+      final org.ow2.bonita.facade.def.majorElement.ActivityDefinition.Type activityType,
+      final Set<ProcessDefinitionUUID> processUUIDs, final Date since, final Date until) {
     final Query query = getSession().getNamedQuery("getNumberOfCreatedActivityInstancesByActivityTypeFromProcessUUIDs");
-    query.setCacheable(true);
+
     query.setLong("since", since.getTime());
     query.setLong("until", until.getTime());
     query.setString("activityType", activityType.toString());
-    Set<String> uuids = new HashSet<String>();
-    for (ProcessDefinitionUUID uuid : processUUIDs) {
+    final Set<String> uuids = new HashSet<String>();
+    for (final ProcessDefinitionUUID uuid : processUUIDs) {
       uuids.add(uuid.getValue());
     }
     query.setParameterList("processUUIDs", uuids);
-    return ((Long) query.uniqueResult());
+    return (Long) query.uniqueResult();
   }
 
-  public boolean containsOtherActiveActivities(ProcessInstanceUUID instanceUUID, ActivityInstanceUUID activityUUID) {
+  @Override
+  public boolean containsOtherActiveActivities(final ProcessInstanceUUID instanceUUID,
+      final ActivityInstanceUUID activityUUID) {
     final Query query = getSession().getNamedQuery("getNumberOfOtherActiveActivities");
-    query.setCacheable(true);
+
     query.setString("instanceUUID", instanceUUID.getValue());
     String actUUID = "null";
     if (activityUUID != null) {
       actUUID = activityUUID.getValue();
     }
     query.setString("activityUUID", actUUID);
-    Collection<ActivityState> taskStates = new ArrayList<ActivityState>();
+    final Collection<ActivityState> taskStates = new ArrayList<ActivityState>();
     taskStates.add(ActivityState.READY);
     taskStates.add(ActivityState.EXECUTING);
     taskStates.add(ActivityState.FAILED);
-    query.setParameterList("states", taskStates, activityStateUserType);
-    Long count = (Long) query.uniqueResult();
+    query.setParameterList("states", taskStates, ACTIVITY_STATE_USER_TYPE);
+    final Long count = (Long) query.uniqueResult();
     boolean contains = true;
     if (count == 0) {
       contains = false;
@@ -5120,6 +5425,7 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return contains;
   }
 
+  @Override
   public IncomingEventInstance getSignalStartIncomingEvent(final List<String> processNames, final String signalCode) {
     final Query query = getSession().getNamedQuery("getSignalStartIncomingEvent");
     query.setParameterList("processNames", processNames);
@@ -5127,6 +5433,7 @@ public class DbSessionImpl extends HibernateDbSession implements QuerierDbSessio
     return (IncomingEventInstance) query.uniqueResult();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public List<IncomingEventInstance> getMessageStartIncomingEvents(final Set<String> processNames) {
     final Query query = getSession().getNamedQuery("getMessageStartIncomingEvents");

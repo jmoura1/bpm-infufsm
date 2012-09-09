@@ -106,8 +106,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- * @author Marc Blachon, Guillaume Porcher, Charles Souillard, Miguel Valdes,
- *         Pierre Vigneras
+ * @author Marc Blachon, Guillaume Porcher, Charles Souillard, Miguel Valdes, Pierre Vigneras
  */
 public final class Misc {
 
@@ -154,29 +153,30 @@ public final class Misc {
   public static boolean isOnWindows() {
     return System.getProperty("os.name").contains("Windows");
   }
-  public static <T> List<T> subList(Class<T> clazz, List< T > list, int fromIndex, int toIndex) {
+
+  public static <T> List<T> subList(final Class<T> clazz, final List<T> list, final int fromIndex, final int toIndex) {
     if (list == null || list.isEmpty()) {
       return Collections.emptyList();
     }
-    
+
     int validToIndex = toIndex;
     if (toIndex > list.size()) {
       validToIndex = list.size();
-    }    
-    
-    if (fromIndex >= validToIndex) {
-    	return Collections.emptyList();
     }
-    
+
+    if (fromIndex >= validToIndex) {
+      return Collections.emptyList();
+    }
+
     return new ArrayList<T>(list.subList(fromIndex, validToIndex));
   }
 
-  public static boolean isSetter(String methodName) {
+  public static boolean isSetter(final String methodName) {
     return methodName.startsWith("set") && methodName.length() >= 4 && Character.isUpperCase(methodName.charAt(3));
   }
 
-  public static Document generateDocument(final String s)
-  throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+  public static Document generateDocument(final String s) throws ParserConfigurationException, SAXException,
+      IOException, XPathExpressionException {
     final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
     final InputStream contentStream = new ByteArrayInputStream(s.getBytes());
     Document doc = null;
@@ -190,18 +190,20 @@ public final class Misc {
     return doc;
   }
 
-  public static Date getDate(long time) {
+  public static Date getDate(final long time) {
     if (time == 0) {
       return null;
     }
     return new Date(time);
   }
-  public static long getTime(Date date) {
+
+  public static long getTime(final Date date) {
     if (date == null) {
       return 0;
     }
     return date.getTime();
   }
+
   public static List<Collection<Object>> splitCollection(final Collection<? extends Object> initial, final int size) {
     if (initial == null || initial.isEmpty()) {
       return Collections.emptyList();
@@ -226,7 +228,7 @@ public final class Misc {
 
   public static String getXPath(final String s) {
     if (s.contains(BonitaConstants.XPATH_VAR_SEPARATOR)) {
-      String[] segments = s.split("\\" + BonitaConstants.XPATH_VAR_SEPARATOR);
+      final String[] segments = s.split("\\" + BonitaConstants.XPATH_VAR_SEPARATOR);
       return segments[1];
     } else {
       return null;
@@ -235,75 +237,72 @@ public final class Misc {
 
   public static String getVariableName(final String s) {
     if (s.contains(BonitaConstants.XPATH_VAR_SEPARATOR)) {
-      String[] segments = s.split("\\" + BonitaConstants.XPATH_VAR_SEPARATOR);
+      final String[] segments = s.split("\\" + BonitaConstants.XPATH_VAR_SEPARATOR);
       return segments[0];
     } else if (s.contains(BonitaConstants.JAVA_VAR_SEPARATOR)) {
-      String[] segments = s.split(BonitaConstants.JAVA_VAR_SEPARATOR);
+      final String[] segments = s.split(BonitaConstants.JAVA_VAR_SEPARATOR);
       return segments[0];
     } else {
       return s;
     }
   }
 
-  public static boolean isXMLAppend(String s) {
-    String[] segments = s.split("\\" + BonitaConstants.XPATH_VAR_SEPARATOR);
+  public static boolean isXMLAppend(final String s) {
+    final String[] segments = s.split("\\" + BonitaConstants.XPATH_VAR_SEPARATOR);
     return segments.length >= 3 && segments[2].equals(BonitaConstants.XPATH_APPEND_FLAG);
   }
 
-  public static int getGroovyExpressionEndIndex(String expression) {
+  public static int getGroovyExpressionEndIndex(final String expression) {
     int open = 0;
-    char[] characters = expression.toCharArray();
+    final char[] characters = expression.toCharArray();
     for (int i = 1; i < characters.length; i++) {
       if (characters[i] == '{') {
         open++;
       } else if (characters[i] == '}') {
-        open --;
+        open--;
       }
       if (open == 0) {
-        return i+1;
+        return i + 1;
       }
     }
     return -1;
   }
 
-  public static boolean isJustAGroovyExpression(String expression) {
-    return expression.startsWith(START_DELIMITER)
-    && (getGroovyExpressionEndIndex(expression) == expression.length());
+  public static boolean isJustAGroovyExpression(final String expression) {
+    return expression.startsWith(START_DELIMITER) && getGroovyExpressionEndIndex(expression) == expression.length();
   }
 
-  public static boolean containsAGroovyExpression(String expression) {
-    int begin = expression.indexOf(START_DELIMITER);
+  public static boolean containsAGroovyExpression(final String expression) {
+    final int begin = expression.indexOf(START_DELIMITER);
     int end = -1;
     if (begin >= 0) {
       end = begin + getGroovyExpressionEndIndex(expression.substring(begin));
     }
-    return (begin < end);
+    return begin < end;
   }
 
   public static String getHostName() {
     try {
       return InetAddress.getLocalHost().getHostAddress();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return "unknown";
     }
   }
 
   public static Map<String, byte[]> getJarEntries(final JarInputStream jis, final String jarFile) {
-    Map<String, byte[]> jarEntries = new HashMap<String, byte[]>();
+    final Map<String, byte[]> jarEntries = new HashMap<String, byte[]>();
     JarEntry jarEntry = null;
     try {
       while ((jarEntry = jis.getNextJarEntry()) != null) {
-        String jarEntryName = jarEntry.getName(); 
+        String jarEntryName = jarEntry.getName();
         if (jarEntryName.startsWith("/")) {
           jarEntryName = jarEntryName.substring(1);
         }
         final byte[] content = Misc.getJarEntriesContent(jis);
         jarEntries.put(jarEntryName, content);
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new BonitaRuntimeException("Unable to load class: " + jarEntry.getName() + " from jar file: " + jarFile, e);
-    } finally {
-      
     }
     return jarEntries;
   }
@@ -328,7 +327,7 @@ public final class Misc {
     try {
       jis = new JarInputStream(new ByteArrayInputStream(jar));
       return getJarEntries(jis, jarFile);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new BonitaRuntimeException("Unable to load jar entries from jar file: " + jarFile, e);
     } finally {
       Misc.close(jis);
@@ -346,11 +345,11 @@ public final class Misc {
     return prefix + java.util.UUID.randomUUID();
   }
 
-  public static boolean isJavaIdentifier(String s) {
+  public static boolean isJavaIdentifier(final String s) {
     if (s.length() == 0 || !Character.isJavaIdentifierStart(s.charAt(0))) {
       return false;
     }
-    for (int i=1; i<s.length(); i++) {
+    for (int i = 1; i < s.length(); i++) {
       if (!Character.isJavaIdentifierPart(s.charAt(i))) {
         return false;
       }
@@ -358,13 +357,12 @@ public final class Misc {
     return true;
   }
 
-
-  public static String convertToJavaIdentifier(String name){
-    StringBuilder tmp = new StringBuilder();
+  public static String convertToJavaIdentifier(final String name) {
+    final StringBuilder tmp = new StringBuilder();
     char car;
-    int i=0;
-    if(name != null){
-      while(i < name.length()){
+    int i = 0;
+    if (name != null) {
+      while (i < name.length()) {
         car = name.charAt(i);
         if (i == 0 && Character.isJavaIdentifierStart(car)) {
           tmp.append(car);
@@ -383,8 +381,7 @@ public final class Misc {
   /**
    * Generates a human readable id prefixed by the given String.
    * 
-   * The generated identifier is unique only for the duration of the existence
-   * of this class.
+   * The generated identifier is unique only for the duration of the existence of this class.
    * 
    * @param prefix the string prefiy
    * @return a human readable id prefixed by <code>prefix</code>.
@@ -394,84 +391,84 @@ public final class Misc {
   }
 
   public static List<String> getBusinessArchiveCategories(final ProcessDefinitionUUID processUUID) {
-    List<String> categories = new ArrayList<String>();
+    final List<String> categories = new ArrayList<String>();
     categories.add("BusinessArchives");
     categories.add(Misc.convertToJavaIdentifier(processUUID.getValue()));
     return categories;
   }
 
   public static List<String> getGlobalClassDataCategories() {
-    List<String> categories = new ArrayList<String>();
+    final List<String> categories = new ArrayList<String>();
     categories.add("GlobalClasses");
     return categories;
   }
 
-  public static List<String> getAttachmentCategories(ProcessDefinitionUUID processUUID) {
-    List<String> categories = new ArrayList<String>();
+  public static List<String> getAttachmentCategories(final ProcessDefinitionUUID processUUID) {
+    final List<String> categories = new ArrayList<String>();
     categories.add("Attachments");
     categories.add(Misc.convertToJavaIdentifier(processUUID.getValue()));
     return categories;
   }
 
-  public static List<String> getAttachmentCategories(ProcessInstanceUUID instanceUUID) {
-    List<String> categories = new ArrayList<String>();
+  public static List<String> getAttachmentCategories(final ProcessInstanceUUID instanceUUID) {
+    final List<String> categories = new ArrayList<String>();
     categories.add("Attachments");
     categories.add(Misc.convertToJavaIdentifier(instanceUUID.getValue()));
     return categories;
   }
 
-  public static List<String> stringToList(String s, String separator) {
+  public static List<String> stringToList(final String s, final String separator) {
     if (s == null) {
       return Collections.emptyList();
     }
-    String[] array = s.split(separator);
-    List<String> result = new ArrayList<String>();
-    for (String st : array) {
+    final String[] array = s.split(separator);
+    final List<String> result = new ArrayList<String>();
+    for (final String st : array) {
       result.add(st);
     }
     return result;
   }
 
-  public static String listToString(List<String> list, String separator) {
+  public static String listToString(final List<String> list, final String separator) {
     if (list == null || list.isEmpty()) {
       return null;
     }
-    StringBuffer buf = new StringBuffer();
-    for (String s : list) {
+    final StringBuffer buf = new StringBuffer();
+    for (final String s : list) {
       buf.append(separator + s);
     }
     return buf.toString().substring(separator.length());
   }
 
-  public static Map<String, String> stringToMap(String s) {
+  public static Map<String, String> stringToMap(final String s) {
     if (s == null) {
       return Collections.emptyMap();
     }
-    String[] couples = s.split(";");
-    Map<String, String> result = new HashMap<String, String>();
-    for (String couple : couples) {
-      String[] st = couple.split(",");
+    final String[] couples = s.split(";");
+    final Map<String, String> result = new HashMap<String, String>();
+    for (final String couple : couples) {
+      final String[] st = couple.split(",");
       result.put(st[0], st[1]);
     }
     return result;
   }
 
-  public static String mapToString(Map<String, String> map) {
+  public static String mapToString(final Map<String, String> map) {
     if (map == null || map.isEmpty()) {
       return null;
     }
 
-    StringBuffer buf = new StringBuffer();
-    for (Map.Entry<String, String> entry : map.entrySet()) {
+    final StringBuffer buf = new StringBuffer();
+    for (final Map.Entry<String, String> entry : map.entrySet()) {
       buf.append(";" + entry.getKey() + "," + entry.getValue());
     }
     return buf.toString().substring(";".length());
   }
+
   /**
    * Generates a human readable id as a long.
    * 
-   * The generated identifier is unique only for the duration of the existence
-   * of this class.
+   * The generated identifier is unique only for the duration of the existence of this class.
    * 
    * @return a unique id as a long.
    */
@@ -489,12 +486,12 @@ public final class Misc {
    */
   public static int random(final int min, final int max) {
     if (min >= max) {
-      String message = ExceptionManager.getInstance().getFullMessage("buc_M_1", min, max);
+      final String message = ExceptionManager.getInstance().getFullMessage("buc_M_1", min, max);
       throw new IllegalArgumentException(message);
     }
     final int n = max - min;
     if (n < 0) {
-      String message = ExceptionManager.getInstance().getFullMessage("buc_M_2", min, max);
+      final String message = ExceptionManager.getInstance().getFullMessage("buc_M_2", min, max);
       throw new IllegalArgumentException(message);
     }
     return Misc.RANDOM.nextInt(max - min) + min;
@@ -510,7 +507,7 @@ public final class Misc {
     final char[] s = new char[size];
     int c = 'A';
     int r1 = 0;
-    Random r = new Random();
+    final Random r = new Random();
     for (int i = 0; i < size; i++) {
       r1 = r.nextInt(3);
       switch (r1) {
@@ -535,8 +532,7 @@ public final class Misc {
    * </p>
    * 
    * <p>
-   * This method returns a human readable string for delay such as the one used
-   * in benchmarks.
+   * This method returns a human readable string for delay such as the one used in benchmarks.
    * 
    * This method is thread safe.
    * </p>
@@ -556,13 +552,14 @@ public final class Misc {
 
     if (Math.abs(delay) >= Misc.DAY) {
       final long days = delay / Misc.DAY;
-      return days + " day" + ((days > 1) ? "s" : "");
+      return days + " day" + (days > 1 ? "s" : "");
     }
 
     // Formatter are not thread safe. See Sun Bugs #6231579 and Sun Bug
     // #6178997.
     synchronized (Misc.formatterLock) {
-      return (delay < 0) ? "-" + Misc.DELAY_FORMATTER.format(new Date(-delay)) : Misc.DELAY_FORMATTER.format(new Date(delay));
+      return delay < 0 ? "-" + Misc.DELAY_FORMATTER.format(new Date(-delay)) : Misc.DELAY_FORMATTER.format(new Date(
+          delay));
     }
   }
 
@@ -580,18 +577,17 @@ public final class Misc {
 
   /**
    * <p>
-   * Return the list of <code>Class</code> objects representing every types a
-   * given class implements.
+   * Return the list of <code>Class</code> objects representing every types a given class implements.
    * </p>
    * 
    * @param type a <code>Class</code> value
    * @return a <code>Set</code> value
    */
-  public static Set<Class< ? >> findAllTypes(final Class< ? > type) {
-    final Set<Class< ? >> superTypes = Misc.findAllSuperTypes(type);
-    final Set<Class< ? >> result = new HashSet<Class< ? >>(superTypes);
+  public static Set<Class<?>> findAllTypes(final Class<?> type) {
+    final Set<Class<?>> superTypes = Misc.findAllSuperTypes(type);
+    final Set<Class<?>> result = new HashSet<Class<?>>(superTypes);
 
-    for (final Class< ? > i : superTypes) {
+    for (final Class<?> i : superTypes) {
       result.addAll(Misc.findAllInterfaces(i));
     }
 
@@ -603,15 +599,14 @@ public final class Misc {
   /**
    * Return the generic name of a given class.
    * 
-   * For example, given java.util.Map.class, it returns string
-   * java.util.Map<K,V>
+   * For example, given java.util.Map.class, it returns string java.util.Map<K,V>
    * 
    * @param clazz the class
    * @return the generic name of a given class.
    */
-  public static String getGenericFullName(final Class< ? > clazz) {
+  public static String getGenericFullName(final Class<?> clazz) {
     final StringBuilder sb = new StringBuilder(clazz.getCanonicalName());
-    final TypeVariable< ? >[] types = clazz.getTypeParameters();
+    final TypeVariable<?>[] types = clazz.getTypeParameters();
 
     // This algorithm is weak! It only works for basic type. It will not work
     // for type such as: Type< A <B>> or Type<? extends B> ...
@@ -619,7 +614,7 @@ public final class Misc {
     // TODO: Fix.
     if (types.length != 0) {
       sb.append('<');
-      for (final TypeVariable< ? > type : types) {
+      for (final TypeVariable<?> type : types) {
         sb.append(type.getName());
         sb.append(',');
       }
@@ -630,17 +625,16 @@ public final class Misc {
 
   /**
    * <p>
-   * Return the list of <code>Class</code> objects representing all super type a
-   * given class implements.
+   * Return the list of <code>Class</code> objects representing all super type a given class implements.
    * </p>
    * 
    * @param type a <code>Class</code> value
    * @return a <code>Set</code> value
    */
-  public static Set<Class< ? >> findAllSuperTypes(final Class< ? > type) {
-    final Set<Class< ? >> classes = new HashSet<Class< ? >>();
+  public static Set<Class<?>> findAllSuperTypes(final Class<?> type) {
+    final Set<Class<?>> classes = new HashSet<Class<?>>();
 
-    for (Class< ? > c = type; c != null; c = c.getSuperclass()) {
+    for (Class<?> c = type; c != null; c = c.getSuperclass()) {
 
       classes.add(c);
     }
@@ -650,22 +644,21 @@ public final class Misc {
 
   /**
    * <p>
-   * Return the list of <code>Class</code> objects representing all interfaces a
-   * given class implements.
+   * Return the list of <code>Class</code> objects representing all interfaces a given class implements.
    * </p>
    * 
    * @param type a <code>Class</code> value
    * @return a <code>List</code> value
    */
-  public static Set<Class< ? >> findAllInterfaces(final Class< ? > type) {
-    final Set<Class< ? >> classes = new HashSet<Class< ? >>();
+  public static Set<Class<?>> findAllInterfaces(final Class<?> type) {
+    final Set<Class<?>> classes = new HashSet<Class<?>>();
 
-    final Class< ? >[] interfaces = type.getInterfaces();
-    for (final Class< ? > i : interfaces) {
+    final Class<?>[] interfaces = type.getInterfaces();
+    for (final Class<?> i : interfaces) {
       classes.add(i);
       classes.addAll(Misc.findAllInterfaces(i));
     }
-    final Class< ? > superClass = type.getSuperclass();
+    final Class<?> superClass = type.getSuperclass();
     if (superClass != null) {
       classes.addAll(Misc.findAllInterfaces(superClass));
     }
@@ -675,8 +668,7 @@ public final class Misc {
 
   /**
    * <p>
-   * Return the <code>Class[]</code> array representing the types a given method
-   * take as parameters.
+   * Return the <code>Class[]</code> array representing the types a given method take as parameters.
    * </p>
    * 
    * @param subClasses the classes which are to be subclasses of parameters
@@ -687,10 +679,10 @@ public final class Misc {
    * @throws NoSuchMethodException if a method cannot be found.
    */
   @SuppressWarnings("unchecked")
-  public static Class< ? >[] findMethodClassArgs(final Class< ? >[] subClasses, final Class< ? > classToTest, final String methodName)
-  throws NoSuchMethodException {
+  public static Class<?>[] findMethodClassArgs(final Class<?>[] subClasses, final Class<?> classToTest,
+      final String methodName) throws NoSuchMethodException {
 
-    final Set<Class< ? >>[] classesList = new Set[subClasses.length];
+    final Set<Class<?>>[] classesList = new Set[subClasses.length];
     for (int i = 0; i < classesList.length; i++) {
       classesList[i] = Misc.findAllTypes(subClasses[i]);
     }
@@ -703,7 +695,7 @@ public final class Misc {
       }
 
       // Same number of arguments?
-      final Class< ? >[] formal = methods[i].getParameterTypes();
+      final Class<?>[] formal = methods[i].getParameterTypes();
       if (formal.length != subClasses.length) {
         continue;
       }
@@ -712,14 +704,14 @@ public final class Misc {
         return formal;
       }
     }
-    String message = ExceptionManager.getInstance().getFullMessage("buc_M_3", Misc.componentsToString(subClasses, false), classToTest, methodName);
+    final String message = ExceptionManager.getInstance().getFullMessage("buc_M_3",
+        Misc.componentsToString(subClasses, false), classToTest, methodName);
     throw new NoSuchMethodException(message);
   }
 
   /**
    * <p>
-   * Return the <code>Class[]</code> array representing the types a constructor
-   * take as parameters.
+   * Return the <code>Class[]</code> array representing the types a constructor take as parameters.
    * </p>
    * 
    * @param subClasses the classes which are to be subclasses of parameters
@@ -729,17 +721,18 @@ public final class Misc {
    * @throws NoSuchMethodException if a constructor cannot be found
    */
   @SuppressWarnings("unchecked")
-  public static Class< ? >[] findConstructorClassArgs(final Class< ? >[] subClasses, final Class< ? > classToTest) throws NoSuchMethodException {
+  public static Class<?>[] findConstructorClassArgs(final Class<?>[] subClasses, final Class<?> classToTest)
+      throws NoSuchMethodException {
 
-    final Set<Class< ? >>[] classesList = new Set[subClasses.length];
+    final Set<Class<?>>[] classesList = new Set[subClasses.length];
     for (int i = 0; i < classesList.length; i++) {
       classesList[i] = Misc.findAllTypes(subClasses[i]);
     }
 
-    final Constructor< ? >[] constructors = classToTest.getDeclaredConstructors();
+    final Constructor<?>[] constructors = classToTest.getDeclaredConstructors();
     for (int i = constructors.length - 1; i >= 0; i--) {
       // Same number of arguments?
-      final Class< ? >[] formal = constructors[i].getParameterTypes();
+      final Class<?>[] formal = constructors[i].getParameterTypes();
       if (formal.length != subClasses.length) {
         continue;
       }
@@ -748,17 +741,17 @@ public final class Misc {
         return formal;
       }
     }
-    String message = ExceptionManager.getInstance().getFullMessage(
-        "buc_M_4", Misc.componentsToString(subClasses, false), classToTest);
+    final String message = ExceptionManager.getInstance().getFullMessage("buc_M_4",
+        Misc.componentsToString(subClasses, false), classToTest);
     throw new NoSuchMethodException(message);
   }
 
-  private static boolean checkFormal(final Class< ? >[] formal, final Set<Class< ? >>[] types) {
+  private static boolean checkFormal(final Class<?>[] formal, final Set<Class<?>>[] types) {
     for (int i = 0; i < formal.length; i++) {
-      final Iterator<Class< ? >> iterator = types[i].iterator();
+      final Iterator<Class<?>> iterator = types[i].iterator();
       boolean found = false;
       while (iterator.hasNext()) {
-        final Class< ? > type = iterator.next();
+        final Class<?> type = iterator.next();
         if (type.equals(formal[i])) {
           found = true;
           break;
@@ -781,8 +774,7 @@ public final class Misc {
    * The string returned is:
    * <ul>
    * <li><code>"null" if <code>o == null</code>
-   * <li>Otherwize,
-   * <code>o.getClass().getName() + "#" + System.identityHashCode(o)</code>
+   * <li>Otherwize, <code>o.getClass().getName() + "#" + System.identityHashCode(o)</code>
    * </ul>
    * </p>
    * 
@@ -809,7 +801,7 @@ public final class Misc {
       return "null";
     }
 
-    Class< ? > componentType = args.getClass().getComponentType();
+    Class<?> componentType = args.getClass().getComponentType();
     final StringBuilder string = new StringBuilder(componentType.getName());
 
     string.append("[");
@@ -864,9 +856,9 @@ public final class Misc {
       return "null";
     }
 
-    final Class< ? > c = array.getClass();
+    final Class<?> c = array.getClass();
     if (!c.isArray() || !c.getComponentType().isPrimitive()) {
-      String message = ExceptionManager.getInstance().getFullMessage("buc_M_5");
+      final String message = ExceptionManager.getInstance().getFullMessage("buc_M_5");
       throw new IllegalArgumentException(message);
     }
 
@@ -889,8 +881,7 @@ public final class Misc {
   }
 
   /**
-   * Equivalent to {@link #getAllContentFrom(InputStream) getAllContentFrom(new
-   * FileInputStream(file))};
+   * Equivalent to {@link #getAllContentFrom(InputStream) getAllContentFrom(new FileInputStream(file))};
    * 
    * @param file the file to read
    * @return the whole content of the file in a single String.
@@ -907,8 +898,7 @@ public final class Misc {
   }
 
   /**
-   * Equivalent to {@link #getAllContentFrom(InputStream)
-   * getAllContentFrom(source.getByteStream(source))};
+   * Equivalent to {@link #getAllContentFrom(InputStream) getAllContentFrom(source.getByteStream(source))};
    * 
    * @param source the file to read
    * @return the whole content of the file in a single String.
@@ -927,8 +917,7 @@ public final class Misc {
   /**
    * Return the whole underlying stream content into a single String.
    * 
-   * Warning: the whole content of stream will be kept in memory!! Use with
-   * care!
+   * Warning: the whole content of stream will be kept in memory!! Use with care!
    * 
    * @param url the URL to read
    * @return the whole content of the stream in a single String.
@@ -946,8 +935,7 @@ public final class Misc {
   /**
    * Return the whole underlying stream content into a single String.
    * 
-   * Warning: the whole content of stream will be kept in memory!! Use with
-   * care!
+   * Warning: the whole content of stream will be kept in memory!! Use with care!
    * 
    * @param in the stream to read
    * @return the whole content of the stream in a single String.
@@ -975,7 +963,7 @@ public final class Misc {
   }
 
   public static void getFile(final File file, final byte[] fileAsByteArray) throws IOException {
-    FileOutputStream fos = new FileOutputStream(file);
+    final FileOutputStream fos = new FileOutputStream(file);
     try {
       fos.write(fileAsByteArray);
       fos.flush();
@@ -1008,10 +996,9 @@ public final class Misc {
   /**
    * Invoke the close() method on the given object.
    * 
-   * This method uses the reflection API to find a close() method with no
-   * arguments. Any exception thrown (including NoSuchMethodException) will be
-   * both logged using {@link #LOG} and returned. If the parameter is null,
-   * nothing is done and null is returned.
+   * This method uses the reflection API to find a close() method with no arguments. Any exception thrown (including
+   * NoSuchMethodException) will be both logged using {@link #LOG} and returned. If the parameter is null, nothing is
+   * done and null is returned.
    * 
    * @param o the object to call the close() method on.
    * @return the exception thrown if any, null otherwise.
@@ -1051,16 +1038,14 @@ public final class Misc {
   }
 
   /**
-   * Return a proxy implementing all the interfaces specified that forward
-   * method invocations to the specified MBean.
+   * Return a proxy implementing all the interfaces specified that forward method invocations to the specified MBean.
    * 
    * @param <T>
-   * @param mbeanInterface the interface the proxy should implement (the MBean
-   *          should obviously also implement that interface).
+   * @param mbeanInterface the interface the proxy should implement (the MBean should obviously also implement that
+   *          interface).
    * @param jmxServiceUrl the JMX service URL
    * @param jmxObjectName the name the MBean has been registered to
-   * @return a proxy implementing the specified interface and that forward
-   *         method invocations to the specified MBean.
+   * @return a proxy implementing the specified interface and that forward method invocations to the specified MBean.
    * 
    * @throws IOException for any IO problem
    * @throws MalformedObjectNameException for any JMX Naming problem
@@ -1068,16 +1053,16 @@ public final class Misc {
    * @throws ReflectionException for any problem related to reflection
    */
   @SuppressWarnings("unchecked")
-  public static <T> T getMBeanProxy(final Class<T> mbeanInterface, final String jmxServiceUrl, final String jmxObjectName) throws IOException,
-  MalformedObjectNameException, InstanceNotFoundException, MBeanException, ReflectionException {
-    return (T) Proxy.newProxyInstance(Misc.class.getClassLoader(), new Class[] {
-      mbeanInterface
-    }, new MBeanInvocationHandler(jmxServiceUrl, jmxObjectName));
+  public static <T> T getMBeanProxy(final Class<T> mbeanInterface, final String jmxServiceUrl,
+      final String jmxObjectName) throws IOException, MalformedObjectNameException, InstanceNotFoundException,
+      MBeanException, ReflectionException {
+    return (T) Proxy.newProxyInstance(Misc.class.getClassLoader(), new Class[] { mbeanInterface },
+        new MBeanInvocationHandler(jmxServiceUrl, jmxObjectName));
   }
 
   /**
-   * Return a proxy that forward <strong>void-method</strong> invocations to
-   * each object specified in the list <code>elements</code>.
+   * Return a proxy that forward <strong>void-method</strong> invocations to each object specified in the list
+   * <code>elements</code>.
    * 
    * The invocation order follows the given list order.
    * 
@@ -1092,19 +1077,19 @@ public final class Misc {
   public static <T> T getChainOf(final List<T> elements) {
     Misc.checkArgsNotNull(elements);
     final Chainer<T> chain = new Chainer<T>();
-    final Set<Class< ? >> classes = new HashSet<Class< ? >>();
-    final Set<Class< ? >> initial = Misc.findAllInterfaces(elements.get(0).getClass());
+    final Set<Class<?>> classes = new HashSet<Class<?>>();
+    final Set<Class<?>> initial = Misc.findAllInterfaces(elements.get(0).getClass());
     classes.addAll(initial);
     for (final T element : elements) {
       chain.add(element);
       // We can't find the generic type T at runtime.
       // But this is required by Proxy.newProxyInstance().
       // So, we find the common interfaces implemented by all elements.
-      final Set<Class< ? >> interfaces = Misc.findAllInterfaces(element.getClass());
+      final Set<Class<?>> interfaces = Misc.findAllInterfaces(element.getClass());
       classes.retainAll(interfaces);
     }
     if (classes.size() == 0) {
-      String message = ExceptionManager.getInstance().getFullMessage("buc_M_6", elements);
+      final String message = ExceptionManager.getInstance().getFullMessage("buc_M_6", elements);
       throw new IllegalArgumentException(message);
     }
     return (T) Proxy.newProxyInstance(Misc.class.getClassLoader(), classes.toArray(new Class[classes.size()]), chain);
@@ -1123,8 +1108,9 @@ public final class Misc {
    */
   @SuppressWarnings("unchecked")
   public static <T> T getLoggerProxyFor(final T target, final Logger logger) {
-    final Set<Class< ? >> classes = Misc.findAllInterfaces(target.getClass());
-    return (T) Proxy.newProxyInstance(Misc.class.getClassLoader(), classes.toArray(new Class[classes.size()]), new LoggingInvocationHandler<T>(target, logger));
+    final Set<Class<?>> classes = Misc.findAllInterfaces(target.getClass());
+    return (T) Proxy.newProxyInstance(Misc.class.getClassLoader(), classes.toArray(new Class[classes.size()]),
+        new LoggingInvocationHandler<T>(target, logger));
   }
 
   /**
@@ -1144,11 +1130,9 @@ public final class Misc {
     }
 
     /**
-     * Returns true if some parameters given to {@link Misc#findNull(Object...)}
-     * were null.
+     * Returns true if some parameters given to {@link Misc#findNull(Object...)} were null.
      * 
-     * @return true if some parameters given to {@link Misc#findNull(Object...)}
-     *         were null.
+     * @return true if some parameters given to {@link Misc#findNull(Object...)} were null.
      * @see Misc#findNull(Object...)
      */
     public boolean hasNull() {
@@ -1156,11 +1140,9 @@ public final class Misc {
     }
 
     /**
-     * Returns the number of parameters given to
-     * {@link Misc#findNull(Object...)}
+     * Returns the number of parameters given to {@link Misc#findNull(Object...)}
      * 
-     * @return the number of parameters given to
-     *         {@link Misc#findNull(Object...)}
+     * @return the number of parameters given to {@link Misc#findNull(Object...)}
      * @see Misc#findNull(Object...)
      */
     public int getSize() {
@@ -1168,13 +1150,10 @@ public final class Misc {
     }
 
     /**
-     * Returns true if the i th parameter given to
-     * {@link Misc#findNull(Object...)} was null.
+     * Returns true if the i th parameter given to {@link Misc#findNull(Object...)} was null.
      * 
-     * @param i the rank of the parameter given to
-     *          {@link Misc#findNull(Object...)}.
-     * @return true if the i th parameter given to
-     *         {@link Misc#findNull(Object...)} was null.
+     * @param i the rank of the parameter given to {@link Misc#findNull(Object...)}.
+     * @return true if the i th parameter given to {@link Misc#findNull(Object...)} was null.
      */
     public boolean isNull(final int i) {
       return this.bitSet.get(i);
@@ -1211,13 +1190,11 @@ public final class Misc {
   /**
    * Check that the given parameters are not null.
    * 
-   * This method should only be used to check that some parameters given to a
-   * given method are not null. The exception message tries its best to produce
-   * a helpful message by scanning the stack trace.
+   * This method should only be used to check that some parameters given to a given method are not null. The exception
+   * message tries its best to produce a helpful message by scanning the stack trace.
    * 
    * @param params the parameters to check
-   * @throws an IllegalArgumentException if at least one of the parameters is
-   *           null
+   * @throws an IllegalArgumentException if at least one of the parameters is null
    */
   public static void checkArgsNotNull(final Object... params) {
     Misc.checkArgsNotNull(1, params);
@@ -1226,14 +1203,12 @@ public final class Misc {
   /**
    * Check that the given parameters are not null.
    * 
-   * This method should only be used to check that some parameters given to a
-   * given method are not null. The exception message tries its best to produce
-   * a helpful message by scanning the stack trace.
+   * This method should only be used to check that some parameters given to a given method are not null. The exception
+   * message tries its best to produce a helpful message by scanning the stack trace.
    * 
    * @param offset the offset to use in the stack trace to produce error message
    * @param params the parameters to check
-   * @throws an IllegalArgumentException if at least one of the parameters is
-   *           null
+   * @throws an IllegalArgumentException if at least one of the parameters is null
    */
   public static void checkArgsNotNull(final int offset, final Object... params) {
     final NullCheckResult result = Misc.findNull(params);
@@ -1253,14 +1228,14 @@ public final class Misc {
           sb.append(", ");
         }
       }
-      String message = ExceptionManager.getInstance().getFullMessage("buc_M_7", className, methodName, sb.toString());
+      final String message = ExceptionManager.getInstance().getFullMessage("buc_M_7", className, methodName,
+          sb.toString());
       throw new IllegalArgumentException(message);
     }
   }
 
   /**
-   * Return the StackTraceElement at the given offset from this method
-   * invocation.
+   * Return the StackTraceElement at the given offset from this method invocation.
    * 
    * @param offset
    * @return a StackTraceElement
@@ -1279,24 +1254,19 @@ public final class Misc {
   }
 
   /**
-   * Return strings mapped to null values in a given @{link
-   * {@link NullCheckResult}. .
+   * Return strings mapped to null values in a given @{link {@link NullCheckResult}. .
    * 
-   * If the returned @{link List} of String is called <code>l</code> then, it
-   * verifies: <code>l.contains(names[i])</code> if and only if
-   * <code>nullCheckResult.isNull(i)</code> returns <code>true</code>.
+   * If the returned @{link List} of String is called <code>l</code> then, it verifies:
+   * <code>l.contains(names[i])</code> if and only if <code>nullCheckResult.isNull(i)</code> returns <code>true</code>.
    * 
-   * Note that the number of String names given should be of the same size that
-   * the one used to get the given {@link NullCheckResult} using
-   * {@link #findNull(Object...)}. An {@link IllegalArgumentException} is thrown
+   * Note that the number of String names given should be of the same size that the one used to get the given
+   * {@link NullCheckResult} using {@link #findNull(Object...)}. An {@link IllegalArgumentException} is thrown
    * otherwise.
    * 
-   * @param nullCheckResult the result as returned by
-   *          {@link #findNull(Object...)}
+   * @param nullCheckResult the result as returned by {@link #findNull(Object...)}
    * @param names the strings that should be mapped to null values
    * @return a List of string mapped to the given {@link NullCheckResult}.
-   * @throws IllegalArgumentException if the number of given names is different
-   *           from {@link NullCheckResult#getSize()}
+   * @throws IllegalArgumentException if the number of given names is different from {@link NullCheckResult#getSize()}
    * 
    * @see #findNull(Object...)
    * @see NullCheckResult
@@ -1304,7 +1274,7 @@ public final class Misc {
   public static List<String> getStringFrom(final NullCheckResult nullCheckResult, final String... names) {
     final int n = names.length;
     if (nullCheckResult.getSize() != n) {
-      String message = ExceptionManager.getInstance().getFullMessage("buc_M_8", n, nullCheckResult.getSize());
+      final String message = ExceptionManager.getInstance().getFullMessage("buc_M_8", n, nullCheckResult.getSize());
       throw new IllegalArgumentException(message);
     }
     final List<String> list = new ArrayList<String>();
@@ -1332,8 +1302,7 @@ public final class Misc {
   }
 
   /**
-   * This method throw an IllegalStateException if the given parameter is not
-   * null
+   * This method throw an IllegalStateException if the given parameter is not null
    * 
    * @param valueToCheck the value to check
    * @param msg the message for the thrown exception
@@ -1371,8 +1340,7 @@ public final class Misc {
   }
 
   /**
-   * This method throw an IllegalStateException if the given parameters are
-   * equals (using {@link Object#equals(Object)}
+   * This method throw an IllegalStateException if the given parameters are equals (using {@link Object#equals(Object)}
    * 
    * @param a the first object
    * @param b the second object
@@ -1385,12 +1353,10 @@ public final class Misc {
   }
 
   /**
-   * Log a message to the logger of the caller at the given offset in the stack
-   * trace.
+   * Log a message to the logger of the caller at the given offset in the stack trace.
    * 
-   * If <code>A.f()</code> calls <code>B.g()</code> that finally calls
-   * <code>dynamicLog(1, msg)</code> then, the msg will be logged with a code
-   * similar to: <br>
+   * If <code>A.f()</code> calls <code>B.g()</code> that finally calls <code>dynamicLog(1, msg)</code> then, the msg
+   * will be logged with a code similar to: <br>
    * <code>getLogger(B.getClass().getName()).log(level, msg);</code><br>
    * 
    * If the call was <code>dynamicLog(2, msg)</code> then, the code would be:<br>
@@ -1424,8 +1390,7 @@ public final class Misc {
   }
 
   /**
-   * This method logs at the given level a "warning message" if the given
-   * parameter is null
+   * This method logs at the given level a "warning message" if the given parameter is null
    * 
    * @param level a log level
    * @param valueToCheck the value to check
@@ -1434,14 +1399,13 @@ public final class Misc {
    */
   public static void warnIfNull(final Level level, final Object valueToCheck, final String variableName) {
     if (valueToCheck == null) {
-      final String msg = "Warning: " + ((variableName == null) ? "a variable" : variableName) + " is null!";
+      final String msg = "Warning: " + (variableName == null ? "a variable" : variableName) + " is null!";
       Misc.dynamicLog(1, level, msg);
     }
   }
 
   /**
-   * This method logs at the given level a "warning" if the given parameter is
-   * not null
+   * This method logs at the given level a "warning" if the given parameter is not null
    * 
    * @param level a log level
    * @param valueToCheck the value to check
@@ -1449,14 +1413,13 @@ public final class Misc {
    */
   public static void warnIfNotNull(final Level level, final Object valueToCheck, final String variableName) {
     if (valueToCheck != null) {
-      final String msg = "Warning: " + ((variableName == null) ? "a variable" : variableName) + " is not null!";
+      final String msg = "Warning: " + (variableName == null ? "a variable" : variableName) + " is not null!";
       Misc.dynamicLog(1, level, msg);
     }
   }
 
   /**
-   * This method logs at the given level a "warning" if the given parameter is
-   * true
+   * This method logs at the given level a "warning" if the given parameter is true
    * 
    * @param level a log level
    * @param valueToCheck the value to check
@@ -1464,14 +1427,13 @@ public final class Misc {
    */
   public static void warnIfTrue(final Level level, final boolean valueToCheck, final String variableName) {
     if (valueToCheck) {
-      final String msg = "Warning: " + ((variableName == null) ? "a variable" : variableName) + " is true!";
+      final String msg = "Warning: " + (variableName == null ? "a variable" : variableName) + " is true!";
       Misc.dynamicLog(1, level, msg);
     }
   }
 
   /**
-   * This method logs at the given level a "warning" if the given parameter is
-   * false
+   * This method logs at the given level a "warning" if the given parameter is false
    * 
    * @param level a log level
    * @param valueToCheck the value to check
@@ -1479,14 +1441,13 @@ public final class Misc {
    */
   public static void warnIfFalse(final Level level, final boolean valueToCheck, final String variableName) {
     if (!valueToCheck) {
-      final String msg = "Warning: " + ((variableName == null) ? "a variable" : variableName) + " is false!";
+      final String msg = "Warning: " + (variableName == null ? "a variable" : variableName) + " is false!";
       Misc.dynamicLog(1, level, msg);
     }
   }
 
   /**
-   * This method logs at the given level a "warning" if the given parameter are
-   * equals
+   * This method logs at the given level a "warning" if the given parameter are equals
    * 
    * @param level a log level
    * @param a an object
@@ -1499,13 +1460,13 @@ public final class Misc {
   }
 
   private static String details(final Object a, final Object b) {
-    return "a.toString(): " + a.toString() + Misc.LINE_SEPARATOR + "b.toString(): " + b.toString() + Misc.LINE_SEPARATOR + "a.idendityToString(): "
-    + Misc.identityToString(a) + Misc.LINE_SEPARATOR + "b.identityToString(): " + Misc.identityToString(b);
+    return "a.toString(): " + a.toString() + Misc.LINE_SEPARATOR + "b.toString(): " + b.toString()
+        + Misc.LINE_SEPARATOR + "a.idendityToString(): " + Misc.identityToString(a) + Misc.LINE_SEPARATOR
+        + "b.identityToString(): " + Misc.identityToString(b);
   }
 
   /**
-   * This method logs at the given level a "warning" if the given parameter are
-   * not equals
+   * This method logs at the given level a "warning" if the given parameter are not equals
    * 
    * @param level a log level
    * @param a an object
@@ -1527,13 +1488,12 @@ public final class Misc {
     return stringBuilder.toString();
   }
 
-  public static String getStackTraceFrom(Throwable aThrowable) {
+  public static String getStackTraceFrom(final Throwable aThrowable) {
     final Writer result = new StringWriter();
     final PrintWriter printWriter = new PrintWriter(result);
     aThrowable.printStackTrace(printWriter);
     return result.toString();
   }
-
 
   public static String deepToString(final Object o) {
     return Misc.recursiveDeepToString(o, new HashMap<Object, String>());
@@ -1549,12 +1509,12 @@ public final class Misc {
       result = "null";
     } else {
       cache.put(o, id);
-      final Class< ? > clazz = o.getClass();
+      final Class<?> clazz = o.getClass();
       final Package pack = clazz.getPackage();
-      if (clazz.isPrimitive() || (pack != null) && (pack.getName().startsWith("java.")) || clazz.isEnum()) {
+      if (clazz.isPrimitive() || pack != null && pack.getName().startsWith("java.") || clazz.isEnum()) {
         result = o.toString();
       } else if (clazz.isArray()) {
-        final Class< ? > componentType = clazz.getComponentType();
+        final Class<?> componentType = clazz.getComponentType();
         if (componentType.isPrimitive()) {
           result = Misc.primitiveComponentsToString(o);
         } else {
@@ -1574,11 +1534,12 @@ public final class Misc {
             if (v == id) {
               sb.append(id);
             } else {
-              sb.append( Misc.recursiveDeepToString(f, cache));
+              sb.append(Misc.recursiveDeepToString(f, cache));
             }
           } catch (final IllegalAccessException e) {
-            Misc.LOG.warning("An exception occured during information fetching on field: " + field + Misc.LINE_SEPARATOR + "Stack trace is: "
-                + Misc.getStackTraceFrom(e) + "Fallbacking to non-intrusive algorithm for toString().");
+            Misc.LOG.warning("An exception occured during information fetching on field: " + field
+                + Misc.LINE_SEPARATOR + "Stack trace is: " + Misc.getStackTraceFrom(e)
+                + "Fallbacking to non-intrusive algorithm for toString().");
             sb.append("(*").append(field.toGenericString()).append("*)");
           }
           sb.append(", ");
@@ -1595,23 +1556,23 @@ public final class Misc {
     return result;
   }
 
-  public static boolean deleteDir(File dir) {
+  public static boolean deleteDir(final File dir) {
     return deleteDir(dir, 1, 0);
   }
 
-  public static boolean deleteDir(File dir, int attempts, long sleepTime) {
+  public static boolean deleteDir(final File dir, final int attempts, final long sleepTime) {
     Misc.checkArgsNotNull(dir);
     boolean result = true;
     if (!dir.exists()) {
       return false;
     }
     if (!dir.isDirectory()) {
-      String message = ExceptionManager.getInstance().getFullMessage("buc_M_9", dir.getAbsolutePath());
+      final String message = ExceptionManager.getInstance().getFullMessage("buc_M_9", dir.getAbsolutePath());
       throw new IllegalArgumentException(message);
     }
-    File[] files = dir.listFiles();
-    for(int i=0; i<files.length; i++) {
-      if(files[i].isDirectory()) {
+    final File[] files = dir.listFiles();
+    for (int i = 0; i < files.length; i++) {
+      if (files[i].isDirectory()) {
         deleteDir(files[i], attempts, sleepTime);
       } else {
         result = result && deleteFile(files[i], attempts, sleepTime);
@@ -1621,7 +1582,7 @@ public final class Misc {
     return result;
   }
 
-  public static boolean deleteFile(File f, int attempts, long sleepTime) {
+  public static boolean deleteFile(final File f, final int attempts, final long sleepTime) {
     int retries = attempts;
     while (retries > 0) {
       if (f.delete()) {
@@ -1630,7 +1591,8 @@ public final class Misc {
       retries--;
       try {
         Thread.sleep(sleepTime);
-      } catch (InterruptedException e) { }
+      } catch (final InterruptedException e) {
+      }
     }
     return retries > 0;
   }
@@ -1644,7 +1606,7 @@ public final class Misc {
   // }
 
   public static void unreachableStatement() {
-    String message = ExceptionManager.getInstance().getFullMessage("buc_M_10");
+    final String message = ExceptionManager.getInstance().getFullMessage("buc_M_10");
     Misc.unreachableStatement(message);
   }
 
@@ -1662,7 +1624,7 @@ public final class Misc {
         return e;
       }
     }
-    String message = ExceptionManager.getInstance().getFullMessage("buc_M_11", c.getName(), s, set.toString());
+    final String message = ExceptionManager.getInstance().getFullMessage("buc_M_11", c.getName(), s, set.toString());
     throw new IllegalArgumentException(message);
   }
 
@@ -1681,11 +1643,11 @@ public final class Misc {
     final ObjectInputStream ois = new ObjectInputStream(bais) {
 
       @Override
-      protected Class< ? > resolveClass(final ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+      protected Class<?> resolveClass(final ObjectStreamClass desc) throws IOException, ClassNotFoundException {
         final String className = desc.getName();
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         return Class.forName(className, true, classLoader);
-        //return Thread.currentThread().getContextClassLoader().loadClass(className);
+        // return Thread.currentThread().getContextClassLoader().loadClass(className);
       }
     };
     final Serializable newObject = (Serializable) ois.readObject();
@@ -1697,11 +1659,10 @@ public final class Misc {
   /**
    * Check that the given object is actually serializable.
    * 
-   * Implementation tries to serialize and deserialize the given object (in
-   * memory). Note that <b>null</b> is returned when the given object is
-   * serializable. It returns the throwable thrown by either the serialization
-   * or the deserialization process. This means, that the object is not really
-   * serializable. Therefore the pattern for checking should be written like: <br>
+   * Implementation tries to serialize and deserialize the given object (in memory). Note that <b>null</b> is returned
+   * when the given object is serializable. It returns the throwable thrown by either the serialization or the
+   * deserialization process. This means, that the object is not really serializable. Therefore the pattern for checking
+   * should be written like: <br>
    * <code>
    * final Throwable error = checkReallySerializable(myObject); 
    * if (error == null) {
@@ -1731,8 +1692,7 @@ public final class Misc {
    * 
    * @param s the string to be written
    * @param f the file to write the given string to
-   * @throws IOException if an IO error is encountered (file not found, read-only
-   *           file, and so on).
+   * @throws IOException if an IO error is encountered (file not found, read-only file, and so on).
    */
   public static void write(final String s, final File f) throws IOException {
     Misc.checkArgsNotNull(s, f);
@@ -1762,9 +1722,8 @@ public final class Misc {
   }
 
   /**
-   * Perform java.io.File.createTempFile with retries when it fail (limit of 10
-   * retries) (Use to by-pass bug #6325169 on SUN JDK 1.5 on windows) Same
-   * parameters as {@link java.io.File#createTempFile(String, String, File)} method
+   * Perform java.io.File.createTempFile with retries when it fail (limit of 10 retries) (Use to by-pass bug #6325169 on
+   * SUN JDK 1.5 on windows) Same parameters as {@link java.io.File#createTempFile(String, String, File)} method
    * 
    * @param prefix Prefix of the file
    * @param suffix Suffix of the file
@@ -1784,17 +1743,20 @@ public final class Misc {
     boolean succeded = false;
     do {
       try {
-    	/*If the prefix contained file separator
-    	 * we need to create the parent directories if missing*/
-    	int lastIndexOfSeparatorChar = prefix.lastIndexOf("/");
-    	String fileName = prefix;
-    	if(lastIndexOfSeparatorChar > -1){
-    		String dirToCreate = prefix.substring(0, lastIndexOfSeparatorChar);
-    		new File(directory.getAbsolutePath() + File.separator + dirToCreate).mkdirs();
-    		fileName = prefix.substring(lastIndexOfSeparatorChar, prefix.length());
-    	}
-    	   	
-    	/*Create the file*/
+        /*
+         * If the prefix contained file separator we need to create the parent directories if missing
+         */
+        final int lastIndexOfSeparatorChar = prefix.lastIndexOf('/');
+        String fileName = prefix;
+        if (lastIndexOfSeparatorChar > -1) {
+          final String dirToCreate = prefix.substring(0, lastIndexOfSeparatorChar);
+          new File(directory.getAbsolutePath() + File.separator + dirToCreate).mkdirs();
+          fileName = prefix.substring(lastIndexOfSeparatorChar, prefix.length());
+        }
+        if (!directory.exists()) {
+          directory.mkdirs();
+        }
+        /* Create the file */
         tmpDir = File.createTempFile(fileName, suffix, directory);
         succeded = true;
       } catch (final IOException e) {
@@ -1811,17 +1773,17 @@ public final class Misc {
     return tmpDir;
   }
 
-  public static byte[] generateJar(final Class< ? >... classes) throws IOException {
+  public static byte[] generateJar(final Class<?>... classes) throws IOException {
     return Misc.generateJar(Misc.getResources(classes));
   }
 
-  public static Map<String, byte[]> getResources(final Class< ? >... classes) throws IOException {
+  public static Map<String, byte[]> getResources(final Class<?>... classes) throws IOException {
     if (classes == null || classes.length == 0) {
-      String message = ExceptionManager.getInstance().getFullMessage("buc_M_13");
+      final String message = ExceptionManager.getInstance().getFullMessage("buc_M_13");
       throw new IOException(message);
     }
     final Map<String, byte[]> resources = new HashMap<String, byte[]>();
-    for (final Class< ? > clazz : classes) {
+    for (final Class<?> clazz : classes) {
       resources.put(clazz.getName().replace(".", "/") + ".class", ClassDataTool.getClassData(clazz));
     }
     return resources;
@@ -1829,7 +1791,7 @@ public final class Misc {
 
   public static byte[] generateJar(final Map<String, byte[]> resources) throws IOException {
     if (resources == null || resources.size() == 0) {
-      String message = ExceptionManager.getInstance().getFullMessage("buc_M_14");
+      final String message = ExceptionManager.getInstance().getFullMessage("buc_M_14");
       throw new IOException(message);
     }
     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -1840,7 +1802,7 @@ public final class Misc {
     }
     out.flush();
     Misc.close(out);
-    byte[] jar = baos.toByteArray();
+    final byte[] jar = baos.toByteArray();
     Misc.close(baos);
     return jar;
   }
@@ -1881,8 +1843,7 @@ public final class Misc {
   }
 
   /**
-   * Return a new string based on the given message string where all lines are
-   * prefixed by the given prefix.
+   * Return a new string based on the given message string where all lines are prefixed by the given prefix.
    * 
    * 
    * @param message the message to transform
@@ -1905,7 +1866,7 @@ public final class Misc {
         builder.append(prefix).append(line);
       }
     } catch (final IOException e) {
-      String msg = ExceptionManager.getInstance().getFullMessage("buc_M_15");
+      final String msg = ExceptionManager.getInstance().getFullMessage("buc_M_15");
       Misc.unreachableStatement(msg);
     } finally {
       Misc.close(reader);
@@ -1914,11 +1875,10 @@ public final class Misc {
   }
 
   public static void showProblems(final Collection<Problem> problems, final String description) {
-    if (problems != null ) {
+    if (problems != null) {
       StringBuffer errorMsg = null;
-      for (Problem p : problems) {
-        if (p.getSeverity().equals(Problem.SEVERITY_ERROR)
-            || p.getSeverity().equals(Problem.SEVERITY_FATALERROR)) {
+      for (final Problem p : problems) {
+        if (p.getSeverity().equals(Problem.SEVERITY_ERROR) || p.getSeverity().equals(Problem.SEVERITY_FATALERROR)) {
           if (errorMsg == null) {
             errorMsg = new StringBuffer();
           }
@@ -1935,28 +1895,31 @@ public final class Misc {
         }
       }
       if (errorMsg != null) {
-        String message = ExceptionManager.getInstance().getFullMessage( "bp_Pa_1", description, errorMsg);
+        final String message = ExceptionManager.getInstance().getFullMessage("bp_Pa_1", description, errorMsg);
         throw new BonitaRuntimeException(message);
       }
     }
   }
 
-  public static Object convertIfPossible(final String variableId, final Object variableValue, final String dataTypeClassName) {
+  public static Object convertIfPossible(final String variableId, final Object variableValue,
+      final String dataTypeClassName) {
     if (variableValue == null) {
       return null;
     }
     try {
-      Class< ? > destTypeClass = Class.forName(dataTypeClassName, true, Thread.currentThread().getContextClassLoader());
-      Class< ? > valueClass = variableValue.getClass();
-      boolean assignmentOK = destTypeClass.isAssignableFrom(valueClass);
-      //manage inner classes
+      final Class<?> destTypeClass = Class.forName(dataTypeClassName, true, Thread.currentThread()
+          .getContextClassLoader());
+      final Class<?> valueClass = variableValue.getClass();
+      final boolean assignmentOK = destTypeClass.isAssignableFrom(valueClass);
+      // manage inner classes
       if (assignmentOK || destTypeClass.getName().equals(valueClass.getName())) {
         return variableValue;
       } else {
-        //try to convert it
-        if ("java.lang".equals(valueClass.getPackage().getName()) && "java.lang".equals(destTypeClass.getPackage().getName())) {
-          //we can convert it
-          String varValueAsString = variableValue.toString();
+        // try to convert it
+        if ("java.lang".equals(valueClass.getPackage().getName())
+            && "java.lang".equals(destTypeClass.getPackage().getName())) {
+          // we can convert it
+          final String varValueAsString = variableValue.toString();
           if (destTypeClass.equals(String.class)) {
             return varValueAsString;
           } else if (destTypeClass.equals(Boolean.class)) {
@@ -1964,47 +1927,48 @@ public final class Misc {
               return Boolean.valueOf(varValueAsString);
             }
           } else if (destTypeClass.equals(Character.class)) {
-            if (varValueAsString != null && varValueAsString.length() == 1) { 
+            if (varValueAsString != null && varValueAsString.length() == 1) {
               return Character.valueOf(variableValue.toString().charAt(0));
             }
           } else {
-            //Short, Long, Double, Float, Integer : all of them have a valueOf(String) method
+            // Short, Long, Double, Float, Integer : all of them have a valueOf(String) method
             Method valueOf;
             try {
-              valueOf = destTypeClass.getMethod("valueOf", new Class< ? >[]{String.class});
-              return valueOf.invoke(destTypeClass, new Object[]{varValueAsString});
-            } catch (Exception e) { }
+              valueOf = destTypeClass.getMethod("valueOf", new Class<?>[] { String.class });
+              return valueOf.invoke(destTypeClass, new Object[] { varValueAsString });
+            } catch (final Exception e) {
+            }
           }
         }
         return variableValue;
       }
-    } catch (ClassNotFoundException e) {
+    } catch (final ClassNotFoundException e) {
       throw new BonitaRuntimeException(e);
     }
   }
 
-  public static String getAttachmentIndexName(String name, Date versionDate) {
+  public static String getAttachmentIndexName(final String name, final Date versionDate) {
     Misc.checkArgsNotNull(name, versionDate);
     return name + ATTACHMENT_INDEX_NAME_SEPARATOR + versionDate.getTime();
   }
 
-  public static String getAttachmentName(String indexName) {
+  public static String getAttachmentName(final String indexName) {
     Misc.checkArgsNotNull(indexName);
     return indexName.substring(0, indexName.lastIndexOf(ATTACHMENT_INDEX_NAME_SEPARATOR));
   }
 
-  public static String getActivityPriority(int priority) {
+  public static String getActivityPriority(final int priority) {
     return getActivityPriority(priority, Locale.getDefault());
   }
 
   public static String getActivityPriority(final int priority, final Locale locale) {
-    ResourceBundle bundle = ResourceBundle.getBundle("org.ow2.bonita.util.Priority", locale);
+    final ResourceBundle bundle = ResourceBundle.getBundle("org.ow2.bonita.util.Priority", locale);
     try {
       if (priority < 0 || priority > 2) {
         return bundle.getString(String.valueOf(0));
       }
       return bundle.getString(String.valueOf(priority));
-    } catch (MissingResourceException e) {
+    } catch (final MissingResourceException e) {
       throw new IllegalArgumentException("Priority: " + priority + " has no label", e);
     }
   }
@@ -2013,20 +1977,21 @@ public final class Misc {
    * @param decodeAndGather
    * @param contextProperties
    * @return
-   * @throws ClassNotFoundException 
-   * @throws IOException 
+   * @throws ClassNotFoundException
+   * @throws IOException
    */
-  public static Object deserialize(byte[] buf, Properties contextProperties) throws IOException, ClassNotFoundException {
-    Object res = deserialize(buf);
+  public static Object deserialize(final byte[] buf, final Properties contextProperties) throws IOException,
+      ClassNotFoundException {
+    final Object res = deserialize(buf);
     if (res == null) {
       return null;
     } else if (res instanceof String && contextProperties != null) {
-      return ProcessBuilder.resolveWithContext((String)res, contextProperties);
+      return ProcessBuilder.resolveWithContext((String) res, contextProperties);
     } else if (res.getClass().isArray() && contextProperties != null) {
-      Object[] array = (Object[])res;
+      final Object[] array = (Object[]) res;
       for (int i = 0; i < array.length; i++) {
         if (array[i] instanceof String) {
-          array[i] = ProcessBuilder.resolveWithContext((String)array[i], contextProperties);
+          array[i] = ProcessBuilder.resolveWithContext((String) array[i], contextProperties);
         }
       }
       return array;
@@ -2035,20 +2000,20 @@ public final class Misc {
     }
   }
 
-  public static String fragmentAndBase64Encode(byte[] bytes) throws IOException {
+  public static String fragmentAndBase64Encode(final byte[] bytes) throws IOException {
 
-    StringBuilder encodedString = new StringBuilder();
+    final StringBuilder encodedString = new StringBuilder();
 
-    int bytesFragmentLength = BASE64_BYTES_FRAGMENT_LENGTH;
+    final int bytesFragmentLength = BASE64_BYTES_FRAGMENT_LENGTH;
 
     int nbFragment = bytes.length / bytesFragmentLength;
-    int remainingBytes = bytes.length % bytesFragmentLength;
+    final int remainingBytes = bytes.length % bytesFragmentLength;
     if (remainingBytes > 0) {
       nbFragment++;
     }
 
     int bytesPosition = 0;
-    for(int nbFragmentsProcessed = 0; nbFragmentsProcessed < nbFragment; nbFragmentsProcessed++) {
+    for (int nbFragmentsProcessed = 0; nbFragmentsProcessed < nbFragment; nbFragmentsProcessed++) {
 
       ByteArrayOutputStream byteArrayOutputStream = null;
       if (nbFragmentsProcessed + 1 < nbFragment) {
@@ -2059,54 +2024,54 @@ public final class Misc {
         byteArrayOutputStream.write(bytes, bytesPosition, remainingBytes);
       }
 
-      String stringFragment = Base64.encodeBytes(byteArrayOutputStream.toByteArray());
+      final String stringFragment = Base64.encodeBytes(byteArrayOutputStream.toByteArray());
       if (bytesPosition != 0) {
         encodedString.append(BASE64_BYTES_FRAGMENT_SEPARATOR);
       }
       encodedString.append(stringFragment);
       byteArrayOutputStream.close();
 
-      bytesPosition+=bytesFragmentLength;
+      bytesPosition += bytesFragmentLength;
     }
 
     return encodedString.toString();
   }
 
-  public static byte[] base64DecodeAndGather(String encodedString) throws IOException {
+  public static byte[] base64DecodeAndGather(final String encodedString) throws IOException {
 
-    String[] encodedFragments = encodedString.split(BASE64_BYTES_FRAGMENT_SEPARATOR);
+    final String[] encodedFragments = encodedString.split(BASE64_BYTES_FRAGMENT_SEPARATOR);
 
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-    for (String encodedFragment : encodedFragments) {
-      byte[] decodedFragment = Base64.decode(encodedFragment);
+    for (final String encodedFragment : encodedFragments) {
+      final byte[] decodedFragment = Base64.decode(encodedFragment);
       byteArrayOutputStream.write(decodedFragment);
     }
 
-    byte[] decodedBytes = byteArrayOutputStream.toByteArray();
+    final byte[] decodedBytes = byteArrayOutputStream.toByteArray();
     byteArrayOutputStream.close();
 
     return decodedBytes;
   }
 
-  public static String hash(String text) {
-    if(text == null) {
+  public static String hash(final String text) {
+    if (text == null) {
       return null;
     } else {
       MessageDigest md = null;
       try {
         md = MessageDigest.getInstance("SHA-1");
-      } catch (NoSuchAlgorithmException e) {
+      } catch (final NoSuchAlgorithmException e) {
         throw new BonitaRuntimeException(e);
       }
       byte[] hash = null;
       try {
         hash = md.digest(text.getBytes("UTF-8"));
-      } catch (UnsupportedEncodingException e) {
+      } catch (final UnsupportedEncodingException e) {
         throw new BonitaRuntimeException(e);
       }
-      StringBuilder sb = new StringBuilder(hash.length * 2);
-      for (byte b : hash) {
+      final StringBuilder sb = new StringBuilder(hash.length * 2);
+      for (final byte b : hash) {
         sb.append(String.format("%x", b));
       }
       return sb.toString();
@@ -2117,20 +2082,21 @@ public final class Misc {
    * @param variableId
    * @return
    */
-  public static String getGroovyPlaceholderAccessExpression(String variableId) {
-    String[] segments = variableId.split(BonitaConstants.JAVA_VAR_SEPARATOR);
+  public static String getGroovyPlaceholderAccessExpression(final String variableId) {
+    final String[] segments = variableId.split(BonitaConstants.JAVA_VAR_SEPARATOR);
     return segments[1];
   }
+
   /**
    * @return
    */
-  public static String getSetterName(String variableId) {
-    String[] segments = variableId.split(BonitaConstants.JAVA_VAR_SEPARATOR);
+  public static String getSetterName(final String variableId) {
+    final String[] segments = variableId.split(BonitaConstants.JAVA_VAR_SEPARATOR);
     return segments[2];
   }
 
   public static File createDirectories(final String path) {
-    File file = new File(path);
+    final File file = new File(path);
     if (!file.exists()) {
       file.mkdirs();
     }

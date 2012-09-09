@@ -46,8 +46,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
 
 /**
- * information related to one single parse operation, for instructions see
- * {@link Parser}.
+ * information related to one single parse operation, for instructions see {@link Parser}.
  * 
  * @author Tom Baeyens
  */
@@ -61,7 +60,7 @@ public class Parse implements Serializable, ErrorHandler {
   protected StreamSource streamSource;
   protected InputStream inputStream;
   protected InputSource inputSource;
-  
+
   protected Properties contextProperties;
 
   protected DocumentBuilder documentBuilder = null;
@@ -71,24 +70,24 @@ public class Parse implements Serializable, ErrorHandler {
   protected List<Problem> problems = null;
   protected Object documentObject;
 
-  protected Parse(Parser parser) {
+  protected Parse(final Parser parser) {
     this.parser = parser;
   }
 
   /** specify an input stream as the source for this parse */
-  public Parse setInputStream(InputStream inputStream) {
+  public Parse setInputStream(final InputStream inputStream) {
     this.streamSource = new InputStreamSource(inputStream);
     return this;
   }
 
   /** specify a URL as the source for this parse */
-  public Parse setUrl(URL url) {
+  public Parse setUrl(final URL url) {
     this.streamSource = new UrlStreamSource(url);
     return this;
   }
 
   /** specify a file as the source for this parse */
-  public Parse setFile(File file) {
+  public Parse setFile(final File file) {
     this.streamSource = new FileStreamSource(file);
     return this;
   }
@@ -96,48 +95,47 @@ public class Parse implements Serializable, ErrorHandler {
   /**
    * specify the classLoader to be used for resource input (this is optional)
    */
-  public Parse setClassLoader(ClassLoader classLoader) {
+  public Parse setClassLoader(final ClassLoader classLoader) {
     this.classLoader = classLoader;
     return this;
   }
 
   /** specify a resource as the source for this parse */
-  public Parse setResource(String resource) {
+  public Parse setResource(final String resource) {
     this.streamSource = new ResourceStreamSource(resource, classLoader);
     return this;
   }
 
   /** specify an XML string as the source for this parse */
-  public Parse setString(String xmlString) {
+  public Parse setString(final String xmlString) {
     this.streamSource = new StringStreamSource(xmlString);
     return this;
   }
 
   /** specify a {@link StreamSource} as the source for this parse */
-  public Parse setStreamSource(StreamSource streamSource) {
+  public Parse setStreamSource(final StreamSource streamSource) {
     this.streamSource = streamSource;
     return this;
   }
 
   /** specify an InputStream as the source for this parse */
-  public Parse setInputSource(InputSource inputSource) {
+  public Parse setInputSource(final InputSource inputSource) {
     this.inputSource = inputSource;
     return this;
   }
 
   /**
-   * normally the Document Object Model is created during the parse execution,
-   * but providing a document can be convenient when the DOM is already
-   * available and only the walking of the DOM needs to be done by the parser.
-   * If the document is provide, building the DOM from a source is skipped.
+   * normally the Document Object Model is created during the parse execution, but providing a document can be
+   * convenient when the DOM is already available and only the walking of the DOM needs to be done by the parser. If the
+   * document is provide, building the DOM from a source is skipped.
    */
-  public Parse setDocument(Document document) {
+  public Parse setDocument(final Document document) {
     this.document = document;
     return this;
   }
 
   /** provides the result of this parse operation. */
-  public Parse setDocumentObject(Object object) {
+  public Parse setDocumentObject(final Object object) {
     this.documentObject = object;
     return this;
   }
@@ -156,7 +154,7 @@ public class Parse implements Serializable, ErrorHandler {
   }
 
   /** to add parsing problems during XML parsing and DOM walking. */
-  public void addProblem(Problem problem) {
+  public void addProblem(final Problem problem) {
     if (problems == null) {
       problems = new ArrayList<Problem>();
     }
@@ -164,69 +162,69 @@ public class Parse implements Serializable, ErrorHandler {
   }
 
   /** add a problem with {@link Problem#SEVERITY_ERROR the default severity}. */
-  public void addProblem(String msg) {
+  public void addProblem(final String msg) {
     addProblem(msg, null);
   }
 
   /**
-   * add a problem with an exception cause and {@link Problem#SEVERITY_ERROR
-   * the default severity}.
+   * add a problem with an exception cause and {@link Problem#SEVERITY_ERROR the default severity}.
    */
-  public void addProblem(String msg, Exception e) {
+  public void addProblem(final String msg, final Exception e) {
     addProblem(msg, e, Problem.SEVERITY_ERROR);
   }
 
   /** adds a problem with {@link Problem#SEVERITY_WARNING severity warning}. */
-  public void addWarning(String msg) {
+  public void addWarning(final String msg) {
     addWarning(msg, null);
   }
 
   /**
-   * adds a problem with {@link Problem#SEVERITY_WARNING severity warning} and
-   * an exception as the cause.
+   * adds a problem with {@link Problem#SEVERITY_WARNING severity warning} and an exception as the cause.
    */
-  public void addWarning(String msg, Exception e) {
+  public void addWarning(final String msg, final Exception e) {
     addProblem(msg, e, Problem.SEVERITY_WARNING);
   }
 
   /** adds a problem given message, exception cause and severity */
-  public void addProblem(String msg, Exception e, String severity) {
+  public void addProblem(final String msg, final Exception e, final String severity) {
     addProblem(new Problem(msg, e, severity));
   }
 
   /** indicates presence of problems */
   public boolean hasProblems() {
-    return ((problems != null) && (problems.size() > 0));
+    return problems != null && problems.size() > 0;
   }
 
   /**
-   * allows to provide the list object that should be used to capture the
-   * parsing problems.
+   * allows to provide the list object that should be used to capture the parsing problems.
    */
-  public Parse setProblems(List<Problem> problems) {
+  public Parse setProblems(final List<Problem> problems) {
     this.problems = problems;
     return this;
   }
 
   /** part of {@link ErrorHandler} to capture XML parsing problems. */
-  public void error(SAXParseException e) {
+  @Override
+  public void error(final SAXParseException e) {
     addProblem(e.getMessage(), e, Problem.SEVERITY_ERROR);
   }
 
   /** part of {@link ErrorHandler} to capture XML parsing problems. */
-  public void fatalError(SAXParseException e) {
+  @Override
+  public void fatalError(final SAXParseException e) {
     addProblem(e.getMessage(), e, Problem.SEVERITY_FATALERROR);
   }
 
   /** part of {@link ErrorHandler} to capture XML parsing problems. */
-  public void warning(SAXParseException e) {
+  @Override
+  public void warning(final SAXParseException e) {
     addProblem(e.getMessage(), e, Problem.SEVERITY_WARNING);
   }
 
   // contextual objects ///////////////////////////////////////////////////////
 
   /** push a contextual object on the stack of this parse. */
-  public Parse pushObject(Object object) {
+  public Parse pushObject(final Object object) {
     if (objectStack == null) {
       objectStack = new Stack<Object>();
     }
@@ -252,16 +250,13 @@ public class Parse implements Serializable, ErrorHandler {
 
   /** search a contextual object in the stack by type. */
   @SuppressWarnings("unchecked")
-  public <T> T findObject(Class<T> clazz) {
-    if ((objectStack != null) && (!objectStack.isEmpty())) {
-      ListIterator<Object> listIter = objectStack.listIterator(objectStack
-          .size());
+  public <T> T findObject(final Class<T> clazz) {
+    if (objectStack != null && !objectStack.isEmpty()) {
+      final ListIterator<Object> listIter = objectStack.listIterator(objectStack.size());
       while (listIter.hasPrevious()) {
-        Object object = listIter.previous();
-        if (object != null) {
-          if (clazz.isAssignableFrom(object.getClass())) {
-            return (T) object;
-          }
+        final Object object = listIter.previous();
+        if (object != null && clazz.isAssignableFrom(object.getClass())) {
+          return (T) object;
         }
       }
       return null;
@@ -286,22 +281,16 @@ public class Parse implements Serializable, ErrorHandler {
     return classLoader;
   }
 
-	/**
-	 * @return
-	 */
-	public Parser getParser() {
-		return this.parser;
-	}
+  public Parser getParser() {
+    return this.parser;
+  }
 
-	/**
-	 * @return
-	 */
-	public Properties getContextProperties() {
-		return contextProperties;
-	}
-	
-	public void setContextProperties(Properties contextProperties) {
-		this.contextProperties = contextProperties;
-	}
+  public Properties getContextProperties() {
+    return contextProperties;
+  }
+
+  public void setContextProperties(final Properties contextProperties) {
+    this.contextProperties = contextProperties;
+  }
 
 }

@@ -78,23 +78,23 @@ import org.ow2.bonita.util.ExceptionManager;
 import org.ow2.bonita.util.Misc;
 
 /**
- * @author Marc Blachon, Guillaume Porcher, Charles Souillard, Miguel Valdes,
- *         Pierre Vigneras, Rodrigue Le Gall
+ * @author Marc Blachon, Guillaume Porcher, Charles Souillard, Miguel Valdes, Pierre Vigneras, Rodrigue Le Gall
  */
 public class ManagementAPIImpl implements ManagementAPI {
 
   private static final String DEFAULT_USERS_CREATED = "DEFAULT_USERS_CREATED";
 
-  private String queryList;
+  private final String queryList;
 
   protected ManagementAPIImpl(final String queryList) {
-  	this.queryList = queryList;
+    this.queryList = queryList;
   }
 
   private String getQueryList() {
-  	return this.queryList;
+    return this.queryList;
   }
 
+  @Override
   public ProcessDefinition deploy(final BusinessArchive businessArchive) throws DeploymentException {
     FacadeUtil.checkArgsNotNull(businessArchive);
     try {
@@ -104,26 +104,25 @@ public class ManagementAPIImpl implements ManagementAPI {
     }
   }
 
+  @Override
   public void deployJar(final String jarName, final byte[] jar) throws DeploymentException {
     FacadeUtil.checkArgsNotNull(jarName, jar);
     if (!jarName.endsWith(".jar")) {
-      throw new DeploymentException("Invalid jar name: " + jarName
-          + ". A jar file name must ends with .jar extension.");
+      throw new DeploymentException("Invalid jar name: " + jarName + ". A jar file name must ends with .jar extension.");
     }
     final LargeDataRepository ldr = EnvTool.getLargeDataRepository();
     if (ldr.getData(byte[].class, Misc.getGlobalClassDataCategories(), jarName) != null) {
-      throw new DeploymentException("A jar with name: " + jarName
-          + " already exists in repository.");
+      throw new DeploymentException("A jar with name: " + jarName + " already exists in repository.");
     }
     ldr.storeData(Misc.getGlobalClassDataCategories(), jarName, jar, true);
     EnvTool.getClassDataLoader().resetCommonClassloader();
   }
 
+  @Override
   public void removeJar(final String jarName) throws DeploymentException {
     FacadeUtil.checkArgsNotNull(jarName);
     if (!jarName.endsWith(".jar")) {
-      throw new DeploymentException("Invalid jar name: " + jarName
-          + ". A jar file name must ends with .jar extension.");
+      throw new DeploymentException("Invalid jar name: " + jarName + ". A jar file name must ends with .jar extension.");
     }
     final LargeDataRepository ldr = EnvTool.getLargeDataRepository();
     final boolean found = ldr.deleteData(Misc.getGlobalClassDataCategories(), jarName);
@@ -134,35 +133,38 @@ public class ManagementAPIImpl implements ManagementAPI {
     EnvTool.getClassDataLoader().resetCommonClassloader();
   }
 
+  @Override
   public Set<String> getAvailableJars() {
     final LargeDataRepository ldr = EnvTool.getLargeDataRepository();
     return ldr.getKeys(Misc.getGlobalClassDataCategories());
   }
 
-  public void delete(Collection<ProcessDefinitionUUID> processUUIDs)
-  throws ProcessNotFoundException, UndeletableProcessException, UndeletableInstanceException {
+  @Override
+  public void delete(final Collection<ProcessDefinitionUUID> processUUIDs) throws ProcessNotFoundException,
+      UndeletableProcessException, UndeletableInstanceException {
     FacadeUtil.checkArgsNotNull(processUUIDs);
-    for (ProcessDefinitionUUID processUUID : processUUIDs) {
+    for (final ProcessDefinitionUUID processUUID : processUUIDs) {
       deleteProcess(processUUID);
     }
   }
 
-  public void deleteProcess(final ProcessDefinitionUUID processUUID)
-  throws ProcessNotFoundException, UndeletableProcessException, UndeletableInstanceException {
+  @Override
+  public void deleteProcess(final ProcessDefinitionUUID processUUID) throws ProcessNotFoundException,
+      UndeletableProcessException, UndeletableInstanceException {
     FacadeUtil.checkArgsNotNull(processUUID);
     deleteProcess(true, processUUID);
   }
 
   private void deleteProcess(final boolean deleteAll, final ProcessDefinitionUUID processUUID)
-  throws ProcessNotFoundException, UndeletableProcessException, UndeletableInstanceException {
+      throws ProcessNotFoundException, UndeletableProcessException, UndeletableInstanceException {
     FacadeUtil.checkArgsNotNull(processUUID);
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     if (access) {
       try {
         final Set<ProcessDefinitionUUID> itemsToRemove = new HashSet<ProcessDefinitionUUID>();
         itemsToRemove.add(processUUID);
         removeProcessDefinitionUUIDFromAllRules(itemsToRemove, RuleType.PROCESS_READ, RuleType.PROCESS_START);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new ProcessNotFoundException("Unknown process", processUUID);
       }
     }
@@ -193,13 +195,13 @@ public class ManagementAPIImpl implements ManagementAPI {
     }
 
     if (inJournal) {
-      final Set<InternalProcessInstance> instances = EnvTool.getJournalQueriers().getProcessInstances(processUUID, InstanceState.STARTED);
+      final Set<InternalProcessInstance> instances = EnvTool.getJournalQueriers().getProcessInstances(processUUID,
+          InstanceState.STARTED);
       if (!instances.isEmpty()) {
         final ProcessInstanceUUID instanceUUID = instances.iterator().next().getUUID();
-        throw new UndeletableProcessException("bai_MAPII_10", processUUID,
-            instanceUUID);
+        throw new UndeletableProcessException("bai_MAPII_10", processUUID, instanceUUID);
       }
-      removeProcessDependencies(deleteAll, processDef);
+      removeProcessDependencies(processDef);
       final Recorder recorder = EnvTool.getRecorder();
       recorder.remove(processDef);
     }
@@ -215,17 +217,19 @@ public class ManagementAPIImpl implements ManagementAPI {
     ldr.deleteData(Misc.getAttachmentCategories(processUUID));
   }
 
-  private void removeProcessDefinitionUUIDFromAllRules(final Set<ProcessDefinitionUUID> itemsToRemove, final RuleType... ruleTypes) throws RuleNotFoundException, PrivilegeNotFoundException {
+  private void removeProcessDefinitionUUIDFromAllRules(final Set<ProcessDefinitionUUID> itemsToRemove,
+      final RuleType... ruleTypes) throws RuleNotFoundException, PrivilegeNotFoundException {
     FacadeUtil.checkArgsNotNull(itemsToRemove, ruleTypes);
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
     final Set<Rule> rules = privilegeService.getRulesByType(ruleTypes);
-    for (Rule rule : rules) {
+    for (final Rule rule : rules) {
       removeExceptionsFromRuleByUUID(rule.getUUID(), itemsToRemove);
     }
   }
 
-  private void removeProcessDependencies(final boolean checkIntegrity, final ProcessDefinition processDef) {
-    final Set<InternalProcessInstance> instances = EnvTool.getJournalQueriers().getProcessInstances(processDef.getUUID(), InstanceState.STARTED);
+  private void removeProcessDependencies(final ProcessDefinition processDef) {
+    final Set<InternalProcessInstance> instances = EnvTool.getJournalQueriers().getProcessInstances(
+        processDef.getUUID(), InstanceState.STARTED);
     Deployer.removeStartEvents(processDef);
     if (instances != null && !instances.isEmpty()) {
       final String message = ExceptionManager.getInstance().getFullMessage("bd_D_9");
@@ -234,15 +238,17 @@ public class ManagementAPIImpl implements ManagementAPI {
     EnvTool.getClassDataLoader().removeProcessClassLoader(processDef.getUUID());
   }
 
+  @Override
   public void deleteAllProcesses() throws UndeletableInstanceException, UndeletableProcessException {
     final Querier querier = EnvTool.getAllQueriers();
     Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
     Collection<InternalProcessInstance> parentInstances = new HashSet<InternalProcessInstance>();
-    boolean access = EnvTool.isRestrictedApplicationAcces();
+    final boolean access = EnvTool.isRestrictedApplicationAcces();
     if (access) {
       final String applicationName = EnvTool.getApplicationAccessName();
-      if (applicationName!= null) {
-        final Set<ProcessDefinitionUUID> readyToRemove = FacadeUtil.getAllowedProcessUUIDsFor(applicationName, RuleType.PROCESS_READ);
+      if (applicationName != null) {
+        final Set<ProcessDefinitionUUID> readyToRemove = FacadeUtil.getAllowedProcessUUIDsFor(applicationName,
+            RuleType.PROCESS_READ);
         if (!readyToRemove.isEmpty()) {
           processes = querier.getProcesses(readyToRemove);
           parentInstances = querier.getProcessInstances(readyToRemove);
@@ -254,43 +260,45 @@ public class ManagementAPIImpl implements ManagementAPI {
       processes = querier.getProcesses();
     }
     final RuntimeAPIImpl runtimeAPI = new RuntimeAPIImpl(getQueryList());
-    for (InternalProcessInstance internalProcessInstance : parentInstances) {
+    for (final InternalProcessInstance internalProcessInstance : parentInstances) {
       try {
         runtimeAPI.deleteProcessInstance(internalProcessInstance.getUUID());
-      } catch (InstanceNotFoundException e) {
-        throw new BonitaRuntimeException("Unable to delete process instance: "
-            + internalProcessInstance.getUUID());
+      } catch (final InstanceNotFoundException e) {
+        throw new BonitaRuntimeException("Unable to delete process instance: " + internalProcessInstance.getUUID());
       }
     }
 
-    for (InternalProcessDefinition process : processes) {
+    for (final InternalProcessDefinition process : processes) {
       try {
         deleteProcess(false, process.getUUID());
-      } catch (ProcessNotFoundException e) {
-        throw new BonitaRuntimeException("Unable to delete process: "
-            + process.getUUID());
+      } catch (final ProcessNotFoundException e) {
+        throw new BonitaRuntimeException("Unable to delete process: " + process.getUUID());
       }
     }
   }
 
+  @Override
   public String getLoggedUser() {
     return EnvTool.getUserId();
   }
 
+  @Override
   public void addMetaData(final String key, final String value) {
     EnvTool.getJournal().storeMetaData(key, value);
   }
 
+  @Override
   public void deleteMetaData(final String key) {
     EnvTool.getJournal().deleteMetaData(key);
   }
 
+  @Override
   public String getMetaData(final String key) {
     return EnvTool.getJournal().getMetaData(key);
   }
 
-  public void archive(final ProcessDefinitionUUID processUUID)
-  throws DeploymentException {
+  @Override
+  public void archive(final ProcessDefinitionUUID processUUID) throws DeploymentException {
     FacadeUtil.checkArgsNotNull(processUUID);
     try {
       Deployer.archiveProcess(processUUID, EnvTool.getUserId());
@@ -299,10 +307,10 @@ public class ManagementAPIImpl implements ManagementAPI {
     }
   }
 
-  public void archive(Collection<ProcessDefinitionUUID> processUUIDs)
-      throws DeploymentException {
+  @Override
+  public void archive(final Collection<ProcessDefinitionUUID> processUUIDs) throws DeploymentException {
     FacadeUtil.checkArgsNotNull(processUUIDs);
-    for (ProcessDefinitionUUID processUUID : processUUIDs) {
+    for (final ProcessDefinitionUUID processUUID : processUUIDs) {
       try {
         Deployer.archiveProcess(processUUID, EnvTool.getUserId());
       } catch (final DeploymentRuntimeException e) {
@@ -311,8 +319,8 @@ public class ManagementAPIImpl implements ManagementAPI {
     }
   }
 
-  public void disable(final ProcessDefinitionUUID processUUID)
-      throws DeploymentException {
+  @Override
+  public void disable(final ProcessDefinitionUUID processUUID) throws DeploymentException {
     FacadeUtil.checkArgsNotNull(processUUID);
     try {
       Deployer.disableProcess(processUUID);
@@ -321,10 +329,10 @@ public class ManagementAPIImpl implements ManagementAPI {
     }
   }
 
-  public void disable(final Collection<ProcessDefinitionUUID> processUUIDs)
-      throws DeploymentException {
+  @Override
+  public void disable(final Collection<ProcessDefinitionUUID> processUUIDs) throws DeploymentException {
     FacadeUtil.checkArgsNotNull(processUUIDs);
-    for (ProcessDefinitionUUID processUUID : processUUIDs) {
+    for (final ProcessDefinitionUUID processUUID : processUUIDs) {
       try {
         Deployer.disableProcess(processUUID);
       } catch (final DeploymentRuntimeException e) {
@@ -333,8 +341,8 @@ public class ManagementAPIImpl implements ManagementAPI {
     }
   }
 
-  public void enable(final ProcessDefinitionUUID processUUID)
-      throws DeploymentException {
+  @Override
+  public void enable(final ProcessDefinitionUUID processUUID) throws DeploymentException {
     FacadeUtil.checkArgsNotNull(processUUID);
     try {
       Deployer.enableProcess(processUUID);
@@ -343,47 +351,48 @@ public class ManagementAPIImpl implements ManagementAPI {
     }
   }
 
-  public void enable(final Collection<ProcessDefinitionUUID> processUUIDs)
-      throws DeploymentException {
+  @Override
+  public void enable(final Collection<ProcessDefinitionUUID> processUUIDs) throws DeploymentException {
     FacadeUtil.checkArgsNotNull(processUUIDs);
-    for (ProcessDefinitionUUID processUUID : processUUIDs) {
+    for (final ProcessDefinitionUUID processUUID : processUUIDs) {
       enable(processUUID);
     }
   }
 
+  @Override
   public boolean isUserAdmin(final String username) throws UserNotFoundException {
     final AuthenticationService adminService = EnvTool.getAuthenticationService();
     return adminService.isUserAdmin(username);
   }
 
-  public boolean checkUserCredentials(final String username, final String password)
-      {
+  @Override
+  public boolean checkUserCredentials(final String username, final String password) {
     createDefaultUsers();
     return checkUserCredentials(username, password, false);
   }
 
-	private boolean checkUserCredentials(final String username, final String password, final boolean isPasswordHash) {
-		boolean allowed = false;
-		final AuthenticationService authenticationService = EnvTool.getAuthenticationService();
-		if (!isPasswordHash){
-			allowed = authenticationService.checkUserCredentials(username, password);
-		} else {
-			allowed = authenticationService.checkUserCredentialsWithPasswordHash(username, password);
-		}
-		return allowed;
-	}
+  private boolean checkUserCredentials(final String username, final String password, final boolean isPasswordHash) {
+    boolean allowed = false;
+    final AuthenticationService authenticationService = EnvTool.getAuthenticationService();
+    if (!isPasswordHash) {
+      allowed = authenticationService.checkUserCredentials(username, password);
+    } else {
+      allowed = authenticationService.checkUserCredentialsWithPasswordHash(username, password);
+    }
+    return allowed;
+  }
 
-	private void createDefaultUsers() {
-		final String defaultUsersCreated = EnvTool.getJournal().getMetaData(
-        DEFAULT_USERS_CREATED);
+  private void createDefaultUsers() {
+    final String defaultUsersCreated = EnvTool.getJournal().getMetaData(DEFAULT_USERS_CREATED);
     if (defaultUsersCreated == null) {
       final IdentityService identityService = EnvTool.getIdentityService();
-      final RoleImpl memberRole = createDefaultRole(identityService, IdentityAPI.USER_ROLE_NAME, IdentityAPI.USER_ROLE_LABEL,
-          IdentityAPI.USER_ROLE_DESCRIPTION);
-      final RoleImpl adminRole = createDefaultRole(identityService, IdentityAPI.ADMIN_ROLE_NAME, IdentityAPI.ADMIN_ROLE_LABEL,
-          IdentityAPI.ADMIN_ROLE_DESCRIPTION);
+      final RoleImpl memberRole = createDefaultRole(identityService, IdentityAPI.USER_ROLE_NAME,
+          IdentityAPI.USER_ROLE_LABEL, IdentityAPI.USER_ROLE_DESCRIPTION);
+      final RoleImpl adminRole = createDefaultRole(identityService, IdentityAPI.ADMIN_ROLE_NAME,
+          IdentityAPI.ADMIN_ROLE_LABEL, IdentityAPI.ADMIN_ROLE_DESCRIPTION);
 
-      final GroupImpl defaultGroup = createDefaultGroup(identityService, IdentityAPI.DEFAULT_GROUP_NAME, IdentityAPI.DEFAULT_GROUP_LABEL, IdentityAPI.DEFAULT_GROUP_DESCRIPTION, null);
+      final GroupImpl defaultGroup = createDefaultGroup(identityService, IdentityAPI.DEFAULT_GROUP_NAME,
+          IdentityAPI.DEFAULT_GROUP_LABEL, IdentityAPI.DEFAULT_GROUP_DESCRIPTION, null);
 
       final MembershipImpl memberMembership = createDefaultMembership(identityService, defaultGroup, memberRole);
       final MembershipImpl adminMembership = createDefaultMembership(identityService, defaultGroup, adminRole);
@@ -392,22 +401,25 @@ public class ManagementAPIImpl implements ManagementAPI {
       identityService.addMembershipToUser(adminUser, adminMembership);
       final UserImpl user1 = addDefaultUser(identityService, "john", "John", "Doe", "bpm", null, null);
       identityService.addMembershipToUser(user1, memberMembership);
-      final UserImpl user2 = addDefaultUser(identityService, "jack", "Jack", "Doe", "bpm", user1.getUUID(), user1.getUUID());
+      final UserImpl user2 = addDefaultUser(identityService, "jack", "Jack", "Doe", "bpm", user1.getUUID(),
+          user1.getUUID());
       identityService.addMembershipToUser(user2, memberMembership);
-      final UserImpl user3 = addDefaultUser(identityService, "james", "James", "Doe", "bpm", user1.getUUID(), user2.getUUID());
+      final UserImpl user3 = addDefaultUser(identityService, "james", "James", "Doe", "bpm", user1.getUUID(),
+          user2.getUUID());
       identityService.addMembershipToUser(user3, memberMembership);
 
       EnvTool.getJournal().storeMetaData(DEFAULT_USERS_CREATED, "true");
     }
-	}
-  
-  public boolean checkUserCredentialsWithPasswordHash(final String username, final String passwordHash){
-  	 createDefaultUsers();
-     return checkUserCredentials(username, passwordHash, true);
   }
 
-  private MembershipImpl createDefaultMembership(final IdentityService identityService,
-      final GroupImpl group, final RoleImpl role) {
+  @Override
+  public boolean checkUserCredentialsWithPasswordHash(final String username, final String passwordHash) {
+    createDefaultUsers();
+    return checkUserCredentials(username, passwordHash, true);
+  }
+
+  private MembershipImpl createDefaultMembership(final IdentityService identityService, final GroupImpl group,
+      final RoleImpl role) {
     MembershipImpl membership = identityService.findMembershipByRoleAndGroup(role.getUUID(), group.getUUID());
     if (membership == null) {
       membership = new MembershipImpl();
@@ -418,8 +430,8 @@ public class ManagementAPIImpl implements ManagementAPI {
     return membership;
   }
 
-  private RoleImpl createDefaultRole(final IdentityService identityService,
-      final String name, final String label, final String description) {
+  private RoleImpl createDefaultRole(final IdentityService identityService, final String name, final String label,
+      final String description) {
     RoleImpl role = identityService.findRoleByName(name);
     if (role == null) {
       role = new RoleImpl(name);
@@ -430,8 +442,8 @@ public class ManagementAPIImpl implements ManagementAPI {
     return role;
   }
 
-  private GroupImpl createDefaultGroup(final IdentityService identityService,
-      final String name, final String label, final String description, final Group parentGroup) {
+  private GroupImpl createDefaultGroup(final IdentityService identityService, final String name, final String label,
+      final String description, final Group parentGroup) {
     final Set<GroupImpl> groups = identityService.findGroupsByName(name);
     GroupImpl group = null;
     if (groups == null || groups.isEmpty()) {
@@ -446,8 +458,8 @@ public class ManagementAPIImpl implements ManagementAPI {
     return group;
   }
 
-  private UserImpl addDefaultUser(final IdentityService identityService, final String username,
-      final String firstName, final String lastName, final String password, final String manager, final String delegee) {
+  private UserImpl addDefaultUser(final IdentityService identityService, final String username, final String firstName,
+      final String lastName, final String password, final String manager, final String delegee) {
     UserImpl user = identityService.findUserByUsername(username);
     if (user == null) {
       user = new UserImpl(username, password);
@@ -460,8 +472,7 @@ public class ManagementAPIImpl implements ManagementAPI {
     return user;
   }
 
-  public void grantAccessAuthorisation(final String applicationName,
-      final ProcessDefinitionUUID definitionUUID) {
+  public void grantAccessAuthorisation(final String applicationName, final ProcessDefinitionUUID definitionUUID) {
     FacadeUtil.checkArgsNotNull(applicationName, definitionUUID);
 
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
@@ -476,22 +487,22 @@ public class ManagementAPIImpl implements ManagementAPI {
         rule = (RuleImpl) createRule(applicationName, applicationName, applicationName, RuleType.PROCESS_READ);
         addExceptionsToRuleByUUID(rule.getUUID(), processes);
       }
-    } catch (BonitaException e) {
+    } catch (final BonitaException e) {
       e.printStackTrace();
       throw new RuntimeException(e);
     }
   }
 
-  public void grantAccessAuthorisation(final String applicationName,
-      final Set<ProcessDefinitionUUID> definitionUUIDs) {
+  public void grantAccessAuthorisation(final String applicationName, final Set<ProcessDefinitionUUID> definitionUUIDs) {
     FacadeUtil.checkArgsNotNull(applicationName, definitionUUIDs);
-    for (ProcessDefinitionUUID definitionUUID : definitionUUIDs) {
+    for (final ProcessDefinitionUUID definitionUUID : definitionUUIDs) {
       grantAccessAuthorisation(applicationName, definitionUUID);
     }
   }
 
-
-  public Rule createRule(String name, String label, String description, RuleType type) throws RuleAlreadyExistsException {
+  @Override
+  public Rule createRule(final String name, final String label, final String description, final RuleType type)
+      throws RuleAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(name, type);
 
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
@@ -500,79 +511,82 @@ public class ManagementAPIImpl implements ManagementAPI {
       throw new RuleAlreadyExistsException("bai_MAPII_13", name);
     }
     switch (type) {
-      case PROCESS_START:
-      case PROCESS_READ:
-      case PROCESS_ADD_COMMENT:
-      case PROCESS_INSTANTIATION_DETAILS_VIEW:
-      case PROCESS_MANAGE:
-      case PROCESS_PDF_EXPORT:
-        rule = new ProcessRuleImpl(name, label, description, type, null);
-        privilegeService.addRule(rule);
-        break;
-      case ACTIVITY_READ:
-      case ACTIVITY_DETAILS_READ:
-      case ASSIGN_TO_ME_STEP:
-      case ASSIGN_TO_STEP:
-      case UNASSIGN_STEP:
-      case CHANGE_PRIORITY_STEP:
-      case RESUME_STEP:
-      case SUSPEND_STEP:
-      case SKIP_STEP:
-        rule = new ActivityRuleImpl(name, label, description, type, null);
-        privilegeService.addRule(rule);
-        break;
-      case CATEGORY_READ:
-        rule = new CategoryRuleImpl(name, label, description, type, null);
-        privilegeService.addRule(rule);
-        break;
-      case REPORT_MANAGE:
-      case REPORT_VIEW:
-        rule = new CustomRuleImpl(name, label, description, type, null);
-        privilegeService.addRule(rule);
-        break;
-      case LOGOUT:
-      case PASSWORD_UPDATE:
-      case DELEGEE_UPDATE:
-      case PROCESS_INSTALL:
-      case REPORT_INSTALL:
-        rule = new SimpleRuleImpl(name, label, description, type);
-        privilegeService.addRule(rule);
-        break;
-      default:
-        throw new IllegalArgumentException("ManagementAPI.createRule(): RuleType not yet supported: " + type.name());
+    case PROCESS_START:
+    case PROCESS_READ:
+    case PROCESS_ADD_COMMENT:
+    case PROCESS_INSTANTIATION_DETAILS_VIEW:
+    case PROCESS_MANAGE:
+    case PROCESS_PDF_EXPORT:
+      rule = new ProcessRuleImpl(name, label, description, type, null);
+      privilegeService.addRule(rule);
+      break;
+    case ACTIVITY_READ:
+    case ACTIVITY_DETAILS_READ:
+    case ASSIGN_TO_ME_STEP:
+    case ASSIGN_TO_STEP:
+    case UNASSIGN_STEP:
+    case CHANGE_PRIORITY_STEP:
+    case RESUME_STEP:
+    case SUSPEND_STEP:
+    case SKIP_STEP:
+      rule = new ActivityRuleImpl(name, label, description, type, null);
+      privilegeService.addRule(rule);
+      break;
+    case CATEGORY_READ:
+      rule = new CategoryRuleImpl(name, label, description, type, null);
+      privilegeService.addRule(rule);
+      break;
+    case REPORT_MANAGE:
+    case REPORT_VIEW:
+      rule = new CustomRuleImpl(name, label, description, type, null);
+      privilegeService.addRule(rule);
+      break;
+    case LOGOUT:
+    case PASSWORD_UPDATE:
+    case DELEGEE_UPDATE:
+    case PROCESS_INSTALL:
+    case REPORT_INSTALL:
+      rule = new SimpleRuleImpl(name, label, description, type);
+      privilegeService.addRule(rule);
+      break;
+    default:
+      throw new IllegalArgumentException("ManagementAPI.createRule(): RuleType not yet supported: " + type.name());
     }
     return rule;
   }
 
-  private List<Rule> buildRulesResultList(List<Rule> rules) {
+  private List<Rule> buildRulesResultList(final List<Rule> rules) {
     final List<Rule> rulesResult = new ArrayList<Rule>();
-    for (Rule rule : rules) {
+    for (final Rule rule : rules) {
       rulesResult.add(RuleImpl.createRule(rule));
     }
     return rulesResult;
   }
 
-
+  @Override
   public List<Rule> getRules(final RuleType ruleType, final int fromIndex, final int pageSige) {
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
-    final List<Rule> rules = privilegeService.getRules(ruleType, fromIndex,pageSige);
+    final List<Rule> rules = privilegeService.getRules(ruleType, fromIndex, pageSige);
     if (rules == null || rules.isEmpty()) {
       return Collections.emptyList();
     }
     return buildRulesResultList(rules);
   }
 
+  @Override
   public long getNumberOfRules(final RuleType ruleType) {
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
     return privilegeService.getNumberOfRules(ruleType);
   }
 
+  @Override
   public PrivilegePolicy getRuleTypePolicy(final RuleType ruleType) {
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
     final RuleTypePolicy ruleTypePolicy = privilegeService.getRuleTypePolicy(ruleType);
     return ruleTypePolicy.getPolicy();
   }
 
+  @Override
   public void setRuleTypePolicy(final RuleType ruleType, final PrivilegePolicy newPolicy) {
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
     final RuleTypePolicyImpl ruleTypePolicy = (RuleTypePolicyImpl) privilegeService.getRuleTypePolicy(ruleType);
@@ -582,8 +596,10 @@ public class ManagementAPIImpl implements ManagementAPI {
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public <E extends AbstractUUID> void addExceptionsToRuleByUUID(final String ruleUUID, final Set<E> exceptions) throws RuleNotFoundException {
+  public <E extends AbstractUUID> void addExceptionsToRuleByUUID(final String ruleUUID, final Set<E> exceptions)
+      throws RuleNotFoundException {
     FacadeUtil.checkArgsNotNull(ruleUUID, exceptions);
     if (exceptions.size() > 0) {
       final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
@@ -606,9 +622,10 @@ public class ManagementAPIImpl implements ManagementAPI {
     }
   }
 
-  public void applyRuleToEntities(final String ruleUUID, final Collection<String> userUUIDs, final Collection<String> roleUUIDs,
-      final Collection<String> groupUUIDs, final Collection<String> membershipUUIDs, final Collection<String> entityIDs)
-      throws RuleNotFoundException {
+  @Override
+  public void applyRuleToEntities(final String ruleUUID, final Collection<String> userUUIDs,
+      final Collection<String> roleUUIDs, final Collection<String> groupUUIDs,
+      final Collection<String> membershipUUIDs, final Collection<String> entityIDs) throws RuleNotFoundException {
     FacadeUtil.checkArgsNotNull(ruleUUID);
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
     final Rule rule = privilegeService.getRule(ruleUUID);
@@ -633,6 +650,7 @@ public class ManagementAPIImpl implements ManagementAPI {
     privilegeService.updateRule(rule);
   }
 
+  @Override
   public void deleteRuleByUUID(final String ruleUUID) throws RuleNotFoundException {
     FacadeUtil.checkArgsNotNull(ruleUUID);
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
@@ -643,23 +661,29 @@ public class ManagementAPIImpl implements ManagementAPI {
     privilegeService.deleteRule(rule);
   }
 
-  public List<Rule> getAllApplicableRules(final String userUUID, final Collection<String> roleUUIDs, final Collection<String> groupUUIDs,
-      final Collection<String> membershipUUIDs, final String entityID) {
+  @Override
+  public List<Rule> getAllApplicableRules(final String userUUID, final Collection<String> roleUUIDs,
+      final Collection<String> groupUUIDs, final Collection<String> membershipUUIDs, final String entityID) {
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
-    final List<Rule> rules = privilegeService.getAllApplicableRules(userUUID, roleUUIDs, groupUUIDs, membershipUUIDs, entityID);
+    final List<Rule> rules = privilegeService.getAllApplicableRules(userUUID, roleUUIDs, groupUUIDs, membershipUUIDs,
+        entityID);
 
     return buildRulesResultList(rules);
   }
 
-  public List<Rule> getApplicableRules(final RuleType ruleType, final String userUUID, final Collection<String> roleUUIDs,
-      final Collection<String> groupUUIDs, final Collection<String> membershipUUIDs, final String entityID) {
+  @Override
+  public List<Rule> getApplicableRules(final RuleType ruleType, final String userUUID,
+      final Collection<String> roleUUIDs, final Collection<String> groupUUIDs,
+      final Collection<String> membershipUUIDs, final String entityID) {
     FacadeUtil.checkArgsNotNull(ruleType);
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
-    final List<Rule> rules = privilegeService.getApplicableRules(ruleType, userUUID, roleUUIDs, groupUUIDs, membershipUUIDs, entityID);
+    final List<Rule> rules = privilegeService.getApplicableRules(ruleType, userUUID, roleUUIDs, groupUUIDs,
+        membershipUUIDs, entityID);
 
     return buildRulesResultList(rules);
   }
 
+  @Override
   public List<Rule> getAllRules() {
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
     final List<Rule> rules = privilegeService.getAllRules();
@@ -669,6 +693,7 @@ public class ManagementAPIImpl implements ManagementAPI {
     return buildRulesResultList(rules);
   }
 
+  @Override
   public Rule getRuleByUUID(final String ruleUUID) throws RuleNotFoundException {
     FacadeUtil.checkArgsNotNull(ruleUUID);
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
@@ -679,6 +704,7 @@ public class ManagementAPIImpl implements ManagementAPI {
     return RuleImpl.createRule(rule);
   }
 
+  @Override
   public List<Rule> getRulesByUUIDs(final Collection<String> ruleUUIDs) throws RuleNotFoundException {
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
     if (ruleUUIDs.size() > 0) {
@@ -686,10 +712,10 @@ public class ManagementAPIImpl implements ManagementAPI {
       if (ruleUUIDs.size() != rules.size()) {
         // The request tries to get an unknown rule.
         final Set<String> storedRuleUUID = new HashSet<String>();
-        for (Rule rule : rules) {
+        for (final Rule rule : rules) {
           storedRuleUUID.add(rule.getUUID());
         }
-        for (String ruleUUID : ruleUUIDs) {
+        for (final String ruleUUID : ruleUUIDs) {
           if (!storedRuleUUID.contains(ruleUUID)) {
             throw new RuleNotFoundException("bai_MAPII_12", ruleUUID);
           }
@@ -701,6 +727,7 @@ public class ManagementAPIImpl implements ManagementAPI {
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public <E extends AbstractUUID> void removeExceptionsFromRuleByUUID(final String ruleUUID, final Set<E> exceptions)
       throws RuleNotFoundException {
@@ -726,9 +753,10 @@ public class ManagementAPIImpl implements ManagementAPI {
     }
   }
 
-  public void removeRuleFromEntities(final String ruleUUID, final Collection<String> userUUIDs, final Collection<String> roleUUIDs,
-      final Collection<String> groupUUIDs, final Collection<String> membershipUUIDs, final Collection<String> entityIDs)
-      throws RuleNotFoundException {
+  @Override
+  public void removeRuleFromEntities(final String ruleUUID, final Collection<String> userUUIDs,
+      final Collection<String> roleUUIDs, final Collection<String> groupUUIDs,
+      final Collection<String> membershipUUIDs, final Collection<String> entityIDs) throws RuleNotFoundException {
     FacadeUtil.checkArgsNotNull(ruleUUID);
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
     final Rule rule = privilegeService.getRule(ruleUUID);
@@ -753,7 +781,9 @@ public class ManagementAPIImpl implements ManagementAPI {
     privilegeService.updateRule(rule);
   }
 
-  public Rule updateRuleByUUID(final String ruleUUID, final String name, final String label, final String description) throws RuleNotFoundException, RuleAlreadyExistsException {
+  @Override
+  public Rule updateRuleByUUID(final String ruleUUID, final String name, final String label, final String description)
+      throws RuleNotFoundException, RuleAlreadyExistsException {
     FacadeUtil.checkArgsNotNull(ruleUUID);
     final PrivilegeService privilegeService = EnvTool.getPrivilegeService();
     final RuleImpl rule = (RuleImpl) privilegeService.getRule(ruleUUID);
@@ -772,8 +802,8 @@ public class ManagementAPIImpl implements ManagementAPI {
   }
 
   @Override
-  public void updateMigrationDate(final ProcessDefinitionUUID processUUID,
-      final Date migrationDate) throws ProcessNotFoundException {
+  public void updateMigrationDate(final ProcessDefinitionUUID processUUID, final Date migrationDate)
+      throws ProcessNotFoundException {
     Misc.checkArgsNotNull(processUUID);
     final InternalProcessDefinition process = EnvTool.getAllQueriers().getProcess(processUUID);
     if (process == null) {
@@ -783,7 +813,8 @@ public class ManagementAPIImpl implements ManagementAPI {
   }
 
   @Override
-  public void setResource(final ProcessDefinitionUUID processUUID, final String resourcePath, final byte[] content) throws ProcessNotFoundException {
+  public void setResource(final ProcessDefinitionUUID processUUID, final String resourcePath, final byte[] content)
+      throws ProcessNotFoundException {
     Misc.checkArgsNotNull(processUUID, resourcePath, content);
     final InternalProcessDefinition process = EnvTool.getAllQueriers(getQueryList()).getProcess(processUUID);
     if (process == null) {
@@ -791,7 +822,7 @@ public class ManagementAPIImpl implements ManagementAPI {
     }
     final LargeDataRepository ldr = EnvTool.getLargeDataRepository();
     ldr.storeData(Misc.getBusinessArchiveCategories(processUUID), resourcePath, content, true);
-    //otherwise the Classloader will take the old content of the resource
+    // otherwise the Classloader will take the old content of the resource
     EnvTool.getClassDataLoader().removeProcessClassLoader(processUUID);
   }
 }

@@ -21,26 +21,18 @@ import java.util.Date;
 import org.bonitasoft.forms.server.accessor.impl.EngineActivityFormDefAccessorImpl;
 import org.bonitasoft.forms.server.accessor.impl.EngineApplicationFormDefAccessorImpl;
 import org.bonitasoft.forms.server.accessor.impl.EngineProcessFormDefAccessorImpl;
-import org.bonitasoft.forms.server.accessor.impl.XMLActivityFormDefAccessorImpl;
 import org.bonitasoft.forms.server.accessor.impl.XMLApplicationFormDefAccessorImpl;
-import org.bonitasoft.forms.server.accessor.impl.XMLProcessFormDefAccessorImpl;
-import org.bonitasoft.forms.server.exception.ActivityFormDefinitionNotFoundException;
+import org.bonitasoft.forms.server.accessor.impl.util.FormDocument;
 import org.bonitasoft.forms.server.exception.ApplicationFormDefinitionNotFoundException;
-import org.bonitasoft.forms.server.exception.ProcessFormDefinitionNotFoundException;
+import org.bonitasoft.forms.server.exception.InvalidFormDefinitionException;
 import org.ow2.bonita.facade.exception.ProcessNotFoundException;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
-import org.w3c.dom.Document;
 
 /**
  * @author Anthony Birembaut
  *
  */
 public class FormDefAccessorFactory {
-
-    @Deprecated
-    public static XMLActivityFormDefAccessorImpl getXMLActivityFormDefAccessor(final Document document, final ProcessDefinitionUUID processDefinitionUUID, final String locale, final Date processDeploymentDate, final String activityName, final boolean isEditMode) throws ActivityFormDefinitionNotFoundException {
-        return new XMLActivityFormDefAccessorImpl(document, processDefinitionUUID, locale, processDeploymentDate, activityName, isEditMode);
-    }
     
     @Deprecated
     public static EngineActivityFormDefAccessorImpl getEngineActivityFormDefAccessor(final ProcessDefinitionUUID processDefinitionUUID, final String activityName, final boolean includeProcessVariables, final boolean isEditMode) {
@@ -48,17 +40,12 @@ public class FormDefAccessorFactory {
     }
     
     @Deprecated
-    public static XMLProcessFormDefAccessorImpl getXMLProcessFormDefAccessor(final Document document, final ProcessDefinitionUUID processDefinitionUUID, final String locale, final Date processDeploymentDate, final boolean isInstanceRecap, final boolean isEditMode) throws ProcessFormDefinitionNotFoundException {
-        return new XMLProcessFormDefAccessorImpl(document, processDefinitionUUID, locale, processDeploymentDate, isInstanceRecap, isEditMode);
-    }
-    
-    @Deprecated
     public static EngineProcessFormDefAccessorImpl getEngineProcessFormDefAccessor(final ProcessDefinitionUUID processDefinitionUUID, final boolean isInstanceRecap, final boolean isEditMode) throws ProcessNotFoundException {
         return new EngineProcessFormDefAccessorImpl(processDefinitionUUID, isInstanceRecap, isEditMode);
     }
     
-    public static XMLApplicationFormDefAccessorImpl getXMLApplicationFormDefAccessor(final String formId, final Document document, final String locale, final Date processDeploymentDate) throws ApplicationFormDefinitionNotFoundException {
-        return new XMLApplicationFormDefAccessorImpl(formId, document, locale, processDeploymentDate);
+    public static XMLApplicationFormDefAccessorImpl getXMLApplicationFormDefAccessor(final String formId, final FormDocument formDocument, final String locale, final Date processDeploymentDate) throws ApplicationFormDefinitionNotFoundException, InvalidFormDefinitionException {
+        return new XMLApplicationFormDefAccessorImpl(formId, formDocument, locale, processDeploymentDate);
     }
     
     public static EngineApplicationFormDefAccessorImpl getEngineApplicationFormDefAccessor(final ProcessDefinitionUUID processDefinitionUUID, final String activityName, final boolean includeApplicationVariables, final boolean isEditMode, final boolean isRecap) {

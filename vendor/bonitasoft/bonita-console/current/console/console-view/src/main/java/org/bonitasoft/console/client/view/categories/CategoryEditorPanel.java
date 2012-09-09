@@ -200,14 +200,14 @@ public class CategoryEditorPanel extends BonitaPanel {
 
   protected void create() {
     if (validate()) {
-      Category newCategory = new Category(null, myCategoryNameTextBox.getValue());
+      Category newCategory = new Category(null, removeLastSpace(myCategoryNameTextBox.getValue()));
       newCategory.setCSSStyleName(myCSSStyle);
       newCategory.setPreviewCSSStyleName(myPreviewCSSStyle);
       myCategoryDataSource.addItem(newCategory, new AsyncHandler<ItemUpdates<Category>>() {
 
         public void handleFailure(Throwable t) {
           if (t instanceof CategoryAlreadyExistsException) {
-            myErrorMessageLabel.setText(messages.categoryAlreadyExists(myCategoryNameTextBox.getValue()));
+            myErrorMessageLabel.setText(messages.categoryAlreadyExists(removeLastSpace(myCategoryNameTextBox.getValue())));
           }
         }
 
@@ -241,4 +241,13 @@ public class CategoryEditorPanel extends BonitaPanel {
       });
     }
   }
+  
+  private String removeLastSpace(String value) {
+	  if(value.endsWith(" ")){
+		  value = value.substring(0, value.lastIndexOf(" "));
+		  return removeLastSpace(value);
+      }
+	  return value;
+  }
+  
 }

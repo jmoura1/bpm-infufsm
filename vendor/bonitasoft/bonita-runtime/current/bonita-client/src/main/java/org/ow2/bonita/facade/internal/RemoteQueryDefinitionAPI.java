@@ -345,7 +345,7 @@ public interface RemoteQueryDefinitionAPI extends Remote {
 	throws RemoteException, ProcessNotFoundException;
     
 	/**
-	 * Returns the process definition of the last deployed process of the given process name.
+	 * Returns the process definition of the most recently deployed process of the given process name.
    * @param processName the process name.
 	 * @param options the options map (domain, queyList, user)
 	 * @return the process definition of the last deployed process of the given process name.
@@ -359,7 +359,7 @@ public interface RemoteQueryDefinitionAPI extends Remote {
 	throws RemoteException, ProcessNotFoundException;
   
 	/**
-	 * Returns the light process definition of the last deployed process of the given process name.
+	 * Returns the light process definition of the most recently deployed process of the given process name.
    * @param processName the process name.
 	 * @param options the options map (domain, queyList, user)
 	 * @return the light process definition of the last deployed process of the given process name.

@@ -32,6 +32,11 @@ public class FileTooBigException extends Exception {
      * The name of the file that is too big
      */
     protected String fileName;
+    
+    /**
+     * The max size(MB) of attachment
+     */
+    protected String maxSize;
 
     /**
      * constructor
@@ -58,6 +63,12 @@ public class FileTooBigException extends Exception {
         super(message);
         this.fileName = fileName;
     }
+    
+    public FileTooBigException(final String message, final String fileName, final String maxSize) {
+        super(message);
+        this.fileName = fileName;
+        this.maxSize = maxSize;
+     }
 
     /**
      * @param fileName the filename
@@ -74,5 +85,12 @@ public class FileTooBigException extends Exception {
     public String getFileName() {
         return fileName;
     }
+    
+    /**
+     * @return the attachment max size
+     */
+    public String getMaxSize() {
+		return maxSize;
+	}
     
 }

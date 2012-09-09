@@ -17,6 +17,7 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,6 +36,7 @@ import org.ow2.bonita.facade.exception.UndeletableInstanceException;
 import org.ow2.bonita.facade.exception.VariableNotFoundException;
 import org.ow2.bonita.facade.internal.AbstractRemoteRuntimeAPI;
 import org.ow2.bonita.facade.runtime.AttachmentInstance;
+import org.ow2.bonita.facade.runtime.ConnectorExecutionDescriptor;
 import org.ow2.bonita.facade.runtime.Document;
 import org.ow2.bonita.facade.uuid.ActivityDefinitionUUID;
 import org.ow2.bonita.facade.uuid.ActivityInstanceUUID;
@@ -74,199 +76,237 @@ public abstract class AbstractRemoteRuntimeAPIImpl implements AbstractRemoteRunt
     apis.put(queryList, new StandardAPIAccessorImpl().getRuntimeAPI(queryList));
   }
 
-  public void enableEventsInFailure(ProcessInstanceUUID instanceUUID, String activityName, final Map<String, String> options) {
+  @Override
+  public void enableEventsInFailure(final ProcessInstanceUUID instanceUUID, final String activityName, final Map<String, String> options) {
     getAPI(options).enableEventsInFailure(instanceUUID, activityName);
   }
 
-  public void enableEventsInFailure(ActivityInstanceUUID activityUUID, final Map<String, String> options) {
+  @Override
+  public void enableEventsInFailure(final ActivityInstanceUUID activityUUID, final Map<String, String> options) {
     getAPI(options).enableEventsInFailure(activityUUID);
   }
 
-  public void enablePermanentEventInFailure(ActivityDefinitionUUID activityUUID, final Map<String, String> options)
+  @Override
+  public void enablePermanentEventInFailure(final ActivityDefinitionUUID activityUUID, final Map<String, String> options)
   throws RemoteException {
     getAPI(options).enablePermanentEventInFailure(activityUUID);
   }
 
+  @Override
   public void startTask(final ActivityInstanceUUID taskUUID, final boolean assignTask, final Map<String, String> options)
   throws TaskNotFoundException, IllegalTaskStateException {
     getAPI(options).startTask(taskUUID, assignTask);
   }
 
+  @Override
   public void finishTask(final ActivityInstanceUUID taskUUID, final boolean taskAssign, final Map<String, String> options)
   throws TaskNotFoundException, IllegalTaskStateException {
     getAPI(options).finishTask(taskUUID, taskAssign);
   }
 
+  @Override
   public void resumeTask(final ActivityInstanceUUID taskUUID, final boolean taskAssign, final Map<String, String> options)
   throws TaskNotFoundException, IllegalTaskStateException {
     getAPI(options).resumeTask(taskUUID, taskAssign);
   }
 
-  public void startActivity(ActivityInstanceUUID activityUUID, final Map<String, String> options)
+  @Override
+  public void startActivity(final ActivityInstanceUUID activityUUID, final Map<String, String> options)
   throws ActivityNotFoundException, RemoteException {
     getAPI(options).startActivity(activityUUID);
   }
 
+  @Override
   public void suspendTask(final ActivityInstanceUUID taskUUID, final boolean assignTask, final Map<String, String> options)
   throws TaskNotFoundException, IllegalTaskStateException {
     getAPI(options).suspendTask(taskUUID, assignTask);
   }
 
+  @Override
   public void assignTask(final ActivityInstanceUUID taskUUID, final Map<String, String> options)
   throws TaskNotFoundException {
     getAPI(options).assignTask(taskUUID);
   }
 
+  @Override
   public void assignTask(final ActivityInstanceUUID taskUUID, final String actorId, final Map<String, String> options)
   throws TaskNotFoundException {
     getAPI(options).assignTask(taskUUID, actorId);
   }
 
+  @Override
   public void assignTask(final ActivityInstanceUUID taskUUID, final Set<String> candidates, final Map<String, String> options)
   throws TaskNotFoundException {
     getAPI(options).assignTask(taskUUID, candidates);
   }
 
+  @Override
   public void unassignTask(final ActivityInstanceUUID taskUUID, final Map<String, String> options)
   throws TaskNotFoundException {
     getAPI(options).unassignTask(taskUUID);
   }
 
+  @Override
   public void deleteAllProcessInstances(final ProcessDefinitionUUID processUUID, final Map<String, String> options)
   throws ProcessNotFoundException,
   UndeletableInstanceException {
     getAPI(options).deleteAllProcessInstances(processUUID);
   }
 
-  public void executeTask(ActivityInstanceUUID taskUUID, boolean assignTask, final Map<String, String> options)
+  @Override
+  public void executeTask(final ActivityInstanceUUID taskUUID, final boolean assignTask, final Map<String, String> options)
   throws TaskNotFoundException, IllegalTaskStateException, RemoteException {
     getAPI(options).executeTask(taskUUID, assignTask);
   }
 
+  @Override
   public void deleteProcessInstance(final ProcessInstanceUUID instanceUUID, final Map<String, String> options)
   throws InstanceNotFoundException, UndeletableInstanceException {
     getAPI(options).deleteProcessInstance(instanceUUID);
   }  
 
+  @Override
   public void cancelProcessInstance(final ProcessInstanceUUID instanceUUID, final Map<String, String> options)
   throws InstanceNotFoundException, UncancellableInstanceException {
     getAPI(options).cancelProcessInstance(instanceUUID);
   }
 
+  @Override
   public ProcessInstanceUUID instantiateProcess(final ProcessDefinitionUUID processUUID, final Map<String, String> options)
   throws ProcessNotFoundException {
     return getAPI(options).instantiateProcess(processUUID);
   }
 
+  @Override
   public ProcessInstanceUUID instantiateProcess(final ProcessDefinitionUUID processUUID, final ActivityDefinitionUUID activityUUID, final Map<String, String> options)
   throws ProcessNotFoundException {
     return getAPI(options).instantiateProcess(processUUID, activityUUID);
   }
 
+  @Override
   public ProcessInstanceUUID instantiateProcess(final ProcessDefinitionUUID processUUID, final Map<String, Object> variables, final Map<String, String> options)
   throws ProcessNotFoundException, VariableNotFoundException {
     return getAPI(options).instantiateProcess(processUUID, variables);
   }
 
+  @Override
   public void setProcessInstanceVariable(final ProcessInstanceUUID instanceUUID, final String variableId, final Object variableValue, final Map<String, String> options)
   throws InstanceNotFoundException, VariableNotFoundException {
     getAPI(options).setProcessInstanceVariable(instanceUUID, variableId, variableValue);
   }
 
+  @Override
   public void setProcessInstanceVariables(final ProcessInstanceUUID instanceUUID, final Map<String, Object> variables, final Map<String, String> options)
   throws InstanceNotFoundException, VariableNotFoundException {
     getAPI(options).setProcessInstanceVariables(instanceUUID, variables);
   }
 
+  @Override
   public void setActivityInstanceVariable(final ActivityInstanceUUID activityUUID, final String variableId, final Object variableValue, final Map<String, String> options)
   throws ActivityNotFoundException, VariableNotFoundException {
     getAPI(options).setActivityInstanceVariable(activityUUID, variableId, variableValue);
   }
 
+  @Override
   public void setActivityInstanceVariables(
-      ActivityInstanceUUID activityUUID,
-      Map<String, Object> variables,
+      final ActivityInstanceUUID activityUUID,
+      final Map<String, Object> variables,
       final Map<String, String> options)
   throws ActivityNotFoundException, VariableNotFoundException {
     getAPI(options).setActivityInstanceVariables(activityUUID, variables);
   }
 
+  @Override
   public void setVariable(final ActivityInstanceUUID activityUUID, final String variableId, final Object variableValue, final Map<String, String> options)
   throws ActivityNotFoundException, VariableNotFoundException {
     getAPI(options).setVariable(activityUUID, variableId, variableValue);
   }
 
+  @Override
   @Deprecated
   public void addComment(final ProcessInstanceUUID instanceUUID, final  ActivityInstanceUUID activityUUID, final String message, final String userId, final Map<String, String> options)
   throws InstanceNotFoundException, ActivityNotFoundException {
     getAPI(options).addComment(instanceUUID, activityUUID, message, userId);
   }
 
-  public void addComment(ProcessInstanceUUID instanceUUID, String message, String userId, final Map<String, String> options)
+  @Override
+  public void addComment(final ProcessInstanceUUID instanceUUID, final String message, final String userId, final Map<String, String> options)
   throws InstanceNotFoundException, RemoteException {
     getAPI(options).addComment(instanceUUID, message, userId);
   }
 
-  public void addComment(ActivityInstanceUUID activityUUID, String message, String userId, final Map<String, String> options)
+  @Override
+  public void addComment(final ActivityInstanceUUID activityUUID, final String message, final String userId, final Map<String, String> options)
   throws ActivityNotFoundException, InstanceNotFoundException, RemoteException {
     getAPI(options).addComment(activityUUID, message, userId);
   }
 
-  public void addProcessMetaData(ProcessDefinitionUUID uuid, String key, String value, final Map<String, String> options)
+  @Override
+  public void addProcessMetaData(final ProcessDefinitionUUID uuid, final String key, final String value, final Map<String, String> options)
   throws ProcessNotFoundException {
     getAPI(options).addProcessMetaData(uuid, key, value);
   }
 
-  public void deleteProcessMetaData(ProcessDefinitionUUID uuid, String key, final Map<String, String> options)
+  @Override
+  public void deleteProcessMetaData(final ProcessDefinitionUUID uuid, final String key, final Map<String, String> options)
   throws ProcessNotFoundException {
     getAPI(options).deleteProcessMetaData(uuid, key);
   }
 
-  public Object evaluateGroovyExpression(String expression, ProcessInstanceUUID instanceUUID, boolean propagate, final Map<String, String> options) 
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ProcessInstanceUUID instanceUUID, final boolean propagate, final Map<String, String> options) 
   throws InstanceNotFoundException, GroovyException {
     return getAPI(options).evaluateGroovyExpression(expression, instanceUUID, propagate);
   }
 
-  public Object evaluateGroovyExpression(String expression, ProcessInstanceUUID processInstanceUUID, Map<String, Object> context, boolean propagate, final Map<String, String> options)
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ProcessInstanceUUID processInstanceUUID, final Map<String, Object> context, final boolean propagate, final Map<String, String> options)
   throws InstanceNotFoundException, GroovyException, RemoteException {
     return getAPI(options).evaluateGroovyExpression(expression, processInstanceUUID, context, propagate);
   }
 
-  public Object evaluateGroovyExpression(String expression, ActivityInstanceUUID activityUUID, boolean useActivityScope, boolean propagate, final Map<String, String> options)
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ActivityInstanceUUID activityUUID, final boolean useActivityScope, final boolean propagate, final Map<String, String> options)
   throws InstanceNotFoundException, ActivityNotFoundException, GroovyException {
     return getAPI(options).evaluateGroovyExpression(expression, activityUUID, useActivityScope, propagate);
   }
 
-  public Object evaluateGroovyExpression(String expression, ActivityInstanceUUID activityInstanceUUID, Map<String, Object> context,
-      boolean useActivityScope, boolean propagate, final Map<String, String> options)
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ActivityInstanceUUID activityInstanceUUID, final Map<String, Object> context,
+      final boolean useActivityScope, final boolean propagate, final Map<String, String> options)
   throws InstanceNotFoundException, ActivityNotFoundException, GroovyException, RemoteException {
     return getAPI(options).evaluateGroovyExpression(expression, activityInstanceUUID, context, useActivityScope, propagate);
   }
 
-  public Object evaluateGroovyExpression(String expression, ProcessDefinitionUUID processDefinitionUUID, final Map<String, String> options)
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ProcessDefinitionUUID processDefinitionUUID, final Map<String, String> options)
   throws ProcessNotFoundException, GroovyException, RemoteException {
     return getAPI(options).evaluateGroovyExpression(expression, processDefinitionUUID);
   }
 
-  public Object evaluateGroovyExpression(String expression, ProcessDefinitionUUID processDefinitionUUID, Map<String, Object> context, final Map<String, String> options)
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ProcessDefinitionUUID processDefinitionUUID, final Map<String, Object> context, final Map<String, String> options)
   throws ProcessNotFoundException, GroovyException, RemoteException {
     return getAPI(options).evaluateGroovyExpression(expression, processDefinitionUUID, context);
   }
 
-  public Map<String, Object> evaluateGroovyExpressions(Map<String, String> expressions,
-      ActivityInstanceUUID activityUUID, final Map<String, Object> context, boolean useActivityScope, boolean propagate,
+  @Override
+  public Map<String, Object> evaluateGroovyExpressions(final Map<String, String> expressions,
+      final ActivityInstanceUUID activityUUID, final Map<String, Object> context, final boolean useActivityScope, final boolean propagate,
       final Map<String, String> options)
       throws InstanceNotFoundException, ActivityNotFoundException, GroovyException {
     return getAPI(options).evaluateGroovyExpressions(expressions, activityUUID, context, useActivityScope, propagate);
   }
 
-  public Map<String, Object> evaluateGroovyExpressions(Map<String, String> expressions,
-      ProcessDefinitionUUID processDefinitionUUID,
-      Map<String, Object> context, final Map<String, String> options)
+  @Override
+  public Map<String, Object> evaluateGroovyExpressions(final Map<String, String> expressions,
+      final ProcessDefinitionUUID processDefinitionUUID,
+      final Map<String, Object> context, final Map<String, String> options)
       throws InstanceNotFoundException, GroovyException, ProcessNotFoundException {
     return getAPI(options).evaluateGroovyExpressions(expressions, processDefinitionUUID, context);
   }
   
+  @Override
   public Map<String, Object> evaluateGroovyExpressions(final Map<String, String> expression,
       final ProcessInstanceUUID processInstanceUUID, final Map<String, Object> context,
       final boolean useInitialVariableValues, final boolean propagate, final Map<String, String> options)
@@ -274,169 +314,217 @@ public abstract class AbstractRemoteRuntimeAPIImpl implements AbstractRemoteRunt
     return getAPI(options).evaluateGroovyExpressions(expression, processInstanceUUID, context, useInitialVariableValues, propagate);
   }
 
-  public void addAttachment(ProcessInstanceUUID instanceUUID, String name, String fileName, byte[] value, final Map<String, String> options)
+  @Override
+  public void addAttachment(final ProcessInstanceUUID instanceUUID, final String name, final String fileName, final byte[] value, final Map<String, String> options)
   throws RemoteException {
     getAPI(options).addAttachment(instanceUUID, name, fileName, value);
   }
 
-  public void addAttachment(ProcessInstanceUUID instanceUUID, String name, String label, String description, String fileName, Map<String, String> metadata,
-      byte[] value, final Map<String, String> options)
+  @Override
+  public void addAttachment(final ProcessInstanceUUID instanceUUID, final String name, final String label, final String description, final String fileName, final Map<String, String> metadata,
+      final byte[] value, final Map<String, String> options)
   throws RemoteException {
     getAPI(options).addAttachment(instanceUUID, name, label, description, fileName, metadata, value); 
   }
 
-  public void addAttachments(Map<AttachmentInstance, byte[]> attachments, final Map<String, String> options)
+  @Override
+  public void addAttachments(final Map<AttachmentInstance, byte[]> attachments, final Map<String, String> options)
   throws RemoteException {
     getAPI(options).addAttachments(attachments); 
   }
 
-  public void removeAttachment(ProcessInstanceUUID instanceUUID, String name, Map<String, String> options)
+  @Override
+  public void removeAttachment(final ProcessInstanceUUID instanceUUID, final String name, final Map<String, String> options)
   throws RemoteException, InstanceNotFoundException {
     getAPI(options).removeAttachment(instanceUUID, name);
   }
 
-  public void deleteEvents(String eventName, String toProcessName, String toActivityName, ActivityInstanceUUID actiivtyUUID, final Map<String, String> options)
+  @Override
+  public void deleteEvents(final String eventName, final String toProcessName, final String toActivityName, final ActivityInstanceUUID actiivtyUUID, final Map<String, String> options)
   throws RemoteException {
     getAPI(options).deleteEvents(eventName, toProcessName, toActivityName, actiivtyUUID);
   }
 
-  public Map<String, Object> executeConnector(String connectorClassName,
-      Map<String, Object[]> parameters, ProcessDefinitionUUID definitionUUID, final Map<String, String> options)
+  @Override
+  public Map<String, Object> executeConnector(final String connectorClassName,
+      final Map<String, Object[]> parameters, final ProcessDefinitionUUID definitionUUID, final Map<String, String> options)
       throws RemoteException, Exception {
     return getAPI(options).executeConnector(connectorClassName, parameters, definitionUUID);
   }
 
-  public Map<String, Object> executeConnector(String connectorClassName, Map<String, Object[]> parameters, final Map<String, String> options)
+  @Override
+  public Map<String, Object> executeConnector(final String connectorClassName, final Map<String, Object[]> parameters, final Map<String, String> options)
   throws RemoteException, Exception {
     return getAPI(options).executeConnector(connectorClassName, parameters);
   }
+  
+  @Override
+  public Map<String, Object> executeConnectors(final ProcessDefinitionUUID processDefinitionUUID, final List<ConnectorExecutionDescriptor> connectorExecutionDescriptors,
+      final Map<String, Object> context, final Map<String, String> options) throws RemoteException, Exception {
+    return getAPI(options).executeConnectors(processDefinitionUUID, connectorExecutionDescriptors, context);
+  }
+  
+  @Override
+  public Map<String, Object> executeConnectors(final ProcessInstanceUUID processInstanceUUID, final List<ConnectorExecutionDescriptor> connectorExecutionDescriptors,
+      final Map<String, Object> context, final boolean useCurrentVariableValues, final Map<String, String> options) throws RemoteException, Exception {
+    return getAPI(options).executeConnectors(processInstanceUUID, connectorExecutionDescriptors, context, useCurrentVariableValues);
+  }
+  
+  @Override
+  public Map<String, Object> executeConnectors(final ActivityInstanceUUID activityInstanceUUID, final List<ConnectorExecutionDescriptor> connectorExecutionDescriptors,
+      final Map<String, Object> context, final boolean useCurrentVariableValues, final Map<String, String> options) throws RemoteException, Exception {
+    return getAPI(options).executeConnectors(activityInstanceUUID, connectorExecutionDescriptors, context, useCurrentVariableValues);
+  }
 
-  public Set<String> executeFilter(String connectorClassName, Map<String, Object[]> parameters, Set<String> members, ProcessDefinitionUUID definitionUUID, final Map<String, String> options)
+  @Override
+  public Set<String> executeFilter(final String connectorClassName, final Map<String, Object[]> parameters, final Set<String> members, final ProcessDefinitionUUID definitionUUID, final Map<String, String> options)
   throws RemoteException, Exception {
     return getAPI(options).executeFilter(connectorClassName, parameters, members, definitionUUID);
   }
 
-  public Set<String> executeFilter(String connectorClassName, Map<String, Object[]> parameters, Set<String> members, final Map<String, String> options)
+  @Override
+  public Set<String> executeFilter(final String connectorClassName, final Map<String, Object[]> parameters, final Set<String> members, final Map<String, String> options)
   throws RemoteException, Exception {
     return getAPI(options).executeFilter(connectorClassName, parameters, members);
   }
 
-  public Set<String> executeRoleResolver(String connectorClassName,
-      Map<String, Object[]> parameters, ProcessDefinitionUUID definitionUUID, final Map<String, String> options)
+  @Override
+  public Set<String> executeRoleResolver(final String connectorClassName,
+      final Map<String, Object[]> parameters, final ProcessDefinitionUUID definitionUUID, final Map<String, String> options)
       throws RemoteException, Exception {
     return getAPI(options).executeRoleResolver(connectorClassName, parameters, definitionUUID);
   }
 
-  public Set<String> executeRoleResolver(String connectorClassName,
-      Map<String, Object[]> parameters, final Map<String, String> options) throws RemoteException, Exception {
+  @Override
+  public Set<String> executeRoleResolver(final String connectorClassName,
+      final Map<String, Object[]> parameters, final Map<String, String> options) throws RemoteException, Exception {
     return getAPI(options).executeRoleResolver(connectorClassName, parameters);
   }
 
-  public Map<String, Object> executeConnector(String connectorClassName,
-      Map<String, Object[]> parameters, ClassLoader classLoader, final Map<String, String> options) throws RemoteException, Exception {
+  @Override
+  public Map<String, Object> executeConnector(final String connectorClassName,
+      final Map<String, Object[]> parameters, final ClassLoader classLoader, final Map<String, String> options) throws RemoteException, Exception {
     return getAPI(options).executeConnector(connectorClassName, parameters, classLoader);
   }
 
-  public Set<String> executeFilter(String connectorClassName,
-      Map<String, Object[]> parameters, Set<String> members, ClassLoader classLoader, final Map<String, String> options)
+  @Override
+  public Set<String> executeFilter(final String connectorClassName,
+      final Map<String, Object[]> parameters, final Set<String> members, final ClassLoader classLoader, final Map<String, String> options)
       throws RemoteException, Exception {
     return getAPI(options).executeFilter(connectorClassName, parameters, members, classLoader);
   }
 
-  public Set<String> executeRoleResolver(String connectorClassName,
-      Map<String, Object[]> parameters, ClassLoader classLoader, final Map<String, String> options)
+  @Override
+  public Set<String> executeRoleResolver(final String connectorClassName,
+      final Map<String, Object[]> parameters, final ClassLoader classLoader, final Map<String, String> options)
       throws RemoteException, Exception {
     return getAPI(options).executeRoleResolver(connectorClassName, parameters, classLoader);
   }
 
-  public void setActivityInstancePriority(ActivityInstanceUUID activityInstanceUUID, int priority, final Map<String, String> options)
+  @Override
+  public void setActivityInstancePriority(final ActivityInstanceUUID activityInstanceUUID, final int priority, final Map<String, String> options)
   throws ActivityNotFoundException {
     getAPI(options).setActivityInstancePriority(activityInstanceUUID, priority);
   }
 
-  public Map<String, Object> executeConnector(String connectorClassName,
-      Map<String, Object[]> parameters, ProcessDefinitionUUID definitionUUID, Map<String, Object> context, final Map<String, String> options)
+  @Override
+  public Map<String, Object> executeConnector(final String connectorClassName,
+      final Map<String, Object[]> parameters, final ProcessDefinitionUUID definitionUUID, final Map<String, Object> context, final Map<String, String> options)
       throws RemoteException, Exception {
     return getAPI(options).executeConnector(connectorClassName, parameters, definitionUUID, context);
   }
 
-  public Map<String, Object> executeConnector(String connectorClassName, Map<String, Object[]> parameters,
-      ProcessInstanceUUID processInstanceUUID, Map<String, Object> context, boolean useCurrentVariableValues, Map<String, String> options)
+  @Override
+  public Map<String, Object> executeConnector(final String connectorClassName, final Map<String, Object[]> parameters,
+      final ProcessInstanceUUID processInstanceUUID, final Map<String, Object> context, final boolean useCurrentVariableValues, final Map<String, String> options)
       throws RemoteException, Exception {
     return getAPI(options).executeConnector(connectorClassName, parameters, processInstanceUUID, context, useCurrentVariableValues);
   }
 
-  public Map<String, Object> executeConnector(String connectorClassName, Map<String, Object[]> parameters,
-      ActivityInstanceUUID activityInstanceUUID, Map<String, Object> context, boolean useCurrentVariableValues, Map<String, String> options)
+  @Override
+  public Map<String, Object> executeConnector(final String connectorClassName, final Map<String, Object[]> parameters,
+      final ActivityInstanceUUID activityInstanceUUID, final Map<String, Object> context, final boolean useCurrentVariableValues, final Map<String, String> options)
       throws RemoteException, Exception {
     return getAPI(options).executeConnector(connectorClassName, parameters, activityInstanceUUID, context, useCurrentVariableValues);
   }
 
-  public Object evaluateGroovyExpression(String expression, ProcessInstanceUUID processInstanceUUID,
-      Map<String, Object> context, boolean useInitialVariableValues, boolean propagate, Map<String, String> options)
+  @Override
+  public Object evaluateGroovyExpression(final String expression, final ProcessInstanceUUID processInstanceUUID,
+      final Map<String, Object> context, final boolean useInitialVariableValues, final boolean propagate, final Map<String, String> options)
   throws InstanceNotFoundException, GroovyException, RemoteException {
     return getAPI(options).evaluateGroovyExpression(expression, processInstanceUUID, context, useInitialVariableValues, propagate);
   }
 
-  public void skipTask(ActivityInstanceUUID taskUUID, Map<String, Object> variablesToUpdate, Map<String, String> options)
+  @Override
+  public void skipTask(final ActivityInstanceUUID taskUUID, final Map<String, Object> variablesToUpdate, final Map<String, String> options)
   throws TaskNotFoundException, IllegalTaskStateException, RemoteException {		
     getAPI(options).skipTask(taskUUID, variablesToUpdate);		
   }
   
-  public void skip(ActivityInstanceUUID activityInstanceUUID,
-      Map<String, Object> variablesToUpdate, Map<String, String> options)
+  @Override
+  public void skip(final ActivityInstanceUUID activityInstanceUUID,
+      final Map<String, Object> variablesToUpdate, final Map<String, String> options)
       throws ActivityNotFoundException, IllegalTaskStateException,
       RemoteException {
     getAPI(options).skip(activityInstanceUUID, variablesToUpdate);
   }
 
-  public void executeEvent(CatchingEventUUID eventUUID, Map<String, String> options)
+  @Override
+  public void executeEvent(final CatchingEventUUID eventUUID, final Map<String, String> options)
   throws EventNotFoundException, RemoteException {
     getAPI(options).executeEvent(eventUUID);
   }
 
-  public void deleteEvent(CatchingEventUUID eventUUID, Map<String, String> options)
+  @Override
+  public void deleteEvent(final CatchingEventUUID eventUUID, final Map<String, String> options)
   throws EventNotFoundException, RemoteException {
     getAPI(options).deleteEvent(eventUUID);
   }
 
-  public void deleteEvents(Collection<CatchingEventUUID> eventUUIDs, Map<String, String> options)
+  public void deleteEvents(final Collection<CatchingEventUUID> eventUUIDs, final Map<String, String> options)
   throws EventNotFoundException, RemoteException {
     getAPI(options).deleteEvents(eventUUIDs);
   }
 
-  public void updateExpirationDate(CatchingEventUUID eventUUID, Date expiration, Map<String, String> options)
+  @Override
+  public void updateExpirationDate(final CatchingEventUUID eventUUID, final Date expiration, final Map<String, String> options)
   throws EventNotFoundException, RemoteException {
     getAPI(options).updateExpirationDate(eventUUID, expiration);
   }
 
-  public Object getModifiedJavaObject(ProcessDefinitionUUID processUUID, String variableExpression,
-      Object variableValue, Object attributeValue,
-      Map<String, String> options) throws RemoteException {
+  @Override
+  public Object getModifiedJavaObject(final ProcessDefinitionUUID processUUID, final String variableExpression,
+      final Object variableValue, final Object attributeValue,
+      final Map<String, String> options) throws RemoteException {
     return getAPI(options).getModifiedJavaObject(processUUID, variableExpression, variableValue, attributeValue);
   }
 
-  public void updateActivityExpectedEndDate(ActivityInstanceUUID activityUUID, Date expectedEndDate,
-      Map<String, String> options) throws RemoteException, ActivityNotFoundException {
+  @Override
+  public void updateActivityExpectedEndDate(final ActivityInstanceUUID activityUUID, final Date expectedEndDate,
+      final Map<String, String> options) throws RemoteException, ActivityNotFoundException {
     getAPI(options).updateActivityExpectedEndDate(activityUUID, expectedEndDate);
   }
 
-  public Document createDocument(String name, ProcessDefinitionUUID processDefinitionUUID, String fileName, String mimeType, byte[] content, Map<String, String> options)
+  @Override
+  public Document createDocument(final String name, final ProcessDefinitionUUID processDefinitionUUID, final String fileName, final String mimeType, final byte[] content, final Map<String, String> options)
   throws RemoteException, DocumentationCreationException, ProcessNotFoundException {
     return getAPI(options).createDocument(name, processDefinitionUUID, fileName, mimeType, content);
   }
   
-  public Document createDocument(String name, ProcessInstanceUUID instanceUUID, String fileName, String mimeType, byte[] content, Map<String, String> options)
+  @Override
+  public Document createDocument(final String name, final ProcessInstanceUUID instanceUUID, final String fileName, final String mimeType, final byte[] content, final Map<String, String> options)
   throws RemoteException, DocumentationCreationException, InstanceNotFoundException {
     return getAPI(options).createDocument(name, instanceUUID, fileName, mimeType, content);
   }
 
-  public Document addDocumentVersion(DocumentUUID documentUUID, boolean isMajorVersion, String fileName, String mimeType,
-      byte[] content, Map<String, String> options) throws RemoteException, DocumentationCreationException {
+  @Override
+  public Document addDocumentVersion(final DocumentUUID documentUUID, final boolean isMajorVersion, final String fileName, final String mimeType,
+      final byte[] content, final Map<String, String> options) throws RemoteException, DocumentationCreationException {
     return getAPI(options).addDocumentVersion(documentUUID, isMajorVersion, fileName, mimeType, content);
   }
 
-  public void deleteDocuments(boolean allVersions, DocumentUUID[] documentUUIDs, Map<String, String> options)
+  @Override
+  public void deleteDocuments(final boolean allVersions, final DocumentUUID[] documentUUIDs, final Map<String, String> options)
       throws RemoteException, DocumentNotFoundException {
     getAPI(options).deleteDocuments(allVersions, documentUUIDs);
   }

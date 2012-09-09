@@ -30,6 +30,12 @@ public final class SAPUtil {
     inputParameters.add(row);
   }
   
+  public static void addInputRowow(final List<List<Object>> inputParameters, final String parameterType, final String tableName, final String parameterName, final List<Object> parameterValue) {
+	    final List<Object> row = new ArrayList<Object>();
+	    row.add(parameterType);row.add(tableName);row.add(parameterName);row.add(parameterValue);
+	    inputParameters.add(row);
+	  }
+  
   public static void addOutputRow(final List<List<String>> outputParameters, final String parameterType, final String tableName, final String xpath) {
     final List<String> row = new ArrayList<String>();
     row.add(parameterType);row.add(tableName);row.add(xpath);row.add("");
@@ -163,11 +169,11 @@ public final class SAPUtil {
   
   private static void initClient(final SAPAbstractConnector con) {
     con.setServerType(SAPAbstractConnector.SERVER_TYPE_APPLICATION_SERVER);
-    con.setClient("000");
-    con.setUser("TALEND");
-    con.setPassword("FRANCE");
-    con.setLanguage("EN");
-    con.setHost("TOTOTITI");
+    con.setClient("300");
+    con.setUser("bpm2");
+    con.setPassword("projetobpm");
+    con.setLanguage("PT");
+    con.setHost("192.168.20.141");
 
     con.setSystemNumber("00");
     //readConnector.setSystemId("");

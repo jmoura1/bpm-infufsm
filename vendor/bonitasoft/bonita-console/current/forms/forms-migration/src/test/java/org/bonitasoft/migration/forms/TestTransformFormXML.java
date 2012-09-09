@@ -50,7 +50,7 @@ public class TestTransformFormXML extends XPathUtil {
 
         super.parse("Web_Purchase--1.5.bar");
 
-        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.6");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.7");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.NAME), "Web_Purchase");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.VERSION), "1.5");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION_LABEL), "Web Purchase");
@@ -103,7 +103,7 @@ public class TestTransformFormXML extends XPathUtil {
 
         super.parse("Arrival_of_a_New_Employee--4.1.bar");
 
-        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.6");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.7");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.NAME), "Arrival_of_a_New_Employee");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.VERSION), "4.1");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION_LABEL), "Arrival of a New Employee");
@@ -132,7 +132,7 @@ public class TestTransformFormXML extends XPathUtil {
         Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[2]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[6]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/@"
                 + XMLForms.ID), "Date_of_first_check_default_validator");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[2]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[6]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/"
-                + XMLForms.LABEL), "Date expected");
+                + XMLForms.LABEL), "#dateFieldValidatorLabel");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[2]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[6]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/"
                 + XMLForms.CLASSNAME), "org.bonitasoft.forms.server.validator.DateFieldValidator");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[2]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[6]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/"
@@ -164,7 +164,7 @@ public class TestTransformFormXML extends XPathUtil {
 
         super.parse("Buy_a_MINI--3.1.bar");
 
-        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.6");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.7");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.NAME), "Buy_a_MINI");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.VERSION), "3.1");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION_LABEL), "Buy a MINI");
@@ -228,7 +228,7 @@ public class TestTransformFormXML extends XPathUtil {
 
         super.parse("Request_For_Advance_Payment--1.2.bar");
 
-        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.6");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.7");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.NAME), "Request_For_Advance_Payment");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.VERSION), "1.2");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION_LABEL), "Request For Advance Payment");
@@ -256,7 +256,7 @@ public class TestTransformFormXML extends XPathUtil {
         Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[3]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/@"
                 + XMLForms.ID), "Amount_Requested_default_validator");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[3]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/"
-                + XMLForms.LABEL), "Number expected");
+                + XMLForms.LABEL), "#numericDoubleFieldValidatorLabel");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[3]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/"
                 + XMLForms.CLASSNAME), "org.bonitasoft.forms.server.validator.NumericDoubleFieldValidator");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[3]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/"
@@ -281,7 +281,7 @@ public class TestTransformFormXML extends XPathUtil {
 
         super.parse("testTransform1--1.0.bar");
 
-        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.6");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.7");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.NAME), "testTransform1");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.VERSION), "1.0");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION_LABEL), "testTransform1");
@@ -391,7 +391,7 @@ public class TestTransformFormXML extends XPathUtil {
 
         super.parse("testTransform2--1.0.bar");
 
-        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.6");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.7");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.NAME), "testTransform2");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.VERSION), "1.0");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION_LABEL), "testTransform2");
@@ -458,6 +458,53 @@ public class TestTransformFormXML extends XPathUtil {
                 "org.bonitasoft.forms.server.validator.GroovyPageValidator");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[3]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.PAGE_VALIDATORS + "/" + XMLForms.VALIDATOR + "/" + XMLForms.PARAMETER), "sss");
         Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[3]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.PAGE_VALIDATORS + "/" + XMLForms.VALIDATOR + "/" + XMLForms.POSITION), "BOTTOM");
+
+        super.validate(FORMS_XSD);
+    }
+    
+    @Test
+    public void testRegexValidator() throws Exception {
+
+        super.parse("RegexValidator--migration1.0.bar");
+
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.MIGRATION_PRODUCT_VERSION), "5.7");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.NAME), "RegexValidator");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/@" + XMLForms.VERSION), "migration1.0");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION_LABEL), "RegexValidator");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.MANDATORY_SYMBOL), "*");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.MANDATORY_LABEL), "mandatory");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.APPLICATION + "/" + XMLForms.PERMISSIONS), "process#RegexValidator--migration1.0");
+
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/@" + XMLForms.ID), "RegexValidator--migration1.0--Step1_with_a_regex_validator$entry");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.FORM_TYPE), "entry");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PERMISSIONS), "activity#RegexValidator--migration1.0--Step1_with_a_regex_validator");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/@" + XMLForms.FIRST_PAGE), "Step1");
+        
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/@" + XMLForms.ID), "Step1");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.PAGE_LABEL), "Step1");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.ALLOW_HTML_IN_LABEL), "false");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.PAGE_LAYOUT), "html/Step1_with_a_regex_validator_Step1.html");
+        
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[1]/@" + XMLForms.ID), "Text_field1");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[1]/@" + XMLForms.TYPE), "TEXTBOX");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[1]/" + XMLForms.LABEL), "Enter aa.* string");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[1]/" + XMLForms.ALLOW_HTML_IN_LABEL), "false");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[1]/" + XMLForms.MANDATORY), "false");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[1]/" + XMLForms.READ_ONLY), "false");
+        
+        //test validator in widgets
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[1]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/@" + XMLForms.ID), "Text_field1 RegExp Validator");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[1]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/" + XMLForms.LABEL), "please enter a string starting with aa");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[1]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/" + XMLForms.CLASSNAME),
+                "org.bonitasoft.forms.server.validator.RegexFieldValidator");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[1]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/" + XMLForms.PARAMETER), "^aa.*");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[1]/" + XMLForms.VALIDATORS + "/" + XMLForms.VALIDATOR + "/" + XMLForms.POSITION), "BOTTOM");
+        
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[2]/@" + XMLForms.ID), "Submit1");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[2]/@" + XMLForms.TYPE), "BUTTON_SUBMIT");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[2]/" + XMLForms.LABEL), "Submit1");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[2]/" + XMLForms.ALLOW_HTML_IN_LABEL), "false");
+        Assert.assertEquals(getStringByXpath("//" + XMLForms.FORMS + "/" + XMLForms.FORM + "[1]/" + XMLForms.PAGES + "/" + XMLForms.PAGE + "[1]/" + XMLForms.WIDGETS + "/" + XMLForms.WIDGET + "[2]/" + XMLForms.LABEL_BUTTON), "false");
 
         super.validate(FORMS_XSD);
     }

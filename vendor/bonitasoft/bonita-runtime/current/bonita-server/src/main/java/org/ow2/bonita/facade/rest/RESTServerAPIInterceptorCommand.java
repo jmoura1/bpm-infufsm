@@ -55,319 +55,281 @@ import com.thoughtworks.xstream.XStream;
  * 
  */
 public class RESTServerAPIInterceptorCommand implements Command<Object> {
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	protected static final Logger LOG = Logger
-			.getLogger(RESTServerAPIInterceptorCommand.class.getName());
+  protected static final Logger LOG = Logger.getLogger(RESTServerAPIInterceptorCommand.class.getName());
 
-	private static final String SET_ACTIVITY_INSTANCE_VARIABLE = "setActivityInstanceVariable";
-	private static final String SET_PROCESS_INSTANCE_VARIABLE = "setProcessInstanceVariable";
-	private static final String SET_VARIABLE = "setVariable";
+  private static final String SET_ACTIVITY_INSTANCE_VARIABLE = "setActivityInstanceVariable";
+  private static final String SET_PROCESS_INSTANCE_VARIABLE = "setProcessInstanceVariable";
+  private static final String SET_VARIABLE = "setVariable";
 
-	private final transient Method m;
-	private final Object[] args;
-	private Object api;
+  private final transient Method m;
+  private final Object[] args;
+  private final Object api;
 
-	public RESTServerAPIInterceptorCommand(final Method m, final Object[] args,
-			final Object api) {
-		this.args = args;
-		this.m = m;
-		this.api = api;
-		if (LOG.isLoggable(Level.FINE)) {
-			logCommandCreation(m, args);
-		}
-	}
+  public RESTServerAPIInterceptorCommand(final Method m, final Object[] args, final Object api) {
+    this.args = args;
+    this.m = m;
+    this.api = api;
+    if (LOG.isLoggable(Level.FINE)) {
+      logCommandCreation(m, args);
+    }
+  }
 
-	private void logCommandCreation(final Method m, final Object[] args) {
-		final StringBuffer sb = new StringBuffer();
-		sb.append("Creating APIInterceptorCommand: " + this + ". Method: "
-				+ m);
-		if (args != null) {
-			for (final Object arg : args) {
-				sb.append(" - Arg: " + arg);
-			}
-		} else {
-			sb.append(" Args: null.");
-		}
-		LOG.fine(sb.toString());
-	}
+  private void logCommandCreation(final Method m, final Object[] args) {
+    final StringBuffer sb = new StringBuffer();
+    sb.append("Creating APIInterceptorCommand: " + this + ". Method: " + m);
+    if (args != null) {
+      for (final Object arg : args) {
+        sb.append(" - Arg: " + arg);
+      }
+    } else {
+      sb.append(" Args: null.");
+    }
+    LOG.fine(sb.toString());
+  }
 
-	@Override
-	public Object execute(Environment environment) throws Exception {
-		try {
-			handleSecurity();
-			return doInvocation(environment);
-		} catch (final InvocationTargetException e) {
-				final Throwable invocationExceptionCause = e.getCause();
-				if (invocationExceptionCause instanceof RemoteException) {
-					final RemoteException remoteException = (RemoteException) invocationExceptionCause;
-					final Throwable remoteCause = getRemoteCause(remoteException);
-				InterceptorUtil.manageInvokeExceptionCause(m,
-							remoteCause);
-				} else {
-					if(invocationExceptionCause instanceof Exception) {
-						throw (Exception) invocationExceptionCause;
-					}
-					
-				}
-			String message = ExceptionManager.getInstance().getFullMessage(
-					"baa_CAPII_1", e);
-			throw new BonitaInternalException(message, e);
-		}
-	}
+  @Override
+  public Object execute(final Environment environment) throws Exception {
+    try {
+      handleSecurity();
+      return doInvocation();
+    } catch (final InvocationTargetException e) {
+      final Throwable invocationExceptionCause = e.getCause();
+      if (invocationExceptionCause instanceof RemoteException) {
+        final RemoteException remoteException = (RemoteException) invocationExceptionCause;
+        final Throwable remoteCause = getRemoteCause(remoteException);
+        InterceptorUtil.manageInvokeExceptionCause(m, remoteCause);
+      } else {
+        if (invocationExceptionCause instanceof Exception) {
+          throw (Exception) invocationExceptionCause;
+        }
 
-	private Object doInvocation(Environment environment) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, IOException, ClassNotFoundException {
-			preprocessInputParametersDependingOnMethodName(args, m);
+      }
+      final String message = ExceptionManager.getInstance().getFullMessage("baa_CAPII_1", e);
+      throw new BonitaInternalException(message, e);
+    }
+  }
 
-			Object ret = m.invoke(this.api, args);
-			// workaround : to be sure that GenericObjectProvider will be used
-			// even if the object is instance of a primitive type
-			if (isAmbigousReturnType(m, ret)) {
-				ret = new RESTObject((Serializable) ret);
-			}
-			return ret;
-		
-	}
-	
-	private void preprocessInputParametersDependingOnMethodName(
-			final Object[] args, final Method m) {
-		
-		// get current ClassLoader
-		ClassLoader baseClassLoader = Thread.currentThread()
-							.getContextClassLoader();
-		try {
-			ClassLoader localClassLoader = null;
+  private Object doInvocation() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException,
+      IOException, ClassNotFoundException {
+    preprocessInputParametersDependingOnMethodName(args, m);
 
-			if (isSetVariableMethod(args, m)) {
-				processSetVariableMethods(args);
-			} else if (isExecuteMethod(m, args)) {
-				processExecuteMethod(args, localClassLoader);
-			} else if (isInstantiateProcessMethod(m, args)) {
-				processInstantiateProcessMethod(args);
-			} else if (isGetModifiedObjectMethod(m, args)) {
-				processGetModifiedObjectMethod(args);
-			}
-		} catch (Exception e) {
-			if (LOG.isLoggable(Level.SEVERE)) {
-				LOG.severe("Error on RESTServerInterceptor: "
-						+ Misc.getStackTraceFrom(e));
-			}
-		} finally {
-			Thread.currentThread().setContextClassLoader(baseClassLoader);
-		}
-	}
+    Object ret = m.invoke(this.api, args);
+    // workaround : to be sure that GenericObjectProvider will be used
+    // even if the object is instance of a primitive type
+    if (isAmbigousReturnType(m, ret)) {
+      ret = new RESTObject((Serializable) ret);
+    }
+    return ret;
 
-	private void handleSecurity() {
-		if (APIMethodsSecurity.isSecuredMethod(m)) {
-			String userId = null;
-			// if the user defined a security context, use it. Else, use the
-			// default UserOwner mechanism
-			try {
-				userId = EnvTool.getBonitaSecurityContext().getUser();
-			} catch (Throwable t) {
-				userId = UserOwner.getUser();
-			}
+  }
 
-			Authentication.setUserId(userId);
-		}
-	}
+  private void preprocessInputParametersDependingOnMethodName(final Object[] args, final Method m) {
 
-	
-	private void processGetModifiedObjectMethod(final Object[] args)
-			throws IOException, ClassNotFoundException {
-		ProcessDefinitionUUID processUUID = (ProcessDefinitionUUID) args[0];
-		if (args[2] instanceof RESTObject) {
-			args[2] = getObjectFromRESTObject((RESTObject) args[2],
-					processUUID);
-		}
-		if (args[3] instanceof RESTObject) {
-			args[3] = getObjectFromRESTObject((RESTObject) args[3],
-					processUUID);
-		}
-	}
+    // get current ClassLoader
+    final ClassLoader baseClassLoader = Thread.currentThread().getContextClassLoader();
+    try {
+      final ClassLoader localClassLoader = null;
 
-	private boolean isGetModifiedObjectMethod(Method m, Object[] args) {
-		return m.getName().equals("getModifiedJavaObject")
-				&& (args[0] instanceof ProcessDefinitionUUID)
-				&& args.length == 4;
-	}
+      if (isSetVariableMethod(args, m)) {
+        processSetVariableMethods(args);
+      } else if (isExecuteMethod(m, args)) {
+        processExecuteMethod(args, localClassLoader);
+      } else if (isInstantiateProcessMethod(m, args)) {
+        processInstantiateProcessMethod(args);
+      } else if (isGetModifiedObjectMethod(m, args)) {
+        processGetModifiedObjectMethod(args);
+      }
+    } catch (final Exception e) {
+      if (LOG.isLoggable(Level.SEVERE)) {
+        LOG.severe("Error on RESTServerInterceptor: " + Misc.getStackTraceFrom(e));
+      }
+    } finally {
+      Thread.currentThread().setContextClassLoader(baseClassLoader);
+    }
+  }
 
-	private void processInstantiateProcessMethod(final Object[] args) {
-		args[1] = ((RESTMap<?, ?>) args[1]).getActualMap();
-	}
+  private void handleSecurity() {
+    if (APIMethodsSecurity.isSecuredMethod(m)) {
+      String userId = null;
+      // if the user defined a security context, use it. Else, use the
+      // default UserOwner mechanism
+      try {
+        userId = EnvTool.getBonitaSecurityContext().getUser();
+      } catch (final Throwable t) {
+        userId = UserOwner.getUser();
+      }
 
-	private boolean isInstantiateProcessMethod(Method m, Object[] args) {
-		return (m.getName().equals("instantiateProcess") && args.length == 3 && args[1] instanceof RESTMap<?, ?>);
-	}
+      Authentication.setUserId(userId);
+    }
+  }
 
-	private void processExecuteMethod(final Object[] args,
-			ClassLoader localClassLoader) throws IOException,
-			ClassNotFoundException {
-		// commomClassLoader
-		if (args.length == 1) {
-			localClassLoader = EnvTool.getClassDataLoader()
-					.getCommonClassLoader();
-		} else if (args.length == 2 && args[1] instanceof ProcessDefinitionUUID) {
-			// processClassLoader
-			localClassLoader = EnvTool.getClassDataLoader()
-					.getProcessClassLoader((ProcessDefinitionUUID) args[1]);
-		}
-		Thread.currentThread().setContextClassLoader(localClassLoader);
+  private void processGetModifiedObjectMethod(final Object[] args) throws IOException, ClassNotFoundException {
+    final ProcessDefinitionUUID processUUID = (ProcessDefinitionUUID) args[0];
+    if (args[2] instanceof RESTObject) {
+      args[2] = getObjectFromRESTObject((RESTObject) args[2], processUUID);
+    }
+    if (args[3] instanceof RESTObject) {
+      args[3] = getObjectFromRESTObject((RESTObject) args[3], processUUID);
+    }
+  }
 
-		args[0] = ((RESTCommand<?>) args[0]).getCommand();
-	}
+  private boolean isGetModifiedObjectMethod(final Method m, final Object[] args) {
+    return m.getName().equals("getModifiedJavaObject") && args[0] instanceof ProcessDefinitionUUID && args.length == 4;
+  }
 
-	private boolean isExecuteMethod(Method m, Object[] args) {
-		return m.getName().equals("execute") && args.length >= 1
-				&& args[0] instanceof RESTCommand<?>;
-	}
+  private void processInstantiateProcessMethod(final Object[] args) {
+    args[1] = ((RESTMap<?, ?>) args[1]).getActualMap();
+  }
 
-	private void processSetVariableMethods(final Object[] args)
-			throws IOException, ClassNotFoundException,
-			ActivityDefNotFoundException, ProcessNotFoundException,
-			DataFieldNotFoundException {
-		ProcessDefinitionUUID processUUID = null;
-		ActivityInstance activity = null;
-		if (args[0] instanceof ActivityInstanceUUID) {
-			final ActivityInstanceUUID activityUUID = (ActivityInstanceUUID) args[0];
-			activity = EnvTool.getAllQueriers().getActivityInstance(
-					activityUUID);
-			processUUID = activity.getProcessDefinitionUUID();
-		} else if (args[0] instanceof ProcessInstanceUUID) {
-			ProcessInstanceUUID instanceUUID = (ProcessInstanceUUID) args[0];
-			ProcessInstance instance = EnvTool.getAllQueriers()
-					.getProcessInstance(instanceUUID);
-			processUUID = instance.getProcessDefinitionUUID();
-		}
+  private boolean isInstantiateProcessMethod(final Method m, final Object[] args) {
+    return m.getName().equals("instantiateProcess") && args.length == 3 && args[1] instanceof RESTMap<?, ?>;
+  }
 
-		if (args[2] instanceof RESTObject) {
-			args[2] = getObjectFromRESTObject(((RESTObject) args[2]),
-					processUUID);
-		} else if (args[2] instanceof String) {
-			final String variableValue = (String) args[2];
+  private void processExecuteMethod(final Object[] args, ClassLoader localClassLoader) throws IOException,
+      ClassNotFoundException {
+    // commomClassLoader
+    if (args.length == 1) {
+      localClassLoader = EnvTool.getClassDataLoader().getCommonClassLoader();
+    } else if (args.length == 2 && args[1] instanceof ProcessDefinitionUUID) {
+      // processClassLoader
+      localClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader((ProcessDefinitionUUID) args[1]);
+    }
+    Thread.currentThread().setContextClassLoader(localClassLoader);
 
-			// can be a String representation of a Java object
-			if (variableValue.startsWith("<")) {
-				final String variableName = (String) args[1];
-				final DataFieldDefinition dataField = getDataFieldDefinition(
-						processUUID, activity, variableName);
-				if (!dataField.getDataTypeClassName().equals(
-						String.class.getName())) {
-					args[2] = getObjectFromXML(variableValue, processUUID);
-				}
-			}
-		}
-	}
+    args[0] = ((RESTCommand<?>) args[0]).getCommand();
+  }
 
-	private boolean isSetVariableMethod(final Object[] args, final Method m) {
-		return (m.getName().equals(SET_VARIABLE)
-				|| m.getName().equals(SET_PROCESS_INSTANCE_VARIABLE) || m
-				.getName().equals(SET_ACTIVITY_INSTANCE_VARIABLE))
-				&& args.length == 3
-				&& (args[2] instanceof RESTObject || args[2] instanceof String);
-	}
+  private boolean isExecuteMethod(final Method m, final Object[] args) {
+    return m.getName().equals("execute") && args.length >= 1 && args[0] instanceof RESTCommand<?>;
+  }
 
-	private DataFieldDefinition getDataFieldDefinition(
-			final ProcessDefinitionUUID processUUID,
-			final ActivityInstance activity, final String variableName)
-			throws ActivityDefNotFoundException, ProcessNotFoundException,
-			DataFieldNotFoundException {
+  private void processSetVariableMethods(final Object[] args) throws IOException, ClassNotFoundException,
+      ActivityDefNotFoundException, ProcessNotFoundException, DataFieldNotFoundException {
+    ProcessDefinitionUUID processUUID = null;
+    ActivityInstance activity = null;
+    if (args[0] instanceof ActivityInstanceUUID) {
+      final ActivityInstanceUUID activityUUID = (ActivityInstanceUUID) args[0];
+      activity = EnvTool.getAllQueriers().getActivityInstance(activityUUID);
+      processUUID = activity.getProcessDefinitionUUID();
+    } else if (args[0] instanceof ProcessInstanceUUID) {
+      final ProcessInstanceUUID instanceUUID = (ProcessInstanceUUID) args[0];
+      final ProcessInstance instance = EnvTool.getAllQueriers().getProcessInstance(instanceUUID);
+      processUUID = instance.getProcessDefinitionUUID();
+    }
 
-		final APIAccessor apiAccessor = new StandardAPIAccessorImpl();
-		final QueryDefinitionAPI queryDefinitionAPI = apiAccessor
-				.getQueryDefinitionAPI();
-		DataFieldDefinition dataField = null;
-		if (activity != null) {
-			try {
-				dataField = queryDefinitionAPI.getActivityDataField(
-						activity.getActivityDefinitionUUID(), variableName);
-			} catch (DataFieldNotFoundException e) {
-				// it's a global variable
-				dataField = queryDefinitionAPI.getProcessDataField(processUUID,
-						variableName);
-			}
-		} else {
-			dataField = queryDefinitionAPI.getProcessDataField(processUUID,
-					variableName);
-		}
-		return dataField;
-	}
+    if (args[2] instanceof RESTObject) {
+      args[2] = getObjectFromRESTObject((RESTObject) args[2], processUUID);
+    } else if (args[2] instanceof String) {
+      final String variableValue = (String) args[2];
 
-	private boolean isAmbigousReturnType(Method m, Object ret) {
-		if (ret == null || !ret.getClass().isArray()) {
-			return false;
-		}
+      // can be a String representation of a Java object
+      if (variableValue.startsWith("<")) {
+        final String variableName = (String) args[1];
+        final DataFieldDefinition dataField = getDataFieldDefinition(processUUID, activity, variableName);
+        if (!dataField.getDataTypeClassName().equals(String.class.getName())) {
+          args[2] = getObjectFromXML(variableValue, processUUID);
+        }
+      }
+    }
+  }
 
-		String methodName = m.getName();
-		// methods returning an Object or a generic unknowed type
-		return methodName.equals("execute") || methodName.equals("getVariable")
-				|| methodName.equals("getActivityInstanceVariable")
-				|| methodName.equals("getProcessInstanceVariable")
-				|| methodName.equals("evaluateGroovyExpression");
-	}
+  private boolean isSetVariableMethod(final Object[] args, final Method m) {
+    return (m.getName().equals(SET_VARIABLE) || m.getName().equals(SET_PROCESS_INSTANCE_VARIABLE) || m.getName()
+        .equals(SET_ACTIVITY_INSTANCE_VARIABLE))
+        && args.length == 3
+        && (args[2] instanceof RESTObject || args[2] instanceof String);
+  }
 
-	private Object getObjectFromRESTObject(RESTObject restObject,
-			ProcessDefinitionUUID processUUID) throws IOException,
-			ClassNotFoundException {
-		Object result = null;
-		ClassLoader localClassLoader = null;
-		try {
-			result = restObject.getObject();
-		} catch (ClassNotFoundException e) {
-			// try with ProcessClassLoader
-			localClassLoader = EnvTool.getClassDataLoader()
-					.getProcessClassLoader(processUUID);
-			Thread.currentThread().setContextClassLoader(localClassLoader);
+  private DataFieldDefinition getDataFieldDefinition(final ProcessDefinitionUUID processUUID,
+      final ActivityInstance activity, final String variableName) throws ActivityDefNotFoundException,
+      ProcessNotFoundException, DataFieldNotFoundException {
 
-			try {
-				result = restObject.getObject();
-			} catch (ClassNotFoundException ex) {
-				// try with CommonClassLoader
-				localClassLoader = EnvTool.getClassDataLoader()
-						.getCommonClassLoader();
-				Thread.currentThread().setContextClassLoader(localClassLoader);
+    final APIAccessor apiAccessor = new StandardAPIAccessorImpl();
+    final QueryDefinitionAPI queryDefinitionAPI = apiAccessor.getQueryDefinitionAPI();
+    DataFieldDefinition dataField = null;
+    if (activity != null) {
+      try {
+        dataField = queryDefinitionAPI.getActivityDataField(activity.getActivityDefinitionUUID(), variableName);
+      } catch (final DataFieldNotFoundException e) {
+        // it's a global variable
+        dataField = queryDefinitionAPI.getProcessDataField(processUUID, variableName);
+      }
+    } else {
+      dataField = queryDefinitionAPI.getProcessDataField(processUUID, variableName);
+    }
+    return dataField;
+  }
 
-				result = restObject.getObject();
-			}
-		}
+  private boolean isAmbigousReturnType(final Method m, final Object ret) {
+    if (ret == null || !ret.getClass().isArray()) {
+      return false;
+    }
 
-		return result;
-	}
+    final String methodName = m.getName();
+    // methods returning an Object or a generic unknowed type
+    return methodName.equals("execute") || methodName.equals("getVariable")
+        || methodName.equals("getActivityInstanceVariable") || methodName.equals("getProcessInstanceVariable")
+        || methodName.equals("evaluateGroovyExpression");
+  }
 
-	private Object getObjectFromXML(final String xmlRepresentation,
-			final ProcessDefinitionUUID processUUID) {
-		final XStream xstream = XStreamUtil.getDefaultXstream();
-		Object result = null;
-		ClassLoader localClassLoader = null;
-		try {
-			result = xstream.fromXML(xmlRepresentation);
-		} catch (Exception e) {
-			// try with ProcessClassLoader
-			localClassLoader = EnvTool.getClassDataLoader()
-					.getProcessClassLoader(processUUID);
-			Thread.currentThread().setContextClassLoader(localClassLoader);
+  private Object getObjectFromRESTObject(final RESTObject restObject, final ProcessDefinitionUUID processUUID)
+      throws IOException, ClassNotFoundException {
+    Object result = null;
+    ClassLoader localClassLoader = null;
+    try {
+      result = restObject.getObject();
+    } catch (final ClassNotFoundException e) {
+      // try with ProcessClassLoader
+      localClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processUUID);
+      Thread.currentThread().setContextClassLoader(localClassLoader);
 
-			try {
-				result = xstream.fromXML(xmlRepresentation);
-			} catch (Exception ex) {
-				// try with CommonClassLoader
-				localClassLoader = EnvTool.getClassDataLoader()
-						.getCommonClassLoader();
-				Thread.currentThread().setContextClassLoader(localClassLoader);
+      try {
+        result = restObject.getObject();
+      } catch (final ClassNotFoundException ex) {
+        // try with CommonClassLoader
+        localClassLoader = EnvTool.getClassDataLoader().getCommonClassLoader();
+        Thread.currentThread().setContextClassLoader(localClassLoader);
 
-				result = xstream.fromXML(xmlRepresentation);
-			}
-		}
+        result = restObject.getObject();
+      }
+    }
 
-		return result;
-	}
+    return result;
+  }
 
-	private Throwable getRemoteCause(final RemoteException e) {
-		Throwable t = e;
-		while (t instanceof RemoteException) {
-			t = t.getCause();
-		}
-		return t;
-	}
+  private Object getObjectFromXML(final String xmlRepresentation, final ProcessDefinitionUUID processUUID) {
+    final XStream xstream = XStreamUtil.getDefaultXstream();
+    Object result = null;
+    ClassLoader localClassLoader = null;
+    try {
+      result = xstream.fromXML(xmlRepresentation);
+    } catch (final Exception e) {
+      // try with ProcessClassLoader
+      localClassLoader = EnvTool.getClassDataLoader().getProcessClassLoader(processUUID);
+      Thread.currentThread().setContextClassLoader(localClassLoader);
+
+      try {
+        result = xstream.fromXML(xmlRepresentation);
+      } catch (final Exception ex) {
+        // try with CommonClassLoader
+        localClassLoader = EnvTool.getClassDataLoader().getCommonClassLoader();
+        Thread.currentThread().setContextClassLoader(localClassLoader);
+
+        result = xstream.fromXML(xmlRepresentation);
+      }
+    }
+
+    return result;
+  }
+
+  private Throwable getRemoteCause(final RemoteException e) {
+    Throwable t = e;
+    while (t instanceof RemoteException) {
+      t = t.getCause();
+    }
+    return t;
+  }
 
 }

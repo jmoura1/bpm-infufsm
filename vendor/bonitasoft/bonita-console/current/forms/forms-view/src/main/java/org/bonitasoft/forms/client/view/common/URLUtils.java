@@ -5,14 +5,14 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2.0 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.bonitasoft.forms.client.view.common;
 
@@ -48,65 +48,67 @@ public class URLUtils {
      * parameter for the encrypted user credentials
      */
     public static final String USER_CREDENTIALS_PARAM = "identityKey";
-    
+
     /**
      * form id : indicate the form id for which the form has to be displayed
      */
     public static final String FORM_ID = "form";
-    
+
     /**
      * task id : indicate the task id for which the form has to be displayed
      */
     public static final String TASK_ID_PARAM = "task";
-    
+
     /**
      * process id : indicate the process for witch the form has to be displayed
      */
     public static final String PROCESS_ID_PARAM = "process";
-    
+
     /**
      * process name:the name of the process
      */
     public static final String PROCESS_NAME_PARAM = "processName";
+
     /**
      * instance id : indicates the process instance for witch the form has to be displayed
      */
     public static final String INSTANCE_ID_PARAM = "instance";
-    
+
     /**
      * recap mode : indicates if the required instance page flow has to be displayed in recap mode
      */
     public static final String RECAP_PARAM = "recap";
-    
+
     /**
      * todolist mode : if true, get one task of a given process or process instance among your todolist
      */
     public static final String TODOLIST_PARAM = "todolist";
+
     /**
      * current value : indicates if the required attachment version is the current version
      */
     public static final String CURRENT_VALUE_PARAM = "currentValue";
-    
+
     /**
      * auto submit mode : indicates that the form should be automatically submitted
      */
     public static final String AUTO_SUBMIT_PARAM = "autoSubmit";
-    
+
     /**
      * auto instantiate mode : indicates that the instance shouldn't be automatically created if there is no instantiation form
      */
     public static final String AUTO_INSTANTIATE = "autoInstantiate";
-    
+
     /**
      * auto login mode : indicates that the user should be automatically logged in
      */
     public static final String AUTO_LOGIN_PARAM = "autoLogin";
-    
+
     /**
      * attachment : indicate the name of the process attachment
      */
     public static final String ATTACHMENT_PARAM = "attachment";
-    
+
     /**
      * attachment : indicate the path of the process attachment
      */
@@ -116,53 +118,63 @@ public class URLUtils {
      * attachment : indicate the file name of the process attachment
      */
     public static final String ATTACHMENT_FILE_NAME_PARAM = "attachmentFileName";
-    
+
     /**
      * the URL param for the redirection URL after login
      */
     public static final String REDIRECT_URL_PARAM = "redirectUrl";
-    
+
     /**
      * form view mode indicate that the process template should be displayed
      */
     public static final String FULL_FORM_APPLICATION_MODE = "app";
-    
+
     /**
      * form view mode indicate that the process template should not be displayed
      */
     public static final String FORM_ONLY_APPLICATION_MODE = "form";
-    
+
     /**
      * view mode : indicate whether the process template has to be displayed or
      * not
      */
     public static final String VIEW_MODE_PARAM = "mode";
-    
+
     /**
      * user's locale URL parameter
      */
     public static final String LOCALE_PARAM = "locale";
-    
+
+    /**
+     * form's locale URL param
+     */
+    public static final String FORM_LOCALE = "formLocale";
+
     /**
      * user's domain URL parameter
      */
     public static final String DOMAIN_PARAM = "domain";
-    
+
     /**
      * Default GWT locale name (if no locale is specified in the URL)
      */
     public static final String DEFAULT_GWT_LOCALE_NAME = "default";
-    
+
     /**
      * Default locale returned
      */
     public static final String DEFAULT_LOCALE = "en";
-    
+
     /**
      * Locale cookie name
      */
     public static final String BOS_LOCALE_COOKIE_NAME = "BOS_Locale";
-    
+
+    /**
+     * Locale cookie name for form
+     */
+    public static final String FORM_LOCALE_COOKIE_NAME = "Form_Locale";
+
     /**
      * The separator for history token parameters
      */
@@ -172,11 +184,11 @@ public class URLUtils {
      * The default history token
      */
     public static final String DEFAULT_HISTORY_TOKEN = "default";
-    
+
     /**
      * The URL param for loading the process' custom hostpage
      */
-	public static final String THEME = "theme";
+    public static final String THEME = "theme";
 
     /**
      * The URL param for UI mode
@@ -184,17 +196,32 @@ public class URLUtils {
     public static final String UI = "ui";
 
     public static final String USER = "user";
-    
+
     /**
      * The URL param for link refer
      */
     public static final String LINK_REFER = "refer";
-    
+
+    /**
+     * The URL Servlet name for formLayoutDownload
+     */
+    public static final String FORM_LAYOUT_DOWNLOAD = "formLayoutDownload";
+
+    /**
+     * The URL param name for formLayoutDownload
+     */
+    public static final String BODY_CONTENT_ID = "bodyContentId";
+
+    /**
+     * a Boolean to know if we proceed a page layout or not
+     */
+    public static final String IS_PAGE_LAYOUT = "isPageLayout";
+
     /**
      * Instance attribute
      */
     protected static URLUtils INSTANCE = null;
-    
+
     /**
      * @return the view controller instance
      */
@@ -211,7 +238,7 @@ public class URLUtils {
     protected URLUtils() {
         super();
     }
-    
+
     /**
      * @return the autoGeneratedFormsUrl
      */
@@ -228,7 +255,7 @@ public class URLUtils {
         }
         return url;
     }
-    
+
     /**
      * @return the hashParamsString
      */
@@ -240,7 +267,7 @@ public class URLUtils {
         }
         return hashParamsString;
     }
-    
+
     /**
      * @return the locale ("en" if the locale is not set)
      */
@@ -259,23 +286,61 @@ public class URLUtils {
     }
 
     /**
+     * 
+     * @return the locale for form
+     */
+    public String getLocaleForForm() {
+        String localeStr = null;
+        localeStr = Window.Location.getParameter(FORM_LOCALE);
+        String formLocaleInCookie = Cookies.getCookie(FORM_LOCALE_COOKIE_NAME);
+        if (localeStr == null) {
+            if (formLocaleInCookie == null) {
+                localeStr = Window.Location.getParameter(LOCALE_PARAM);
+            } else {
+                final String currentLocale = Window.Location.getParameter(LOCALE_PARAM);
+                if (!DEFAULT_GWT_LOCALE_NAME.equalsIgnoreCase(currentLocale)) {
+                    localeStr = Window.Location.getParameter(LOCALE_PARAM);
+                }
+            }
+        }
+        if (localeStr == null) {
+            localeStr = formLocaleInCookie;
+        }
+        if (localeStr == null || localeStr.length() == 0) {
+            localeStr = LocaleInfo.getCurrentLocale().getLocaleName();
+        }
+        if (DEFAULT_GWT_LOCALE_NAME.equals(localeStr)) {
+            localeStr = DEFAULT_LOCALE;
+        }
+
+        return localeStr;
+
+    }
+
+    /**
      * Retrieve the URL and remove the hash
+     * 
      * @return the new url to set
      */
     public String removeHashFromUrl() {
         return rebuildUrl(Window.Location.getPath(), Window.Location.getParameterMap(), null, null, null, null, null);
     }
-    
+
     /**
-     * Retrieve the url and rebuild it removing the required parameters and adding the provided parameters. If a parameter to add if already in the URL it needs to be removed first
-     * @param paramsToRemove list of the params to remove
-     * @param paramsToAdd list of the params to add
+     * Retrieve the url and rebuild it removing the required parameters and adding the provided parameters. If a parameter to add if already in the URL it needs
+     * to be removed first
+     * 
+     * @param paramsToRemove
+     *            list of the params to remove
+     * @param paramsToAdd
+     *            list of the params to add
      * @param hashParamsToRemove
      * @param hashParamsToAdd
      * @return the new url to set
      */
-    public String rebuildUrl(final List<String> paramsToRemove, final Map<String, String> paramsToAdd, final List<String> hashParamsToRemove, final Map<String, String> hashParamsToAdd) {
-        
+    public String rebuildUrl(final List<String> paramsToRemove, final Map<String, String> paramsToAdd, final List<String> hashParamsToRemove,
+            final Map<String, String> hashParamsToAdd) {
+
         final String hash = Window.Location.getHash();
         String token = null;
         if (hash != null && hash.startsWith("#")) {
@@ -283,35 +348,49 @@ public class URLUtils {
         }
         return rebuildUrl(Window.Location.getPath(), Window.Location.getParameterMap(), token, paramsToRemove, paramsToAdd, hashParamsToRemove, hashParamsToAdd);
     }
-    
+
     /**
-     * rebuild a URL removing the required parameters and adding the provided parameters. If a parameter to add if already in the URL it needs to be removed first
-     * @param href the full URL with parameters an hash
-     * @param paramsToRemove list of the params to remove
-     * @param paramsToAdd list of the params to add
+     * rebuild a URL removing the required parameters and adding the provided parameters. If a parameter to add if already in the URL it needs to be removed
+     * first
+     * 
+     * @param href
+     *            the full URL with parameters an hash
+     * @param paramsToRemove
+     *            list of the params to remove
+     * @param paramsToAdd
+     *            list of the params to add
      * @param hashParamsToRemove
      * @param hashParamsToAdd
      * @return the new url to set
      */
-    public String rebuildUrl(final String href, final List<String> paramsToRemove, final Map<String, String> paramsToAdd, final List<String> hashParamsToRemove, final Map<String, String> hashParamsToAdd) {
+    public String rebuildUrl(final String href, final List<String> paramsToRemove, final Map<String, String> paramsToAdd,
+            final List<String> hashParamsToRemove, final Map<String, String> hashParamsToAdd) {
         final Map<String, List<String>> parametersMap = getURLParametersMap(href);
         final String url = removeURLparameters(href);
         final String token = getHashParamsString(href);
         return rebuildUrl(url, parametersMap, token, paramsToRemove, paramsToAdd, hashParamsToRemove, hashParamsToAdd);
     }
-    
+
     /**
-     * rebuild a URL removing the required parameters and adding the provided parameters. If a parameter to add if already in the URL it needs to be removed first
-     * @param url the URL
-     * @param parametersMap the parameters in the URL
-     * @param hash the hash in the URL
-     * @param paramsToRemove list of the params to remove
-     * @param paramsToAdd map of the params to add
+     * rebuild a URL removing the required parameters and adding the provided parameters. If a parameter to add if already in the URL it needs to be removed
+     * first
+     * 
+     * @param url
+     *            the URL
+     * @param parametersMap
+     *            the parameters in the URL
+     * @param hash
+     *            the hash in the URL
+     * @param paramsToRemove
+     *            list of the params to remove
+     * @param paramsToAdd
+     *            map of the params to add
      * @param hashParamsToRemove
      * @param hashParamsToAdd
      * @return the new url to set
      */
-    protected String rebuildUrl(final String url, final Map<String, List<String>> parametersMap, final String hash, final List<String> paramsToRemove, final Map<String, String> paramsToAdd, final List<String> hashParamsToRemove, final Map<String, String> hashParamsToAdd) {
+    protected String rebuildUrl(final String url, final Map<String, List<String>> parametersMap, final String hash, final List<String> paramsToRemove,
+            final Map<String, String> paramsToAdd, final List<String> hashParamsToRemove, final Map<String, String> hashParamsToAdd) {
 
         final StringBuilder urlParams = new StringBuilder();
         if (parametersMap != null && !parametersMap.isEmpty()) {
@@ -346,7 +425,7 @@ public class URLUtils {
             href.append("?");
             href.append(urlParams.toString());
         }
-        
+
         final StringBuilder hashParams = new StringBuilder();
         if (hash != null) {
             final Map<String, String> hashParameters = getHashParameters(hash);
@@ -381,11 +460,14 @@ public class URLUtils {
         }
         return href.toString();
     }
-    
+
     /**
      * Elaborate the redirection URL for a given task
-     * @param applicationURL the application URL to redirect to
-     * @param newTaskUUIDStr the task UUID as a string
+     * 
+     * @param applicationURL
+     *            the application URL to redirect to
+     * @param newTaskUUIDStr
+     *            the task UUID as a string
      * @param hashParamsToAdd
      * @return the redirection URL
      */
@@ -416,10 +498,12 @@ public class URLUtils {
         }
         return url.toString();
     }
-    
+
     /**
      * Elaborate the redirection URL hash for a given task
-     * @param newTaskUUIDStr the task UUID as a string
+     * 
+     * @param newTaskUUIDStr
+     *            the task UUID as a string
      * @return
      */
     public String getTaskRedirectionHash(final String newTaskUUIDStr) {
@@ -430,15 +514,18 @@ public class URLUtils {
         }
         return hash;
     }
-    
+
     /**
      * change the form frame URL
      * this method is meant to be called in the form frame (not in the application/console window)
      * TODO do not call this method in case there is no app redirection (all in the bar)
-     * @param url the url to redirect to
-     * @param frameId the ID of the frame to refresh
+     * 
+     * @param url
+     *            the url to redirect to
+     * @param frameId
+     *            the ID of the frame to refresh
      */
-    native public void frameRedirect(String frameId, String url) 
+    native public void frameRedirect(String frameId, String url)
     /*-{
         var formFrameWindow = window.parent;
         if (formFrameWindow != window.top) {
@@ -451,16 +538,18 @@ public class URLUtils {
             }
         }
     }-*/;
-    
-    
+
     /**
      * change the form frame URL
      * this method is meant to be called in the form frame (not in the application/console window)
      * TODO do not call this method in case there is no app redirection (all in the bar)
-     * @param url the url to redirect to
-     * @param frameId the ID of the frame to refresh
+     * 
+     * @param url
+     *            the url to redirect to
+     * @param frameId
+     *            the ID of the frame to refresh
      */
-    native public void changeFrameHashString(String frameId, String newHashString) 
+    native public void changeFrameHashString(String frameId, String newHashString)
     /*-{
         var formFrameWindow = window.parent;
         if (formFrameWindow != window.top) {
@@ -473,10 +562,11 @@ public class URLUtils {
             }
         }
     }-*/;
-	/**
-	 * Display the login page
-	 */
-	public void showLoginView() {
+
+    /**
+     * Display the login page
+     */
+    public void showLoginView() {
 
         final String theRedirectURL = GWT.getModuleBaseURL() + "login.jsp";
 
@@ -495,37 +585,47 @@ public class URLUtils {
         } finally {
             windowRedirect(theRedirectURL + theURLSuffix);
         }
-	}
-    
+    }
+
     public void windowRedirect(final String href) {
         Window.Location.replace(href);
     }
-    
+
     public void windowAssign(final String href) {
         Window.Location.assign(href);
     }
-    
+
     public void saveLocale(final String localeName) {
         final Date now = new Date();
         // Expiration in 120 days.
         final Date theExpirationTime = new Date(now.getTime() + (1000 * 60 * 60 * 24 * 120));
         Cookies.setCookie(BOS_LOCALE_COOKIE_NAME, localeName, theExpirationTime);
     }
-    
+
+    public void saveLocaleForForm(final String localeName) {
+        final Date now = new Date();
+        // Expiration in 120 days.
+        final Date theExpirationTime = new Date(now.getTime() + (1000 * 60 * 60 * 24 * 120));
+        Cookies.setCookie(FORM_LOCALE_COOKIE_NAME, localeName, theExpirationTime);
+    }
+
     @Deprecated
-    public String getAttachmentURL(final String servletURL, final String taskUUIDStr, final String processUUIDStr, final String instanceUUIDStr, final boolean isCurrentValue, final String attachmentName) {
+    public String getAttachmentURL(final String servletURL, final String taskUUIDStr, final String processUUIDStr, final String instanceUUIDStr,
+            final boolean isCurrentValue, final String attachmentName) {
         String urlParams = null;
         if (taskUUIDStr != null) {
             urlParams = "?" + URLUtils.TASK_ID_PARAM + "=" + taskUUIDStr + "&" + URLUtils.ATTACHMENT_PARAM + "=" + attachmentName;
         } else if (processUUIDStr != null) {
             urlParams = "?" + URLUtils.PROCESS_ID_PARAM + "=" + processUUIDStr + "&" + URLUtils.ATTACHMENT_PARAM + "=" + attachmentName;
         } else {
-            urlParams = "?" + URLUtils.INSTANCE_ID_PARAM + "=" + instanceUUIDStr + "&" + URLUtils.CURRENT_VALUE_PARAM + "=" + isCurrentValue + "&" + URLUtils.ATTACHMENT_PARAM + "=" + attachmentName;
+            urlParams = "?" + URLUtils.INSTANCE_ID_PARAM + "=" + instanceUUIDStr + "&" + URLUtils.CURRENT_VALUE_PARAM + "=" + isCurrentValue + "&"
+                    + URLUtils.ATTACHMENT_PARAM + "=" + attachmentName;
         }
         return servletURL + urlParams;
     }
-    
-    public String getAttachmentURL(final String servletURL, final String formID, final Map<String, Object> contextMap, final boolean isCurrentValue, final String attachmentName) {
+
+    public String getAttachmentURL(final String servletURL, final String formID, final Map<String, Object> contextMap, final boolean isCurrentValue,
+            final String attachmentName) {
         final StringBuilder urlParams = new StringBuilder();
         urlParams.append("?");
         final int size = contextMap.size();
@@ -553,16 +653,16 @@ public class URLUtils {
             theURLSuffix += URL.encodeQueryString(redirectUrl);
         } catch (final Exception e) {
             theURLSuffix += GWT.getModuleBaseURL();
-        } 
+        }
         urlParams.append("&" + URLUtils.LINK_REFER + "=" + theURLSuffix);
         return servletURL + urlParams.toString();
     }
-    
+
     public String getFileURL(final String servletURL, final String filepath, final String filename) {
         final String urlParams = "?" + URLUtils.ATTACHMENT_PATH_PARAM + "=" + filepath + "&" + URLUtils.ATTACHMENT_FILE_NAME_PARAM + "=" + filename;
         return servletURL + urlParams;
     }
-    
+
     public String getHashParameter(final String hashParameterName) {
         final String hash = History.getToken();
         final String[] parameters = hash.split(HASH_PARAMETERS_SEPARATOR);
@@ -575,9 +675,10 @@ public class URLUtils {
         }
         return null;
     }
-    
+
     /**
-     * @param String hash
+     * @param String
+     *            hash
      * @return Parameters Map of given hash String
      */
     public Map<String, String> getHashParameters(final String hash) {
@@ -594,7 +695,7 @@ public class URLUtils {
         }
         return parametersMap;
     }
-    
+
     /**
      * @return Current URL hash Parameters Map
      */
@@ -613,7 +714,7 @@ public class URLUtils {
         }
         return parametersMap;
     }
-    
+
     public String rebuildHash(final List<String> hashParamsToRemove, final Map<String, String> hashParamsToAdd) {
         final String hash = History.getToken();
         final StringBuilder hashParams = new StringBuilder();
@@ -646,9 +747,10 @@ public class URLUtils {
         }
         return hashParams.toString();
     }
-    
+
     /**
      * parse anApplicationURL As Parameters Map ,and set autoGeneratedFormsUrl and hashParams
+     * 
      * @param anApplicationURL
      * @return parametersMap
      */
@@ -678,59 +780,74 @@ public class URLUtils {
         }
         return parametersMap;
     }
-    
-    public String getFormID(){
-    	return getHashParameter("form");
+
+    public String getFormID() {
+        return getHashParameter("form");
     }
 
-	/**
-	 * @param applicationURL
-	 * @param urlContext
-	 * @return
-	 */
-	public String getFormRedirectionUrl(String applicationURL, Map<String, Object> urlContext) {
-		  final StringBuilder url = new StringBuilder(applicationURL);
-		  	if(applicationURL.contains("?")){
-				url.append("&");
-		  	}else{
-		  		url.append("?");
-		  	}
-	        url.append(URLUtils.LOCALE_PARAM);
-	        url.append("=");
-	        url.append(getLocale());
-	        url.append("#");
-	        Iterator<Entry<String, Object>> it = urlContext.entrySet().iterator();
-	        int size = urlContext.size();
-	        for(int i = 0 ; i<size; i++){
-	            Entry<String,Object> entry = it.next();
-	            String key = entry.getKey();
-	            String value = entry.getValue().toString();
-	            url.append(key +"=" +value);
-	            if(i < size -1){
-	                url.append("&");
-	            }
-	        }
-	        return url.toString();
-	}
+    /**
+     * @param applicationURL
+     * @param urlContext
+     * @return
+     */
+    public String getFormRedirectionUrl(String applicationURL, Map<String, Object> urlContext) {
+        final StringBuilder url = new StringBuilder(applicationURL);
+        if (applicationURL.contains("?")) {
+            url.append("&");
+        } else {
+            url.append("?");
+        }
+        url.append(URLUtils.LOCALE_PARAM);
+        url.append("=");
+        url.append(getLocale());
+        url.append("#");
+        Iterator<Entry<String, Object>> it = urlContext.entrySet().iterator();
+        int size = urlContext.size();
+        for (int i = 0; i < size; i++) {
+            Entry<String, Object> entry = it.next();
+            String key = entry.getKey();
+            String value = entry.getValue().toString();
+            url.append(key + "=" + value);
+            if (i < size - 1) {
+                url.append("&");
+            }
+        }
+        return url.toString();
+    }
 
-	/**
-	 * @param urlContext
-	 * @return
-	 */
-	public String getFormRedirectionHash(Map<String, Object> urlContext) {
-	StringBuilder hashBuilder = new StringBuilder();
-	 Iterator<Entry<String, Object>> it = urlContext.entrySet().iterator();
-	 int size = urlContext.size();
-	 for(int i = 0 ; i<size; i++){
-		 Entry<String,Object> entry = it.next();
-		 String key = entry.getKey();
-	     String value = entry.getValue().toString();
-	     hashBuilder.append(key +"=" +value);
-	     if(i < size -1){
-	    	 hashBuilder.append("&");
-	     }
-	 }
-	return hashBuilder.toString();
-	}
+    /**
+     * @param urlContext
+     * @return
+     */
+    public String getFormRedirectionHash(Map<String, Object> urlContext) {
+        StringBuilder hashBuilder = new StringBuilder();
+        Iterator<Entry<String, Object>> it = urlContext.entrySet().iterator();
+        int size = urlContext.size();
+        for (int i = 0; i < size; i++) {
+            Entry<String, Object> entry = it.next();
+            String key = entry.getKey();
+            String value = entry.getValue().toString();
+            hashBuilder.append(key + "=" + value);
+            if (i < size - 1) {
+                hashBuilder.append("&");
+            }
+        }
+        return hashBuilder.toString();
+    }
+
+    public String buildLayoutURL(final String bodyContentId, final String taskId, boolean isPageLayout) {
+        final StringBuffer theURL = new StringBuffer(GWT.getModuleBaseURL()).append(FORM_LAYOUT_DOWNLOAD);
+        if (bodyContentId != null) {
+            theURL.append("?" + BODY_CONTENT_ID + "=").append(bodyContentId);
+            theURL.append("&" + IS_PAGE_LAYOUT + "=").append(isPageLayout);
+            if (taskId != null) {
+                theURL.append("&" + TASK_ID_PARAM + "=").append(taskId);
+            }
+        } else {
+            return null;
+        }
+
+        return theURL.toString();
+    }
 
 }

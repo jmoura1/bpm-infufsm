@@ -20,16 +20,16 @@ import java.util.Map;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class Select extends Widget {
 
-  private Map<String, String> values;
-  private boolean editable;
-  private Option top;
+  private final Map<String, String> values;
+  private final boolean editable;
+  private final Option top;
 
-  public Select(String labelId, Setter setter,
-      Map<String, String> values, boolean editable, Option top) {
+  public Select(final String labelId, final Setter setter, final Map<String, String> values, final boolean editable,
+      final Option top) {
     super(labelId, setter);
     this.values = values;
     this.editable = editable;
@@ -49,15 +49,45 @@ public class Select extends Widget {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    boolean equals = super.equals(obj);
-    if (equals && obj instanceof Select) {
-      Select temp = (Select) obj;
-      return (temp.getTop().equals(this.getTop())
-          && temp.isEditable() == this.isEditable()
-          && temp.getValues().equals(this.getValues()));
-    } else {
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + (editable ? 1231 : 1237);
+    result = prime * result + (top == null ? 0 : top.hashCode());
+    result = prime * result + (values == null ? 0 : values.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
       return false;
     }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Select other = (Select) obj;
+    if (editable != other.editable) {
+      return false;
+    }
+    if (top == null) {
+      if (other.top != null) {
+        return false;
+      }
+    } else if (!top.equals(other.top)) {
+      return false;
+    }
+    if (values == null) {
+      if (other.values != null) {
+        return false;
+      }
+    } else if (!values.equals(other.values)) {
+      return false;
+    }
+    return true;
   }
+
 }

@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.bonitasoft.console.client.ItemUpdates;
 import org.bonitasoft.console.client.cases.CaseFilter;
@@ -45,6 +46,7 @@ import org.bonitasoft.console.client.model.categories.CategoryDataSource;
 import org.bonitasoft.console.client.model.labels.LabelDataSource;
 import org.bonitasoft.console.client.steps.CommentItem;
 import org.bonitasoft.console.client.steps.StepItem;
+import org.bonitasoft.console.client.users.UserUUID;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -876,5 +878,9 @@ public class CaseDataSourceImpl implements CaseDataSource {
     public void listItems(CaseFilter aFilter, AsyncHandler<ItemUpdates<CaseItem>> aHandler) {
         Window.alert("CaseDataSource not supported method: listItems");
         
+    }
+    
+    public void sendRedirectToCurrentPosition(final Set<UserUUID> theCandidates) {
+    	myChanges.fireModelChange(TO_CURRENT_POSITION, null, theCandidates);
     }
 }

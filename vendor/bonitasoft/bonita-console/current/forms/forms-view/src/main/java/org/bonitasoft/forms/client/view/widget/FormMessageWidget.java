@@ -104,6 +104,9 @@ public class FormMessageWidget extends Composite {
         }
         flowPanel.add(message);
         DOMUtils.getInstance().addScriptElementToDOM(message.getElement(), flowPanel.getElement());
+        
+        final ElementAttributeSupport elementAttributeSupport = new ElementAttributeSupport();
+        elementAttributeSupport.addHtmlAttributes(message, formMessageData.getHtmlAttributes());
     }
     
     /**
@@ -149,10 +152,12 @@ public class FormMessageWidget extends Composite {
      * @param fieldValue
      */
     public void setValue(final FormFieldValue fieldValue) {
-        if (allowHTMLInField) {
-            message.setHTML(getStringValue(fieldValue));
-        } else {
-            message.setText(getStringValue(fieldValue));
+        if (fieldValue.getValue() != null) {
+            if (allowHTMLInField) {
+                message.setHTML(getStringValue(fieldValue));
+            } else {
+                message.setText(getStringValue(fieldValue));
+            }
         }
     }
 }

@@ -22,7 +22,8 @@ package org.bonitasoft.forms.server.provider.impl.util;
  */
 public class FormServiceProviderUtil {
     
-    private FormServiceProviderUtil(){
+
+	private FormServiceProviderUtil(){
     }
     
     /**
@@ -45,6 +46,10 @@ public class FormServiceProviderUtil {
      */
     public static final String ACTIVITY_UUID = "activity";
     
+    /**
+     * Theme Name
+     */
+    public static final String THEME = "theme";
     /**
      * user's locale 
      */

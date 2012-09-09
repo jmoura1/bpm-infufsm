@@ -40,22 +40,24 @@ public abstract class SheetsterConnector extends Connector {
   private String password;
 
   private static String session;
-  public String getSession(){
+
+  public String getSession() {
     return session;
   }
 
-  public void setServerURL(String serverURL) {
+  public void setServerURL(final String serverURL) {
     this.serverURL = serverURL;
   }
 
-  public void setUsername(String username) {
+  public void setUsername(final String username) {
     this.username = username;
   }
 
-  public void setPassword(String password) {
+  public void setPassword(final String password) {
     this.password = password;
   }
 
+  @Override
   protected void executeConnector() throws Exception {
     authenticate();
     executeTask();
@@ -64,9 +66,9 @@ public abstract class SheetsterConnector extends Connector {
   protected abstract void executeTask() throws Exception;
 
   private void authenticate() throws Exception {
-    StringBuilder loginURL = new StringBuilder(serverURL);
-    loginURL.append("/workbook/id/-2/txt/system/login/?username=")
-    .append(username).append("&password=").append(password);
+    final StringBuilder loginURL = new StringBuilder(serverURL);
+    loginURL.append("/workbook/id/-2/txt/system/login/?username=").append(username).append("&password=")
+        .append(password);
     getHTTPBytes(loginURL.toString());
   }
 
@@ -74,7 +76,7 @@ public abstract class SheetsterConnector extends Connector {
     if (!urlstr.startsWith(serverURL)) {
       urlstr = serverURL + urlstr;
     }
-    URL pageURL = new URL(urlstr);
+    final URL pageURL = new URL(urlstr);
     URLConnection pageConnection;
     pageConnection = pageURL.openConnection();
     if (session != null) {
@@ -85,73 +87,74 @@ public abstract class SheetsterConnector extends Connector {
     InputStream webPageInputStream;
     pageConnection.connect();
     webPageInputStream = pageConnection.getInputStream();
-    String enc = pageConnection.getContentEncoding();
+    final String enc = pageConnection.getContentEncoding();
     try {
-      if (enc.equalsIgnoreCase("gzip"))
-        webPageInputStream = new GZIPInputStream(
-            pageConnection.getInputStream());
-    } catch (Exception e) {
-      ;// normal
+      if (enc.equalsIgnoreCase("gzip")) {
+        webPageInputStream = new GZIPInputStream(pageConnection.getInputStream());
+      }
+    } catch (final Exception e) {
+      // normal
     }
 
-    ByteArrayOutputStream webPageData = new ByteArrayOutputStream();
-    int totalBytesRead = 0;
+    final ByteArrayOutputStream webPageData = new ByteArrayOutputStream();
     boolean moreToRead = true;
-    byte[] readBuf = new byte[2048];
+    final byte[] readBuf = new byte[2048];
     while (moreToRead) {
       int numBytesRead = 0;
       try {
         numBytesRead = webPageInputStream.read(readBuf);
-      } catch (IOException e) {
+      } catch (final IOException e) {
         moreToRead = false;
       }
       if (numBytesRead > 0) {
-        totalBytesRead += numBytesRead;
         webPageData.write(readBuf, 0, numBytesRead);
-      } else
+      } else {
         moreToRead = false;
+      }
     }
     webPageInputStream.close();
     // Pull the session ID out of the connection headers
     /*
      * try to get cookie every time in case cookie expired
      */
-    String s = pageConnection.getHeaderField("Set-Cookie");
+    final String s = pageConnection.getHeaderField("Set-Cookie");
     try {
       if (s != null) {
         session = s;
-        if (!session.startsWith("sessionid="))
+        if (!session.startsWith("sessionid=")) {
           throw new Exception("invalid session cookie");
+        }
         // Strip off any extraneous header fields
-        if (session.contains(";"))
+        if (session.contains(";")) {
           session = session.substring(0, session.indexOf(";"));
+        }
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException("failed to parse session cookie", e);
     }
     return webPageData.toByteArray();
   }
 
-  public String getHTTPData(String urlstr) throws Exception {
+  public String getHTTPData(final String urlstr) throws Exception {
     return new String(getHTTPBytes(urlstr));
   }
 
-  public Object getHTTPObject(String urlstr) throws Exception {
+  public Object getHTTPObject(final String urlstr) throws Exception {
     // Create a URL object from urlString
-    String ret = new String(getHTTPBytes(urlstr));
+    final String ret = new String(getHTTPBytes(urlstr));
     // try numbers
     try {
-      Double d = Double.parseDouble(ret);
+      final Double d = Double.parseDouble(ret);
       return d;
-    } catch (NumberFormatException de) {
+    } catch (final NumberFormatException de) {
       try {
-        Float f = Float.parseFloat(ret);
+        final Float f = Float.parseFloat(ret);
         return f;
-      } catch (NumberFormatException fe) {
+      } catch (final NumberFormatException fe) {
         try {
-          Integer i = Integer.parseInt(ret);
+          final Integer i = Integer.parseInt(ret);
           return i;
-        } catch (NumberFormatException ie) {
+        } catch (final NumberFormatException ie) {
           // ok not a number
         }
       }
@@ -159,9 +162,9 @@ public abstract class SheetsterConnector extends Connector {
 
     // try boolean
     if (ret.equalsIgnoreCase("true")) {
-      return Boolean.valueOf(true);
+      return Boolean.TRUE;
     } else if (ret.equalsIgnoreCase("false")) {
-      return Boolean.valueOf(false);
+      return Boolean.FALSE;
     }
     // finally returns string val
     return ret;
@@ -169,10 +172,10 @@ public abstract class SheetsterConnector extends Connector {
 
   @Override
   protected List<ConnectorError> validateValues() {
-    List<ConnectorError> errors = new ArrayList<ConnectorError>();
+    final List<ConnectorError> errors = new ArrayList<ConnectorError>();
     if (serverURL.length() == 0) {
-      ConnectorError error = new ConnectorError("serverURL",
-          new IllegalArgumentException("The server URL is empty!"));
+      final ConnectorError error = new ConnectorError("serverURL", new IllegalArgumentException(
+          "The server URL is empty!"));
       errors.add(error);
     }
     return errors;

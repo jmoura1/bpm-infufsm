@@ -8,6 +8,7 @@ import java.util.List;
 import org.ow2.bonita.APITestCase;
 import org.ow2.bonita.facade.QueryRuntimeAPI;
 import org.ow2.bonita.facade.def.majorElement.ProcessDefinition;
+import org.ow2.bonita.facade.identity.User;
 import org.ow2.bonita.facade.runtime.ActivityState;
 import org.ow2.bonita.facade.uuid.ActivityInstanceUUID;
 import org.ow2.bonita.facade.uuid.ProcessInstanceUUID;
@@ -510,5 +511,36 @@ public class SearchProcessInstanceTest extends APITestCase {
   //    getManagementAPI().deleteProcess(definitionA.getUUID());
   //    getManagementAPI().deleteProcess(definitionB.getUUID());
   //  }
+
+  public void testSearchInstancesOfInitiator() throws Exception {
+    ProcessDefinition first = ProcessBuilder.createProcess("first", "1.0")
+    .addHuman(getLogin())
+    .addHumanTask("step1", getLogin())
+    .done();
+    first = getManagementAPI().deploy(getBusinessArchive(first));
+
+    ProcessDefinition second = ProcessBuilder.createProcess("second", "1.0")
+    .addHuman("john")
+    .addHumanTask("step1", "john")
+    .done();
+    second = getManagementAPI().deploy(getBusinessArchive(second));
+    getRuntimeAPI().instantiateProcess(first.getUUID());
+
+    final String specialLogin = "test%test_";
+    final User user = getIdentityAPI().addUser(specialLogin, "bpm");
+    loginAs(specialLogin, "bpm");
+    getRuntimeAPI().instantiateProcess(second.getUUID());
+
+    login();
+    SearchQueryBuilder searchBuilder = new SearchQueryBuilder(new ProcessInstanceIndex());
+    searchBuilder.criterion(ProcessInstanceIndex.STARTED_BY).equalsTo(specialLogin);
+    List<LightProcessInstance> instances = getQueryRuntimeAPI().search(searchBuilder, 0, 10);
+    assertEquals(1, instances.size());
+    assertEquals(second.getUUID(), instances.get(0).getProcessDefinitionUUID());
+
+    getIdentityAPI().removeUserByUUID(user.getUUID());
+    getManagementAPI().deleteProcess(first.getUUID());
+    getManagementAPI().deleteProcess(second.getUUID());
+  }
 
 }

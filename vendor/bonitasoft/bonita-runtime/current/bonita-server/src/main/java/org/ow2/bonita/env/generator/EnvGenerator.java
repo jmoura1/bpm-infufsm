@@ -64,17 +64,17 @@ public class EnvGenerator {
   private static final Logger LOG = Logger.getLogger(EnvGenerator.class.getName());
   public static final String INDENT = "  ";
 
-  private final Map<String,EnvEntry> envFactoryEntries = new TreeMap<String, EnvEntry>();
-  private final Map<String,EnvEntry> envEntries = new TreeMap<String, EnvEntry>();
+  private final Map<String, EnvEntry> envFactoryEntries = new TreeMap<String, EnvEntry>();
+  private final Map<String, EnvEntry> envEntries = new TreeMap<String, EnvEntry>();
 
   public EnvGenerator(final boolean defaultConfiguration) {
-    //APLICATION ENTRIES
+    // APLICATION ENTRIES
     addApplicationEntry(getDomain());
 
-    addApplicationEntry(getCoreHibernateConfiguration(defaultConfiguration));
+    addApplicationEntry(getCoreHibernateConfiguration());
     addApplicationEntry(getCoreHibernateSessionFactory());
 
-    addApplicationEntry(getHistoryHibernateConfiguration(defaultConfiguration));
+    addApplicationEntry(getHistoryHibernateConfiguration());
     addApplicationEntry(getHistoryHibernateSessionFactory());
 
     addApplicationEntry(getCommandService());
@@ -86,13 +86,13 @@ public class EnvGenerator {
     addApplicationEntry(getClobStrategy());
     addApplicationEntry(getLargeDataRepository());
     addApplicationEntry(getDocumentationManager());
-    //addApplicationEntry(getSecurityContext());
+    // addApplicationEntry(getSecurityContext());
     addApplicationEntry(getFinishedInstanceHandler());
     addApplicationEntry(getHiloDbUUIDService());
     addApplicationEntry(getDbUUIDService());
     addApplicationEntry(getClassdataLoader());
 
-    //BLOCK ENTRIES
+    // BLOCK ENTRIES
     addBlockEntry(getCoreHibernateSession());
     addBlockEntry(getHistoryDbSession());
     addBlockEntry(getHistoryHibernateSession());
@@ -118,93 +118,111 @@ public class EnvGenerator {
   private EnvEntry getOptimizeDbHistory() {
     final String key = EnvConstants.HISTORY_DEFAULT_KEY;
     final EnvEntry optimizeDbHistoryEntry = new EnvEntry("Optimized DB history",
-        "Optimized DB Implementation of the history. "
-        + "This implementation contains optimized methods. "
-        + "For example, a call to getUserTasks(final String userId, final ActivityState taskState) "
-        + " looks in DB only if the state is an expected one in History (FINISHED is one, READY is not...)",
-        "<" + key + " name='" + key + "' class='" + OptimizedDbHistory.class.getName() + "'>" + Misc.LINE_SEPARATOR
-        + EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_HISTORY + "' /></arg>" + Misc.LINE_SEPARATOR
-        + "</" + key + ">",
-        true);
+        "Optimized DB Implementation of the history. " + "This implementation contains optimized methods. "
+            + "For example, a call to getUserTasks(final String userId, final ActivityState taskState) "
+            + " looks in DB only if the state is an expected one in History (FINISHED is one, READY is not...)", "<"
+            + key + " name='" + key + "' class='" + OptimizedDbHistory.class.getName() + "'>" + Misc.LINE_SEPARATOR
+            + EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_HISTORY + "' /></arg>"
+            + Misc.LINE_SEPARATOR + "</" + key + ">", true);
     return optimizeDbHistoryEntry;
   }
 
   private EnvEntry getHistoryDbSession() {
-    return getDbSession(EnvConstants.BONITA_SESSION_CORE, EnvConstants.HB_SESSION_CORE, "hibernate session name for Bonita core.");
+    return getDbSession(EnvConstants.BONITA_SESSION_CORE, EnvConstants.HB_SESSION_CORE,
+        "hibernate session name for Bonita core.");
   }
 
   private EnvEntry getCoreDbSession() {
-    return getDbSession(EnvConstants.BONITA_SESSION_HISTORY, EnvConstants.HB_SESSION_HISTORY, "hibernate session name for Bonita history.");
+    return getDbSession(EnvConstants.BONITA_SESSION_HISTORY, EnvConstants.HB_SESSION_HISTORY,
+        "hibernate session name for Bonita history.");
   }
 
   private EnvEntry getHistoryHibernateSession() {
-    return getHibernateSession(EnvConstants.HB_SESSION_HISTORY, EnvConstants.HB_SESSION_FACTORY_HISTORY, "hibernate session for Bonita history.");
+    return getHibernateSession(EnvConstants.HB_SESSION_HISTORY, EnvConstants.HB_SESSION_FACTORY_HISTORY,
+        "hibernate session for Bonita history.");
   }
 
   private EnvEntry getCoreHibernateSession() {
-    return getHibernateSession(EnvConstants.HB_SESSION_CORE, EnvConstants.HB_SESSION_FACTORY_CORE, "hibernate session for Bonita core.");
+    return getHibernateSession(EnvConstants.HB_SESSION_CORE, EnvConstants.HB_SESSION_FACTORY_CORE,
+        "hibernate session for Bonita core.");
   }
 
   private EnvEntry getHistoryHibernateSessionFactory() {
-    return getHibernateSessionFactory(EnvConstants.HB_SESSION_FACTORY_HISTORY, EnvConstants.HB_CONFIG_HISTORY, "hibernate session factory for Bonita history.");
+    return getHibernateSessionFactory(EnvConstants.HB_SESSION_FACTORY_HISTORY, EnvConstants.HB_CONFIG_HISTORY,
+        "hibernate session factory for Bonita history.");
   }
 
   private EnvEntry getCoreHibernateSessionFactory() {
-    return getHibernateSessionFactory(EnvConstants.HB_SESSION_FACTORY_CORE, EnvConstants.HB_CONFIG_CORE, "hibernate session factory for Bonita core.");
+    return getHibernateSessionFactory(EnvConstants.HB_SESSION_FACTORY_CORE, EnvConstants.HB_CONFIG_CORE,
+        "hibernate session factory for Bonita core.");
   }
 
-  private EnvEntry getHistoryHibernateConfiguration(boolean defaultConfiguration) {
+  private EnvEntry getHistoryHibernateConfiguration() {
     // Hibernate configuration for history
-    StringBuilder historyPathBuilder = new StringBuilder(getDefaultServerFolder());
+    final StringBuilder historyPathBuilder = new StringBuilder(getDefaultServerFolder());
     historyPathBuilder.append(File.separator).append("conf").append(File.separator).append("bonita-history.properties");
-    return getHibernateConfig(historyPathBuilder.toString(), EnvConstants.HB_CONFIG_HISTORY, "bonita.history.cache.xml", "nonstrict-read-write", "Configuration of the Hibernate session factory used by Bonita history.");
+    return getHibernateConfig(historyPathBuilder.toString(), EnvConstants.HB_CONFIG_HISTORY,
+        "bonita.history.cache.xml", "nonstrict-read-write",
+        "Configuration of the Hibernate session factory used by Bonita history.");
   }
 
-  private EnvEntry getCoreHibernateConfiguration(boolean defaultConfiguration) {
-    StringBuilder corePathBuilder = new StringBuilder(getDefaultServerFolder());
+  private EnvEntry getCoreHibernateConfiguration() {
+    final StringBuilder corePathBuilder = new StringBuilder(getDefaultServerFolder());
     corePathBuilder.append(File.separator).append("conf").append(File.separator).append("bonita-journal.properties");
-    return getHibernateConfig(corePathBuilder.toString(), EnvConstants.HB_CONFIG_CORE, "bonita.core.cache.xml", "read-write", "Configuration of the Hibernate session factory used by Bonita core.");
+    return getHibernateConfig(corePathBuilder.toString(), EnvConstants.HB_CONFIG_CORE, "bonita.core.cache.xml",
+        "read-write", "Configuration of the Hibernate session factory used by Bonita core.");
   }
 
   private EnvEntry getDbHistory() {
-    return new EnvEntry("Db history", "DB Implementation of the history. This implementation is full conformant with the spec (but not optimized).", "<history name='" + EnvConstants.HISTORY_DEFAULT_KEY + "' class='" + DbHistory.class.getName() + "'/>", false);
+    return new EnvEntry("Db history",
+        "DB Implementation of the history. This implementation is full conformant with the spec (but not optimized).",
+        "<history name='" + EnvConstants.HISTORY_DEFAULT_KEY + "' class='" + DbHistory.class.getName() + "'/>", false);
   }
 
   private EnvEntry getDefaultQueryList() {
     final List<EnvEntry> queryApiEntries = new ArrayList<EnvEntry>();
-    queryApiEntries.add( new EnvEntry(EnvConstants.JOURNAL_DEFAULT_KEY, "Reference to the journal", "<ref object='" + EnvConstants.JOURNAL_DEFAULT_KEY + "' />", true));
-    queryApiEntries.add(new EnvEntry(EnvConstants.HISTORY_DEFAULT_KEY, "Reference to the history", "<ref object='" + EnvConstants.HISTORY_DEFAULT_KEY + "' />", true));
+    queryApiEntries.add(new EnvEntry(EnvConstants.JOURNAL_DEFAULT_KEY, "Reference to the journal", "<ref object='"
+        + EnvConstants.JOURNAL_DEFAULT_KEY + "' />", true));
+    queryApiEntries.add(new EnvEntry(EnvConstants.HISTORY_DEFAULT_KEY, "Reference to the history", "<ref object='"
+        + EnvConstants.HISTORY_DEFAULT_KEY + "' />", true));
     return new QueryApiEnvEntry(AccessorUtil.QUERYLIST_DEFAULT_KEY, "List of Queriers to use.", queryApiEntries, true);
   }
 
   private EnvEntry getJournalQueryList() {
     final List<EnvEntry> queryApiEntries = new ArrayList<EnvEntry>();
-    queryApiEntries.add( new EnvEntry(EnvConstants.JOURNAL_DEFAULT_KEY, "Reference to the journal", "<ref object='" + EnvConstants.JOURNAL_DEFAULT_KEY + "' />", true));
+    queryApiEntries.add(new EnvEntry(EnvConstants.JOURNAL_DEFAULT_KEY, "Reference to the journal", "<ref object='"
+        + EnvConstants.JOURNAL_DEFAULT_KEY + "' />", true));
     return new QueryApiEnvEntry(AccessorUtil.QUERYLIST_JOURNAL_KEY, "List of Queriers to use.", queryApiEntries, true);
   }
 
   private EnvEntry getHistoryQueryList() {
     final List<EnvEntry> queryApiEntries = new ArrayList<EnvEntry>();
-    queryApiEntries.add(new EnvEntry(EnvConstants.HISTORY_DEFAULT_KEY, "Reference to the history", "<ref object='" + EnvConstants.HISTORY_DEFAULT_KEY + "' />", true));
+    queryApiEntries.add(new EnvEntry(EnvConstants.HISTORY_DEFAULT_KEY, "Reference to the history", "<ref object='"
+        + EnvConstants.HISTORY_DEFAULT_KEY + "' />", true));
     return new QueryApiEnvEntry(AccessorUtil.QUERYLIST_HISTORY_KEY, "List of Queriers to use.", queryApiEntries, true);
   }
 
   private EnvEntry getRecorder() {
     final List<EnvEntry> recorders = new ArrayList<EnvEntry>();
-    recorders.add(new EnvEntry("Log recorder", "Recorder which writes recorded data to logs.", "<recorder class='" + LoggerRecorder.class.getName() + "' />", false));
-    recorders.add(new EnvEntry(EnvConstants.JOURNAL_DEFAULT_KEY, "Reference to the journal", "<ref object='" + EnvConstants.JOURNAL_DEFAULT_KEY + "' />", true));
+    recorders.add(new EnvEntry("Log recorder", "Recorder which writes recorded data to logs.", "<recorder class='"
+        + LoggerRecorder.class.getName() + "' />", false));
+    recorders.add(new EnvEntry(EnvConstants.JOURNAL_DEFAULT_KEY, "Reference to the journal", "<ref object='"
+        + EnvConstants.JOURNAL_DEFAULT_KEY + "' />", true));
     return new ChainerEnvEntry(Recorder.DEFAULT_KEY, "List of recorders.", recorders, true);
   }
 
   private EnvEntry getArchiver() {
     final List<EnvEntry> archivers = new ArrayList<EnvEntry>();
-    archivers.add(new EnvEntry("Log archiver", "Archiver which writes archived data to logs.", "<archiver class='" + LoggerArchiver.class.getName() + "' />", false));
-    archivers.add( new EnvEntry(EnvConstants.HISTORY_DEFAULT_KEY, "Reference to the history", "<ref object='" + EnvConstants.HISTORY_DEFAULT_KEY + "' />", true));
+    archivers.add(new EnvEntry("Log archiver", "Archiver which writes archived data to logs.", "<archiver class='"
+        + LoggerArchiver.class.getName() + "' />", false));
+    archivers.add(new EnvEntry(EnvConstants.HISTORY_DEFAULT_KEY, "Reference to the history", "<ref object='"
+        + EnvConstants.HISTORY_DEFAULT_KEY + "' />", true));
     return new ChainerEnvEntry(Archiver.DEFAULT_KEY, "List of archivers.", archivers, true);
   }
 
   private EnvEntry getDomain() {
-    return getEnvEntry(EnvConstants.DOMAIN_TAG, "Specify the domain of this environment", "<"+ EnvConstants.DOMAIN_TAG + " id='" + BonitaConstants.DEFAULT_DOMAIN + "' />", true);
+    return getEnvEntry(EnvConstants.DOMAIN_TAG, "Specify the domain of this environment", "<" + EnvConstants.DOMAIN_TAG
+        + " id='" + BonitaConstants.DEFAULT_DOMAIN + "' />", true);
   }
 
   private EnvEntry getTransaction() {
@@ -212,35 +230,41 @@ public class EnvGenerator {
   }
 
   /*
-  private EnvEntry getSecurityContext() {
-    return getEnvEntry("security", "Service used to find the user logged in.", AutoDetectSecurityContext.class, true);
-  }*/
+   * private EnvEntry getSecurityContext() { return getEnvEntry("security", "Service used to find the user logged in.",
+   * AutoDetectSecurityContext.class, true); }
+   */
 
   private EnvEntry getTypeResolver() {
-    return getEnvEntry("type-resolver", "Mapping from java variable to database type", "<variable-types resource='bonita.type.resolver.xml' />", true);
+    return getEnvEntry("type-resolver", "Mapping from java variable to database type",
+        "<variable-types resource='bonita.type.resolver.xml' />", true);
   }
 
   private EnvEntry getLobCreator() {
-    return getEnvEntry("lob-creator", "Implementation of the LobCreator interface which will be used to create SQL Blobs, Clobs.", HibernateLobCreator.class, true);
+    return getEnvEntry("lob-creator",
+        "Implementation of the LobCreator interface which will be used to create SQL Blobs, Clobs.",
+        HibernateLobCreator.class, true);
   }
 
   private EnvEntry getBlobStrategy() {
-    return getEnvEntry("blob-strategy", "Implementation of the BlobStrategy interface which will be used to store Blobs.", BlobStrategyBlob.class, true);
+    return getEnvEntry("blob-strategy",
+        "Implementation of the BlobStrategy interface which will be used to store Blobs.", BlobStrategyBlob.class, true);
   }
 
   private EnvEntry getClobStrategy() {
-    return getEnvEntry("clob-strategy", "Implementation of the LobCreator interface which will be used to store Clobs.", ClobStrategyChopped.class, true);
+    return getEnvEntry("clob-strategy",
+        "Implementation of the LobCreator interface which will be used to store Clobs.", ClobStrategyChopped.class,
+        true);
   }
 
   private EnvEntry getEventExecutor() {
-    return getEnvEntry("event-executor", "Service which executes events", "<event-executor idle-min='50' idle='10000' threads='3' lock='120000' retries='5' auto-start='true' command-service='" + EnvConstants.COMMAND_SERVICE_DEFAULT_KEY + "'/>", true);
+    return getEnvEntry("event-executor", "Service which executes events",
+        "<event-executor idle-min='50' idle='10000' threads='3' lock='120000' retries='5' auto-start='true' command-service='"
+            + EnvConstants.COMMAND_SERVICE_DEFAULT_KEY + "'/>", true);
   }
 
   private EnvEntry getVariables() {
-    return getEnvEntry(EnvConstants.VARIABLES_TAG,
-        "Properties of variables management.",
-        "<" + EnvConstants.VARIABLES_TAG + " store-history='true'/>",
-        true);
+    return getEnvEntry(EnvConstants.VARIABLES_TAG, "Properties of variables management.", "<"
+        + EnvConstants.VARIABLES_TAG + " store-history='true'/>", true);
   }
 
   private EnvEntry getCommandService() {
@@ -252,43 +276,47 @@ public class EnvGenerator {
     return getEnvEntry("command-service", "Service which executes commands", commandServiceConfigXml, true);
   }
 
-  private EnvEntry getHibernateConfig(final String propertiesName, final String hibernateConfigurationName, final String cacheFile, final String cacheUsage, final String usage) {
+  private EnvEntry getHibernateConfig(final String propertiesName, final String hibernateConfigurationName,
+      final String cacheFile, final String cacheUsage, final String usage) {
     final StringBuffer hibernateConfigXml = new StringBuffer();
-    hibernateConfigXml
-    .append("<hibernate-configuration name='" + hibernateConfigurationName + "' >").append(Misc.LINE_SEPARATOR)
-    .append(EnvGenerator.INDENT).append("<properties file='" + propertiesName + "' />").append(Misc.LINE_SEPARATOR)
-    .append(EnvGenerator.INDENT).append("<mappings resource='bonita.mappings.hbm.xml' />").append(Misc.LINE_SEPARATOR)
-    .append(EnvGenerator.INDENT).append("<cache-configuration resource='" + cacheFile + "' usage='" + cacheUsage + "' />").append(Misc.LINE_SEPARATOR)
-    .append("</hibernate-configuration>").append(Misc.LINE_SEPARATOR);
+    hibernateConfigXml.append("<hibernate-configuration name='" + hibernateConfigurationName + "' >")
+        .append(Misc.LINE_SEPARATOR).append(EnvGenerator.INDENT).append("<properties file='" + propertiesName + "' />")
+        .append(Misc.LINE_SEPARATOR).append(EnvGenerator.INDENT)
+        .append("<mappings resource='bonita.mappings.hbm.xml' />").append(Misc.LINE_SEPARATOR)
+        .append(EnvGenerator.INDENT)
+        .append("<cache-configuration resource='" + cacheFile + "' usage='" + cacheUsage + "' />")
+        .append(Misc.LINE_SEPARATOR).append("</hibernate-configuration>").append(Misc.LINE_SEPARATOR);
     return getEnvEntry(hibernateConfigurationName, usage, hibernateConfigXml.toString(), true);
   }
 
-  private EnvEntry getHibernateSessionFactory(final String hibernateSessionFactoryName, final String hibernateConfigurationName, final String usage) {
+  private EnvEntry getHibernateSessionFactory(final String hibernateSessionFactoryName,
+      final String hibernateConfigurationName, final String usage) {
     return getEnvEntry(hibernateSessionFactoryName, "Hibernate session factory used by " + usage + ".",
-        "<hibernate-session-factory name='" + hibernateSessionFactoryName + "' configuration='" + hibernateConfigurationName + "' init='eager'/>", true);
+        "<hibernate-session-factory name='" + hibernateSessionFactoryName + "' configuration='"
+            + hibernateConfigurationName + "' init='eager'/>", true);
   }
 
-  private EnvEntry getHibernateSession(final String hibernateSessionName, final String hibernateSessionFactoryName, final String usage) {
-    return getEnvEntry(hibernateSessionName, "Hibernate session used by " + usage + ".",
-        "<hibernate-session name='" + hibernateSessionName + "' factory='" + hibernateSessionFactoryName + "' />", true);
+  private EnvEntry getHibernateSession(final String hibernateSessionName, final String hibernateSessionFactoryName,
+      final String usage) {
+    return getEnvEntry(hibernateSessionName, "Hibernate session used by " + usage + ".", "<hibernate-session name='"
+        + hibernateSessionName + "' factory='" + hibernateSessionFactoryName + "' />", true);
   }
 
   private EnvEntry getDbSession(final String dbSessionName, final String hibernateSessionName, final String usage) {
-    return getEnvEntry(dbSessionName,
-        "Querier used in " + usage + ".",
-        "<" + EnvConstants.DB_SESSION_TAG + " name='" + dbSessionName
-        + "' session='" + hibernateSessionName + "'/>",
-        true);
+    return getEnvEntry(dbSessionName, "Querier used in " + usage + ".", "<" + EnvConstants.DB_SESSION_TAG + " name='"
+        + dbSessionName + "' session='" + hibernateSessionName + "'/>", true);
   }
 
   private EnvEntry getFinishedInstanceHandler() {
-    return getChainerEnvEntry(FinishedInstanceHandler.DEFAULT_KEY, "List of services called when an instance is finished.", true, ArchiveFinishedInstanceHandler.class);
+    return getChainerEnvEntry(FinishedInstanceHandler.DEFAULT_KEY,
+        "List of services called when an instance is finished.", true, ArchiveFinishedInstanceHandler.class);
   }
 
-  private EnvEntry getJournal() {   
+  private EnvEntry getJournal() {
     final String key = EnvConstants.JOURNAL_DEFAULT_KEY;
     String xml = "<" + key + " name='" + key + "' class='" + DbJournal.class.getName() + "'> " + Misc.LINE_SEPARATOR;
-    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>" + Misc.LINE_SEPARATOR;
+    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>"
+        + Misc.LINE_SEPARATOR;
     xml += "</" + key + ">";
     return new EnvEntry(key, "Implementation of the journal.", xml, true);
   }
@@ -296,43 +324,48 @@ public class EnvGenerator {
   private EnvEntry getWebService() {
     final String key = EnvConstants.WEB_SERVICE_DEFAULT_KEY;
     String xml = "<" + key + " name='" + key + "' class='" + DbWebService.class.getName() + "'> " + Misc.LINE_SEPARATOR;
-    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>" + Misc.LINE_SEPARATOR;
+    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>"
+        + Misc.LINE_SEPARATOR;
     xml += "</" + key + ">";
     return new EnvEntry(key, "Implementation of the Web Service.", xml, true);
   }
 
   private EnvEntry getEventService() {
     final String key = EnvConstants.EVENT_SERVICE_DEFAULT_KEY;
-    String xml = "<" + key + " name='" + key + "' class='" + DbThreadEventService.class.getName() + "'> " + Misc.LINE_SEPARATOR;
-    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>" + Misc.LINE_SEPARATOR;
+    String xml = "<" + key + " name='" + key + "' class='" + DbThreadEventService.class.getName() + "'> "
+        + Misc.LINE_SEPARATOR;
+    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>"
+        + Misc.LINE_SEPARATOR;
     xml += "</" + key + ">";
     return new EnvEntry(key, "Implementation of the Event Service.", xml, true);
   }
 
   private EnvEntry getDbUUIDService() {
     final String key = EnvConstants.UUID_SERVICE_DEFAULT_KEY;
-    String xml = "<" + key + " name='" + key + "' class='" + DbUUIDService.class.getName() + "'/>";
+    final String xml = "<" + key + " name='" + key + "' class='" + DbUUIDService.class.getName() + "'/>";
     return new EnvEntry(key, "Implementation of the UUID Service.", xml, true);
   }
 
   private EnvEntry getHiloDbUUIDService() {
     final String key = EnvConstants.UUID_SERVICE_DEFAULT_KEY;
-    String xml = "<" + key + " name='" + key + "' class='" + HiloDbUUIDService.class.getName() + "'/>";
+    final String xml = "<" + key + " name='" + key + "' class='" + HiloDbUUIDService.class.getName() + "'/>";
     return new EnvEntry(key, "Implementation of the UUID Service.", xml, false);
   }
 
   private EnvEntry getClassdataLoader() {
     final String key = EnvConstants.CLASSDATA_LOADER_SERVICE_DEFAULT_KEY;
-    String xml = "<" + key + " name='" + key + "' class='" + ClassDataLoader.class.getName() + "'/>";
+    final String xml = "<" + key + " name='" + key + "' class='" + ClassDataLoader.class.getName() + "'/>";
     return new EnvEntry(key, "Implementation of the Classdata loader Service.", xml, true);
   }
 
   private EnvEntry getLargeDataRepository() {
-    StringBuilder fileRepositoryPath = new StringBuilder(getDefaultServerFolder());
+    final StringBuilder fileRepositoryPath = new StringBuilder(getDefaultServerFolder());
     fileRepositoryPath.append(File.separator).append("work");
     final String key = EnvConstants.LDR_SERVICE_DEFAULT_KEY;
-    String xml = "<" + key + " name='" + key + "' class='" + FileLargeDataRepository.class.getName() + "'>" + Misc.LINE_SEPARATOR;
-    xml += EnvGenerator.INDENT + "<arg><string value='" + fileRepositoryPath.toString() + "' /></arg>" + Misc.LINE_SEPARATOR;
+    String xml = "<" + key + " name='" + key + "' class='" + FileLargeDataRepository.class.getName() + "'>"
+        + Misc.LINE_SEPARATOR;
+    xml += EnvGenerator.INDENT + "<arg><string value='" + fileRepositoryPath.toString() + "' /></arg>"
+        + Misc.LINE_SEPARATOR;
     xml += "</" + key + ">";
     return new EnvEntry(key, "Implementation of the large data repository.", xml, true);
   }
@@ -342,13 +375,14 @@ public class EnvGenerator {
     final String binding = "ATOM";
     final String url = "http://localhost:8080/xcmis/rest/cmisatom";
     final String repositoryId = "default";
-    String i = EnvGenerator.INDENT;
-    String xml = "<" + key + " name='" + key + "' class='" + CMISDocumentManager.class.getName() + "'>" + Misc.LINE_SEPARATOR;
+    final String i = EnvGenerator.INDENT;
+    String xml = "<" + key + " name='" + key + "' class='" + CMISDocumentManager.class.getName() + "'>"
+        + Misc.LINE_SEPARATOR;
     xml += i + "<arg><string value='" + binding + "' /></arg>" + Misc.LINE_SEPARATOR;
     xml += i + "<arg><string value='" + url + "' /></arg>" + Misc.LINE_SEPARATOR;
     xml += i + "<arg><string value='" + repositoryId + "' /></arg>" + Misc.LINE_SEPARATOR;
     xml += i + "<arg>" + Misc.LINE_SEPARATOR;
-    xml += i + i + "<object class='"+XCmisUserProvider.class.getName()+"'>" + Misc.LINE_SEPARATOR;
+    xml += i + i + "<object class='" + XCmisUserProvider.class.getName() + "'>" + Misc.LINE_SEPARATOR;
     xml += i + i + i + "<constructor>" + Misc.LINE_SEPARATOR;
     xml += i + i + i + i + "<arg><string value='root'/></arg>" + Misc.LINE_SEPARATOR;
     xml += i + i + i + i + "<arg><string value='exo'/></arg>" + Misc.LINE_SEPARATOR;
@@ -362,31 +396,38 @@ public class EnvGenerator {
   private EnvEntry getIdentityService() {
     final String key = EnvConstants.IDENTITY_SERVICE_DEFAULT_KEY;
     String xml = "<" + key + " name='" + key + "' class='" + DbIdentity.class.getName() + "'>" + Misc.LINE_SEPARATOR;
-    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>" + Misc.LINE_SEPARATOR;
+    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>"
+        + Misc.LINE_SEPARATOR;
     xml += "</" + key + ">";
     return new EnvEntry(key, "Implementation of the identity service.", xml, true);
   }
 
   private EnvEntry getAuthenticationService() {
     final String key = EnvConstants.AUTHENTICATION_SERVICE_DEFAULT_KEY;
-    String xml = "<" + key + " name='" + key + "' class='" + DbAuthentication.class.getName() + "'>" + Misc.LINE_SEPARATOR;
-    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>" + Misc.LINE_SEPARATOR;
+    String xml = "<" + key + " name='" + key + "' class='" + DbAuthentication.class.getName() + "'>"
+        + Misc.LINE_SEPARATOR;
+    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>"
+        + Misc.LINE_SEPARATOR;
     xml += "</" + key + ">";
     return new EnvEntry(key, "Implementation of the authentication service.", xml, true);
   }
 
   private EnvEntry getPrivilegeService() {
     final String key = EnvConstants.PRIVILEGE_SERVICE_DEFAULT_KEY;
-    String xml = "<" + key + " name='" + key + "' class='" + DbPrivilegeService.class.getName() + "'>" + Misc.LINE_SEPARATOR;
-    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>" + Misc.LINE_SEPARATOR;
+    String xml = "<" + key + " name='" + key + "' class='" + DbPrivilegeService.class.getName() + "'>"
+        + Misc.LINE_SEPARATOR;
+    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>"
+        + Misc.LINE_SEPARATOR;
     xml += "</" + key + ">";
     return new EnvEntry(key, "Implementation of the privilege service.", xml, true);
   }
 
   private EnvEntry getWebTokenManagementService() {
     final String key = EnvConstants.WEB_TOKEN_MANAGEMENT_SERVICE_DEFAULT_KEY;
-    String xml = "<" + key + " name='" + key + "' class='" + DbWebTokenManagementService.class.getName() + "'>" + Misc.LINE_SEPARATOR;
-    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>" + Misc.LINE_SEPARATOR;
+    String xml = "<" + key + " name='" + key + "' class='" + DbWebTokenManagementService.class.getName() + "'>"
+        + Misc.LINE_SEPARATOR;
+    xml += EnvGenerator.INDENT + "<arg><string value='" + EnvConstants.BONITA_SESSION_CORE + "' /></arg>"
+        + Misc.LINE_SEPARATOR;
     xml += "</" + key + ">";
     return new EnvEntry(key, "Implementation of the web token management service.", xml, true);
   }
@@ -398,8 +439,8 @@ public class EnvGenerator {
     int indentDepth = 0;
 
     // ENV XML GENERATION BEGINS HERE
-    final StringBuilder result =
-      new StringBuilder("<environment-definition>" + Misc.LINE_SEPARATOR + Misc.LINE_SEPARATOR);
+    final StringBuilder result = new StringBuilder("<environment-definition>" + Misc.LINE_SEPARATOR
+        + Misc.LINE_SEPARATOR);
 
     // DEFINITION OF THE ENVIRONMENT FACTORY
     indentDepth++;
@@ -410,15 +451,13 @@ public class EnvGenerator {
       result.append(entry.getEnvXml(this.getIndent(indentDepth))).append(Misc.LINE_SEPARATOR);
     }
     indentDepth--;
-    result
-    .append(this.getIndent(indentDepth)).append("</environment-factory>" + Misc.LINE_SEPARATOR + Misc.LINE_SEPARATOR);
+    result.append(this.getIndent(indentDepth)).append(
+        "</environment-factory>" + Misc.LINE_SEPARATOR + Misc.LINE_SEPARATOR);
     // END OF ENVIRONMENT FACTORY
     // DEFINITION OF THE ENVIRONMENT
 
-    result
-    .append(this.getIndent(indentDepth)).append("<environment>" + Misc.LINE_SEPARATOR);
+    result.append(this.getIndent(indentDepth)).append("<environment>" + Misc.LINE_SEPARATOR);
     indentDepth++;
-
 
     // other entries
     for (final EnvEntry entry : this.envEntries.values()) {
@@ -439,16 +478,16 @@ public class EnvGenerator {
   public EnvironmentFactory createEnvironmentFactory() {
     final String envConfig = this.createEnvironmentXml();
     if (EnvGenerator.LOG.isLoggable(Level.CONFIG)) {
-      EnvGenerator.LOG.config("The following environment has been generated by: " + this.getClass().getName() + Misc.LINE_SEPARATOR + envConfig);
+      EnvGenerator.LOG.config("The following environment has been generated by: " + this.getClass().getName()
+          + Misc.LINE_SEPARATOR + envConfig);
     }
     return BonitaEnvironmentParser.parseEnvironmentFactoryFromXmlString(envConfig);
   }
 
   /**
    * Return a string that declares an object to be added in the context.
-   *
-   * @param classToUse
-   *            classToUse at runtime
+   * 
+   * @param classToUse classToUse at runtime
    * @return a string that declares an object to be added in the context.
    */
   @SuppressWarnings("rawtypes")
@@ -461,18 +500,20 @@ public class EnvGenerator {
     return "<object name='" + key + "' class='" + classToUse.getName() + "' />";
   }
 
-  public static EnvEntry getEnvEntry(final String name, final String description, final String xml, final boolean enabled) {
+  public static EnvEntry getEnvEntry(final String name, final String description, final String xml,
+      final boolean enabled) {
     return new EnvEntry(name, description, xml, enabled);
   }
 
-  public static EnvEntry getEnvEntry(final String name, final String description, final Class< ? > classToUse, final boolean enabled) {
+  public static EnvEntry getEnvEntry(final String name, final String description, final Class<?> classToUse,
+      final boolean enabled) {
     final String xml = EnvGenerator.getObjectDecl(name, classToUse);
     return new EnvEntry(name, description, xml, enabled);
   }
 
   /**
    * Prints the default environment on standard output.
-   *
+   * 
    * @param args
    * @throws IOException
    */
@@ -483,8 +524,8 @@ public class EnvGenerator {
     }
     EnvGenerator envGenerator = null;
     try {
-      final Class <EnvGenerator> envGeneratorClass =
-        (Class<EnvGenerator>) EnvGenerator.class.getClassLoader().loadClass(args[0]);
+      final Class<EnvGenerator> envGeneratorClass = (Class<EnvGenerator>) EnvGenerator.class.getClassLoader()
+          .loadClass(args[0]);
       envGenerator = envGeneratorClass.newInstance();
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -494,8 +535,8 @@ public class EnvGenerator {
         EnvGenerator.LOG.config(envGenerator.createEnvironmentXml());
       }
     } else {
-      File file = new File(args[1]);
-      File folder = file.getParentFile();
+      final File file = new File(args[1]);
+      final File folder = file.getParentFile();
       if (!folder.exists()) {
         folder.mkdirs();
       }
@@ -505,16 +546,17 @@ public class EnvGenerator {
   }
 
   private String getIndent(final int depth) {
-    StringBuffer buf = new StringBuffer();
+    final StringBuffer buf = new StringBuffer();
     for (int i = 0; i <= depth; i++) {
       buf.append(EnvGenerator.INDENT);
     }
     return buf.toString();
   }
 
-  public static EnvEntry getChainerEnvEntry(final String key, final String description, final boolean enable, final Class< ? >... classes) {
+  public static EnvEntry getChainerEnvEntry(final String key, final String description, final boolean enable,
+      final Class<?>... classes) {
     final List<EnvEntry> chainerEntries = new ArrayList<EnvEntry>();
-    for (final Class< ? > clazz : classes) {
+    for (final Class<?> clazz : classes) {
       chainerEntries.add(new EnvEntry(clazz.getName(), "", EnvGenerator.getObjectDecl(clazz), true));
     }
     return new ChainerEnvEntry(key, description, chainerEntries, enable);
@@ -529,9 +571,9 @@ public class EnvGenerator {
   }
 
   private StringBuilder getDefaultServerFolder() {
-    StringBuilder defaultServerPath = new StringBuilder("${");
-    defaultServerPath.append(BonitaConstants.HOME).append("}").append(File.separator)
-    .append("server").append(File.separator).append("default");
+    final StringBuilder defaultServerPath = new StringBuilder("${");
+    defaultServerPath.append(BonitaConstants.HOME).append("}").append(File.separator).append("server")
+        .append(File.separator).append("default");
     return defaultServerPath;
   }
 }

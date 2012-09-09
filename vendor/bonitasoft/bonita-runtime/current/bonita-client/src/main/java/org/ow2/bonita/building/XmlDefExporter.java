@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010  BonitaSoft S.A.
+ * Copyright (C) 2010-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,14 +58,14 @@ import org.w3c.dom.Node;
 
 /**
  * @author Anthony Birembaut, Matthieu Chaffotte, Elias Ricken de Medeiros
- *
+ * 
  */
-public class XmlDefExporter {
+public final class XmlDefExporter {
 
   /**
    * the product version
    */
-  private static final String PRODUCT_VERSION = "5.6";
+  public static final String PRODUCT_VERSION = "5.7";
 
   /**
    * Logger
@@ -75,12 +75,12 @@ public class XmlDefExporter {
   /**
    * Document builder factory
    */
-  private DocumentBuilderFactory documentBuilderFactory;
+  private final DocumentBuilderFactory documentBuilderFactory;
 
   /**
    * Transformer factory
    */
-  private TransformerFactory transformerFactory;
+  private final TransformerFactory transformerFactory;
 
   /**
    * Instance attribute
@@ -106,35 +106,38 @@ public class XmlDefExporter {
     documentBuilderFactory.setValidating(true);
 
     // ignore white space can only be set if parser is validating
-    this.documentBuilderFactory.setIgnoringElementContentWhitespace(true);
+    documentBuilderFactory.setIgnoringElementContentWhitespace(true);
     // select xml schema as the schema language (a.o.t. DTD)
-    this.documentBuilderFactory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
+    documentBuilderFactory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage",
+        "http://www.w3.org/2001/XMLSchema");
 
     final URL xsdURL = getClass().getResource("/" + XmlConstants.XML_PROCESS_DEF_STRICT_SCHEMA);
-    this.documentBuilderFactory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdURL.toExternalForm());
+    documentBuilderFactory
+        .setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdURL.toExternalForm());
 
-    transformerFactory= TransformerFactory.newInstance();
+    transformerFactory = TransformerFactory.newInstance();
   }
 
   /**
    * Create the document and root node
+   * 
    * @return the XML process definition
-   * @throws Exception 
-   * @throws ParserConfigurationException 
+   * @throws Exception
+   * @throws ParserConfigurationException
    */
-  public byte[] createProcessDefinition(ProcessDefinition processDefinition) {
-    XmlBuilder xmlDefBuilder = new XmlBuilder(documentBuilderFactory, transformerFactory);
+  public byte[] createProcessDefinition(final ProcessDefinition processDefinition) {
+    final XmlBuilder xmlDefBuilder = new XmlBuilder(documentBuilderFactory, transformerFactory);
     try {
       xmlDefBuilder.createDocument();
-      Map<String, Serializable> rootElementAttributes = new HashMap<String, Serializable>();
+      final Map<String, Serializable> rootElementAttributes = new HashMap<String, Serializable>();
       rootElementAttributes.put(XmlDef.PRODUCT_VERSION, PRODUCT_VERSION);
-      Node rootNode = xmlDefBuilder.createRootNode(XmlDef.PROCESS_DEFINITION, rootElementAttributes);
+      final Node rootNode = xmlDefBuilder.createRootNode(XmlDef.PROCESS_DEFINITION, rootElementAttributes);
 
       createProcess(xmlDefBuilder, rootNode, processDefinition);
 
       return xmlDefBuilder.done();
-    } catch (Exception e) {
-      String errorMessage = "Unable to build the process definition XML";
+    } catch (final Exception e) {
+      final String errorMessage = "Unable to build the process definition XML";
       if (LOGGER.isLoggable(Level.SEVERE)) {
         LOGGER.log(Level.SEVERE, errorMessage, e);
       }
@@ -142,12 +145,13 @@ public class XmlDefExporter {
     }
   }
 
-  private Node createProcess(XmlBuilder xmlDefBuilder, Node parentNode, ProcessDefinition processDefinition) throws Exception {
+  private Node createProcess(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final ProcessDefinition processDefinition) throws Exception {
 
-    Map<String, Serializable> processElementAttributes = new HashMap<String, Serializable>();
+    final Map<String, Serializable> processElementAttributes = new HashMap<String, Serializable>();
     processElementAttributes.put(XmlDef.NAME, processDefinition.getName());
     processElementAttributes.put(XmlDef.VERSION, processDefinition.getVersion());
-    Node processNode = xmlDefBuilder.createNode(parentNode, XmlDef.PROCESS, processElementAttributes);
+    final Node processNode = xmlDefBuilder.createNode(parentNode, XmlDef.PROCESS, processElementAttributes);
 
     xmlDefBuilder.createNode(processNode, XmlDef.LABEL, processDefinition.getLabel());
     xmlDefBuilder.createNode(processNode, XmlDef.DESCRIPTION, processDefinition.getDescription());
@@ -157,11 +161,11 @@ public class XmlDefExporter {
     createDataFields(xmlDefBuilder, processNode, processDefinition.getDataFields());
     createAttachments(xmlDefBuilder, processNode, processDefinition.getAttachments());
     createActivities(xmlDefBuilder, processNode, processDefinition.getActivities());
-    
-    Set<TransitionDefinition> transitions = new HashSet<TransitionDefinition>();
-    for (ActivityDefinition activity : processDefinition.getActivities()) {
-      List<BoundaryEvent> events = activity.getBoundaryEvents();
-      for (BoundaryEvent boundaryEvent : events) {
+
+    final Set<TransitionDefinition> transitions = new HashSet<TransitionDefinition>();
+    for (final ActivityDefinition activity : processDefinition.getActivities()) {
+      final List<BoundaryEvent> events = activity.getBoundaryEvents();
+      for (final BoundaryEvent boundaryEvent : events) {
         transitions.add(boundaryEvent.getTransition());
       }
     }
@@ -174,24 +178,27 @@ public class XmlDefExporter {
     return processNode;
   }
 
-  private void createActivities(XmlBuilder xmlDefBuilder, Node parentNode, Set<ActivityDefinition> activities) throws Exception {
-    Node activitiesNode = xmlDefBuilder.createNode(parentNode, XmlDef.ACTIVITIES);
-    for (ActivityDefinition activityDefinition : activities) {
-      Map<String, Serializable> activityElementAttributes = new HashMap<String, Serializable>();
+  private void createActivities(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final Set<ActivityDefinition> activities) throws Exception {
+    final Node activitiesNode = xmlDefBuilder.createNode(parentNode, XmlDef.ACTIVITIES);
+    for (final ActivityDefinition activityDefinition : activities) {
+      final Map<String, Serializable> activityElementAttributes = new HashMap<String, Serializable>();
       activityElementAttributes.put(XmlDef.NAME, activityDefinition.getName());
-      Node activityNode = xmlDefBuilder.createNode(activitiesNode, XmlDef.ACTIVITY, activityElementAttributes);
+      final Node activityNode = xmlDefBuilder.createNode(activitiesNode, XmlDef.ACTIVITY, activityElementAttributes);
 
       xmlDefBuilder.createNode(activityNode, XmlDef.LABEL, activityDefinition.getLabel());
       xmlDefBuilder.createNode(activityNode, XmlDef.DESCRIPTION, activityDefinition.getDescription());
       xmlDefBuilder.createNode(activityNode, XmlDef.DYNAMIC_LABEL, activityDefinition.getDynamicLabel());
       xmlDefBuilder.createNode(activityNode, XmlDef.DYNAMIC_DESCRIPTION, activityDefinition.getDynamicDescription());
-      xmlDefBuilder.createNode(activityNode, XmlDef.DYNAMIC_EXECUTION_SUMMARY, activityDefinition.getDynamicExecutionSummary());
+      xmlDefBuilder.createNode(activityNode, XmlDef.DYNAMIC_EXECUTION_SUMMARY,
+          activityDefinition.getDynamicExecutionSummary());
       xmlDefBuilder.createNode(activityNode, XmlDef.PRIORITY, activityDefinition.getPriority());
       xmlDefBuilder.createNode(activityNode, XmlDef.EXECUTING_TIME, activityDefinition.getExecutingTime());
       xmlDefBuilder.createNode(activityNode, XmlDef.SPLIT_TYPE, activityDefinition.getSplitType());
       xmlDefBuilder.createNode(activityNode, XmlDef.JOIN_TYPE, activityDefinition.getJoinType());
       xmlDefBuilder.createNode(activityNode, XmlDef.SUBFLOW_PROCESS_NAME, activityDefinition.getSubflowProcessName());
-      xmlDefBuilder.createNode(activityNode, XmlDef.SUBFLOW_PROCESS_VERSION, activityDefinition.getSubflowProcessVersion());
+      xmlDefBuilder.createNode(activityNode, XmlDef.SUBFLOW_PROCESS_VERSION,
+          activityDefinition.getSubflowProcessVersion());
       xmlDefBuilder.createNode(activityNode, XmlDef.TIMER_CONDITION, activityDefinition.getTimerCondition());
       xmlDefBuilder.createNode(activityNode, XmlDef.TYPE, activityDefinition.getType());
       xmlDefBuilder.createNode(activityNode, XmlDef.ASYNCHRONOUS, activityDefinition.isAsynchronous());
@@ -199,14 +206,15 @@ public class XmlDefExporter {
         xmlDefBuilder.createNode(activityNode, XmlDef.CATCH_EVENT, activityDefinition.catchEvent());
       }
       xmlDefBuilder.createNode(activityNode, XmlDef.TERMINATE_PROCESS, activityDefinition.isTerminateProcess());
-      Node performersNode = xmlDefBuilder.createNode(activityNode, XmlDef.PERFORMERS);
-      for (String performer : activityDefinition.getPerformers()) {
+      final Node performersNode = xmlDefBuilder.createNode(activityNode, XmlDef.PERFORMERS);
+      for (final String performer : activityDefinition.getPerformers()) {
         xmlDefBuilder.createNode(performersNode, XmlDef.PERFORMER, performer);
       }
 
       if (activityDefinition.isInALoop()) {
         xmlDefBuilder.createNode(activityNode, XmlDef.LOOP_CONDITION, activityDefinition.getLoopCondition());
-        xmlDefBuilder.createNode(activityNode, XmlDef.BEFORE_EXECUTION, activityDefinition.evaluateLoopConditionBeforeExecution());
+        xmlDefBuilder.createNode(activityNode, XmlDef.BEFORE_EXECUTION,
+            activityDefinition.evaluateLoopConditionBeforeExecution());
         xmlDefBuilder.createNode(activityNode, XmlDef.LOOP_MAXIMUM, activityDefinition.getLoopMaximum());
       }
 
@@ -216,58 +224,64 @@ public class XmlDefExporter {
       createDeadlines(xmlDefBuilder, activityNode, activityDefinition.getDeadlines());
       createIncomingEvent(xmlDefBuilder, activityNode, activityDefinition.getIncomingEvent());
       createOutgoingEvents(xmlDefBuilder, activityNode, activityDefinition.getOutgoingEvents());
-      createMultiInstantiationDefinition(xmlDefBuilder, activityNode, activityDefinition.getMultiInstantiationDefinition());
-      createMultipleActivitiesInstantiator(xmlDefBuilder, activityNode, activityDefinition.getMultipleInstancesInstantiator());
-      createMultipleActivitiesJoinChecker(xmlDefBuilder, activityNode, activityDefinition.getMultipleInstancesJoinChecker());
+      createMultiInstantiationDefinition(xmlDefBuilder, activityNode,
+          activityDefinition.getMultiInstantiationDefinition());
+      createMultipleActivitiesInstantiator(xmlDefBuilder, activityNode,
+          activityDefinition.getMultipleInstancesInstantiator());
+      createMultipleActivitiesJoinChecker(xmlDefBuilder, activityNode,
+          activityDefinition.getMultipleInstancesJoinChecker());
 
       createEvents(xmlDefBuilder, activityNode, activityDefinition.getBoundaryEvents());
-      createSubflowParameters(xmlDefBuilder, activityNode, activityDefinition.getSubflowInParameters(), XmlDef.SUBFLOW_IN_PARAMETERS, XmlDef.SUBFLOW_IN_PARAMETER);
-      createSubflowParameters(xmlDefBuilder, activityNode, activityDefinition.getSubflowOutParameters(), XmlDef.SUBFLOW_OUT_PARAMETERS, XmlDef.SUBFLOW_OUT_PARAMETER);
+      createSubflowParameters(xmlDefBuilder, activityNode, activityDefinition.getSubflowInParameters(),
+          XmlDef.SUBFLOW_IN_PARAMETERS, XmlDef.SUBFLOW_IN_PARAMETER);
+      createSubflowParameters(xmlDefBuilder, activityNode, activityDefinition.getSubflowOutParameters(),
+          XmlDef.SUBFLOW_OUT_PARAMETERS, XmlDef.SUBFLOW_OUT_PARAMETER);
     }
   }
 
-  private void createEvents(XmlBuilder xmlDefBuilder, Node parentNode, List<BoundaryEvent> events) throws DOMException, IOException, ClassNotFoundException {
-    Node eventsNode = xmlDefBuilder.createNode(parentNode, XmlDef.BOUNDARY_EVENTS);
+  private void createEvents(final XmlBuilder xmlDefBuilder, final Node parentNode, final List<BoundaryEvent> events)
+      throws DOMException, IOException, ClassNotFoundException {
+    final Node eventsNode = xmlDefBuilder.createNode(parentNode, XmlDef.BOUNDARY_EVENTS);
     if (!events.isEmpty()) {
-      List<TimerBoundaryEventImpl> timers = getTimerBoundaryEvents(events);
-      Node timersNode = xmlDefBuilder.createNode(eventsNode, XmlDef.TIMER_EVENTS);
-      for (TimerBoundaryEventImpl timer : timers) {
-        Map<String, Serializable> eventElementAttributes = new HashMap<String, Serializable>();
+      final List<TimerBoundaryEventImpl> timers = getTimerBoundaryEvents(events);
+      final Node timersNode = xmlDefBuilder.createNode(eventsNode, XmlDef.TIMER_EVENTS);
+      for (final TimerBoundaryEventImpl timer : timers) {
+        final Map<String, Serializable> eventElementAttributes = new HashMap<String, Serializable>();
         eventElementAttributes.put(XmlDef.NAME, timer.getName());
-        Node timerNode = xmlDefBuilder.createNode(timersNode, XmlDef.TIMER_EVENT, eventElementAttributes);
+        final Node timerNode = xmlDefBuilder.createNode(timersNode, XmlDef.TIMER_EVENT, eventElementAttributes);
         xmlDefBuilder.createNode(timerNode, XmlDef.DESCRIPTION, timer.getDescription());
         xmlDefBuilder.createNode(timerNode, XmlDef.LABEL, timer.getLabel());
         xmlDefBuilder.createNode(timerNode, XmlDef.CONDITION, timer.getCondition());
       }
 
-      List<MessageBoundaryEventImpl> messages = getMessageBoundaryEvents(events);
-      Node messagesNode = xmlDefBuilder.createNode(eventsNode, XmlDef.MESSAGE_EVENTS);
-      for (MessageBoundaryEventImpl message : messages) {
-        Map<String, Serializable> eventElementAttributes = new HashMap<String, Serializable>();
+      final List<MessageBoundaryEventImpl> messages = getMessageBoundaryEvents(events);
+      final Node messagesNode = xmlDefBuilder.createNode(eventsNode, XmlDef.MESSAGE_EVENTS);
+      for (final MessageBoundaryEventImpl message : messages) {
+        final Map<String, Serializable> eventElementAttributes = new HashMap<String, Serializable>();
         eventElementAttributes.put(XmlDef.NAME, message.getName());
-        Node messageNode = xmlDefBuilder.createNode(messagesNode, XmlDef.MESSAGE_EVENT, eventElementAttributes);
+        final Node messageNode = xmlDefBuilder.createNode(messagesNode, XmlDef.MESSAGE_EVENT, eventElementAttributes);
         xmlDefBuilder.createNode(messageNode, XmlDef.DESCRIPTION, message.getDescription());
         xmlDefBuilder.createNode(messageNode, XmlDef.LABEL, message.getLabel());
         xmlDefBuilder.createNode(messageNode, XmlDef.EXPRESSION, message.getExpression());
       }
-      
-      List<ErrorBoundaryEventImpl> errors = getErrorBoundaryEvents(events);
-      Node errorsNode = xmlDefBuilder.createNode(eventsNode, XmlDef.ERROR_EVENTS);
-      for (ErrorBoundaryEventImpl error : errors) {
-        Map<String, Serializable> eventElementAttributes = new HashMap<String, Serializable>();
+
+      final List<ErrorBoundaryEventImpl> errors = getErrorBoundaryEvents(events);
+      final Node errorsNode = xmlDefBuilder.createNode(eventsNode, XmlDef.ERROR_EVENTS);
+      for (final ErrorBoundaryEventImpl error : errors) {
+        final Map<String, Serializable> eventElementAttributes = new HashMap<String, Serializable>();
         eventElementAttributes.put(XmlDef.NAME, error.getName());
-        Node errorNode = xmlDefBuilder.createNode(errorsNode, XmlDef.ERROR_EVENT, eventElementAttributes);
+        final Node errorNode = xmlDefBuilder.createNode(errorsNode, XmlDef.ERROR_EVENT, eventElementAttributes);
         xmlDefBuilder.createNode(errorNode, XmlDef.DESCRIPTION, error.getDescription());
         xmlDefBuilder.createNode(errorNode, XmlDef.LABEL, error.getLabel());
         xmlDefBuilder.createNode(errorNode, XmlDef.ERROR_CODE, error.getErrorCode());
       }
 
-      List<SignalBoundaryEventImpl> signals = getSignalBoundaryEvents(events);
-      Node signalsNode = xmlDefBuilder.createNode(eventsNode, XmlDef.SIGNAL_EVENTS);
-      for (SignalBoundaryEventImpl signal : signals) {
-        Map<String, Serializable> eventElementAttributes = new HashMap<String, Serializable>();
+      final List<SignalBoundaryEventImpl> signals = getSignalBoundaryEvents(events);
+      final Node signalsNode = xmlDefBuilder.createNode(eventsNode, XmlDef.SIGNAL_EVENTS);
+      for (final SignalBoundaryEventImpl signal : signals) {
+        final Map<String, Serializable> eventElementAttributes = new HashMap<String, Serializable>();
         eventElementAttributes.put(XmlDef.NAME, signal.getName());
-        Node signalNode = xmlDefBuilder.createNode(signalsNode, XmlDef.SIGNAL_EVENT, eventElementAttributes);
+        final Node signalNode = xmlDefBuilder.createNode(signalsNode, XmlDef.SIGNAL_EVENT, eventElementAttributes);
         xmlDefBuilder.createNode(signalNode, XmlDef.DESCRIPTION, signal.getDescription());
         xmlDefBuilder.createNode(signalNode, XmlDef.LABEL, signal.getLabel());
         xmlDefBuilder.createNode(signalNode, XmlDef.SIGNAL_CODE, signal.getSignalCode());
@@ -275,19 +289,19 @@ public class XmlDefExporter {
     }
   }
 
-  private List<TimerBoundaryEventImpl> getTimerBoundaryEvents(List<BoundaryEvent> events) {
-    List<TimerBoundaryEventImpl> timers = new ArrayList<TimerBoundaryEventImpl>();
-    for (BoundaryEvent event : events) {
+  private List<TimerBoundaryEventImpl> getTimerBoundaryEvents(final List<BoundaryEvent> events) {
+    final List<TimerBoundaryEventImpl> timers = new ArrayList<TimerBoundaryEventImpl>();
+    for (final BoundaryEvent event : events) {
       if (event instanceof TimerBoundaryEventImpl) {
         timers.add((TimerBoundaryEventImpl) event);
       }
     }
     return timers;
   }
-  
-  private List<MessageBoundaryEventImpl> getMessageBoundaryEvents(List<BoundaryEvent> events) {
-    List<MessageBoundaryEventImpl> messages = new ArrayList<MessageBoundaryEventImpl>();
-    for (BoundaryEvent event : events) {
+
+  private List<MessageBoundaryEventImpl> getMessageBoundaryEvents(final List<BoundaryEvent> events) {
+    final List<MessageBoundaryEventImpl> messages = new ArrayList<MessageBoundaryEventImpl>();
+    for (final BoundaryEvent event : events) {
       if (event instanceof MessageBoundaryEventImpl) {
         messages.add((MessageBoundaryEventImpl) event);
       }
@@ -295,9 +309,9 @@ public class XmlDefExporter {
     return messages;
   }
 
-  private List<ErrorBoundaryEventImpl> getErrorBoundaryEvents(List<BoundaryEvent> events) {
-    List<ErrorBoundaryEventImpl> errors = new ArrayList<ErrorBoundaryEventImpl>();
-    for (BoundaryEvent event : events) {
+  private List<ErrorBoundaryEventImpl> getErrorBoundaryEvents(final List<BoundaryEvent> events) {
+    final List<ErrorBoundaryEventImpl> errors = new ArrayList<ErrorBoundaryEventImpl>();
+    for (final BoundaryEvent event : events) {
       if (event instanceof ErrorBoundaryEventImpl) {
         errors.add((ErrorBoundaryEventImpl) event);
       }
@@ -305,9 +319,9 @@ public class XmlDefExporter {
     return errors;
   }
 
-  private List<SignalBoundaryEventImpl> getSignalBoundaryEvents(List<BoundaryEvent> events) {
-    List<SignalBoundaryEventImpl> signals = new ArrayList<SignalBoundaryEventImpl>();
-    for (BoundaryEvent event : events) {
+  private List<SignalBoundaryEventImpl> getSignalBoundaryEvents(final List<BoundaryEvent> events) {
+    final List<SignalBoundaryEventImpl> signals = new ArrayList<SignalBoundaryEventImpl>();
+    for (final BoundaryEvent event : events) {
       if (event instanceof SignalBoundaryEventImpl) {
         signals.add((SignalBoundaryEventImpl) event);
       }
@@ -315,173 +329,188 @@ public class XmlDefExporter {
     return signals;
   }
 
-  private void createCategories(XmlBuilder xmlDefBuilder, Node parentNode, Set<String> categories) throws Exception {
-    Node categoriesNode = xmlDefBuilder.createNode(parentNode, XmlDef.CATEGORIES);
-    for (String category : categories) {
-      Map<String, Serializable> categoryElementAttributes = new HashMap<String, Serializable>();
+  private void createCategories(final XmlBuilder xmlDefBuilder, final Node parentNode, final Set<String> categories)
+      throws Exception {
+    final Node categoriesNode = xmlDefBuilder.createNode(parentNode, XmlDef.CATEGORIES);
+    for (final String category : categories) {
+      final Map<String, Serializable> categoryElementAttributes = new HashMap<String, Serializable>();
       categoryElementAttributes.put(XmlDef.NAME, category);
       xmlDefBuilder.createNode(categoriesNode, XmlDef.CATEGORY, categoryElementAttributes);
     }
   }
-  
-  private void createSubflowParameters(XmlBuilder xmlDefBuilder, Node parentNode,
-      Set<SubflowParameterDefinition> subflowParameters, String xmlGroupName, String xmlElementName) throws Exception {
 
-    Node subflowParametersNode = xmlDefBuilder.createNode(parentNode, xmlGroupName);
-    for (SubflowParameterDefinition subflowParameter : subflowParameters) {
-      Node subflowParameterNode = xmlDefBuilder.createNode(subflowParametersNode, xmlElementName);
+  private void createSubflowParameters(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final Set<SubflowParameterDefinition> subflowParameters, final String xmlGroupName, final String xmlElementName)
+      throws Exception {
+
+    final Node subflowParametersNode = xmlDefBuilder.createNode(parentNode, xmlGroupName);
+    for (final SubflowParameterDefinition subflowParameter : subflowParameters) {
+      final Node subflowParameterNode = xmlDefBuilder.createNode(subflowParametersNode, xmlElementName);
       xmlDefBuilder.createNode(subflowParameterNode, XmlDef.SOURCE, subflowParameter.getSource());
       xmlDefBuilder.createNode(subflowParameterNode, XmlDef.DESTINATION, subflowParameter.getDestination());
     }
   }
 
-  private void createMultiInstantiationDefinition(XmlBuilder xmlDefBuilder, Node parentNode, MultiInstantiationDefinition multiInstantiationDefinition) throws Exception {
+  private void createMultiInstantiationDefinition(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final MultiInstantiationDefinition multiInstantiationDefinition) throws Exception {
 
     if (multiInstantiationDefinition != null) {
-      Node multiInstantiationNode = xmlDefBuilder.createNode(parentNode, XmlDef.MULTI_INSTANTIATION);
+      final Node multiInstantiationNode = xmlDefBuilder.createNode(parentNode, XmlDef.MULTI_INSTANTIATION);
+      xmlDefBuilder.createNode(multiInstantiationNode, XmlDef.CLASSNAME, multiInstantiationDefinition.getClassName());
+      xmlDefBuilder.createNode(multiInstantiationNode, XmlDef.DESCRIPTION,
+          multiInstantiationDefinition.getDescription());
+      xmlDefBuilder.createNode(multiInstantiationNode, XmlDef.VARIABLE_NAME,
+          multiInstantiationDefinition.getVariableName());
 
-      if (multiInstantiationDefinition != null) {
-        xmlDefBuilder.createNode(multiInstantiationNode, XmlDef.CLASSNAME, multiInstantiationDefinition.getClassName());
-        xmlDefBuilder.createNode(multiInstantiationNode, XmlDef.DESCRIPTION, multiInstantiationDefinition.getDescription());
-        xmlDefBuilder.createNode(multiInstantiationNode, XmlDef.VARIABLE_NAME, multiInstantiationDefinition.getVariableName());
+      final Node parametersNode = xmlDefBuilder.createNode(multiInstantiationNode, XmlDef.PARAMETERS);
+      final Map<String, Object[]> multiInstantiationParameters = multiInstantiationDefinition.getParameters();
 
-        Node parametersNode = xmlDefBuilder.createNode(multiInstantiationNode, XmlDef.PARAMETERS);
-        Map<String, Object[]> multiInstantiationParameters = multiInstantiationDefinition.getParameters();
-        
-        for (Entry<String, Object[]> multiInstantiationParameter : multiInstantiationParameters.entrySet()) {
-          Map<String, Serializable> multiInstantiationParameterAttributes = new HashMap<String, Serializable>();
-          multiInstantiationParameterAttributes.put(XmlDef.NAME, multiInstantiationParameter.getKey());
-          byte[] value = Misc.serialize(multiInstantiationParameter.getValue());
-          xmlDefBuilder.createNode(parametersNode, XmlDef.PARAMETER, value, multiInstantiationParameterAttributes);
-        }
+      for (final Entry<String, Object[]> multiInstantiationParameter : multiInstantiationParameters.entrySet()) {
+        final Map<String, Serializable> multiInstantiationParameterAttributes = new HashMap<String, Serializable>();
+        multiInstantiationParameterAttributes.put(XmlDef.NAME, multiInstantiationParameter.getKey());
+        final byte[] value = Misc.serialize(multiInstantiationParameter.getValue());
+        xmlDefBuilder.createNode(parametersNode, XmlDef.PARAMETER, value, multiInstantiationParameterAttributes);
       }
     }
   }
-  
-  private void createOutgoingEvents(XmlBuilder xmlDefBuilder, Node parentNode, Set<OutgoingEventDefinition> outgoingEvents) throws Exception {
 
-    Node outgoingEventsNode = xmlDefBuilder.createNode(parentNode, XmlDef.OUTGOING_EVENTS);
-    for (OutgoingEventDefinition outgoingEvent : outgoingEvents) {
-      Map<String, Serializable> outgoingEventElementAttributes = new HashMap<String, Serializable>();
+  private void createOutgoingEvents(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final Set<OutgoingEventDefinition> outgoingEvents) throws Exception {
+
+    final Node outgoingEventsNode = xmlDefBuilder.createNode(parentNode, XmlDef.OUTGOING_EVENTS);
+    for (final OutgoingEventDefinition outgoingEvent : outgoingEvents) {
+      final Map<String, Serializable> outgoingEventElementAttributes = new HashMap<String, Serializable>();
       outgoingEventElementAttributes.put(XmlDef.NAME, outgoingEvent.getName());
-      Node outgoingEventNode = xmlDefBuilder.createNode(outgoingEventsNode, XmlDef.OUTGOING_EVENT, outgoingEventElementAttributes);
+      final Node outgoingEventNode = xmlDefBuilder.createNode(outgoingEventsNode, XmlDef.OUTGOING_EVENT,
+          outgoingEventElementAttributes);
 
       xmlDefBuilder.createNode(outgoingEventNode, XmlDef.TIME_TO_LIVE, outgoingEvent.getTimeToLive());
       xmlDefBuilder.createNode(outgoingEventNode, XmlDef.TO_ACTIVITY, outgoingEvent.getToActivityName());
       xmlDefBuilder.createNode(outgoingEventNode, XmlDef.TO_PROCESS, outgoingEvent.getToProcessName());
 
-      Node parametersNode = xmlDefBuilder.createNode(outgoingEventNode, XmlDef.PARAMETERS);
-      Map<String, Object> outgoingEventParameters = outgoingEvent.getParameters();
+      final Node parametersNode = xmlDefBuilder.createNode(outgoingEventNode, XmlDef.PARAMETERS);
+      final Map<String, Object> outgoingEventParameters = outgoingEvent.getParameters();
 
-      for (Entry<String, Object> outgoingEventParameter : outgoingEventParameters.entrySet()) {
-        Map<String, Serializable> outgoingEventParameterAttributes = new HashMap<String, Serializable>();
+      for (final Entry<String, Object> outgoingEventParameter : outgoingEventParameters.entrySet()) {
+        final Map<String, Serializable> outgoingEventParameterAttributes = new HashMap<String, Serializable>();
         outgoingEventParameterAttributes.put(XmlDef.NAME, outgoingEventParameter.getKey());
-        byte[] value = Misc.serialize((Serializable) outgoingEventParameter.getValue());
+        final byte[] value = Misc.serialize((Serializable) outgoingEventParameter.getValue());
         xmlDefBuilder.createNode(parametersNode, XmlDef.PARAMETER, value, outgoingEventParameterAttributes);
       }
     }
   }
 
-  private void createIncomingEvent(XmlBuilder xmlDefBuilder, Node parentNode, IncomingEventDefinition incomingEvent) throws Exception {
+  private void createIncomingEvent(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final IncomingEventDefinition incomingEvent) throws Exception {
     if (incomingEvent != null) {
-      Map<String, Serializable> incomingEventElementAttributes = new HashMap<String, Serializable>();
+      final Map<String, Serializable> incomingEventElementAttributes = new HashMap<String, Serializable>();
       incomingEventElementAttributes.put(XmlDef.NAME, incomingEvent.getName());
-      Node incomingEventNode = xmlDefBuilder.createNode(parentNode, XmlDef.INCOMING_EVENT, incomingEventElementAttributes);
+      final Node incomingEventNode = xmlDefBuilder.createNode(parentNode, XmlDef.INCOMING_EVENT,
+          incomingEventElementAttributes);
 
       xmlDefBuilder.createNode(incomingEventNode, XmlDef.EXPRESSION, incomingEvent.getExpression());
     }
   }
 
-  private void createEventSubProcess(XmlBuilder xmlDefBuilder, Node parentNode, List<EventProcessDefinition> eventSubProcesses) throws Exception {
-    Node eventSubProcessesNode = xmlDefBuilder.createNode(parentNode, XmlDef.EVENT_SUB_PROCESSES);
-    for (EventProcessDefinition eventSubProcess : eventSubProcesses) {
-      Map<String, Serializable> eventSubProcessElementAttributes = new HashMap<String, Serializable>();
+  private void createEventSubProcess(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final List<EventProcessDefinition> eventSubProcesses) throws Exception {
+    final Node eventSubProcessesNode = xmlDefBuilder.createNode(parentNode, XmlDef.EVENT_SUB_PROCESSES);
+    for (final EventProcessDefinition eventSubProcess : eventSubProcesses) {
+      final Map<String, Serializable> eventSubProcessElementAttributes = new HashMap<String, Serializable>();
       eventSubProcessElementAttributes.put(XmlDef.NAME, eventSubProcess.getName());
-      Node eventSubProcessNode = xmlDefBuilder.createNode(eventSubProcessesNode, XmlDef.EVENT_SUB_PROCESS, eventSubProcessElementAttributes);
+      final Node eventSubProcessNode = xmlDefBuilder.createNode(eventSubProcessesNode, XmlDef.EVENT_SUB_PROCESS,
+          eventSubProcessElementAttributes);
       xmlDefBuilder.createNode(eventSubProcessNode, XmlDef.VERSION, eventSubProcess.getVersion());
       xmlDefBuilder.createNode(eventSubProcessNode, XmlDef.DESCRIPTION, eventSubProcess.getDescription());
       xmlDefBuilder.createNode(eventSubProcessNode, XmlDef.LABEL, eventSubProcess.getLabel());
     }
   }
-  
-  private void createDeadlines(XmlBuilder xmlDefBuilder, Node parentNode, Set<DeadlineDefinition> deadlines) throws Exception {
-    Node deadlinesNode = xmlDefBuilder.createNode(parentNode, XmlDef.DEADLINES);
-    for (DeadlineDefinition deadline : deadlines) {
-      Node deadlineNode = xmlDefBuilder.createNode(deadlinesNode, XmlDef.DEADLINE);
+
+  private void createDeadlines(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final Set<DeadlineDefinition> deadlines) throws Exception {
+    final Node deadlinesNode = xmlDefBuilder.createNode(parentNode, XmlDef.DEADLINES);
+    for (final DeadlineDefinition deadline : deadlines) {
+      final Node deadlineNode = xmlDefBuilder.createNode(deadlinesNode, XmlDef.DEADLINE);
 
       xmlDefBuilder.createNode(deadlineNode, XmlDef.CLASSNAME, deadline.getClassName());
       xmlDefBuilder.createNode(deadlineNode, XmlDef.CONDITION, deadline.getCondition());
       xmlDefBuilder.createNode(deadlineNode, XmlDef.DESCRIPTION, deadline.getDescription());
+      xmlDefBuilder.createNode(deadlineNode, XmlDef.IS_THROWING_EXCEPTION, deadline.isThrowingException());
 
-      Node parametersNode = xmlDefBuilder.createNode(deadlineNode, XmlDef.PARAMETERS);
-      Map<String, Object[]> deadlineParameters = deadline.getParameters();
-      for (Entry<String, Object[]> deadlineParameter : deadlineParameters.entrySet()) {
-        Map<String, Serializable> deadlineParameterAttributes = new HashMap<String, Serializable>();
+      final Node parametersNode = xmlDefBuilder.createNode(deadlineNode, XmlDef.PARAMETERS);
+      final Map<String, Object[]> deadlineParameters = deadline.getParameters();
+      for (final Entry<String, Object[]> deadlineParameter : deadlineParameters.entrySet()) {
+        final Map<String, Serializable> deadlineParameterAttributes = new HashMap<String, Serializable>();
         deadlineParameterAttributes.put(XmlDef.NAME, deadlineParameter.getKey());
-        byte[] value = Misc.serialize(deadlineParameter.getValue());
+        final byte[] value = Misc.serialize(deadlineParameter.getValue());
         xmlDefBuilder.createNode(parametersNode, XmlDef.PARAMETER, value, deadlineParameterAttributes);
       }
     }
   }
 
-  private void createMultipleActivitiesInstantiator(XmlBuilder xmlDefBuilder, Node parentNode, MultiInstantiationDefinition instantiator) throws Exception {
+  private void createMultipleActivitiesInstantiator(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final MultiInstantiationDefinition instantiator) throws Exception {
     if (instantiator != null) {
-      Node instantiatorNode = xmlDefBuilder.createNode(parentNode, XmlDef.MULTIPLE_ACT_INSTANTIATOR);
+      final Node instantiatorNode = xmlDefBuilder.createNode(parentNode, XmlDef.MULTIPLE_ACT_INSTANTIATOR);
       xmlDefBuilder.createNode(instantiatorNode, XmlDef.CLASSNAME, instantiator.getClassName());
       xmlDefBuilder.createNode(instantiatorNode, XmlDef.DESCRIPTION, instantiator.getDescription());
 
-      Node parametersNode = xmlDefBuilder.createNode(instantiatorNode, XmlDef.PARAMETERS);
-      Map<String, Object[]> instantiatorParameters = instantiator.getParameters();
-      for (Entry<String, Object[]> instantiatorParameter : instantiatorParameters.entrySet()) {
-        Map<String, Serializable> instantiatorParameterAttributes = new HashMap<String, Serializable>();
+      final Node parametersNode = xmlDefBuilder.createNode(instantiatorNode, XmlDef.PARAMETERS);
+      final Map<String, Object[]> instantiatorParameters = instantiator.getParameters();
+      for (final Entry<String, Object[]> instantiatorParameter : instantiatorParameters.entrySet()) {
+        final Map<String, Serializable> instantiatorParameterAttributes = new HashMap<String, Serializable>();
         instantiatorParameterAttributes.put(XmlDef.NAME, instantiatorParameter.getKey());
-        byte[] value = Misc.serialize(instantiatorParameter.getValue());
+        final byte[] value = Misc.serialize(instantiatorParameter.getValue());
         xmlDefBuilder.createNode(parametersNode, XmlDef.PARAMETER, value, instantiatorParameterAttributes);
       }
     }
   }
 
-  private void createMultipleActivitiesJoinChecker(XmlBuilder xmlDefBuilder, Node parentNode, MultiInstantiationDefinition joinChecker) throws Exception {
+  private void createMultipleActivitiesJoinChecker(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final MultiInstantiationDefinition joinChecker) throws Exception {
     if (joinChecker != null) {
-      Node joinCheckerNode = xmlDefBuilder.createNode(parentNode, XmlDef.MULTIPLE_ACT_JOINCHECKER);
+      final Node joinCheckerNode = xmlDefBuilder.createNode(parentNode, XmlDef.MULTIPLE_ACT_JOINCHECKER);
       xmlDefBuilder.createNode(joinCheckerNode, XmlDef.CLASSNAME, joinChecker.getClassName());
       xmlDefBuilder.createNode(joinCheckerNode, XmlDef.DESCRIPTION, joinChecker.getDescription());
 
-      Node parametersNode = xmlDefBuilder.createNode(joinCheckerNode, XmlDef.PARAMETERS);
-      Map<String, Object[]> joinCheckerParameters = joinChecker.getParameters();
-      for (Entry<String, Object[]> joinCheckerParameter : joinCheckerParameters.entrySet()) {
-        Map<String, Serializable> joinCheckerParameterAttributes = new HashMap<String, Serializable>();
+      final Node parametersNode = xmlDefBuilder.createNode(joinCheckerNode, XmlDef.PARAMETERS);
+      final Map<String, Object[]> joinCheckerParameters = joinChecker.getParameters();
+      for (final Entry<String, Object[]> joinCheckerParameter : joinCheckerParameters.entrySet()) {
+        final Map<String, Serializable> joinCheckerParameterAttributes = new HashMap<String, Serializable>();
         joinCheckerParameterAttributes.put(XmlDef.NAME, joinCheckerParameter.getKey());
-        byte[] value =  Misc.serialize(joinCheckerParameter.getValue());
+        final byte[] value = Misc.serialize(joinCheckerParameter.getValue());
         xmlDefBuilder.createNode(parametersNode, XmlDef.PARAMETER, value, joinCheckerParameterAttributes);
       }
     }
   }
 
-  private void createFilter(XmlBuilder xmlDefBuilder, Node parentNode, FilterDefinition filter) throws Exception {
+  private void createFilter(final XmlBuilder xmlDefBuilder, final Node parentNode, final FilterDefinition filter)
+      throws Exception {
     if (filter != null) {
-      Node filterNode = xmlDefBuilder.createNode(parentNode, XmlDef.FILTER);
+      final Node filterNode = xmlDefBuilder.createNode(parentNode, XmlDef.FILTER);
       xmlDefBuilder.createNode(filterNode, XmlDef.CLASSNAME, filter.getClassName());
       xmlDefBuilder.createNode(filterNode, XmlDef.DESCRIPTION, filter.getDescription());
 
-      Node parametersNode = xmlDefBuilder.createNode(filterNode, XmlDef.PARAMETERS);
-      Map<String, Object[]> filterParameters = filter.getParameters();
-      for (Entry<String, Object[]> filterParameter : filterParameters.entrySet()) {
-        Map<String, Serializable> filterParameterAttributes = new HashMap<String, Serializable>();
+      final Node parametersNode = xmlDefBuilder.createNode(filterNode, XmlDef.PARAMETERS);
+      final Map<String, Object[]> filterParameters = filter.getParameters();
+      for (final Entry<String, Object[]> filterParameter : filterParameters.entrySet()) {
+        final Map<String, Serializable> filterParameterAttributes = new HashMap<String, Serializable>();
         filterParameterAttributes.put(XmlDef.NAME, filterParameter.getKey());
-        byte[] value = Misc.serialize(filterParameter.getValue());
+        final byte[] value = Misc.serialize(filterParameter.getValue());
         xmlDefBuilder.createNode(parametersNode, XmlDef.PARAMETER, value, filterParameterAttributes);
       }
     }
   }
 
-  private void createTransitions(XmlBuilder xmlDefBuilder, Node parentNode, Set<TransitionDefinition> transitions) throws Exception {
+  private void createTransitions(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final Set<TransitionDefinition> transitions) throws Exception {
 
-    Node transitionsNode = xmlDefBuilder.createNode(parentNode, XmlDef.TRANSITIONS);
-    for (TransitionDefinition transitionDefinition : transitions) {
-      Map<String, Serializable> transitionElementAttributes = new HashMap<String, Serializable>();
+    final Node transitionsNode = xmlDefBuilder.createNode(parentNode, XmlDef.TRANSITIONS);
+    for (final TransitionDefinition transitionDefinition : transitions) {
+      final Map<String, Serializable> transitionElementAttributes = new HashMap<String, Serializable>();
       transitionElementAttributes.put(XmlDef.NAME, transitionDefinition.getName());
-      Node transitionNode = xmlDefBuilder.createNode(transitionsNode, XmlDef.TRANSITION, transitionElementAttributes);
+      final Node transitionNode = xmlDefBuilder.createNode(transitionsNode, XmlDef.TRANSITION,
+          transitionElementAttributes);
 
       xmlDefBuilder.createNode(transitionNode, XmlDef.LABEL, transitionDefinition.getLabel());
       xmlDefBuilder.createNode(transitionNode, XmlDef.CONDITION, transitionDefinition.getCondition());
@@ -493,13 +522,15 @@ public class XmlDefExporter {
     }
   }
 
-  private void createDataFields(XmlBuilder xmlDefBuilder, Node parentNode, Set<DataFieldDefinition> dataFields) throws Exception {
+  private void createDataFields(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final Set<DataFieldDefinition> dataFields) throws Exception {
 
-    Node dataFieldsNode = xmlDefBuilder.createNode(parentNode, XmlDef.DATA_FIELDS);
-    for (DataFieldDefinition dataFieldDefinition : dataFields) {
-      Map<String, Serializable> dataFieldElementAttributes = new HashMap<String, Serializable>();
+    final Node dataFieldsNode = xmlDefBuilder.createNode(parentNode, XmlDef.DATA_FIELDS);
+    for (final DataFieldDefinition dataFieldDefinition : dataFields) {
+      final Map<String, Serializable> dataFieldElementAttributes = new HashMap<String, Serializable>();
       dataFieldElementAttributes.put(XmlDef.NAME, dataFieldDefinition.getName());
-      Node dataFieldNode = xmlDefBuilder.createNode(dataFieldsNode, XmlDef.DATA_FIELD, dataFieldElementAttributes);
+      final Node dataFieldNode = xmlDefBuilder
+          .createNode(dataFieldsNode, XmlDef.DATA_FIELD, dataFieldElementAttributes);
 
       xmlDefBuilder.createNode(dataFieldNode, XmlDef.LABEL, dataFieldDefinition.getLabel());
       xmlDefBuilder.createNode(dataFieldNode, XmlDef.VALUE, Misc.serialize(dataFieldDefinition.getInitialValue()));
@@ -508,20 +539,22 @@ public class XmlDefExporter {
       xmlDefBuilder.createNode(dataFieldNode, XmlDef.SCRIPTING_VALUE, dataFieldDefinition.getScriptingValue());
       xmlDefBuilder.createNode(dataFieldNode, XmlDef.IS_TRANSIENT, dataFieldDefinition.isTransient());
 
-      Node enumerationValuesNode = xmlDefBuilder.createNode(dataFieldNode, XmlDef.ENUMERATION_VALUES);
-      for (String enumerationValue : dataFieldDefinition.getEnumerationValues()) {
+      final Node enumerationValuesNode = xmlDefBuilder.createNode(dataFieldNode, XmlDef.ENUMERATION_VALUES);
+      for (final String enumerationValue : dataFieldDefinition.getEnumerationValues()) {
         xmlDefBuilder.createNode(enumerationValuesNode, XmlDef.ENUMERATION_VALUE, enumerationValue);
       }
     }
   }
 
-  private void createAttachments(XmlBuilder xmlDefBuilder, Node parentNode, Map<String, AttachmentDefinition> attachments) throws Exception {
+  private void createAttachments(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final Map<String, AttachmentDefinition> attachments) throws Exception {
 
-    Node attachmentsNode = xmlDefBuilder.createNode(parentNode, XmlDef.ATTACHMENTS);
-    for (AttachmentDefinition attachmentDefinition : attachments.values()) {
-      Map<String, Serializable> attachmentElementAttributes = new HashMap<String, Serializable>();
+    final Node attachmentsNode = xmlDefBuilder.createNode(parentNode, XmlDef.ATTACHMENTS);
+    for (final AttachmentDefinition attachmentDefinition : attachments.values()) {
+      final Map<String, Serializable> attachmentElementAttributes = new HashMap<String, Serializable>();
       attachmentElementAttributes.put(XmlDef.NAME, attachmentDefinition.getName());
-      Node attachmentNode = xmlDefBuilder.createNode(attachmentsNode, XmlDef.ATTACHMENT, attachmentElementAttributes);
+      final Node attachmentNode = xmlDefBuilder.createNode(attachmentsNode, XmlDef.ATTACHMENT,
+          attachmentElementAttributes);
 
       xmlDefBuilder.createNode(attachmentNode, XmlDef.LABEL, attachmentDefinition.getLabel());
       xmlDefBuilder.createNode(attachmentNode, XmlDef.FILE_PATH, attachmentDefinition.getFilePath());
@@ -530,13 +563,15 @@ public class XmlDefExporter {
     }
   }
 
-  private void createParticipants(XmlBuilder xmlDefBuilder, Node parentNode, Set<ParticipantDefinition> participants) throws Exception {
+  private void createParticipants(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final Set<ParticipantDefinition> participants) throws Exception {
 
-    Node participantsNode = xmlDefBuilder.createNode(parentNode, XmlDef.PARTICIPANTS);
-    for (ParticipantDefinition participantDefinition : participants) {
-      Map<String, Serializable> participantElementAttributes = new HashMap<String, Serializable>();
+    final Node participantsNode = xmlDefBuilder.createNode(parentNode, XmlDef.PARTICIPANTS);
+    for (final ParticipantDefinition participantDefinition : participants) {
+      final Map<String, Serializable> participantElementAttributes = new HashMap<String, Serializable>();
       participantElementAttributes.put(XmlDef.NAME, participantDefinition.getName());
-      Node participantNode = xmlDefBuilder.createNode(participantsNode, XmlDef.PARTICIPANT, participantElementAttributes);
+      final Node participantNode = xmlDefBuilder.createNode(participantsNode, XmlDef.PARTICIPANT,
+          participantElementAttributes);
 
       xmlDefBuilder.createNode(participantNode, XmlDef.LABEL, participantDefinition.getLabel());
       xmlDefBuilder.createNode(participantNode, XmlDef.DESCRIPTION, participantDefinition.getDescription());
@@ -545,32 +580,29 @@ public class XmlDefExporter {
     }
   }
 
-  private void createRoleMapper(XmlBuilder xmlDefBuilder, Node parentNode, RoleMapperDefinition roleMapperDefinition) throws Exception {
-
+  private void createRoleMapper(final XmlBuilder xmlDefBuilder, final Node parentNode,
+      final RoleMapperDefinition roleMapperDefinition) throws Exception {
     if (roleMapperDefinition != null) {
-      Node roleMapperNode = xmlDefBuilder.createNode(parentNode, XmlDef.ROLE_MAPPER);
+      final Node roleMapperNode = xmlDefBuilder.createNode(parentNode, XmlDef.ROLE_MAPPER);
+      xmlDefBuilder.createNode(roleMapperNode, XmlDef.CLASSNAME, roleMapperDefinition.getClassName());
+      xmlDefBuilder.createNode(roleMapperNode, XmlDef.DESCRIPTION, roleMapperDefinition.getDescription());
 
-      if (roleMapperDefinition != null){
-        xmlDefBuilder.createNode(roleMapperNode, XmlDef.CLASSNAME, roleMapperDefinition.getClassName());
-        xmlDefBuilder.createNode(roleMapperNode, XmlDef.DESCRIPTION, roleMapperDefinition.getDescription());
-
-        Node parametersNode = xmlDefBuilder.createNode(roleMapperNode, XmlDef.PARAMETERS);
-        Map<String, Object[]> roleMapperParameters = roleMapperDefinition.getParameters();
-        for (Entry<String, Object[]> roleMapperParameter : roleMapperParameters.entrySet()) {
-          Map<String, Serializable> roleMapperParameterAttributes = new HashMap<String, Serializable>();
-          roleMapperParameterAttributes.put(XmlDef.NAME, roleMapperParameter.getKey());
-          byte[] value = Misc.serialize(roleMapperParameter.getValue());
-          xmlDefBuilder.createNode(parametersNode, XmlDef.PARAMETER, value, roleMapperParameterAttributes);
-        }
+      final Node parametersNode = xmlDefBuilder.createNode(roleMapperNode, XmlDef.PARAMETERS);
+      final Map<String, Object[]> roleMapperParameters = roleMapperDefinition.getParameters();
+      for (final Entry<String, Object[]> roleMapperParameter : roleMapperParameters.entrySet()) {
+        final Map<String, Serializable> roleMapperParameterAttributes = new HashMap<String, Serializable>();
+        roleMapperParameterAttributes.put(XmlDef.NAME, roleMapperParameter.getKey());
+        final byte[] value = Misc.serialize(roleMapperParameter.getValue());
+        xmlDefBuilder.createNode(parametersNode, XmlDef.PARAMETER, value, roleMapperParameterAttributes);
       }
     }
   }
 
-  private void createConnectors(XmlBuilder xmlDefBuilder, Node parentNode, List<HookDefinition> hooks) throws Exception {
-
-    Node connectorsNode = xmlDefBuilder.createNode(parentNode, XmlDef.CONNECTORS);
-    for (HookDefinition hook : hooks) {
-      Node connectorNode = xmlDefBuilder.createNode(connectorsNode, XmlDef.CONNECTOR);
+  private void createConnectors(final XmlBuilder xmlDefBuilder, final Node parentNode, final List<HookDefinition> hooks)
+      throws Exception {
+    final Node connectorsNode = xmlDefBuilder.createNode(parentNode, XmlDef.CONNECTORS);
+    for (final HookDefinition hook : hooks) {
+      final Node connectorNode = xmlDefBuilder.createNode(connectorsNode, XmlDef.CONNECTOR);
 
       xmlDefBuilder.createNode(connectorNode, XmlDef.CLASSNAME, hook.getClassName());
       xmlDefBuilder.createNode(connectorNode, XmlDef.DESCRIPTION, hook.getDescription());
@@ -578,13 +610,13 @@ public class XmlDefExporter {
       xmlDefBuilder.createNode(connectorNode, XmlDef.IS_THROWING_EXCEPTION, hook.isThrowingException());
       xmlDefBuilder.createNode(connectorNode, XmlDef.ERROR_CODE, hook.getErrorCode());
 
-      Node parametersNode = xmlDefBuilder.createNode(connectorNode, XmlDef.PARAMETERS);
-      Map<String, Object[]> hookParameters = hook.getParameters();
-      
-      for (Entry<String, Object[]> hookParameter : hookParameters.entrySet()) {
-        Map<String, Serializable> hookParametersAttributes = new HashMap<String, Serializable>();
+      final Node parametersNode = xmlDefBuilder.createNode(connectorNode, XmlDef.PARAMETERS);
+      final Map<String, Object[]> hookParameters = hook.getParameters();
+
+      for (final Entry<String, Object[]> hookParameter : hookParameters.entrySet()) {
+        final Map<String, Serializable> hookParametersAttributes = new HashMap<String, Serializable>();
         hookParametersAttributes.put(XmlDef.NAME, hookParameter.getKey());
-        byte[] value = Misc.serialize(hookParameter.getValue());
+        final byte[] value = Misc.serialize(hookParameter.getValue());
         xmlDefBuilder.createNode(parametersNode, XmlDef.PARAMETER, value, hookParametersAttributes);
       }
     }

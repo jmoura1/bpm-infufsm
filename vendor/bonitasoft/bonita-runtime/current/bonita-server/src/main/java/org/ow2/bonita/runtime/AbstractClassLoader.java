@@ -17,12 +17,14 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +42,7 @@ import org.ow2.bonita.util.ServerConstants;
 
 /**
  * 
- * @author Charles Souillard, Matthieu Chaffotte
+ * @author Charles Souillard, Matthieu Chaffotte, Elias Ricken de Medeiros
  *
  */
 abstract class AbstractClassLoader extends URLClassLoader {
@@ -49,6 +51,7 @@ abstract class AbstractClassLoader extends URLClassLoader {
 
   protected Map<String, byte[]> otherResources;
   protected Set<URL> urls;
+  private boolean isReleasing = false; 
 
   static {
     // Setting useCaches to false avoids a memory leak of URLJarFile instances
@@ -137,10 +140,11 @@ abstract class AbstractClassLoader extends URLClassLoader {
   @Override
   protected synchronized Class< ? > loadClass(String name, boolean resolve) throws ClassNotFoundException {
     Class< ? > c = findLoadedClass(name);
-    if (c == null) {
+    if (c == null && !isReleasing) {
       try {
         c = findClass(name);
       } catch (ClassNotFoundException e) { }
+      catch (IllegalStateException e) { }
     }
     if (c == null) {
       c = getParent().loadClass(name);
@@ -155,6 +159,7 @@ abstract class AbstractClassLoader extends URLClassLoader {
   }
 
   public void release() {
+    isReleasing = true;
     LogFactory.release(this);
     for (URL url : urls) {
       if (Misc.isOnWindows()) {
@@ -194,6 +199,35 @@ abstract class AbstractClassLoader extends URLClassLoader {
       }
       e.printStackTrace();
     }
+    close();
   }
+  
+  private void close() {
+    try {
+       Class<?> clazz = URLClassLoader.class;
+       Field ucp = clazz.getDeclaredField("ucp");
+       ucp.setAccessible(true);
+       Object sun_misc_URLClassPath = ucp.get(this);
+       Field loaders = sun_misc_URLClassPath.getClass().getDeclaredField("loaders");
+       loaders.setAccessible(true);
+       Object java_util_Collection = loaders.get(sun_misc_URLClassPath);
+       for (Object sun_misc_URLClassPath_JarLoader :
+            ((Collection<?>) java_util_Collection).toArray()) {
+          try {
+             java.lang.reflect.Field loader = 
+                sun_misc_URLClassPath_JarLoader.getClass().getDeclaredField("jar");
+             loader.setAccessible(true);
+             Object java_util_jar_JarFile = 
+                loader.get(sun_misc_URLClassPath_JarLoader);
+             ((java.util.jar.JarFile) java_util_jar_JarFile).close();
+          } catch (Throwable t) {
+             // if we got this far, this is probably not a JAR loader so skip it
+          }
+       }
+    } catch (Throwable t) {
+       // probably not a SUN VM
+    }
+    return;
+    }
 
 }

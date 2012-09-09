@@ -171,7 +171,7 @@
       <fileset dir="${server.lib.dir}">
         <include name="*.jar" />                      
       </fileset>
-    </copy>    
+    </copy>
     <copy todir="${warDir}/WEB-INF/lib">
       <fileset dir="${rest.lib.dir}">
         <include name="*.jar" />                      
@@ -221,6 +221,37 @@
       <webinf dir="${warDir}/WEB-INF"/>
     </war>
   	<delete dir="${warDir}"/>
+  </target>
+
+  <target name="war-rest" description="Generate a WAR file with REST libraries">
+    <property name="warDir" value="war-rest"/>
+    <mkdir dir="${warDir}/tmp" />
+    <mkdir dir="${warDir}/META-INF" />
+    <mkdir dir="${warDir}/WEB-INF" />
+  	<copy todir="${warDir}/WEB-INF/lib">
+      <fileset dir="${rest.lib.dir}">
+        <include name="*.jar" />                      
+      </fileset>
+    </copy>
+  	<copy todir="${warDir}/META-INF">
+      <fileset dir="war">
+        <include name="context.xml"/>
+      </fileset>
+    </copy>
+    <copy todir="${warDir}/META-INF">
+      <fileset dir="war/META-INF"/>
+    </copy>
+    <copy todir="${warDir}/WEB-INF">
+      <fileset dir="war/WEB-INF"/>
+      <!-- necessary for Jboss -->
+      <fileset dir="war/META-INF"/>
+    </copy>
+  	<mkdir dir="war/${warDir}" />
+    <war file="war/${warDir}/${rest.server.name}.war" webxml="war/web.xml">      
+      <metainf dir="${warDir}/META-INF"/>
+      <webinf dir="${warDir}/WEB-INF"/>
+    </war>
+    <delete dir="${warDir}"/>
   </target>
 
   <target name="init-db-ds" description="Generate database schema from the environment configuration using datasource">
@@ -314,8 +345,8 @@
     <input addproperty="migratedb.database" defaultvalue="h2">
       What is your database type (h2, mysql, oracle, postgresql, sqlserver)?
     </input>
-  	<input addproperty="current.version" defaultvalue="5.5.x">
-  	      What is your current bonita version (5.5.x or 5.6)?
+  	<input addproperty="current.version" defaultvalue="5.6">
+  	      What is your current bonita version (5.6)?
     </input>
     <java classname="org.ow2.bonita.util.DbMigration" fork="true" failonerror="true">
       <jvmarg line="${java.options}" />

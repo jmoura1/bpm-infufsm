@@ -2,6 +2,7 @@ package org.ow2.bonita.facade.identity;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,30 +11,61 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.ow2.bonita.APITestCase;
+import org.ow2.bonita.facade.exception.GroupNotFoundException;
 import org.ow2.bonita.facade.exception.RoleNotFoundException;
 import org.ow2.bonita.facade.exception.UserNotFoundException;
 import org.ow2.bonita.facade.paging.GroupCriterion;
 import org.ow2.bonita.facade.paging.RoleCriterion;
 import org.ow2.bonita.facade.paging.UserCriterion;
+import org.ow2.bonita.util.BonitaException;
 import org.ow2.bonita.util.Misc;
 
 public class IdentityAPITest extends APITestCase {
 
+  public void testDeletingARole() throws BonitaException {
+    final Group group = getIdentityAPI().addGroup("group", null);
+    final Role role1 = getIdentityAPI().addRole("role1");
+    final Role role2 = getIdentityAPI().addRole("role2");
+
+    final User user = getIdentityAPI().addUser("marja", "bpm");
+
+    final Membership membership1 = getIdentityAPI().getMembershipForRoleAndGroup(role1.getUUID(), group.getUUID());
+    getIdentityAPI().addMembershipToUser(user.getUUID(), membership1.getUUID());
+    final Membership membership2 = getIdentityAPI().getMembershipForRoleAndGroup(role2.getUUID(), group.getUUID());
+    getIdentityAPI().addMembershipToUser(user.getUUID(), membership2.getUUID());
+
+    List<User> users = getIdentityAPI().getAllUsersInMembership(membership1.getUUID());
+    assertEquals(1, users.size());
+    assertEquals(user.getUsername(), users.get(0).getUsername());
+    users = getIdentityAPI().getAllUsersInMembership(membership2.getUUID());
+    assertEquals(1, users.size());
+    assertEquals(user.getUsername(), users.get(0).getUsername());
+
+    getIdentityAPI().removeRoles(Collections.singletonList(role1.getUUID()));
+    users = getIdentityAPI().getAllUsersInMembership(membership2.getUUID());
+    assertEquals(1, users.size());
+    assertEquals(user.getUsername(), users.get(0).getUsername());
+
+    getIdentityAPI().removeUserByUUID(user.getUUID());
+    getIdentityAPI().removeRoles(Collections.singletonList(role2.getUUID()));
+    getIdentityAPI().removeGroupByUUID(group.getUUID());
+  }
+
   public void testGetUser() throws Exception {
-    User john = getIdentityAPI().getUser("john");
+    final User john = getIdentityAPI().getUser("john");
     assertNotNull(john);
     assertEquals("John", john.getFirstName());
   }
 
   public void testGetRole() throws Exception {
-    Role userRole = getIdentityAPI().getRole("user");
+    final Role userRole = getIdentityAPI().getRole("user");
     assertNotNull(userRole);
     assertEquals("User", userRole.getLabel());
   }
 
   public void testAddUser() throws Exception {
     getIdentityAPI().addUser("ateam", "bpm", "hannibal", "smith", "hannibal.smith@a.team");
-    User newUser = getIdentityAPI().getUser("ateam");
+    final User newUser = getIdentityAPI().getUser("ateam");
     assertNotNull(newUser);
     assertEquals(Misc.hash("bpm"), newUser.getPassword());
     assertEquals("ateam", newUser.getUsername());
@@ -46,7 +78,8 @@ public class IdentityAPITest extends APITestCase {
 
   public void testUpdateUser() throws Exception {
     getIdentityAPI().addUser("johnny", "deadzone");
-    User updatedUser = getIdentityAPI().updateUser("johnny", "johnny2", "deadzone", "Johnny", "Smith", "johnny.smith@dead.zone");
+    User updatedUser = getIdentityAPI().updateUser("johnny", "johnny2", "deadzone", "Johnny", "Smith",
+        "johnny.smith@dead.zone");
     updatedUser = getIdentityAPI().getUser("johnny2");
     assertNotNull(updatedUser);
     assertEquals(Misc.hash("deadzone"), updatedUser.getPassword());
@@ -58,10 +91,11 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testUpdateUserManager() throws Exception {
-    User user = getIdentityAPI().addUser("nicolas", "bpm");
+    final User user = getIdentityAPI().addUser("nicolas", "bpm");
     assertNull(user.getManagerUUID());
-    User manager = getIdentityAPI().addUser("manager", "bpm");
-    User updatedUser = getIdentityAPI().updateUserByUUID(user.getUUID(), "nicolas", null, null, null, null, manager.getUUID(), null);
+    final User manager = getIdentityAPI().addUser("manager", "bpm");
+    User updatedUser = getIdentityAPI().updateUserByUUID(user.getUUID(), "nicolas", null, null, null, null,
+        manager.getUUID(), null);
     assertNotNull(updatedUser.getManagerUUID());
     assertEquals(manager.getUUID(), updatedUser.getManagerUUID());
     updatedUser = getIdentityAPI().updateUserByUUID(user.getUUID(), "nicolas", null, null, null, null, null, null);
@@ -73,7 +107,7 @@ public class IdentityAPITest extends APITestCase {
 
   public void testAddRole() throws Exception {
     getIdentityAPI().addRole("bonita", "Bonita", "bonita role");
-    Role newRole = getIdentityAPI().getRole("bonita");
+    final Role newRole = getIdentityAPI().getRole("bonita");
     assertNotNull(newRole);
     assertEquals("bonita", newRole.getName());
     assertEquals("Bonita", newRole.getLabel());
@@ -84,7 +118,8 @@ public class IdentityAPITest extends APITestCase {
 
   public void testUpdateRole() throws Exception {
     getIdentityAPI().addRole("sales", "Sales team", "Dunder Mifflin Sales");
-    Role updatedRole = getIdentityAPI().updateRole("sales", "sales team", "Sales team role", "Dunder Mifflin Sales team");
+    Role updatedRole = getIdentityAPI().updateRole("sales", "sales team", "Sales team role",
+        "Dunder Mifflin Sales team");
     updatedRole = getIdentityAPI().getRole("sales team");
     assertNotNull(updatedRole);
     assertEquals("Sales team role", updatedRole.getLabel());
@@ -95,12 +130,12 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetRolesOld() throws Exception {
-    Set<Role> roles = getIdentityAPI().getRoles();
+    final Set<Role> roles = getIdentityAPI().getRoles();
     assertNotSame(0, roles.size());
   }
 
   public void testGetUsersOld() throws Exception {
-    Set<User> users = getIdentityAPI().getUsers();
+    final Set<User> users = getIdentityAPI().getUsers();
     assertNotSame(0, users.size());
   }
 
@@ -109,8 +144,8 @@ public class IdentityAPITest extends APITestCase {
     try {
       getIdentityAPI().getUser("jack");
       fail("user jack should have been removed");
-    } catch (UserNotFoundException e) {
-      getIdentityAPI().addUser("jack", "bpm", "Jack", "Doe",  "");
+    } catch (final UserNotFoundException e) {
+      getIdentityAPI().addUser("jack", "bpm", "Jack", "Doe", "");
       getIdentityAPI().addRoleToUser("user", "jack");
     }
   }
@@ -120,18 +155,18 @@ public class IdentityAPITest extends APITestCase {
     try {
       getIdentityAPI().getRole("user");
       fail("role user should have been removed");
-    } catch (RoleNotFoundException e) {
+    } catch (final RoleNotFoundException e) {
       getIdentityAPI().addRole("user", "User", "The user role");
-    } 
+    }
   }
 
   public void testGetUsersInRole() throws Exception {
-    Set<User> users = getIdentityAPI().getUsersInRole("admin");
+    final Set<User> users = getIdentityAPI().getUsersInRole("admin");
     assertNotSame(0, users.size());
   }
 
   public void testGetUserRoles() throws Exception {
-    Set<Role> roles = getIdentityAPI().getUserRoles("admin");
+    final Set<Role> roles = getIdentityAPI().getUserRoles("admin");
     assertNotSame(0, roles.size());
   }
 
@@ -139,8 +174,8 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().addRoleToUser("admin", "john");
     Set<Role> roles = getIdentityAPI().getUserRoles("john");
     Role adminRole = null;
-    for (Role role : roles) {
-      if("admin".equals(role.getName())) {
+    for (final Role role : roles) {
+      if ("admin".equals(role.getName())) {
         adminRole = role;
       }
     }
@@ -149,8 +184,8 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeRoleFromUser("admin", "john");
     roles = getIdentityAPI().getUserRoles("john");
     adminRole = null;
-    for (Role role : roles) {
-      if("admin".equals(role.getName())) {
+    for (final Role role : roles) {
+      if ("admin".equals(role.getName())) {
         adminRole = role;
       }
     }
@@ -158,7 +193,7 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testSetUserRoles() throws Exception {
-    Set<String> userRoles = new HashSet<String>();
+    final Set<String> userRoles = new HashSet<String>();
     userRoles.add("admin");
     getIdentityAPI().setUserRoles("john", userRoles);
     Set<Role> userSetRoles = getIdentityAPI().getUserRoles("john");
@@ -183,14 +218,32 @@ public class IdentityAPITest extends APITestCase {
 
   public void testAddRemoveUpdateUserWithMetadata() throws Exception {
     ProfileMetadata seniority = getIdentityAPI().addProfileMetadata("seniority", "years of service");
-    Map<String, String> userMetadata = new HashMap<String, String>();
+    final Map<String, String> userMetadata = new HashMap<String, String>();
     userMetadata.put("seniority", "10");
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "michael", "scott", "Mr", "Regional Manager", null, userMetadata);
+    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "michael", "scott", "Mr", "Regional Manager",
+        null, userMetadata);
     userMetadata.put("seniority", "8");
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "dwight", "schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), userMetadata);
+    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "dwight", "schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), userMetadata);
     assertEquals(1, dwight.getMetadata().size());
-    getIdentityAPI().updateUserPersonalContactInfo(dwight.getUUID(), "dwight.schrute@schrutefarms.com", "000000000000", "666666666666", null, "Schrute Farms", null, "Main Street", "18431", "Honesdale", "Pennsylvania", "United States", "http://www.tripadvisor.fr/Hotel_Review-g52842-d730099-Reviews-Schrute_Farms-Honesdale_Pocono_Mountains_Region_Pennsylvania.html");
-    getIdentityAPI().updateUserProfessionalContactInfo(dwight.getUUID(), "dwight.schrute@dunder-mifflin.com", "111111111111", "666666666666", "222222222222", null, "Dunder Mifflin Office", "address", "zipCode", "Scranton", "Pennsylvania", "United States", "http://www.dundermifflin.com");
+    getIdentityAPI()
+        .updateUserPersonalContactInfo(
+            dwight.getUUID(),
+            "dwight.schrute@schrutefarms.com",
+            "000000000000",
+            "666666666666",
+            null,
+            "Schrute Farms",
+            null,
+            "Main Street",
+            "18431",
+            "Honesdale",
+            "Pennsylvania",
+            "United States",
+            "http://www.tripadvisor.fr/Hotel_Review-g52842-d730099-Reviews-Schrute_Farms-Honesdale_Pocono_Mountains_Region_Pennsylvania.html");
+    getIdentityAPI().updateUserProfessionalContactInfo(dwight.getUUID(), "dwight.schrute@dunder-mifflin.com",
+        "111111111111", "666666666666", "222222222222", null, "Dunder Mifflin Office", "address", "zipCode",
+        "Scranton", "Pennsylvania", "United States", "http://www.dundermifflin.com");
     dwight = getIdentityAPI().getUserByUUID(dwight.getUUID());
     assertNotNull(dwight);
     assertEquals("dwight.schrute", dwight.getUsername());
@@ -222,12 +275,14 @@ public class IdentityAPITest extends APITestCase {
     assertEquals("Pennsylvania", dwight.getProfessionalContactInfo().getState());
     assertEquals("United States", dwight.getPersonalContactInfo().getCountry());
     assertEquals("United States", dwight.getProfessionalContactInfo().getCountry());
-    assertEquals("http://www.tripadvisor.fr/Hotel_Review-g52842-d730099-Reviews-Schrute_Farms-Honesdale_Pocono_Mountains_Region_Pennsylvania.html", dwight.getPersonalContactInfo().getWebsite());
+    assertEquals(
+        "http://www.tripadvisor.fr/Hotel_Review-g52842-d730099-Reviews-Schrute_Farms-Honesdale_Pocono_Mountains_Region_Pennsylvania.html",
+        dwight.getPersonalContactInfo().getWebsite());
     assertEquals("http://www.dundermifflin.com", dwight.getProfessionalContactInfo().getWebsite());
-    Map<ProfileMetadata, String> dwightsMetadata = dwight.getMetadata();
+    final Map<ProfileMetadata, String> dwightsMetadata = dwight.getMetadata();
     assertEquals(1, dwightsMetadata.size());
     seniority = getIdentityAPI().findProfileMetadataByName("seniority");
-    for (Entry<ProfileMetadata, String> metadataEntry : dwightsMetadata.entrySet()) {
+    for (final Entry<ProfileMetadata, String> metadataEntry : dwightsMetadata.entrySet()) {
       if (metadataEntry.getKey().getUUID().equals(seniority.getUUID())) {
         assertEquals("8", metadataEntry.getValue());
       }
@@ -236,10 +291,11 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().updateUserDelegee(michael.getUUID(), dwight.getUUID());
     michael = getIdentityAPI().getUserByUUID(michael.getUUID());
     assertEquals(dwight.getUUID(), michael.getDelegeeUUID());
-    User david = getIdentityAPI().addUser("david.wallace", "password");
+    final User david = getIdentityAPI().addUser("david.wallace", "password");
     userMetadata.put("seniority", "12");
 
-    getIdentityAPI().updateUserByUUID(michael.getUUID(), "michaelscott", "michael1", "scott1", "Mr1", "Regional Manager1", david.getUUID(), userMetadata);
+    getIdentityAPI().updateUserByUUID(michael.getUUID(), "michaelscott", "michael1", "scott1", "Mr1",
+        "Regional Manager1", david.getUUID(), userMetadata);
     getIdentityAPI().updateUserPassword(michael.getUUID(), "bestboss1");
     michael = getIdentityAPI().getUserByUUID(michael.getUUID());
     assertEquals("michaelscott", michael.getUsername());
@@ -249,10 +305,10 @@ public class IdentityAPITest extends APITestCase {
     assertEquals("Mr1", michael.getTitle());
     assertEquals("Regional Manager1", michael.getJobTitle());
     assertEquals(david.getUUID(), michael.getManagerUUID());
-    Map<ProfileMetadata, String> michaelsMetadata = michael.getMetadata();
+    final Map<ProfileMetadata, String> michaelsMetadata = michael.getMetadata();
     assertEquals(1, michaelsMetadata.size());
     seniority = getIdentityAPI().findProfileMetadataByName("seniority");
-    for (Entry<ProfileMetadata, String> metadataEntry : michaelsMetadata.entrySet()) {
+    for (final Entry<ProfileMetadata, String> metadataEntry : michaelsMetadata.entrySet()) {
       if (metadataEntry.getKey().getUUID().equals(seniority.getUUID())) {
         assertEquals("12", metadataEntry.getValue());
       }
@@ -267,21 +323,25 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeUserByUUID(dwight.getUUID());
     michael = getIdentityAPI().getUserByUUID(michael.getUUID());
     assertNull(michael.getDelegeeUUID());
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     getIdentityAPI().removeUsers(userUUIDs);
   }
 
   public void testGetUsers() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "michael", "scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "dwight", "schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "dwightisanidiot", "jim", "halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "dwightisanidiot", "pam", "halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "michael", "scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "dwight", "schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "dwightisanidiot", "jim", "halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "dwightisanidiot", "pam", "halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    List<User> allUsers = getIdentityAPI().getAllUsers();
+    final List<User> allUsers = getIdentityAPI().getAllUsers();
     assertEquals(8, allUsers.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
     assertEquals(allUsers.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsers(0, 2);
@@ -304,7 +364,7 @@ public class IdentityAPITest extends APITestCase {
     assertEquals("michael.scott", users.get(0).getUsername());
     assertEquals("pam.halpert", users.get(1).getUsername());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -313,15 +373,19 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUsersOrderByFirstNameAsc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    List<User> allUsers = getIdentityAPI().getAllUsers();
+    final List<User> allUsers = getIdentityAPI().getAllUsers();
     assertEquals(8, allUsers.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
     assertEquals(allUsers.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsers(0, 2, UserCriterion.FIRST_NAME_ASC);
@@ -344,7 +408,7 @@ public class IdentityAPITest extends APITestCase {
     assertEquals("pam.halpert", users.get(0).getUsername());
     assertEquals("admin", users.get(1).getUsername());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -353,15 +417,19 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUsersOrderByFirstNameDesc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    List<User> allUsers = getIdentityAPI().getAllUsers();
+    final List<User> allUsers = getIdentityAPI().getAllUsers();
     assertEquals(8, allUsers.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
     assertEquals(allUsers.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsers(0, 2, UserCriterion.FIRST_NAME_DESC);
@@ -384,7 +452,7 @@ public class IdentityAPITest extends APITestCase {
     assertEquals("jack", users.get(0).getUsername());
     assertEquals("dwight.schrute", users.get(1).getUsername());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -393,15 +461,19 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUsersOrderByLastNameAsc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    List<User> allUsers = getIdentityAPI().getAllUsers();
+    final List<User> allUsers = getIdentityAPI().getAllUsers();
     assertEquals(8, allUsers.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
     assertEquals(allUsers.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsers(0, 2, UserCriterion.LAST_NAME_ASC);
@@ -425,7 +497,7 @@ public class IdentityAPITest extends APITestCase {
     assertNull(users.get(1).getLastName());
     assertEquals("admin", users.get(1).getUsername());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -434,15 +506,19 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUsersOrderByLastNameDesc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    List<User> allUsers = getIdentityAPI().getAllUsers();
+    final List<User> allUsers = getIdentityAPI().getAllUsers();
     assertEquals(8, allUsers.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
     assertEquals(allUsers.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsers(0, 2, UserCriterion.LAST_NAME_DESC);
@@ -455,7 +531,6 @@ public class IdentityAPITest extends APITestCase {
     assertEquals("Schrute", users.get(0).getLastName());
     assertEquals("Halpert", users.get(1).getLastName());
 
-
     users = getIdentityAPI().getUsers(4, 2, UserCriterion.LAST_NAME_DESC);
     assertEquals(2, users.size());
     assertEquals("Halpert", users.get(0).getLastName());
@@ -466,7 +541,7 @@ public class IdentityAPITest extends APITestCase {
     assertEquals("Doe", users.get(0).getLastName());
     assertEquals("Doe", users.get(1).getLastName());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -475,15 +550,19 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUsersOrderByUserNameAsc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    List<User> allUsers = getIdentityAPI().getAllUsers();
+    final List<User> allUsers = getIdentityAPI().getAllUsers();
     assertEquals(8, allUsers.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
     assertEquals(allUsers.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsers(0, 2, UserCriterion.USER_NAME_ASC);
@@ -506,7 +585,7 @@ public class IdentityAPITest extends APITestCase {
     assertEquals("michael.scott", users.get(0).getUsername());
     assertEquals("pam.halpert", users.get(1).getUsername());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -515,15 +594,19 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUsersOrderByUserNameDesc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    List<User> allUsers = getIdentityAPI().getAllUsers();
+    final List<User> allUsers = getIdentityAPI().getAllUsers();
     assertEquals(8, allUsers.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsers();
     assertEquals(allUsers.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsers(0, 2, UserCriterion.USER_NAME_DESC);
@@ -546,7 +629,7 @@ public class IdentityAPITest extends APITestCase {
     assertEquals("dwight.schrute", users.get(0).getUsername());
     assertEquals("admin", users.get(1).getUsername());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -555,14 +638,14 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetProfileMetadata() throws Exception {
-    ProfileMetadata seniority = getIdentityAPI().addProfileMetadata("seniority", "years of service");
-    ProfileMetadata hobbies = getIdentityAPI().addProfileMetadata("hobbies", "hobbies");
-    ProfileMetadata dateOfBirth = getIdentityAPI().addProfileMetadata("dateOfBirth", "date of birth");
+    final ProfileMetadata seniority = getIdentityAPI().addProfileMetadata("seniority", "years of service");
+    final ProfileMetadata hobbies = getIdentityAPI().addProfileMetadata("hobbies", "hobbies");
+    final ProfileMetadata dateOfBirth = getIdentityAPI().addProfileMetadata("dateOfBirth", "date of birth");
 
-    List<ProfileMetadata> allMetadata = getIdentityAPI().getAllProfileMetadata();
+    final List<ProfileMetadata> allMetadata = getIdentityAPI().getAllProfileMetadata();
     assertEquals(3, allMetadata.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfProfileMetadata();
+    final int numberOfMetadata = getIdentityAPI().getNumberOfProfileMetadata();
     assertEquals(allMetadata.size(), numberOfMetadata);
 
     List<ProfileMetadata> metadata = getIdentityAPI().getProfileMetadata(0, 2);
@@ -573,7 +656,7 @@ public class IdentityAPITest extends APITestCase {
     assertEquals(1, metadata.size());
     assertEquals("seniority", metadata.get(0).getName());
 
-    Collection<String> profileMetadataUUIDs = new HashSet<String>();
+    final Collection<String> profileMetadataUUIDs = new HashSet<String>();
     profileMetadataUUIDs.add(seniority.getUUID());
     profileMetadataUUIDs.add(hobbies.getUUID());
     profileMetadataUUIDs.add(dateOfBirth.getUUID());
@@ -582,30 +665,32 @@ public class IdentityAPITest extends APITestCase {
 
   public void testAddRemoveUpdateRole() throws Exception {
     Role managerRole = getIdentityAPI().addRole("regionalmanager", "regional manager", "regional branch manager");
-    Role salesmanRole = getIdentityAPI().addRole("salesmanRole", "salesman role", "Dunder Mifflin salesman");
+    final Role salesmanRole = getIdentityAPI().addRole("salesmanRole", "salesman role", "Dunder Mifflin salesman");
     managerRole = getIdentityAPI().getRoleByUUID(managerRole.getUUID());
     assertEquals("regional manager", managerRole.getLabel());
     assertEquals("regional branch manager", managerRole.getDescription());
     assertEquals("regionalmanager", managerRole.getName());
-    getIdentityAPI().updateRoleByUUID(managerRole.getUUID(), "manager", "regional branch manager", "Dunder Mifflin regional manager");
+    getIdentityAPI().updateRoleByUUID(managerRole.getUUID(), "manager", "regional branch manager",
+        "Dunder Mifflin regional manager");
     managerRole = getIdentityAPI().getRoleByUUID(managerRole.getUUID());
     assertEquals("regional branch manager", managerRole.getLabel());
     assertEquals("Dunder Mifflin regional manager", managerRole.getDescription());
     assertEquals("manager", managerRole.getName());
     getIdentityAPI().removeRoleByUUID(managerRole.getUUID());
-    Set<String> roleUUIDs = new HashSet<String>();
+    final Set<String> roleUUIDs = new HashSet<String>();
     roleUUIDs.add(salesmanRole.getUUID());
     getIdentityAPI().removeRoles(roleUUIDs);
   }
 
   public void testGetRoles() throws Exception {
-    Role regionalManager = getIdentityAPI().addRole("regionalmanager", "regional manager", "regional branch manager");
-    Role salesMan = getIdentityAPI().addRole("salesmanRole", "salesman role", "Dunder Mifflin salesman");
+    final Role regionalManager = getIdentityAPI().addRole("regionalmanager", "regional manager",
+        "regional branch manager");
+    final Role salesMan = getIdentityAPI().addRole("salesmanRole", "salesman role", "Dunder Mifflin salesman");
 
-    List<Role> allRoles = getIdentityAPI().getAllRoles();
+    final List<Role> allRoles = getIdentityAPI().getAllRoles();
     assertEquals(4, allRoles.size());
 
-    int numberOfRoles = getIdentityAPI().getNumberOfRoles();
+    final int numberOfRoles = getIdentityAPI().getNumberOfRoles();
     assertEquals(allRoles.size(), numberOfRoles);
 
     List<Role> roles = getIdentityAPI().getRoles(0, 2);
@@ -621,20 +706,21 @@ public class IdentityAPITest extends APITestCase {
     roles = getIdentityAPI().getRoles(4, 2);
     assertEquals(0, roles.size());
 
-    Collection<String> roleUUIDs = new HashSet<String>();
+    final Collection<String> roleUUIDs = new HashSet<String>();
     roleUUIDs.add(regionalManager.getUUID());
     roleUUIDs.add(salesMan.getUUID());
     getIdentityAPI().removeRoles(roleUUIDs);
   }
 
   public void testGetRolesOrderByNameAsc() throws Exception {
-    Role regionalManager = getIdentityAPI().addRole("regionalmanager", "Regional manager", "Regional branch manager");
-    Role salesMan = getIdentityAPI().addRole("salesmanRole", "Salesman role", "Dunder Mifflin salesman");
+    final Role regionalManager = getIdentityAPI().addRole("regionalmanager", "Regional manager",
+        "Regional branch manager");
+    final Role salesMan = getIdentityAPI().addRole("salesmanRole", "Salesman role", "Dunder Mifflin salesman");
 
-    List<Role> allRoles = getIdentityAPI().getAllRoles();
+    final List<Role> allRoles = getIdentityAPI().getAllRoles();
     assertEquals(4, allRoles.size());
 
-    int numberOfRoles = getIdentityAPI().getNumberOfRoles();
+    final int numberOfRoles = getIdentityAPI().getNumberOfRoles();
     assertEquals(allRoles.size(), numberOfRoles);
 
     List<Role> roles = getIdentityAPI().getRoles(0, 2, RoleCriterion.NAME_ASC);
@@ -650,20 +736,21 @@ public class IdentityAPITest extends APITestCase {
     roles = getIdentityAPI().getRoles(4, 2);
     assertEquals(0, roles.size());
 
-    Collection<String> roleUUIDs = new HashSet<String>();
+    final Collection<String> roleUUIDs = new HashSet<String>();
     roleUUIDs.add(regionalManager.getUUID());
     roleUUIDs.add(salesMan.getUUID());
     getIdentityAPI().removeRoles(roleUUIDs);
   }
 
   public void testGetRolesOrderByLabelAsc() throws Exception {
-    Role regionalManager = getIdentityAPI().addRole("regionalmanager", "Regional manager", "Regional branch manager");
-    Role salesMan = getIdentityAPI().addRole("salesmanRole", "Salesman role", "Dunder Mifflin salesman");
+    final Role regionalManager = getIdentityAPI().addRole("regionalmanager", "Regional manager",
+        "Regional branch manager");
+    final Role salesMan = getIdentityAPI().addRole("salesmanRole", "Salesman role", "Dunder Mifflin salesman");
 
-    List<Role> allRoles = getIdentityAPI().getAllRoles();
+    final List<Role> allRoles = getIdentityAPI().getAllRoles();
     assertEquals(4, allRoles.size());
 
-    int numberOfRoles = getIdentityAPI().getNumberOfRoles();
+    final int numberOfRoles = getIdentityAPI().getNumberOfRoles();
     assertEquals(allRoles.size(), numberOfRoles);
 
     List<Role> roles = getIdentityAPI().getRoles(0, 2, RoleCriterion.LABEL_ASC);
@@ -679,20 +766,21 @@ public class IdentityAPITest extends APITestCase {
     roles = getIdentityAPI().getRoles(4, 2);
     assertEquals(0, roles.size());
 
-    Collection<String> roleUUIDs = new HashSet<String>();
+    final Collection<String> roleUUIDs = new HashSet<String>();
     roleUUIDs.add(regionalManager.getUUID());
     roleUUIDs.add(salesMan.getUUID());
     getIdentityAPI().removeRoles(roleUUIDs);
   }
 
   public void testGetRolesOrderByNameDesc() throws Exception {
-    Role regionalManager = getIdentityAPI().addRole("regionalmanager", "Regional manager", "Regional branch manager");
-    Role salesMan = getIdentityAPI().addRole("salesmanRole", "Salesman role", "Dunder Mifflin salesman");
+    final Role regionalManager = getIdentityAPI().addRole("regionalmanager", "Regional manager",
+        "Regional branch manager");
+    final Role salesMan = getIdentityAPI().addRole("salesmanRole", "Salesman role", "Dunder Mifflin salesman");
 
-    List<Role> allRoles = getIdentityAPI().getAllRoles();
+    final List<Role> allRoles = getIdentityAPI().getAllRoles();
     assertEquals(4, allRoles.size());
 
-    int numberOfRoles = getIdentityAPI().getNumberOfRoles();
+    final int numberOfRoles = getIdentityAPI().getNumberOfRoles();
     assertEquals(allRoles.size(), numberOfRoles);
 
     List<Role> roles = getIdentityAPI().getRoles(0, 2, RoleCriterion.NAME_DESC);
@@ -708,20 +796,21 @@ public class IdentityAPITest extends APITestCase {
     roles = getIdentityAPI().getRoles(4, 2);
     assertEquals(0, roles.size());
 
-    Collection<String> roleUUIDs = new HashSet<String>();
+    final Collection<String> roleUUIDs = new HashSet<String>();
     roleUUIDs.add(regionalManager.getUUID());
     roleUUIDs.add(salesMan.getUUID());
     getIdentityAPI().removeRoles(roleUUIDs);
   }
 
   public void testGetRolesOrderByLabelDesc() throws Exception {
-    Role regionalManager = getIdentityAPI().addRole("regionalmanager", "Regional manager", "Regional branch manager");
-    Role salesMan = getIdentityAPI().addRole("salesmanRole", "Salesman role", "Dunder Mifflin salesman");
+    final Role regionalManager = getIdentityAPI().addRole("regionalmanager", "Regional manager",
+        "Regional branch manager");
+    final Role salesMan = getIdentityAPI().addRole("salesmanRole", "Salesman role", "Dunder Mifflin salesman");
 
-    List<Role> allRoles = getIdentityAPI().getAllRoles();
+    final List<Role> allRoles = getIdentityAPI().getAllRoles();
     assertEquals(4, allRoles.size());
 
-    int numberOfRoles = getIdentityAPI().getNumberOfRoles();
+    final int numberOfRoles = getIdentityAPI().getNumberOfRoles();
     assertEquals(allRoles.size(), numberOfRoles);
 
     List<Role> roles = getIdentityAPI().getRoles(0, 2, RoleCriterion.LABEL_DESC);
@@ -737,47 +826,52 @@ public class IdentityAPITest extends APITestCase {
     roles = getIdentityAPI().getRoles(4, 2);
     assertEquals(0, roles.size());
 
-    Collection<String> roleUUIDs = new HashSet<String>();
+    final Collection<String> roleUUIDs = new HashSet<String>();
     roleUUIDs.add(regionalManager.getUUID());
     roleUUIDs.add(salesMan.getUUID());
     getIdentityAPI().removeRoles(roleUUIDs);
   }
 
   public void testAddRemoveUpdateGroup() throws Exception {
-    Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton branch", "Dunder Mifflin Scranton regional branch", null);
-    Group salesGroup = getIdentityAPI().addGroup("sales", "Scranton Sales team", "Dunder Mifflin Sales", scrantonGroup.getUUID());
+    final Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton branch",
+        "Dunder Mifflin Scranton regional branch", null);
+    Group salesGroup = getIdentityAPI().addGroup("sales", "Scranton Sales team", "Dunder Mifflin Sales",
+        scrantonGroup.getUUID());
     salesGroup = getIdentityAPI().getGroupByUUID(salesGroup.getUUID());
     assertEquals("Scranton Sales team", salesGroup.getLabel());
     assertEquals("Dunder Mifflin Sales", salesGroup.getDescription());
     assertEquals("sales", salesGroup.getName());
     assertEquals(scrantonGroup.getUUID(), salesGroup.getParentGroup().getUUID());
-    Group dunderMifflinGroup = getIdentityAPI().addGroup("dundermifflin", null);
-    getIdentityAPI().updateGroupByUUID(salesGroup.getUUID(), "salesteam", "Sales team group", "Dunder Mifflin Sales team", dunderMifflinGroup.getUUID());
+    final Group dunderMifflinGroup = getIdentityAPI().addGroup("dundermifflin", null);
+    getIdentityAPI().updateGroupByUUID(salesGroup.getUUID(), "salesteam", "Sales team group",
+        "Dunder Mifflin Sales team", dunderMifflinGroup.getUUID());
     salesGroup = getIdentityAPI().getGroupByUUID(salesGroup.getUUID());
     assertEquals("Sales team group", salesGroup.getLabel());
     assertEquals("Dunder Mifflin Sales team", salesGroup.getDescription());
     assertEquals("salesteam", salesGroup.getName());
     assertEquals(dunderMifflinGroup.getUUID(), salesGroup.getParentGroup().getUUID());
     getIdentityAPI().removeGroupByUUID(salesGroup.getUUID());
-    Set<String> groupUUIDs = new HashSet<String>();
+    final Set<String> groupUUIDs = new HashSet<String>();
     groupUUIDs.add(dunderMifflinGroup.getUUID());
     groupUUIDs.add(scrantonGroup.getUUID());
     getIdentityAPI().removeGroups(groupUUIDs);
   }
 
   public void testGetGroups() throws Exception {
-    Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton branch", "Dunder Mifflin Scranton regional branch", null);
+    final Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton branch",
+        "Dunder Mifflin Scranton regional branch", null);
     getIdentityAPI().addGroup("sales", "Scranton Sales team", "Dunder Mifflin Sales", scrantonGroup.getUUID());
-    getIdentityAPI().addGroup("accountancy", "Scranton accountancy", "Dunder Mifflin Scranton accountancy", scrantonGroup.getUUID());
+    getIdentityAPI().addGroup("accountancy", "Scranton accountancy", "Dunder Mifflin Scranton accountancy",
+        scrantonGroup.getUUID());
     getIdentityAPI().addGroup("hr", "Scranton HR", "Dunder Mifflin Scranton HR", scrantonGroup.getUUID());
 
-    List<Group> allGroups = getIdentityAPI().getAllGroups();
+    final List<Group> allGroups = getIdentityAPI().getAllGroups();
     assertEquals(5, allGroups.size());
 
-    List<Group> rootGroups = getIdentityAPI().getChildrenGroupsByUUID(null);
+    final List<Group> rootGroups = getIdentityAPI().getChildrenGroupsByUUID(null);
     assertEquals(2, rootGroups.size());
 
-    int numberOfGroups = getIdentityAPI().getNumberOfGroups();
+    final int numberOfGroups = getIdentityAPI().getNumberOfGroups();
     assertEquals(allGroups.size(), numberOfGroups);
 
     List<Group> groups = getIdentityAPI().getGroups(0, 2);
@@ -791,10 +885,10 @@ public class IdentityAPITest extends APITestCase {
     assertEquals("sales", groups.get(1).getName());
     assertEquals("scranton", groups.get(2).getName());
 
-    List<Group> allChildrenGroups = getIdentityAPI().getChildrenGroupsByUUID(scrantonGroup.getUUID());
+    final List<Group> allChildrenGroups = getIdentityAPI().getChildrenGroupsByUUID(scrantonGroup.getUUID());
     assertEquals(3, allChildrenGroups.size());
 
-    int numberOfChildrenGroups = getIdentityAPI().getNumberOfChildrenGroups(scrantonGroup.getUUID());
+    final int numberOfChildrenGroups = getIdentityAPI().getNumberOfChildrenGroups(scrantonGroup.getUUID());
     assertEquals(allChildrenGroups.size(), numberOfChildrenGroups);
 
     List<Group> childrenGroups = getIdentityAPI().getChildrenGroups(scrantonGroup.getUUID(), 0, 2);
@@ -809,15 +903,17 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetGroupsOrderByNameAsc() throws Exception {
-    Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton branch", "Dunder Mifflin Scranton regional branch", null);
+    final Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton branch",
+        "Dunder Mifflin Scranton regional branch", null);
     getIdentityAPI().addGroup("sales", "Scranton Sales team", "Dunder Mifflin Sales", scrantonGroup.getUUID());
-    getIdentityAPI().addGroup("accountancy", "Scranton accountancy", "Dunder Mifflin Scranton accountancy", scrantonGroup.getUUID());
+    getIdentityAPI().addGroup("accountancy", "Scranton accountancy", "Dunder Mifflin Scranton accountancy",
+        scrantonGroup.getUUID());
     getIdentityAPI().addGroup("hr", "Scranton HR", "Dunder Mifflin Scranton HR", scrantonGroup.getUUID());
 
-    List<Group> allGroups = getIdentityAPI().getAllGroups();
-    assertEquals(5, allGroups.size());    
+    final List<Group> allGroups = getIdentityAPI().getAllGroups();
+    assertEquals(5, allGroups.size());
 
-    int numberOfGroups = getIdentityAPI().getNumberOfGroups();
+    final int numberOfGroups = getIdentityAPI().getNumberOfGroups();
     assertEquals(allGroups.size(), numberOfGroups);
 
     List<Group> groups = getIdentityAPI().getGroups(0, 2, GroupCriterion.NAME_ASC);
@@ -835,15 +931,17 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetGroupsOrderByLabelAsc() throws Exception {
-    Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton Branch", "Dunder Mifflin Scranton regional branch", null);
+    final Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton Branch",
+        "Dunder Mifflin Scranton regional branch", null);
     getIdentityAPI().addGroup("sales", "Scranton Sales team", "Dunder Mifflin Sales", scrantonGroup.getUUID());
-    getIdentityAPI().addGroup("accountancy", "Scranton Accountancy", "Dunder Mifflin Scranton accountancy", scrantonGroup.getUUID());
+    getIdentityAPI().addGroup("accountancy", "Scranton Accountancy", "Dunder Mifflin Scranton accountancy",
+        scrantonGroup.getUUID());
     getIdentityAPI().addGroup("hr", "Scranton HR", "Dunder Mifflin Scranton HR", scrantonGroup.getUUID());
 
-    List<Group> allGroups = getIdentityAPI().getAllGroups();
-    assertEquals(5, allGroups.size());    
+    final List<Group> allGroups = getIdentityAPI().getAllGroups();
+    assertEquals(5, allGroups.size());
 
-    int numberOfGroups = getIdentityAPI().getNumberOfGroups();
+    final int numberOfGroups = getIdentityAPI().getNumberOfGroups();
     assertEquals(allGroups.size(), numberOfGroups);
 
     List<Group> groups = getIdentityAPI().getGroups(0, 2, GroupCriterion.LABEL_ASC);
@@ -861,15 +959,17 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetGroupsOrderByNameDesc() throws Exception {
-    Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton branch", "Dunder Mifflin Scranton regional branch", null);
+    final Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton branch",
+        "Dunder Mifflin Scranton regional branch", null);
     getIdentityAPI().addGroup("sales", "Scranton Sales team", "Dunder Mifflin Sales", scrantonGroup.getUUID());
-    getIdentityAPI().addGroup("accountancy", "Scranton accountancy", "Dunder Mifflin Scranton accountancy", scrantonGroup.getUUID());
+    getIdentityAPI().addGroup("accountancy", "Scranton accountancy", "Dunder Mifflin Scranton accountancy",
+        scrantonGroup.getUUID());
     getIdentityAPI().addGroup("hr", "Scranton HR", "Dunder Mifflin Scranton HR", scrantonGroup.getUUID());
 
-    List<Group> allGroups = getIdentityAPI().getAllGroups();
-    assertEquals(5, allGroups.size());    
+    final List<Group> allGroups = getIdentityAPI().getAllGroups();
+    assertEquals(5, allGroups.size());
 
-    int numberOfGroups = getIdentityAPI().getNumberOfGroups();
+    final int numberOfGroups = getIdentityAPI().getNumberOfGroups();
     assertEquals(allGroups.size(), numberOfGroups);
 
     List<Group> groups = getIdentityAPI().getGroups(0, 2, GroupCriterion.NAME_DESC);
@@ -887,15 +987,17 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetGroupsOrderByLabelDesc() throws Exception {
-    Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton Branch", "Dunder Mifflin Scranton regional branch", null);
+    final Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton Branch",
+        "Dunder Mifflin Scranton regional branch", null);
     getIdentityAPI().addGroup("sales", "Scranton Sales team", "Dunder Mifflin Sales", scrantonGroup.getUUID());
-    getIdentityAPI().addGroup("accountancy", "Scranton Accountancy", "Dunder Mifflin Scranton accountancy", scrantonGroup.getUUID());
+    getIdentityAPI().addGroup("accountancy", "Scranton Accountancy", "Dunder Mifflin Scranton accountancy",
+        scrantonGroup.getUUID());
     getIdentityAPI().addGroup("hr", "Scranton HR", "Dunder Mifflin Scranton HR", scrantonGroup.getUUID());
 
-    List<Group> allGroups = getIdentityAPI().getAllGroups();
-    assertEquals(5, allGroups.size());    
+    final List<Group> allGroups = getIdentityAPI().getAllGroups();
+    assertEquals(5, allGroups.size());
 
-    int numberOfGroups = getIdentityAPI().getNumberOfGroups();
+    final int numberOfGroups = getIdentityAPI().getNumberOfGroups();
     assertEquals(allGroups.size(), numberOfGroups);
 
     List<Group> groups = getIdentityAPI().getGroups(0, 2, GroupCriterion.LABEL_DESC);
@@ -914,18 +1016,21 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetChildrenGroupsOrderByNameAsc() throws Exception {
-    Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton Branch", "Dunder Mifflin Scranton regional branch", null);
+    final Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton Branch",
+        "Dunder Mifflin Scranton regional branch", null);
     getIdentityAPI().addGroup("sales", "Scranton Sales team", "Dunder Mifflin Sales", scrantonGroup.getUUID());
-    getIdentityAPI().addGroup("accountancy", "Scranton Accountancy", "Dunder Mifflin Scranton accountancy", scrantonGroup.getUUID());
+    getIdentityAPI().addGroup("accountancy", "Scranton Accountancy", "Dunder Mifflin Scranton accountancy",
+        scrantonGroup.getUUID());
     getIdentityAPI().addGroup("hr", "Scranton HR", "Dunder Mifflin Scranton HR", scrantonGroup.getUUID());
 
-    List<Group> allChildrenGroups = getIdentityAPI().getChildrenGroupsByUUID(scrantonGroup.getUUID());
+    final List<Group> allChildrenGroups = getIdentityAPI().getChildrenGroupsByUUID(scrantonGroup.getUUID());
     assertEquals(3, allChildrenGroups.size());
 
-    int numberOfChildrenGroups = getIdentityAPI().getNumberOfChildrenGroups(scrantonGroup.getUUID());
+    final int numberOfChildrenGroups = getIdentityAPI().getNumberOfChildrenGroups(scrantonGroup.getUUID());
     assertEquals(allChildrenGroups.size(), numberOfChildrenGroups);
 
-    List<Group> childrenGroups = getIdentityAPI().getChildrenGroups(scrantonGroup.getUUID(), 0, 2, GroupCriterion.NAME_ASC);
+    List<Group> childrenGroups = getIdentityAPI().getChildrenGroups(scrantonGroup.getUUID(), 0, 2,
+        GroupCriterion.NAME_ASC);
     assertEquals(2, childrenGroups.size());
     assertEquals("accountancy", childrenGroups.get(0).getName());
     assertEquals("hr", childrenGroups.get(1).getName());
@@ -937,18 +1042,21 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetChildrenGroupsOrderByLabelAsc() throws Exception {
-    Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton Branch", "Dunder Mifflin Scranton regional branch", null);
+    final Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton Branch",
+        "Dunder Mifflin Scranton regional branch", null);
     getIdentityAPI().addGroup("sales", "Scranton Sales team", "Dunder Mifflin Sales", scrantonGroup.getUUID());
-    getIdentityAPI().addGroup("accountancy", "Scranton Accountancy", "Dunder Mifflin Scranton accountancy", scrantonGroup.getUUID());
+    getIdentityAPI().addGroup("accountancy", "Scranton Accountancy", "Dunder Mifflin Scranton accountancy",
+        scrantonGroup.getUUID());
     getIdentityAPI().addGroup("hr", "Scranton HR", "Dunder Mifflin Scranton HR", scrantonGroup.getUUID());
 
-    List<Group> allChildrenGroups = getIdentityAPI().getChildrenGroupsByUUID(scrantonGroup.getUUID());
+    final List<Group> allChildrenGroups = getIdentityAPI().getChildrenGroupsByUUID(scrantonGroup.getUUID());
     assertEquals(3, allChildrenGroups.size());
 
-    int numberOfChildrenGroups = getIdentityAPI().getNumberOfChildrenGroups(scrantonGroup.getUUID());
+    final int numberOfChildrenGroups = getIdentityAPI().getNumberOfChildrenGroups(scrantonGroup.getUUID());
     assertEquals(allChildrenGroups.size(), numberOfChildrenGroups);
 
-    List<Group> childrenGroups = getIdentityAPI().getChildrenGroups(scrantonGroup.getUUID(), 0, 2, GroupCriterion.LABEL_ASC);
+    List<Group> childrenGroups = getIdentityAPI().getChildrenGroups(scrantonGroup.getUUID(), 0, 2,
+        GroupCriterion.LABEL_ASC);
     assertEquals(2, childrenGroups.size());
     assertEquals("accountancy", childrenGroups.get(0).getName());
     assertEquals("hr", childrenGroups.get(1).getName());
@@ -960,18 +1068,21 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetChildrenGroupsOrderByNameDesc() throws Exception {
-    Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton Branch", "Dunder Mifflin Scranton regional branch", null);
+    final Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton Branch",
+        "Dunder Mifflin Scranton regional branch", null);
     getIdentityAPI().addGroup("sales", "Scranton Sales team", "Dunder Mifflin Sales", scrantonGroup.getUUID());
-    getIdentityAPI().addGroup("accountancy", "Scranton Accountancy", "Dunder Mifflin Scranton accountancy", scrantonGroup.getUUID());
+    getIdentityAPI().addGroup("accountancy", "Scranton Accountancy", "Dunder Mifflin Scranton accountancy",
+        scrantonGroup.getUUID());
     getIdentityAPI().addGroup("hr", "Scranton HR", "Dunder Mifflin Scranton HR", scrantonGroup.getUUID());
 
-    List<Group> allChildrenGroups = getIdentityAPI().getChildrenGroupsByUUID(scrantonGroup.getUUID());
+    final List<Group> allChildrenGroups = getIdentityAPI().getChildrenGroupsByUUID(scrantonGroup.getUUID());
     assertEquals(3, allChildrenGroups.size());
 
-    int numberOfChildrenGroups = getIdentityAPI().getNumberOfChildrenGroups(scrantonGroup.getUUID());
+    final int numberOfChildrenGroups = getIdentityAPI().getNumberOfChildrenGroups(scrantonGroup.getUUID());
     assertEquals(allChildrenGroups.size(), numberOfChildrenGroups);
 
-    List<Group> childrenGroups = getIdentityAPI().getChildrenGroups(scrantonGroup.getUUID(), 0, 2, GroupCriterion.NAME_DESC);
+    List<Group> childrenGroups = getIdentityAPI().getChildrenGroups(scrantonGroup.getUUID(), 0, 2,
+        GroupCriterion.NAME_DESC);
     assertEquals(2, childrenGroups.size());
     assertEquals("sales", childrenGroups.get(0).getName());
     assertEquals("hr", childrenGroups.get(1).getName());
@@ -983,18 +1094,21 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetChildrenGroupsOrderByLabelDesc() throws Exception {
-    Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton Branch", "Dunder Mifflin Scranton regional branch", null);
+    final Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton Branch",
+        "Dunder Mifflin Scranton regional branch", null);
     getIdentityAPI().addGroup("sales", "Scranton Sales team", "Dunder Mifflin Sales", scrantonGroup.getUUID());
-    getIdentityAPI().addGroup("accountancy", "Scranton Accountancy", "Dunder Mifflin Scranton accountancy", scrantonGroup.getUUID());
+    getIdentityAPI().addGroup("accountancy", "Scranton Accountancy", "Dunder Mifflin Scranton accountancy",
+        scrantonGroup.getUUID());
     getIdentityAPI().addGroup("hr", "Scranton HR", "Dunder Mifflin Scranton HR", scrantonGroup.getUUID());
 
-    List<Group> allChildrenGroups = getIdentityAPI().getChildrenGroupsByUUID(scrantonGroup.getUUID());
+    final List<Group> allChildrenGroups = getIdentityAPI().getChildrenGroupsByUUID(scrantonGroup.getUUID());
     assertEquals(3, allChildrenGroups.size());
 
-    int numberOfChildrenGroups = getIdentityAPI().getNumberOfChildrenGroups(scrantonGroup.getUUID());
+    final int numberOfChildrenGroups = getIdentityAPI().getNumberOfChildrenGroups(scrantonGroup.getUUID());
     assertEquals(allChildrenGroups.size(), numberOfChildrenGroups);
 
-    List<Group> childrenGroups = getIdentityAPI().getChildrenGroups(scrantonGroup.getUUID(), 0, 2, GroupCriterion.LABEL_DESC);
+    List<Group> childrenGroups = getIdentityAPI().getChildrenGroups(scrantonGroup.getUUID(), 0, 2,
+        GroupCriterion.LABEL_DESC);
     assertEquals(2, childrenGroups.size());
     assertEquals("sales", childrenGroups.get(0).getName());
     assertEquals("hr", childrenGroups.get(1).getName());
@@ -1006,17 +1120,24 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testAddRemoveMembershipsToUser() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "michael", "scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "dwight", "schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    Role managerRole = getIdentityAPI().addRole("regionalmanager", "regional manager", "regional branch manager");
-    Role assistantRole = getIdentityAPI().addRole("assistantregionalmanager", "assistant regional manager", "assistant regional branch manager");
-    Role salesmanRole = getIdentityAPI().addRole("salesmanRole", "salesman role", "Dunder Mifflin salesman");
-    Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton branch", "Dunder Mifflin Scranton regional branch", null);
-    Membership managerMembership = getIdentityAPI().getMembershipForRoleAndGroup(managerRole.getUUID(), scrantonGroup.getUUID());
+    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "michael", "scott", "Mr", "Regional Manager",
+        null, null);
+    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "dwight", "schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final Role managerRole = getIdentityAPI().addRole("regionalmanager", "regional manager", "regional branch manager");
+    final Role assistantRole = getIdentityAPI().addRole("assistantregionalmanager", "assistant regional manager",
+        "assistant regional branch manager");
+    final Role salesmanRole = getIdentityAPI().addRole("salesmanRole", "salesman role", "Dunder Mifflin salesman");
+    final Group scrantonGroup = getIdentityAPI().addGroup("scranton", "Scranton branch",
+        "Dunder Mifflin Scranton regional branch", null);
+    final Membership managerMembership = getIdentityAPI().getMembershipForRoleAndGroup(managerRole.getUUID(),
+        scrantonGroup.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), managerMembership.getUUID());
-    Membership salesmanMembership = getIdentityAPI().getMembershipForRoleAndGroup(salesmanRole.getUUID(), scrantonGroup.getUUID());
-    Membership assistantMembership = getIdentityAPI().getMembershipForRoleAndGroup(assistantRole.getUUID(), scrantonGroup.getUUID());
-    Set<String> dwightsMemberships = new HashSet<String>();
+    final Membership salesmanMembership = getIdentityAPI().getMembershipForRoleAndGroup(salesmanRole.getUUID(),
+        scrantonGroup.getUUID());
+    final Membership assistantMembership = getIdentityAPI().getMembershipForRoleAndGroup(assistantRole.getUUID(),
+        scrantonGroup.getUUID());
+    final Set<String> dwightsMemberships = new HashSet<String>();
     dwightsMemberships.add(salesmanMembership.getUUID());
     dwightsMemberships.add(assistantMembership.getUUID());
     getIdentityAPI().addMembershipsToUser(dwight.getUUID(), dwightsMemberships);
@@ -1052,7 +1173,7 @@ public class IdentityAPITest extends APITestCase {
     dwightMemberships = dwight.getMemberships();
     assertEquals(1, dwightMemberships.size());
 
-    Set<String> michaelsMembershipUUIDs = new HashSet<String>();
+    final Set<String> michaelsMembershipUUIDs = new HashSet<String>();
     michaelsMembershipUUIDs.add(salesmanMembership.getUUID());
     michaelsMembershipUUIDs.add(managerMembership.getUUID());
     getIdentityAPI().setUserMemberships(michael.getUUID(), michaelsMembershipUUIDs);
@@ -1068,20 +1189,20 @@ public class IdentityAPITest extends APITestCase {
     michaelsMemberships = michael.getMemberships();
     assertEquals(0, michaelsMemberships.size());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     getIdentityAPI().removeUsers(userUUIDs);
   }
 
   public void testGroupPaths() throws Exception {
-    Group firstLevel = getIdentityAPI().addGroup("first-level", "fl", "fd", null);
-    Group secondLevel = getIdentityAPI().addGroup("second-level", "sl", "sd", firstLevel.getUUID());
-    Group thirdLevel = getIdentityAPI().addGroup("third-level", "tl", "td", secondLevel.getUUID());
-    Group thirdfirstLevel = getIdentityAPI().addGroup("first-level", "ffl", "ffd", thirdLevel.getUUID());
-    Group thirdsecondLevel = getIdentityAPI().addGroup("second-level", "fsl", "fsd", thirdfirstLevel.getUUID());
+    final Group firstLevel = getIdentityAPI().addGroup("first-level", "fl", "fd", null);
+    final Group secondLevel = getIdentityAPI().addGroup("second-level", "sl", "sd", firstLevel.getUUID());
+    final Group thirdLevel = getIdentityAPI().addGroup("third-level", "tl", "td", secondLevel.getUUID());
+    final Group thirdfirstLevel = getIdentityAPI().addGroup("first-level", "ffl", "ffd", thirdLevel.getUUID());
+    final Group thirdsecondLevel = getIdentityAPI().addGroup("second-level", "fsl", "fsd", thirdfirstLevel.getUUID());
 
-    List<String> hierarchy = new ArrayList<String>();
+    final List<String> hierarchy = new ArrayList<String>();
     hierarchy.add("first-level");
 
     Group group = getIdentityAPI().getGroupUsingPath(hierarchy);
@@ -1104,13 +1225,13 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(firstLevel.getUUID());
   }
 
-  private void groupsEqual(Group expected, Group actual) {
+  private void groupsEqual(final Group expected, final Group actual) {
     assertEquals(expected.getUUID(), actual.getUUID());
     assertEquals(expected.getName(), actual.getName());
     assertEquals(expected.getLabel(), actual.getLabel());
     assertEquals(expected.getDescription(), actual.getDescription());
-    Group parentGroup = expected.getParentGroup();
-    Group actualParentGroup = actual.getParentGroup();
+    final Group parentGroup = expected.getParentGroup();
+    final Group actualParentGroup = actual.getParentGroup();
     if (parentGroup == null) {
       assertNull(actual.getParentGroup());
     } else if (actualParentGroup != null) {
@@ -1121,23 +1242,27 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUserInRoleOrderByFirstNameAsc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    Role role = getIdentityAPI().addRole("arole", "role", "A role");
-    Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
-    Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
+    final Role role = getIdentityAPI().addRole("arole", "role", "A role");
+    final Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
+    final Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(dwight.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(jim.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(pam.getUUID(), memberShip.getUUID());
 
-    List<User> allUsersInRole = getIdentityAPI().getAllUsersInRole(role.getUUID());
+    final List<User> allUsersInRole = getIdentityAPI().getAllUsersInRole(role.getUUID());
     assertEquals(4, allUsersInRole.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsersInRole(role.getUUID());
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsersInRole(role.getUUID());
     assertEquals(allUsersInRole.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsersInRole(role.getUUID(), 0, 2, UserCriterion.FIRST_NAME_ASC);
@@ -1153,7 +1278,7 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(group.getUUID());
     getIdentityAPI().removeRoleByUUID(role.getUUID());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -1162,23 +1287,27 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUserInRoleOrderByLastNameAsc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    Role role = getIdentityAPI().addRole("arole", "role", "A role");
-    Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
-    Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
+    final Role role = getIdentityAPI().addRole("arole", "role", "A role");
+    final Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
+    final Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(dwight.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(jim.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(pam.getUUID(), memberShip.getUUID());
 
-    List<User> allUsersInRole = getIdentityAPI().getAllUsersInRole(role.getUUID());
+    final List<User> allUsersInRole = getIdentityAPI().getAllUsersInRole(role.getUUID());
     assertEquals(4, allUsersInRole.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsersInRole(role.getUUID());
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsersInRole(role.getUUID());
     assertEquals(allUsersInRole.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsersInRole(role.getUUID(), 0, 2, UserCriterion.LAST_NAME_ASC);
@@ -1194,7 +1323,7 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(group.getUUID());
     getIdentityAPI().removeRoleByUUID(role.getUUID());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -1205,23 +1334,27 @@ public class IdentityAPITest extends APITestCase {
 
   public void testGetUserInRoleOrderByUsernameAsc() throws Exception {
 
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    Role role = getIdentityAPI().addRole("arole", "role", "A role");
-    Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
-    Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
+    final Role role = getIdentityAPI().addRole("arole", "role", "A role");
+    final Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
+    final Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(dwight.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(jim.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(pam.getUUID(), memberShip.getUUID());
 
-    List<User> allUsersInRole = getIdentityAPI().getAllUsersInRole(role.getUUID());
+    final List<User> allUsersInRole = getIdentityAPI().getAllUsersInRole(role.getUUID());
     assertEquals(4, allUsersInRole.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsersInRole(role.getUUID());
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsersInRole(role.getUUID());
     assertEquals(allUsersInRole.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsersInRole(role.getUUID(), 0, 2, UserCriterion.USER_NAME_ASC);
@@ -1237,7 +1370,7 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(group.getUUID());
     getIdentityAPI().removeRoleByUUID(role.getUUID());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -1247,23 +1380,27 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUserInRoleOrderByFirstNameDesc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    Role role = getIdentityAPI().addRole("arole", "role", "A role");
-    Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
-    Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
+    final Role role = getIdentityAPI().addRole("arole", "role", "A role");
+    final Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
+    final Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(dwight.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(jim.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(pam.getUUID(), memberShip.getUUID());
 
-    List<User> allUsersInRole = getIdentityAPI().getAllUsersInRole(role.getUUID());
+    final List<User> allUsersInRole = getIdentityAPI().getAllUsersInRole(role.getUUID());
     assertEquals(4, allUsersInRole.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsersInRole(role.getUUID());
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsersInRole(role.getUUID());
     assertEquals(allUsersInRole.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsersInRole(role.getUUID(), 0, 2, UserCriterion.FIRST_NAME_DESC);
@@ -1279,7 +1416,7 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(group.getUUID());
     getIdentityAPI().removeRoleByUUID(role.getUUID());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -1288,23 +1425,27 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUserInRoleOrderByLastNameDesc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    Role role = getIdentityAPI().addRole("arole", "role", "A role");
-    Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
-    Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
+    final Role role = getIdentityAPI().addRole("arole", "role", "A role");
+    final Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
+    final Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(dwight.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(jim.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(pam.getUUID(), memberShip.getUUID());
 
-    List<User> allUsersInRole = getIdentityAPI().getAllUsersInRole(role.getUUID());
+    final List<User> allUsersInRole = getIdentityAPI().getAllUsersInRole(role.getUUID());
     assertEquals(4, allUsersInRole.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsersInRole(role.getUUID());
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsersInRole(role.getUUID());
     assertEquals(allUsersInRole.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsersInRole(role.getUUID(), 0, 2, UserCriterion.LAST_NAME_DESC);
@@ -1320,7 +1461,7 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(group.getUUID());
     getIdentityAPI().removeRoleByUUID(role.getUUID());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -1329,23 +1470,27 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUserInRoleOrderByUsernameDesc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    Role role = getIdentityAPI().addRole("arole", "role", "A role");
-    Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
-    Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
+    final Role role = getIdentityAPI().addRole("arole", "role", "A role");
+    final Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
+    final Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(dwight.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(jim.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(pam.getUUID(), memberShip.getUUID());
 
-    List<User> allUsersInRole = getIdentityAPI().getAllUsersInRole(role.getUUID());
+    final List<User> allUsersInRole = getIdentityAPI().getAllUsersInRole(role.getUUID());
     assertEquals(4, allUsersInRole.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsersInRole(role.getUUID());
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsersInRole(role.getUUID());
     assertEquals(allUsersInRole.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsersInRole(role.getUUID(), 0, 2, UserCriterion.USER_NAME_DESC);
@@ -1361,7 +1506,7 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(group.getUUID());
     getIdentityAPI().removeRoleByUUID(role.getUUID());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -1370,23 +1515,27 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUserInGroupOrderByFirstNameAsc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    Role role = getIdentityAPI().addRole("arole", "role", "A role");
-    Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
-    Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
+    final Role role = getIdentityAPI().addRole("arole", "role", "A role");
+    final Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
+    final Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(dwight.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(jim.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(pam.getUUID(), memberShip.getUUID());
 
-    List<User> allUsersInGroup = getIdentityAPI().getAllUsersInGroup(group.getUUID());
+    final List<User> allUsersInGroup = getIdentityAPI().getAllUsersInGroup(group.getUUID());
     assertEquals(4, allUsersInGroup.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsersInGroup(group.getUUID());
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsersInGroup(group.getUUID());
     assertEquals(allUsersInGroup.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsersInGroup(group.getUUID(), 0, 2, UserCriterion.FIRST_NAME_ASC);
@@ -1402,7 +1551,7 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(group.getUUID());
     getIdentityAPI().removeRoleByUUID(role.getUUID());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -1411,23 +1560,27 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUserInGroupOrderByLastNameAsc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    Role role = getIdentityAPI().addRole("arole", "role", "A role");
-    Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
-    Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
+    final Role role = getIdentityAPI().addRole("arole", "role", "A role");
+    final Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
+    final Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(dwight.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(jim.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(pam.getUUID(), memberShip.getUUID());
 
-    List<User> allUsersInGroup = getIdentityAPI().getAllUsersInGroup(group.getUUID());
+    final List<User> allUsersInGroup = getIdentityAPI().getAllUsersInGroup(group.getUUID());
     assertEquals(4, allUsersInGroup.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsersInGroup(group.getUUID());
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsersInGroup(group.getUUID());
     assertEquals(allUsersInGroup.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsersInGroup(group.getUUID(), 0, 2, UserCriterion.LAST_NAME_ASC);
@@ -1443,7 +1596,7 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(group.getUUID());
     getIdentityAPI().removeRoleByUUID(role.getUUID());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -1453,23 +1606,27 @@ public class IdentityAPITest extends APITestCase {
 
   public void testGetUserInGroupOrderByUsernameAsc() throws Exception {
 
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    Role role = getIdentityAPI().addRole("arole", "role", "A role");
-    Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
-    Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
+    final Role role = getIdentityAPI().addRole("arole", "role", "A role");
+    final Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
+    final Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(dwight.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(jim.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(pam.getUUID(), memberShip.getUUID());
 
-    List<User> allUsersInGroup = getIdentityAPI().getAllUsersInGroup(group.getUUID());
+    final List<User> allUsersInGroup = getIdentityAPI().getAllUsersInGroup(group.getUUID());
     assertEquals(4, allUsersInGroup.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsersInGroup(group.getUUID());
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsersInGroup(group.getUUID());
     assertEquals(allUsersInGroup.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsersInGroup(group.getUUID(), 0, 2, UserCriterion.USER_NAME_ASC);
@@ -1485,7 +1642,7 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(group.getUUID());
     getIdentityAPI().removeRoleByUUID(role.getUUID());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -1495,23 +1652,27 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUserInGroupOrderByFirstNameDesc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    Role role = getIdentityAPI().addRole("arole", "role", "A role");
-    Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
-    Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
+    final Role role = getIdentityAPI().addRole("arole", "role", "A role");
+    final Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
+    final Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(dwight.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(jim.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(pam.getUUID(), memberShip.getUUID());
 
-    List<User> allUsersInGroup = getIdentityAPI().getAllUsersInGroup(group.getUUID());
+    final List<User> allUsersInGroup = getIdentityAPI().getAllUsersInGroup(group.getUUID());
     assertEquals(4, allUsersInGroup.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsersInGroup(group.getUUID());
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsersInGroup(group.getUUID());
     assertEquals(allUsersInGroup.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsersInGroup(group.getUUID(), 0, 2, UserCriterion.FIRST_NAME_DESC);
@@ -1527,7 +1688,7 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(group.getUUID());
     getIdentityAPI().removeRoleByUUID(role.getUUID());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -1536,23 +1697,27 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUserInGroupOrderByLastNameDesc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    Role role = getIdentityAPI().addRole("arole", "role", "A role");
-    Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
-    Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
+    final Role role = getIdentityAPI().addRole("arole", "role", "A role");
+    final Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
+    final Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(dwight.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(jim.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(pam.getUUID(), memberShip.getUUID());
 
-    List<User> allUsersInGroup = getIdentityAPI().getAllUsersInGroup(group.getUUID());
+    final List<User> allUsersInGroup = getIdentityAPI().getAllUsersInGroup(group.getUUID());
     assertEquals(4, allUsersInGroup.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsersInGroup(group.getUUID());
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsersInGroup(group.getUUID());
     assertEquals(allUsersInGroup.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsersInGroup(group.getUUID(), 0, 2, UserCriterion.LAST_NAME_DESC);
@@ -1568,7 +1733,7 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(group.getUUID());
     getIdentityAPI().removeRoleByUUID(role.getUUID());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -1577,23 +1742,27 @@ public class IdentityAPITest extends APITestCase {
   }
 
   public void testGetUserInGroupOrderByUsernameDesc() throws Exception {
-    User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr", "Regional Manager", null, null);
-    User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr", "Salesman - Assistant Regional Manager", michael.getUUID(), null);
-    User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman", michael.getUUID(), null);
-    User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman", michael.getUUID(), null);
+    final User michael = getIdentityAPI().addUser("michael.scott", "bestboss", "Michael", "Scott", "Mr",
+        "Regional Manager", null, null);
+    final User dwight = getIdentityAPI().addUser("dwight.schrute", "battlestargalactica", "Dwight", "Schrute", "Mr",
+        "Salesman - Assistant Regional Manager", michael.getUUID(), null);
+    final User jim = getIdentityAPI().addUser("jim.halpert", "apassword", "Jim", "Halpert", "Mr", "Salesman",
+        michael.getUUID(), null);
+    final User pam = getIdentityAPI().addUser("pam.halpert", "anotherpassword", "Pam", "Halpert", "Mrs", "Salesman",
+        michael.getUUID(), null);
 
-    Role role = getIdentityAPI().addRole("arole", "role", "A role");
-    Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
-    Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
+    final Role role = getIdentityAPI().addRole("arole", "role", "A role");
+    final Group group = getIdentityAPI().addGroup("agroup", "Group", "A Group", null);
+    final Membership memberShip = getIdentityAPI().getMembershipForRoleAndGroup(role.getUUID(), group.getUUID());
     getIdentityAPI().addMembershipToUser(michael.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(dwight.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(jim.getUUID(), memberShip.getUUID());
     getIdentityAPI().addMembershipToUser(pam.getUUID(), memberShip.getUUID());
 
-    List<User> allUsersInGroup = getIdentityAPI().getAllUsersInGroup(group.getUUID());
+    final List<User> allUsersInGroup = getIdentityAPI().getAllUsersInGroup(group.getUUID());
     assertEquals(4, allUsersInGroup.size());
 
-    int numberOfMetadata = getIdentityAPI().getNumberOfUsersInGroup(group.getUUID());
+    final int numberOfMetadata = getIdentityAPI().getNumberOfUsersInGroup(group.getUUID());
     assertEquals(allUsersInGroup.size(), numberOfMetadata);
 
     List<User> users = getIdentityAPI().getUsersInGroup(group.getUUID(), 0, 2, UserCriterion.USER_NAME_DESC);
@@ -1609,7 +1778,7 @@ public class IdentityAPITest extends APITestCase {
     getIdentityAPI().removeGroupByUUID(group.getUUID());
     getIdentityAPI().removeRoleByUUID(role.getUUID());
 
-    Set<String> userUUIDs = new HashSet<String>();
+    final Set<String> userUUIDs = new HashSet<String>();
     userUUIDs.add(michael.getUUID());
     userUUIDs.add(dwight.getUUID());
     userUUIDs.add(jim.getUUID());
@@ -1620,16 +1789,41 @@ public class IdentityAPITest extends APITestCase {
   public void testDeleteAUserWithMetaData() throws Exception {
     Map<String, String> metadata = new HashMap<String, String>();
     metadata.put("meta", "data");
-    ProfileMetadata meta = getIdentityAPI().addProfileMetadata("meta");
-    User jane = getIdentityAPI().addUser("jane", "bpm", "Jane", "Doe", "", "", null, metadata);
+    final ProfileMetadata meta = getIdentityAPI().addProfileMetadata("meta");
+    final User jane = getIdentityAPI().addUser("jane", "bpm", "Jane", "Doe", "", "", null, metadata);
 
     metadata = new HashMap<String, String>();
     metadata.put("meta", "meta");
-    User joe  = getIdentityAPI().addUser("joe", "bpm", "Joe", "Doe", "", "", null, metadata);
+    final User joe = getIdentityAPI().addUser("joe", "bpm", "Joe", "Doe", "", "", null, metadata);
 
     getIdentityAPI().removeUserByUUID(jane.getUUID());
     getIdentityAPI().removeUserByUUID(joe.getUUID());
     getIdentityAPI().removeProfileMetadataByUUID(meta.getUUID());
+  }
+
+  public void testDeleteGroups() throws BonitaException {
+    final Group parentGroup = getIdentityAPI().addGroup("parentGroup", null);
+    final Group childGroup = getIdentityAPI().addGroup("childGroup", parentGroup.getUUID());
+
+    final List<String> groupUUIDs = new ArrayList<String>(2);
+    groupUUIDs.add(parentGroup.getUUID());
+    groupUUIDs.add(childGroup.getUUID());
+    getIdentityAPI().removeGroups(groupUUIDs);
+  }
+
+  public void testRemoveGroupHierarchy() throws BonitaException {
+    final Group parentGroup = getIdentityAPI().addGroup("parentGroup", null);
+    final Group childGroup = getIdentityAPI().addGroup("childGroup", parentGroup.getUUID());
+    final Group grandChildGroup = getIdentityAPI().addGroup("grandChildGroup", childGroup.getUUID());
+
+    getIdentityAPI().removeGroupByUUID(parentGroup.getUUID());
+
+    try {
+      getIdentityAPI().getGroupByUUID(grandChildGroup.getUUID());
+      fail("The grand parent group has been deleted so the grand child must be deleted as well");
+    } catch (final GroupNotFoundException e) {
+      // TODO: handle exception
+    }
   }
 
 }

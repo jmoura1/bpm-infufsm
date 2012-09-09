@@ -26,7 +26,7 @@ public interface ConsoleConstants extends com.google.gwt.i18n.client.Constants {
     public final String HISTORY_TOKEN_PARAM_PREFIX = "his:";
     public final String JOURNAL_TOKEN_PARAM_PREFIX = "jou:";
     public final String TOKEN_SEPARATOR = "/";
-    public final String BOS_VERSION = "5.6.1";
+    public final String BOS_VERSION = "5.7.2";
     public final ReportUUID DEFAULT_REPORT_UUID = new ReportUUID("Logged user steps by status (Thumbnail)");
     public final ReportUUID DEFAULT_ADMIN_REPORT_UUID = new ReportUUID("admin (default)");
     public final String CurrentUser = "BonitaCurrentUser";

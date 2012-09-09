@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2007  Bull S. A. S.
+ * Copyright (C) 2007 Bull S. A. S.
  * Bull, Rue Jean Jaures, B.P.68, 78340, Les Clayes-sous-Bois
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -10,6 +10,8 @@
  * You should have received a copy of the GNU Lesser General Public License along with this
  * program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth
  * Floor, Boston, MA  02110-1301, USA.
+ * 
+ * Modified by Matthieu Chaffotte - BonitaSoft
  **/
 package org.ow2.bonita.util;
 
@@ -28,26 +30,22 @@ public class SimpleCallbackHandler implements CallbackHandler {
   private final String name;
   private final String password;
 
-  public SimpleCallbackHandler(final String name, String password) {
+  public SimpleCallbackHandler(final String name, final String password) {
     this.name = name;
     this.password = password;
   }
-  
+
   @Deprecated
-  public SimpleCallbackHandler(final String name, String password, boolean emptyLoginPermitted) {
-    this (name, password);
-    if(!emptyLoginPermitted){
-      if(password==null || password.length() ==0){
-        throw new IllegalArgumentException();
-      }
+  public SimpleCallbackHandler(final String name, final String password, final boolean emptyLoginPermitted) {
+    this(name, password);
+    if (!emptyLoginPermitted && (password == null || password.length() == 0)) {
+      throw new IllegalArgumentException();
     }
   }
 
-  /* (non-Javadoc)
-   * @see javax.security.auth.callback.CallbackHandler#handle(javax.security.auth.callback.Callback[])
-   */
-  public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-    for (Callback callback : callbacks) {
+  @Override
+  public void handle(final Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+    for (final Callback callback : callbacks) {
       if (callback instanceof NameCallback) {
         final NameCallback nc = (NameCallback) callback;
         nc.setName(name);
@@ -57,5 +55,5 @@ public class SimpleCallbackHandler implements CallbackHandler {
       }
     }
   }
-}
 
+}

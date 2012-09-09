@@ -193,8 +193,10 @@
 			<xsd:element name="remove-label" type="xsd:string" minOccurs="0" />
 			<xsd:element name="remove-label-style" type="xsd:string" minOccurs="0" />
 			<xsd:element name="remove-title" type="xsd:string" minOccurs="0" />
+			<xsd:element name="display-condition" type="xsd:string" minOccurs="0" />
 			<xsd:element name="dependencies" type="Dependencies" minOccurs="0" />
-			<xsd:element name="display-after-event" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="display-before-event" type="xsd:string" minOccurs="0" />
+			<xsd:element name="display-after-event" type="xsd:string" minOccurs="0" />
 			<xsd:element name="value-after-event" type="FieldValue" minOccurs="0" />
 			<xsd:element name="widgets" type="Widgets" minOccurs="0" />
 			<xsd:element name="rows-styles" type="RowsStyles" minOccurs="0" />

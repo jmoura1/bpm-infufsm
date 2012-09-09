@@ -437,6 +437,46 @@ public class FormWidget implements Serializable, Comparable<FormWidget> {
     private FormSubTitle subTitle;
     
     /**
+     * use this id can get the initial value expression
+     */
+    private String initialValueExpressionId;
+    
+    /**
+     * use this id can get the initial value connectors
+     */
+    private String initialValueConnectorsId;
+    
+    /**
+     * use this id can get the available values expression
+     */
+    private String availableValuesExpressionId;
+    
+    /**
+     * use this id can get the available values connectors
+     */
+    private String availableValuesConnectorsId;
+    
+    /**
+     * use this id can get the value after event expression
+     */
+    private String valueAfterEventExpId;
+    
+    /**
+     * use this id can get the value after event connectors
+     */
+    private String valueAfterEventConnectorsId;
+    
+    /**
+     * use this id can get the available values after event expression
+     */
+    private String availableValuesAfterEventExpId;
+    
+    /**
+     * use this id can get the available values after event connectors
+     */
+    private String availableValuesAfterEventConnectorsId;
+    
+    /**
      * Constructor
      * @param id
      * @param label
@@ -1113,6 +1153,70 @@ public class FormWidget implements Serializable, Comparable<FormWidget> {
 	public String getPopupToolTip() {
 		return popupToolTip;
 	}
+	
+    public String getInitialValueExpressionId() {
+        return initialValueExpressionId;
+    }
+
+    public void setInitialValueExpressionId(String initialValueExpressionId) {
+        this.initialValueExpressionId = initialValueExpressionId;
+    }
+
+    public String getInitialValueConnectorsId() {
+        return initialValueConnectorsId;
+    }
+
+    public void setInitialValueConnectorsId(String initialValueConnectorsId) {
+        this.initialValueConnectorsId = initialValueConnectorsId;
+    }
+
+    public String getAvailableValuesExpressionId() {
+        return availableValuesExpressionId;
+    }
+
+    public void setAvailableValuesExpressionId(String availableValuesExpressionId) {
+        this.availableValuesExpressionId = availableValuesExpressionId;
+    }
+
+    public String getAvailableValuesConnectorsId() {
+        return availableValuesConnectorsId;
+    }
+
+    public void setAvailableValuesConnectorsId(String availableValuesConnectorsId) {
+        this.availableValuesConnectorsId = availableValuesConnectorsId;
+    }
+	
+    public String getValueAfterEventExpId() {
+        return valueAfterEventExpId;
+    }
+
+    public void setValueAfterEventExpId(String valueAfterEventExpId) {
+        this.valueAfterEventExpId = valueAfterEventExpId;
+    }
+    
+    public String getValueAfterEventConnectorsId() {
+        return valueAfterEventConnectorsId;
+    }
+
+    public void setValueAfterEventConnectorsId(String valueAfterEventConnectorsId) {
+        this.valueAfterEventConnectorsId = valueAfterEventConnectorsId;
+    }
+
+    public String getAvailableValuesAfterEventExpId() {
+        return availableValuesAfterEventExpId;
+    }
+
+    public void setAvailableValuesAfterEventExpId(String availableValuesAfterEventExpId) {
+        this.availableValuesAfterEventExpId = availableValuesAfterEventExpId;
+    }
+
+    public String getAvailableValuesAfterEventConnectorsId() {
+        return availableValuesAfterEventConnectorsId;
+    }
+
+    public void setAvailableValuesAfterEventConnectorsId(String availableValuesAfterEventConnectorsId) {
+        this.availableValuesAfterEventConnectorsId = availableValuesAfterEventConnectorsId;
+    }
 
     /**
      * Compare this form widget to another form widget using alphabetical order on their Id

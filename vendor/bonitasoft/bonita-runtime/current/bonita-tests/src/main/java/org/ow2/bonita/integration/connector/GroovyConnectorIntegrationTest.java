@@ -246,4 +246,31 @@ public class GroovyConnectorIntegrationTest extends APITestCase {
     getManagementAPI().disable(processUUID);
     getManagementAPI().deleteProcess(processUUID); 
   }
+
+  public void testGroovyConnectorInFinishOfActivityWithPropagate() throws Exception {
+      ProcessDefinition definition = 
+        ProcessBuilder.createProcess("groovy", "1.2")
+        .addBooleanData("running", false)
+        .addHuman("john")
+        .addHumanTask("groove", "john")
+        .addConnector(Event.taskOnFinish, GroovyConnector.class.getName(), true)
+        .addInputParameter("script", "running = true")
+        .done();
+
+      ProcessDefinition process = getManagementAPI().deploy(getBusinessArchive(
+          definition, getResourcesFromConnector(GroovyConnector.class), GroovyConnector.class));
+      ProcessDefinitionUUID processUUID = process.getUUID();
+      ProcessInstanceUUID instanceUUID = getRuntimeAPI().instantiateProcess(processUUID);
+      loginAs("john", "bpm");
+      Boolean actual = (Boolean) getQueryRuntimeAPI().getProcessInstanceVariable(instanceUUID, "running");
+      assertFalse(actual);
+      Set<TaskInstance> tasks = getQueryRuntimeAPI().getTasks(instanceUUID);
+      TaskInstance task = tasks.iterator().next();
+      getRuntimeAPI().executeTask(task.getUUID(), true);
+      actual = (Boolean) getQueryRuntimeAPI().getProcessInstanceVariable(instanceUUID, "running");
+      assertTrue(actual);
+
+      getManagementAPI().disable(processUUID);
+      getManagementAPI().deleteProcess(processUUID);
+    }
 }

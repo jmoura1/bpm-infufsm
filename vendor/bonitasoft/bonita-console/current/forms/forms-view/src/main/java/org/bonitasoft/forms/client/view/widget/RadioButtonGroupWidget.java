@@ -44,6 +44,8 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class RadioButtonGroupWidget extends Composite implements HasClickHandlers, ClickHandler, HasValueChangeHandlers<Boolean>, ValueChangeHandler<Boolean> {
 
+    protected static int radioButtonGroupIndex = 0;
+    
     /**
      * the flow panel used to display the widget
      */
@@ -60,9 +62,9 @@ public class RadioButtonGroupWidget extends Composite implements HasClickHandler
     protected String itemsStyle;
     
     /**
-     * The radio buttons group Id
+     * The radio buttons group name
      */
-    protected String radioButtonGroupId;
+    protected String radioButtonGroupName;
 
     /**
      * click handlers registered for the widget
@@ -80,17 +82,9 @@ public class RadioButtonGroupWidget extends Composite implements HasClickHandler
     protected boolean allowHTML;
     
     /**
-     * Constructor
-     * 
-     * @param radioButtonGroupId Id of the radio button group
-     * @param availableValues available values of the group
-     * @param initialValue initial value
-     * @param itemsStyle the css classes of each radio button
-     *            
+     * indicates if the widget instance is a child of a multiple element
      */
-    public RadioButtonGroupWidget(final String radioButtonGroupId, final List<FormFieldAvailableValue> availableValues, final String initialValue, final String itemsStyle) {
-        this(radioButtonGroupId, availableValues, initialValue, itemsStyle, false);
-    }
+    protected boolean isElementOfMultipleWidget;
     
     /**
      * Constructor
@@ -103,17 +97,34 @@ public class RadioButtonGroupWidget extends Composite implements HasClickHandler
      *            
      */
     public RadioButtonGroupWidget(final String radioButtonGroupId, final List<FormFieldAvailableValue> availableValues, final String initialValue, final String itemsStyle, final boolean allowHTML) {
-
-        flowPanel = new FlowPanel();
-        
-        this.radioButtonGroupId = radioButtonGroupId;
+        this(radioButtonGroupId, availableValues, initialValue, itemsStyle, allowHTML, false);
+    }
+    
+    /**
+     * Constructor
+     * 
+     * @param radioButtonGroupId Id of the radio button group
+     * @param availableValues available values of the group
+     * @param initialValue initial value
+     * @param itemsStyle the css classes of each radio button
+     * @param allowHTML allow HTML in the radio buttons labels
+     * @param isElementOfMultipleWidget indicates if the widget instance is a child of a multiple element
+     *            
+     */
+    public RadioButtonGroupWidget(final String radioButtonGroupId, final List<FormFieldAvailableValue> availableValues, final String initialValue, final String itemsStyle, final boolean allowHTML, final boolean isElementOfMultipleWidget) {
         
         this.itemsStyle = itemsStyle;
         
         this.allowHTML = allowHTML;
         
+        this.isElementOfMultipleWidget = isElementOfMultipleWidget;
+        
+        flowPanel = new FlowPanel();
+        
+        radioButtonGroupName = getRadioButtonGroupName(radioButtonGroupId);
+        
         for (final FormFieldAvailableValue availableValue : availableValues) {
-            final RadioButton radioButton = new RadioButton(radioButtonGroupId, availableValue.getLabel(), allowHTML);
+            final RadioButton radioButton = new RadioButton(radioButtonGroupName, availableValue.getLabel(), allowHTML);
             radioButton.addClickHandler(this);
             radioButton.addValueChangeHandler(this);
             radioButton.setFormValue(availableValue.getValue());
@@ -128,8 +139,29 @@ public class RadioButtonGroupWidget extends Composite implements HasClickHandler
             radioButtons.add(radioButton);
             flowPanel.add(radioButton);
         }
-
+        
         initWidget(flowPanel);
+    }
+    
+    /**
+     * Useful in case the groups of radio buttons is displayed in several widget group instances
+     * @param radioButtonGroupId the radio button definition Id
+     * @return a name that can be used for the radio button group instance
+     */
+    protected String getRadioButtonGroupName(final String radioButtonGroupId) {
+        
+        String radioButtonGroupName =  null;
+        if (isElementOfMultipleWidget) {
+            if (radioButtonGroupIndex == 0) {
+                radioButtonGroupName = radioButtonGroupId;
+            } else {
+                radioButtonGroupName = radioButtonGroupId + Integer.toString(radioButtonGroupIndex);
+            }
+            radioButtonGroupIndex++;
+        } else {
+            radioButtonGroupName = radioButtonGroupId;
+        }
+        return radioButtonGroupName;
     }
     
     /**
@@ -165,9 +197,9 @@ public class RadioButtonGroupWidget extends Composite implements HasClickHandler
             } else {
                 radioButton.setValue(false);
             }
-        }
-        if (fireEvents) {
-            ValueChangeEvent.fire(this, true);
+            if (fireEvents) {
+            	ValueChangeEvent.fire(radioButton, true);
+            }
         }
     }
     
@@ -178,10 +210,8 @@ public class RadioButtonGroupWidget extends Composite implements HasClickHandler
     public void setAvailableValues(final List<FormFieldAvailableValue> availableValues, final boolean fireEvents) {
         radioButtons.clear();
         flowPanel.clear();
-        clickHandlers.clear();
-        valueChangeHandlers.clear();
         for (final FormFieldAvailableValue availableValue : availableValues) {
-            final RadioButton radioButton = new RadioButton(radioButtonGroupId, availableValue.getLabel(), allowHTML);
+            final RadioButton radioButton = new RadioButton(radioButtonGroupName, availableValue.getLabel(), allowHTML);
             radioButton.addClickHandler(this);
             radioButton.addValueChangeHandler(this);
             radioButton.setFormValue(availableValue.getValue());
@@ -189,6 +219,9 @@ public class RadioButtonGroupWidget extends Composite implements HasClickHandler
             if (itemsStyle != null && itemsStyle.length() > 0) {
                 radioButton.addStyleName(itemsStyle);
             }
+            radioButton.addClickHandler(this);
+            radioButton.addValueChangeHandler(this);
+            radioButton.setFormValue(availableValue.getValue());
             radioButtons.add(radioButton);
             flowPanel.add(radioButton);
         }

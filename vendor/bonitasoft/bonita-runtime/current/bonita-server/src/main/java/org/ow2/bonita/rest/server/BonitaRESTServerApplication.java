@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010  BonitaSoft S.A.
+ * Copyright (C) 2010-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This library is free software; you can redistribute it and/or modify it under the terms
  * of the GNU Lesser General Public License as published by the Free Software Foundation
@@ -10,7 +10,8 @@
  * You should have received a copy of the GNU Lesser General Public License along with this
  * program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth
  * Floor, Boston, MA  02110-1301, USA.
- **/package org.ow2.bonita.rest.server;
+ **/
+package org.ow2.bonita.rest.server;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -30,30 +31,32 @@ import org.ow2.bonita.facade.rest.RESTRemoteWebAPIImpl;
 /**
  * 
  * @author Elias Ricken de Medeiros
- *
+ * 
  */
 public class BonitaRESTServerApplication extends Application {
-	HashSet<Object> singletons = new HashSet<Object>();
-	
-	public BonitaRESTServerApplication (){
-		//Add APIs
-		singletons.add(new RemoteBAMAPIImpl());
-		singletons.add(new RESTRemoteCommandAPIImpl());
-		singletons.add(new RESTRemoteIdentityAPIImpl());
-		singletons.add(new RESTRemoteManagementAPIImpl());
-		singletons.add(new RemoteQueryDefinitionAPIImpl());
-		singletons.add(new RESTRemoteQueryRuntimeAPIImpl());
-		singletons.add(new RESTRemoteRepairAPIImpl());
-		singletons.add(new RESTRemoteRuntimeAPIImpl());
-		singletons.add(new RESTRemoteWebAPIImpl());
-	}
+  HashSet<Object> singletons = new HashSet<Object>();
 
-	public Set<Object> getSingletons(){
-		return this.singletons;
-	}
-	
-	public Set<Class<?>> getClasses(){
-		HashSet<Class<?>> set = new HashSet<Class<?>>();
-		return set;
-	}
+  public BonitaRESTServerApplication() {
+    // Add APIs
+    singletons.add(new RemoteBAMAPIImpl());
+    singletons.add(new RESTRemoteCommandAPIImpl());
+    singletons.add(new RESTRemoteIdentityAPIImpl());
+    singletons.add(new RESTRemoteManagementAPIImpl());
+    singletons.add(new RemoteQueryDefinitionAPIImpl());
+    singletons.add(new RESTRemoteQueryRuntimeAPIImpl());
+    singletons.add(new RESTRemoteRepairAPIImpl());
+    singletons.add(new RESTRemoteRuntimeAPIImpl());
+    singletons.add(new RESTRemoteWebAPIImpl());
+  }
+
+  @Override
+  public Set<Object> getSingletons() {
+    return this.singletons;
+  }
+
+  @Override
+  public Set<Class<?>> getClasses() {
+    return new HashSet<Class<?>>();
+  }
+
 }

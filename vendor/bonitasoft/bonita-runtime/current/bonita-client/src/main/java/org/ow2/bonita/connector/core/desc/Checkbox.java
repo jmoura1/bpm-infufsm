@@ -18,14 +18,14 @@ package org.ow2.bonita.connector.core.desc;
 /**
  * 
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class Checkbox extends Widget {
 
-  private String name;
-  private String value;
+  private final String name;
+  private final String value;
 
-  public Checkbox(String labelId, Setter setter, String name, String value) {
+  public Checkbox(final String labelId, final Setter setter, final String name, final String value) {
     super(labelId, setter);
     this.name = name;
     this.value = value;
@@ -40,14 +40,41 @@ public class Checkbox extends Widget {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    boolean equals = super.equals(obj);
-    if (equals && obj instanceof Checkbox) {
-      Checkbox temp = (Checkbox) obj;
-      return (temp.getName().equals(this.getName())
-          && temp.getValue().equals(this.getValue()));
-    } else {
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + (name == null ? 0 : name.hashCode());
+    result = prime * result + (value == null ? 0 : value.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
       return false;
     }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Checkbox other = (Checkbox) obj;
+    if (name == null) {
+      if (other.name != null) {
+        return false;
+      }
+    } else if (!name.equals(other.name)) {
+      return false;
+    }
+    if (value == null) {
+      if (other.value != null) {
+        return false;
+      }
+    } else if (!value.equals(other.value)) {
+      return false;
+    }
+    return true;
   }
+
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009 BonitaSoft S.A.
+ * Copyright (C) 2009-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,18 +20,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.bonitasoft.connectors.ldap.LdapAttribute;
-import org.bonitasoft.connectors.ldap.LdapConnector;
 import org.ow2.bonita.connector.core.ConnectorError;
 import org.ow2.bonita.connector.core.RoleResolver;
 
 /**
  * @author Matthieu Chaffotte
- *
+ * 
  */
 public class LdapRoleResolver extends RoleResolver {
 
-	private String host;
+  private String host;
   private Long port;
   private String protocol;
   private String userName;
@@ -45,117 +43,117 @@ public class LdapRoleResolver extends RoleResolver {
   private Long timeLimit = 0L;
   private String referralHandling = "ignore";
 
-	public String getHost() {
-  	return host;
+  public String getHost() {
+    return host;
   }
 
-	public Long getPort() {
-  	return port;
+  public Long getPort() {
+    return port;
   }
 
-	public String getProtocol() {
-  	return protocol;
+  public String getProtocol() {
+    return protocol;
   }
 
-	public String getUserName() {
-  	return userName;
+  public String getUserName() {
+    return userName;
   }
 
-	public String getPassword() {
-  	return password;
+  public String getPassword() {
+    return password;
   }
 
-	public String getBaseObjectGroup() {
-  	return baseObjectGroup;
+  public String getBaseObjectGroup() {
+    return baseObjectGroup;
   }
 
-	public String getBaseObjectPeople() {
-  	return baseObjectPeople;
+  public String getBaseObjectPeople() {
+    return baseObjectPeople;
   }
 
-	public String getScope() {
-  	return scope;
+  public String getScope() {
+    return scope;
   }
 
-	public String getFilter() {
-  	return filter;
+  public String getFilter() {
+    return filter;
   }
 
-	public String getDerefAliases() {
-  	return derefAliases;
+  public String getDerefAliases() {
+    return derefAliases;
   }
 
-	public Long getSizeLimit() {
-  	return sizeLimit;
+  public Long getSizeLimit() {
+    return sizeLimit;
   }
 
-	public Long getTimeLimit() {
-  	return timeLimit;
+  public Long getTimeLimit() {
+    return timeLimit;
   }
 
-	public String getReferralHandling() {
-  	return referralHandling;
+  public String getReferralHandling() {
+    return referralHandling;
   }
 
-	public void setHost(String host) {
-  	this.host = host;
+  public void setHost(final String host) {
+    this.host = host;
   }
 
-	public void setPort(Long port) {
-  	this.port = port;
+  public void setPort(final Long port) {
+    this.port = port;
   }
 
-	public void setProtocol(String protocol) {
-  	this.protocol = protocol;
+  public void setProtocol(final String protocol) {
+    this.protocol = protocol;
   }
 
-	public void setUserName(String userName) {
-  	this.userName = userName;
+  public void setUserName(final String userName) {
+    this.userName = userName;
   }
 
-	public void setPassword(String password) {
-  	this.password = password;
+  public void setPassword(final String password) {
+    this.password = password;
   }
 
-	public void setBaseObjectGroup(String baseObjectGroup) {
-  	this.baseObjectGroup = baseObjectGroup;
+  public void setBaseObjectGroup(final String baseObjectGroup) {
+    this.baseObjectGroup = baseObjectGroup;
   }
 
-	public void setBaseObjectPeople(String baseObjectPeople) {
-  	this.baseObjectPeople = baseObjectPeople;
+  public void setBaseObjectPeople(final String baseObjectPeople) {
+    this.baseObjectPeople = baseObjectPeople;
   }
 
-	public void setScope(String scope) {
-  	this.scope = scope;
+  public void setScope(final String scope) {
+    this.scope = scope;
   }
 
-	public void setFilter(String filter) {
-  	this.filter = filter;
+  public void setFilter(final String filter) {
+    this.filter = filter;
   }
 
-	public void setDerefAliases(String derefAliases) {
-  	this.derefAliases = derefAliases;
+  public void setDerefAliases(final String derefAliases) {
+    this.derefAliases = derefAliases;
   }
 
-	public void setSizeLimit(Long sizeLimit) {
-  	this.sizeLimit = sizeLimit;
+  public void setSizeLimit(final Long sizeLimit) {
+    this.sizeLimit = sizeLimit;
   }
 
-	public void setTimeLimit(Long timeLimit) {
-  	this.timeLimit = timeLimit;
+  public void setTimeLimit(final Long timeLimit) {
+    this.timeLimit = timeLimit;
   }
 
-	public void setReferralHandling(String referralHandling) {
-  	this.referralHandling = referralHandling;
+  public void setReferralHandling(final String referralHandling) {
+    this.referralHandling = referralHandling;
   }
 
-	private LdapConnector getGroupLdapConenctor() {
-		LdapConnector ldap = new LdapConnector();
-		ldap.setHost(host);
-		ldap.setPort(port);
-		ldap.setProtocol(protocol);
-		ldap.setUserName(userName);
-		ldap.setPassword(password);
+  private LdapConnector getGroupLdapConenctor() {
+    final LdapConnector ldap = new LdapConnector();
+    ldap.setHost(host);
+    ldap.setPort(port);
+    ldap.setProtocol(protocol);
+    ldap.setUserName(userName);
+    ldap.setPassword(password);
     ldap.setAttributes("uniqueMember");
     ldap.setBaseObject(baseObjectGroup);
     ldap.setDerefAliases(derefAliases);
@@ -165,33 +163,33 @@ public class LdapRoleResolver extends RoleResolver {
     ldap.setSizeLimit(sizeLimit);
     ldap.setTimeLimit(timeLimit);
     return ldap;
-	}
+  }
 
-	@Override
-	protected List<ConnectorError> validateValues() {
-		List<ConnectorError> errors = super.validateValues();
-		LdapConnector ldap = getGroupLdapConenctor();
-		errors.addAll(ldap.validate());
-		return errors;
-	}
+  @Override
+  protected List<ConnectorError> validateValues() {
+    final List<ConnectorError> errors = super.validateValues();
+    final LdapConnector ldap = getGroupLdapConenctor();
+    errors.addAll(ldap.validate());
+    return errors;
+  }
 
-	@Override
-	protected Set<String> getMembersSet(String roleId) throws Exception {
-		final LdapConnector ldap = getGroupLdapConenctor();
+  @Override
+  protected Set<String> getMembersSet(final String roleId) throws Exception {
+    final LdapConnector ldap = getGroupLdapConenctor();
     ldap.execute();
 
     final Set<String> returns = new HashSet<String>();
     List<List<LdapAttribute>> list = ldap.getLdapAttributeList();
     if (!list.isEmpty()) {
-      for (List<LdapAttribute> members : list) {
-        StringBuilder builder = new StringBuilder();
+      for (final List<LdapAttribute> members : list) {
+        final StringBuilder builder = new StringBuilder();
         if (members.size() > 1) {
           builder.append("(|");
         }
-        for (LdapAttribute member : members) {
+        for (final LdapAttribute member : members) {
           builder.append("(");
-          String value = member.getValue();
-          int index = value.indexOf(",");
+          final String value = member.getValue();
+          final int index = value.indexOf(",");
           builder.append(value.substring(0, index));
           builder.append(")");
         }
@@ -203,12 +201,12 @@ public class LdapRoleResolver extends RoleResolver {
         ldap.setAttributes("uid");
         ldap.execute();
         list = ldap.getLdapAttributeList();
-        for (List<LdapAttribute> uids : list) {
+        for (final List<LdapAttribute> uids : list) {
           returns.add(uids.get(0).getValue());
         }
       }
     }
-		return returns;
-	}
+    return returns;
+  }
 
 }

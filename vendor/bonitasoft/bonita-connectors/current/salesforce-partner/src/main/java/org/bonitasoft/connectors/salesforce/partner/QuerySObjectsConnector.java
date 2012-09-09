@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 BonitaSoft S.A.
+ * Copyright (C) 2011-2012 BonitaSoft S.A.
  * BonitaSoft, 31 rue Gustave Eiffel - 38000 Grenoble
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,21 +34,20 @@ import com.sforce.soap.partner.sobject.SObject;
  */
 public class QuerySObjectsConnector extends SalesforceConnector {
 
-  //input parameters
+  // input parameters
   private String query;
 
-  //output parameters
+  // output parameters
   private List<SObject> sObjects;
   private QueryResult queryResult;
 
-  private static final Log logger = LogFactory.getLog(QuerySObjectsConnector.class.getClass());
-
+  private static final Log LOGGER = LogFactory.getLog(QuerySObjectsConnector.class.getClass());
 
   @Override
   protected List<ConnectorError> validateExtraValues() {
     final List<ConnectorError> errors = new ArrayList<ConnectorError>();
-    ConnectorError emptyError = this.getErrorIfNullOrEmptyParam(query, "query");
-    if(emptyError != null){
+    final ConnectorError emptyError = this.getErrorIfNullOrEmptyParam(query, "query");
+    if (emptyError != null) {
       errors.add(emptyError);
     }
     return errors;
@@ -56,13 +55,12 @@ public class QuerySObjectsConnector extends SalesforceConnector {
 
   @Override
   protected void executeFunction(final PartnerConnection connection) throws Exception {
-    if (logger.isDebugEnabled()) {
-      logger.debug("query = " + query);
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("query = " + query);
     }
     queryResult = connection.query(query);
     sObjects = Arrays.asList(queryResult.getRecords());
   }
-
 
   public List<SObject> getSObjects() {
     return sObjects;
@@ -72,7 +70,7 @@ public class QuerySObjectsConnector extends SalesforceConnector {
     return queryResult;
   }
 
-  public void setQuery(String query) {
+  public void setQuery(final String query) {
     this.query = query;
   }
 

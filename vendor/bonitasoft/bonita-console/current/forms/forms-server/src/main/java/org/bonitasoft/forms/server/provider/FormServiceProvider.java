@@ -40,13 +40,12 @@ import org.bonitasoft.forms.client.model.exception.SkippedFormException;
 import org.bonitasoft.forms.client.model.exception.SuspendedFormException;
 import org.bonitasoft.forms.server.accessor.IApplicationConfigDefAccessor;
 import org.bonitasoft.forms.server.accessor.IApplicationFormDefAccessor;
+import org.bonitasoft.forms.server.accessor.impl.util.FormDocument;
 import org.bonitasoft.forms.server.exception.ApplicationFormDefinitionNotFoundException;
 import org.bonitasoft.forms.server.exception.FileTooBigException;
 import org.bonitasoft.forms.server.exception.FormNotFoundException;
 import org.bonitasoft.forms.server.exception.FormValidationException;
 import org.bonitasoft.forms.server.exception.InvalidFormDefinitionException;
-import org.ow2.bonita.facade.exception.VariableNotFoundException;
-import org.w3c.dom.Document;
 
 /**
  * This interface can be implemented by anyone willing to use the forms in a different context than the one of the BPM engine.<br/>
@@ -78,7 +77,7 @@ public interface FormServiceProvider {
      * @throws IOException if an error occurs while reading the form definition file
      * @throws InvalidFormDefinitionException if the content of the form definition file is invalid
      */
-    Document getFormDefinitionDocument(Map<String, Object> context) throws FormNotFoundException, IOException, InvalidFormDefinitionException;
+    FormDocument getFormDefinitionDocument(Map<String, Object> context) throws FormNotFoundException, IOException, InvalidFormDefinitionException;
 
     /**
      * Check if the user is allowed to do an action.
@@ -108,10 +107,20 @@ public interface FormServiceProvider {
      * 
      * @param expression The initial expression to be resolved
      * @param context Map of context (containing the URL parameters and other data)
-     * @return  the resolved value by groovy interpreter  
+     * @return  the resolved value 
      * @throws FormNotFoundException if the form cannot be found
      */
     Object resolveExpression(String expression, Map<String, Object> context) throws FormNotFoundException;
+    
+    /**
+     * Resolve a group of expressions (Groovy in the default implementation, but it can be anything in another implementation).
+     * 
+     * @param expression The map of expressions to be resolved
+     * @param context Map of context (containing the URL parameters and other data)
+     * @return  the Map of resolved values  
+     * @throws FormNotFoundException if the form cannot be found
+     */
+    Map<String, Object> resolveExpressions(Map<String, String> expressions, Map<String, Object> context) throws FormNotFoundException;
     
     /**
      * Execute some actions after a form submission.
@@ -124,7 +133,7 @@ public interface FormServiceProvider {
      * @throws FormNotFoundException if the form cannot be found
      * @throws Exception if any other kind of exception occurs
      */
-    Map<String, Object> executeActions(List<FormAction> actions, Map<String, Object> context) throws VariableNotFoundException, FileTooBigException, FormNotFoundException, FormAlreadySubmittedException, Exception;
+    Map<String, Object> executeActions(List<FormAction> actions, Map<String, Object> context) throws FileTooBigException, FormNotFoundException, FormAlreadySubmittedException, Exception;
     
     /**
      * Retrieve the next form ID and additional parameters required in the URL to display the next form after a form submission.
@@ -220,7 +229,7 @@ public interface FormServiceProvider {
      * @throws ApplicationFormDefinitionNotFoundException if the forms application definition cannot be found
      * @throws InvalidFormDefinitionException if the content of the form definition file is invalid
      */
-    IApplicationFormDefAccessor getApplicationFormDefinition(final String formId, final Document formDefinitionDocument, final Map<String, Object> context) throws ApplicationFormDefinitionNotFoundException, InvalidFormDefinitionException;
+    IApplicationFormDefAccessor getApplicationFormDefinition(String formId, FormDocument formDefinitionDocument, final Map<String, Object> context) throws ApplicationFormDefinitionNotFoundException, InvalidFormDefinitionException;
     
     /**
      * Get an application configuration definition accessor object (reader to access the forms application configuration).<br/>
@@ -230,7 +239,7 @@ public interface FormServiceProvider {
      * @param context Map of context (containing the URL parameters and other data)
      * @return an instance of {@link IApplicationConfigDefAccessor}
      */
-    IApplicationConfigDefAccessor getApplicationConfigDefinition(Document formDefinitionDocument, Map<String, Object> context);
+    IApplicationConfigDefAccessor getApplicationConfigDefinition(FormDocument formDefinitionDocument, Map<String, Object> context);
     
     /**
      * Get the file name of an attachment from it's name/id.<br/>

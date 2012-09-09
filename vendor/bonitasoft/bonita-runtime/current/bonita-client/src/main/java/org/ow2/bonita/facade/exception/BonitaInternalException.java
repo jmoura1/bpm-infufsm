@@ -10,18 +10,20 @@
  * You should have received a copy of the GNU Lesser General Public License along with this
  * program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth
  * Floor, Boston, MA  02110-1301, USA.
+ * 
+ * Modified by Matthieu Chaffotte - BonitaSoft
  **/
 package org.ow2.bonita.facade.exception;
 
 import org.ow2.bonita.util.BonitaRuntimeException;
 import org.ow2.bonita.util.ExceptionManager;
+
 /**
- *
- * Thrown if an internal Bonita error occurred.
- * Please contact Bonita by using the mailing list bonita AT ow2.org
+ * 
+ * Thrown when an internal Bonita exception occurrs.
  * 
  * @author Marc Blachon, Guillaume Porcher, Charles Souillard, Miguel Valdes, Pierre Vigneras
- *
+ * 
  */
 public class BonitaInternalException extends BonitaRuntimeException {
 
@@ -29,27 +31,29 @@ public class BonitaInternalException extends BonitaRuntimeException {
 
   /**
    * Constructs a BonitaInternalException with the specified detail message and the throwable cause.
-   * @param message msg the detail message.
+   * 
+   * @param message message the detail message.
    * @param cause exception causing the abort.
    */
-  public BonitaInternalException(String message, Throwable cause) {
+  public BonitaInternalException(final String message, final Throwable cause) {
     super(message, cause);
   }
 
   /**
    * Constructs a BonitaInternalException with the specified detail message.
+   * 
    * @param message the detail message.
    */
-  public BonitaInternalException(String message) {
+  public BonitaInternalException(final String message) {
     super(message);
   }
 
-  public static BonitaInternalException build(RuntimeException exception) {
-    String message = exception.getMessage();
+  public static BonitaInternalException build(final RuntimeException exception) {
+    final String message = exception.getMessage();
     if (exception instanceof BonitaRuntimeException) {
       return new BonitaInternalException(message, exception);
     }
-    String msg = ExceptionManager.getInstance().getMessage("BIE1", message);
+    final String msg = ExceptionManager.getInstance().getMessage("BIE1", message);
     return new BonitaInternalException(msg, exception);
   }
 

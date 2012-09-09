@@ -52,4 +52,6 @@ public interface JournalDbSession extends QuerierDbSession {
   * @return
   */
  void removeLockedMetadata(String key);
+ 
+ void deleteExecution(long id);
 }

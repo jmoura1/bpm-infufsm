@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>build</artifactId>
 		<groupId>org.bonitasoft.console</groupId>
-		<version>5.6.1</version>
+		<version>5.7.2</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.bonitasoft.console</groupId>
@@ -27,7 +27,7 @@
 		<bonita.home.client.dir>${bonita.home.dir}/client/</bonita.home.client.dir>
 		<tomcat.lib.dir>${tomcat.home.dir}/lib</tomcat.lib.dir>
 		<tomcat.conf.dir>${tomcat.home.dir}/conf</tomcat.conf.dir>
-		<tomcat.download.url>http://apache.crihan.fr/dist/tomcat/tomcat-6/v${tomcat.version}/bin/apache-tomcat-${tomcat.version}.zip</tomcat.download.url>		
+		<tomcat.download.url>http://archive.apache.org/dist/tomcat/tomcat-6/v${tomcat.version}/bin/apache-tomcat-${tomcat.version}.zip</tomcat.download.url>		
 	</properties>
 	
 	<build>
@@ -186,6 +186,10 @@
 						</goals>
 						<configuration>
 							<tasks>
+								<!-- rename logging.properties of tomcat in order to be able to use our provided one -->
+								<move
+									file="${tomcat.home.dir}/conf/logging.properties"
+									tofile="${tomcat.home.dir}/conf/logging-tomcat-default.properties"/>
 								<!-- Copy all resources from project to Tomcat,
 							 	so we need to respect tomcat hierarchy in the src/tomcat folder -->
 								<copy overwrite="true"
@@ -198,10 +202,9 @@
 										<include name="*.sh" />
 									</fileset>
 								</chmod>
-								<!-- rename logging.properties of tomcat in order to be able to use our provided one -->
-								<move
-									file="${tomcat.home.dir}/conf/logging.properties"
-									tofile="${tomcat.home.dir}/conf/logging-tomcat-default.properties"/>
+								<!--move
+									file="${tomcat.home.dir}/external/logging/logging.properties"
+									tofile="${tomcat.home.dir}/conf/logging.properties"/-->
 							</tasks>
 						</configuration>
 					</execution>

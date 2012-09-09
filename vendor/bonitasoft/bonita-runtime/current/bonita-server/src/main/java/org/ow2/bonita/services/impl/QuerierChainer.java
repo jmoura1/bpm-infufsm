@@ -66,23 +66,24 @@ import org.ow2.bonita.util.ProcessInstanceUUIDComparatorDesc;
 
 /**
  * @author Guillaume Porcher
- *
- * Chainer for Queriers :
- *  - for methods that returns only one object, search for the first matching object
- *  - for methods that returns a collection: search for all objects in all return queriers.
+ * 
+ *         Chainer for Queriers : - for methods that returns only one object, search for the first matching object - for
+ *         methods that returns a collection: search for all objects in all return queriers.
  */
 public class QuerierChainer implements Querier {
 
-  private List<Querier> queriers;
+  private final List<Querier> queriers;
 
-  public QuerierChainer(List<Querier> queriers) {
+  public QuerierChainer(final List<Querier> queriers) {
     this.queriers = queriers;
   }
 
-  public Set<InternalActivityInstance> getActivityInstances(ProcessInstanceUUID instanceUUID, String activityName) {
-    Set<InternalActivityInstance> set = new HashSet<InternalActivityInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalActivityInstance> tmp = querier.getActivityInstances(instanceUUID, activityName);
+  @Override
+  public Set<InternalActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID,
+      final String activityName) {
+    final Set<InternalActivityInstance> set = new HashSet<InternalActivityInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalActivityInstance> tmp = querier.getActivityInstances(instanceUUID, activityName);
       if (tmp != null && !tmp.isEmpty()) {
         set.addAll(tmp);
       }
@@ -90,10 +91,12 @@ public class QuerierChainer implements Querier {
     return set;
   }
 
-  public Set<InternalActivityInstance> getActivityInstances(ProcessInstanceUUID instanceUUID, String activityName, String iterationId) {
-    Set<InternalActivityInstance> set = new HashSet<InternalActivityInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalActivityInstance> tmp = querier.getActivityInstances(instanceUUID, activityName, iterationId);
+  @Override
+  public Set<InternalActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID,
+      final String activityName, final String iterationId) {
+    final Set<InternalActivityInstance> set = new HashSet<InternalActivityInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalActivityInstance> tmp = querier.getActivityInstances(instanceUUID, activityName, iterationId);
       if (tmp != null && !tmp.isEmpty()) {
         set.addAll(tmp);
       }
@@ -101,30 +104,37 @@ public class QuerierChainer implements Querier {
     return set;
   }
 
+  @Override
   public int getNumberOfProcesses() {
     int nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfProcesses();
     }
     return nb;
   }
+
+  @Override
   public int getNumberOfParentProcessInstances() {
     int nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfParentProcessInstances();
     }
     return nb;
   }
+
+  @Override
   public int getNumberOfProcessInstances() {
     int nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfProcessInstances();
     }
     return nb;
   }
-  public InternalProcessInstance getProcessInstance(ProcessInstanceUUID instanceUUID) {
-    for (Querier querier : queriers) {
-      InternalProcessInstance processInst = querier.getProcessInstance(instanceUUID);
+
+  @Override
+  public InternalProcessInstance getProcessInstance(final ProcessInstanceUUID instanceUUID) {
+    for (final Querier querier : queriers) {
+      final InternalProcessInstance processInst = querier.getProcessInstance(instanceUUID);
       if (processInst != null) {
         return processInst;
       }
@@ -132,10 +142,11 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
+  @Override
   public Set<ProcessInstanceUUID> getParentInstancesUUIDs() {
-    Set<ProcessInstanceUUID> processInsts = new HashSet<ProcessInstanceUUID>();
-    for (Querier querier : queriers) {
-      Set<ProcessInstanceUUID> tmp = querier.getParentInstancesUUIDs();
+    final Set<ProcessInstanceUUID> processInsts = new HashSet<ProcessInstanceUUID>();
+    for (final Querier querier : queriers) {
+      final Set<ProcessInstanceUUID> tmp = querier.getParentInstancesUUIDs();
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -143,10 +154,11 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-  public Set<InternalProcessInstance> getUserInstances(String userId, Date minStartDate) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessInstance> tmp = querier.getUserInstances(userId, minStartDate);
+  @Override
+  public Set<InternalProcessInstance> getUserInstances(final String userId, final Date minStartDate) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessInstance> tmp = querier.getUserInstances(userId, minStartDate);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -154,10 +166,11 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-  public Set<InternalProcessInstance> getUserParentInstances(String userId, Date minStartDate) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessInstance> tmp = querier.getUserParentInstances(userId, minStartDate);
+  @Override
+  public Set<InternalProcessInstance> getUserParentInstances(final String userId, final Date minStartDate) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessInstance> tmp = querier.getUserParentInstances(userId, minStartDate);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -165,9 +178,11 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-  public TaskInstance getOneTask(String userId, ProcessDefinitionUUID processUUID, ActivityState taskState) {
-    for (Querier querier : queriers) {
-      TaskInstance task = querier.getOneTask(userId, processUUID, taskState);
+  @Override
+  public TaskInstance getOneTask(final String userId, final ProcessDefinitionUUID processUUID,
+      final ActivityState taskState) {
+    for (final Querier querier : queriers) {
+      final TaskInstance task = querier.getOneTask(userId, processUUID, taskState);
       if (task != null) {
         return task;
       }
@@ -175,9 +190,11 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
-  public TaskInstance getOneTask(String userId, ProcessInstanceUUID instanceUUID, ActivityState taskState) {
-    for (Querier querier : queriers) {
-      TaskInstance task = querier.getOneTask(userId, instanceUUID, taskState);
+  @Override
+  public TaskInstance getOneTask(final String userId, final ProcessInstanceUUID instanceUUID,
+      final ActivityState taskState) {
+    for (final Querier querier : queriers) {
+      final TaskInstance task = querier.getOneTask(userId, instanceUUID, taskState);
       if (task != null) {
         return task;
       }
@@ -185,9 +202,10 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
-  public TaskInstance getOneTask(String userId, ActivityState taskState) {
-    for (Querier querier : queriers) {
-      TaskInstance task = querier.getOneTask(userId, taskState);
+  @Override
+  public TaskInstance getOneTask(final String userId, final ActivityState taskState) {
+    for (final Querier querier : queriers) {
+      final TaskInstance task = querier.getOneTask(userId, taskState);
       if (task != null) {
         return task;
       }
@@ -195,10 +213,11 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
+  @Override
   public Set<InternalProcessInstance> getProcessInstances() {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessInstance> tmp = querier.getProcessInstances();
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessInstance> tmp = querier.getProcessInstances();
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -206,12 +225,11 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-
-
-  public Set<InternalProcessInstance> getUserInstancesExcept(String userId, Set<ProcessInstanceUUID> myCases) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessInstance> tmp = querier.getUserInstancesExcept(userId, myCases);
+  @Override
+  public Set<InternalProcessInstance> getUserInstancesExcept(final String userId, final Set<ProcessInstanceUUID> myCases) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessInstance> tmp = querier.getUserInstancesExcept(userId, myCases);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -219,11 +237,11 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-  public Set<InternalProcessInstance> getProcessInstances(
-      Collection<ProcessInstanceUUID> instanceUUIDs) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessInstance> tmp = querier.getProcessInstances(instanceUUIDs);
+  @Override
+  public Set<InternalProcessInstance> getProcessInstances(final Collection<ProcessInstanceUUID> instanceUUIDs) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessInstance> tmp = querier.getProcessInstances(instanceUUIDs);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -231,10 +249,11 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
+  @Override
   public Set<InternalProcessInstance> getParentInstances() {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessInstance> tmp = querier.getParentInstances();
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessInstance> tmp = querier.getParentInstances();
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -242,10 +261,11 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-  public Set<InternalProcessInstance> getProcessInstancesWithTaskState(Collection<ActivityState> activityStates) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessInstance> tmp = querier.getProcessInstancesWithTaskState(activityStates);
+  @Override
+  public Set<InternalProcessInstance> getProcessInstancesWithTaskState(final Collection<ActivityState> activityStates) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessInstance> tmp = querier.getProcessInstancesWithTaskState(activityStates);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -253,10 +273,12 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-  public Set<InternalProcessInstance> getProcessInstancesWithInstanceStates(Collection<InstanceState> instanceStates) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessInstance> tmp = querier.getProcessInstancesWithInstanceStates(instanceStates);
+  @Override
+  public Set<InternalProcessInstance> getProcessInstancesWithInstanceStates(
+      final Collection<InstanceState> instanceStates) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessInstance> tmp = querier.getProcessInstancesWithInstanceStates(instanceStates);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -264,26 +286,31 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-  public Set<InternalProcessInstance> getProcessInstances(ProcessDefinitionUUID processUUID) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<InternalProcessInstance> getProcessInstances(final ProcessDefinitionUUID processUUID) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
       processInsts.addAll(querier.getProcessInstances(processUUID));
     }
     return processInsts;
   }
 
-  public Set<InternalProcessInstance> getProcessInstances(ProcessDefinitionUUID processUUID, InstanceState instanceState) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<InternalProcessInstance> getProcessInstances(final ProcessDefinitionUUID processUUID,
+      final InstanceState instanceState) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
       processInsts.addAll(querier.getProcessInstances(processUUID, instanceState));
     }
     return processInsts;
   }
 
-  public InternalActivityInstance getActivityInstance(ProcessInstanceUUID instanceUUID,
-      String activityId, String iterationId, String activityInstanceId, String loopId) {
-    for (Querier querier : queriers) {
-      InternalActivityInstance activityInst = querier.getActivityInstance(instanceUUID, activityId, iterationId, activityInstanceId, loopId);
+  @Override
+  public InternalActivityInstance getActivityInstance(final ProcessInstanceUUID instanceUUID, final String activityId,
+      final String iterationId, final String activityInstanceId, final String loopId) {
+    for (final Querier querier : queriers) {
+      final InternalActivityInstance activityInst = querier.getActivityInstance(instanceUUID, activityId, iterationId,
+          activityInstanceId, loopId);
       if (activityInst != null) {
         return activityInst;
       }
@@ -291,10 +318,11 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
-  public List<InternalActivityInstance> getActivityInstancesFromRoot(ProcessInstanceUUID rootInstanceUUID) {
-    List<InternalActivityInstance> activities = new ArrayList<InternalActivityInstance>();
-    for (Querier querier : queriers) {
-      List<InternalActivityInstance> tmp = querier.getActivityInstancesFromRoot(rootInstanceUUID);
+  @Override
+  public List<InternalActivityInstance> getActivityInstancesFromRoot(final ProcessInstanceUUID rootInstanceUUID) {
+    final List<InternalActivityInstance> activities = new ArrayList<InternalActivityInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalActivityInstance> tmp = querier.getActivityInstancesFromRoot(rootInstanceUUID);
       if (tmp != null && !tmp.isEmpty()) {
         activities.addAll(tmp);
       }
@@ -302,13 +330,14 @@ public class QuerierChainer implements Querier {
     if (!activities.isEmpty()) {
       Collections.sort(activities, new ActivityInstanceLastUpdateComparator());
     }
-    return activities;    
+    return activities;
   }
 
-  public List<InternalActivityInstance> getActivityInstancesFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs) {
-    List<InternalActivityInstance> activities = new ArrayList<InternalActivityInstance>();
-    for (Querier querier : queriers) {
-      List<InternalActivityInstance> tmp = querier.getActivityInstancesFromRoot(rootInstanceUUIDs);
+  @Override
+  public List<InternalActivityInstance> getActivityInstancesFromRoot(final Set<ProcessInstanceUUID> rootInstanceUUIDs) {
+    final List<InternalActivityInstance> activities = new ArrayList<InternalActivityInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalActivityInstance> tmp = querier.getActivityInstancesFromRoot(rootInstanceUUIDs);
       if (tmp != null && !tmp.isEmpty()) {
         activities.addAll(tmp);
       }
@@ -316,13 +345,15 @@ public class QuerierChainer implements Querier {
     if (!activities.isEmpty()) {
       Collections.sort(activities, new ActivityInstanceLastUpdateComparator());
     }
-    return activities;    
+    return activities;
   }
 
-  public List<InternalActivityInstance> getActivityInstancesFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs, ActivityState state) {
-    List<InternalActivityInstance> activities = new ArrayList<InternalActivityInstance>();
-    for (Querier querier : queriers) {
-      List<InternalActivityInstance> tmp = querier.getActivityInstancesFromRoot(rootInstanceUUIDs, state);
+  @Override
+  public List<InternalActivityInstance> getActivityInstancesFromRoot(final Set<ProcessInstanceUUID> rootInstanceUUIDs,
+      final ActivityState state) {
+    final List<InternalActivityInstance> activities = new ArrayList<InternalActivityInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalActivityInstance> tmp = querier.getActivityInstancesFromRoot(rootInstanceUUIDs, state);
       if (tmp != null && !tmp.isEmpty()) {
         activities.addAll(tmp);
       }
@@ -330,24 +361,28 @@ public class QuerierChainer implements Querier {
     if (!activities.isEmpty()) {
       Collections.sort(activities, new ActivityInstanceLastUpdateComparator());
     }
-    return activities;    
+    return activities;
   }
 
-  public Map<ProcessInstanceUUID, InternalActivityInstance> getLastUpdatedActivityInstanceFromRoot(Set<ProcessInstanceUUID> rootInstanceUUIDs, boolean considerSystemTaks) {
-    Map<ProcessInstanceUUID, InternalActivityInstance> activities = new HashMap<ProcessInstanceUUID, InternalActivityInstance>();
-    for (Querier querier : queriers) {
-      Map<ProcessInstanceUUID, InternalActivityInstance> tmp = querier.getLastUpdatedActivityInstanceFromRoot(rootInstanceUUIDs, considerSystemTaks);
-      for (Map.Entry<ProcessInstanceUUID, InternalActivityInstance> entry : tmp.entrySet()) {
+  @Override
+  public Map<ProcessInstanceUUID, InternalActivityInstance> getLastUpdatedActivityInstanceFromRoot(
+      final Set<ProcessInstanceUUID> rootInstanceUUIDs, final boolean considerSystemTaks) {
+    final Map<ProcessInstanceUUID, InternalActivityInstance> activities = new HashMap<ProcessInstanceUUID, InternalActivityInstance>();
+    for (final Querier querier : queriers) {
+      final Map<ProcessInstanceUUID, InternalActivityInstance> tmp = querier.getLastUpdatedActivityInstanceFromRoot(
+          rootInstanceUUIDs, considerSystemTaks);
+      for (final Map.Entry<ProcessInstanceUUID, InternalActivityInstance> entry : tmp.entrySet()) {
         activities.put(entry.getKey(), entry.getValue());
       }
     }
-    return activities;   
+    return activities;
   }
 
-  public long getLastProcessInstanceNb(ProcessDefinitionUUID processUUID) {
+  @Override
+  public long getLastProcessInstanceNb(final ProcessDefinitionUUID processUUID) {
     long max = -1;
-    for (Querier querier : queriers) {
-      long l = querier.getLastProcessInstanceNb(processUUID);
+    for (final Querier querier : queriers) {
+      final long l = querier.getLastProcessInstanceNb(processUUID);
       if (l > max) {
         max = l;
       }
@@ -355,8 +390,10 @@ public class QuerierChainer implements Querier {
     return max;
   }
 
-  public Execution getExecutionOnActivity(ProcessInstanceUUID instanceUUID, ActivityInstanceUUID activityInstanceUUID) {
-    for (Querier querier : queriers) {
+  @Override
+  public Execution getExecutionOnActivity(final ProcessInstanceUUID instanceUUID,
+      final ActivityInstanceUUID activityInstanceUUID) {
+    for (final Querier querier : queriers) {
       final Execution execution = querier.getExecutionOnActivity(instanceUUID, activityInstanceUUID);
       if (execution != null) {
         return execution;
@@ -365,8 +402,9 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
-  public Execution getExecutionWithEventUUID(String eventUUID) {
-    for (Querier querier : queriers) {
+  @Override
+  public Execution getExecutionWithEventUUID(final String eventUUID) {
+    for (final Querier querier : queriers) {
       final Execution execution = querier.getExecutionWithEventUUID(eventUUID);
       if (execution != null) {
         return execution;
@@ -375,17 +413,19 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
-  public Set<Execution> getExecutions(ProcessInstanceUUID instanceUUID) {
-    Set<Execution> executions = new HashSet<Execution>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<Execution> getExecutions(final ProcessInstanceUUID instanceUUID) {
+    final Set<Execution> executions = new HashSet<Execution>();
+    for (final Querier querier : queriers) {
       executions.addAll(querier.getExecutions(instanceUUID));
     }
     return executions;
   }
 
-  public ActivityState getActivityInstanceState(ActivityInstanceUUID activityInstanceUUID) {
-    for (Querier querier : queriers) {
-      ActivityState activityState = querier.getActivityInstanceState(activityInstanceUUID);
+  @Override
+  public ActivityState getActivityInstanceState(final ActivityInstanceUUID activityInstanceUUID) {
+    for (final Querier querier : queriers) {
+      final ActivityState activityState = querier.getActivityInstanceState(activityInstanceUUID);
       if (activityState != null) {
         return activityState;
       }
@@ -393,9 +433,10 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
-  public Set<InternalActivityInstance> getActivityInstances(ProcessInstanceUUID instanceUUID) {
-    Set<InternalActivityInstance> activityInsts = new HashSet<InternalActivityInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<InternalActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID) {
+    final Set<InternalActivityInstance> activityInsts = new HashSet<InternalActivityInstance>();
+    for (final Querier querier : queriers) {
       activityInsts.addAll(querier.getActivityInstances(instanceUUID));
       if (!activityInsts.isEmpty()) {
         return activityInsts;
@@ -403,23 +444,24 @@ public class QuerierChainer implements Querier {
     }
     return activityInsts;
   }
-  
-  public List<InternalActivityInstance> getActivityInstances(
-			ProcessInstanceUUID instanceUUID, int fromIndex, int pageSize,
-			ActivityInstanceCriterion pagingCriterion) {
-  	List<InternalActivityInstance> activityInsts = new ArrayList<InternalActivityInstance>();
-    for (Querier querier : queriers) {
+
+  @Override
+  public List<InternalActivityInstance> getActivityInstances(final ProcessInstanceUUID instanceUUID,
+      final int fromIndex, final int pageSize, final ActivityInstanceCriterion pagingCriterion) {
+    final List<InternalActivityInstance> activityInsts = new ArrayList<InternalActivityInstance>();
+    for (final Querier querier : queriers) {
       activityInsts.addAll(querier.getActivityInstances(instanceUUID, fromIndex, pageSize, pagingCriterion));
       if (!activityInsts.isEmpty()) {
         return activityInsts;
       }
     }
     return activityInsts;
-	}
+  }
 
-  public TaskInstance getTaskInstance(ActivityInstanceUUID taskUUID) {
-    for (Querier querier : queriers) {
-      TaskInstance activity = querier.getTaskInstance(taskUUID);
+  @Override
+  public TaskInstance getTaskInstance(final ActivityInstanceUUID taskUUID) {
+    for (final Querier querier : queriers) {
+      final TaskInstance activity = querier.getTaskInstance(taskUUID);
       if (activity != null) {
         return activity;
       }
@@ -427,10 +469,11 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
+  @Override
   public Set<InternalProcessDefinition> getProcesses() {
-    Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessDefinition> querierProcesses = querier.getProcesses();
+    final Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessDefinition> querierProcesses = querier.getProcesses();
       if (querierProcesses != null && !querierProcesses.isEmpty()) {
         processes.addAll(querierProcesses);
       }
@@ -438,10 +481,11 @@ public class QuerierChainer implements Querier {
     return processes;
   }
 
-  public Set<InternalProcessDefinition> getProcesses(String processId) {
-    Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessDefinition> querierProcesses = querier.getProcesses(processId);
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final String processId) {
+    final Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessDefinition> querierProcesses = querier.getProcesses(processId);
       if (querierProcesses != null && !querierProcesses.isEmpty()) {
         processes.addAll(querierProcesses);
       }
@@ -449,10 +493,11 @@ public class QuerierChainer implements Querier {
     return processes;
   }
 
-  public Set<InternalProcessDefinition> getProcesses(ProcessState processState) {
-    Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessDefinition> querierProcesses = querier.getProcesses(processState);
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final ProcessState processState) {
+    final Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessDefinition> querierProcesses = querier.getProcesses(processState);
       if (querierProcesses != null && !querierProcesses.isEmpty()) {
         processes.addAll(querierProcesses);
       }
@@ -460,10 +505,11 @@ public class QuerierChainer implements Querier {
     return processes;
   }
 
-  public Set<InternalProcessDefinition> getProcesses(String processId, ProcessState processState) {
-    Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessDefinition> querierProcesses = querier.getProcesses(processId, processState);
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final String processId, final ProcessState processState) {
+    final Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessDefinition> querierProcesses = querier.getProcesses(processId, processState);
       if (querierProcesses != null && !querierProcesses.isEmpty()) {
         processes.addAll(querierProcesses);
       }
@@ -471,9 +517,10 @@ public class QuerierChainer implements Querier {
     return processes;
   }
 
-  public InternalProcessDefinition getProcess(ProcessDefinitionUUID processUUID) {
-    for (Querier querier : queriers) {
-      InternalProcessDefinition process = querier.getProcess(processUUID);
+  @Override
+  public InternalProcessDefinition getProcess(final ProcessDefinitionUUID processUUID) {
+    for (final Querier querier : queriers) {
+      final InternalProcessDefinition process = querier.getProcess(processUUID);
       if (process != null) {
         return process;
       }
@@ -481,9 +528,10 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
-  public InternalProcessDefinition getProcess(String processId, String version) {
-    for (Querier querier : queriers) {
-      InternalProcessDefinition process = querier.getProcess(processId, version);
+  @Override
+  public InternalProcessDefinition getProcess(final String processId, final String version) {
+    for (final Querier querier : queriers) {
+      final InternalProcessDefinition process = querier.getProcess(processId, version);
       if (process != null) {
         return process;
       }
@@ -491,11 +539,12 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
-  public String getLastProcessVersion(String processName) {
+  @Override
+  public String getLastProcessVersion(final String processName) {
     Misc.checkArgsNotNull(processName);
     String last = null;
-    for (Querier querier : queriers) {
-      String version = querier.getLastProcessVersion(processName);
+    for (final Querier querier : queriers) {
+      final String version = querier.getLastProcessVersion(processName);
       if (version != null && (last == null || version.compareTo(last) > 0)) {
         last = version;
       }
@@ -503,11 +552,12 @@ public class QuerierChainer implements Querier {
     return last;
   }
 
-  public InternalProcessDefinition getLastDeployedProcess(String processId, ProcessState processState) {
+  @Override
+  public InternalProcessDefinition getLastDeployedProcess(final String processId, final ProcessState processState) {
     Misc.checkArgsNotNull(processId, processState);
-    Set<InternalProcessDefinition> processes = getProcesses(processId, processState);
+    final Set<InternalProcessDefinition> processes = getProcesses(processId, processState);
     InternalProcessDefinition lastProcess = null;
-    for (InternalProcessDefinition process : processes) {
+    for (final InternalProcessDefinition process : processes) {
       if (lastProcess == null) {
         lastProcess = process;
       } else if (process.getDeployedDate().after(lastProcess.getDeployedDate())) {
@@ -517,9 +567,10 @@ public class QuerierChainer implements Querier {
     return lastProcess;
   }
 
-  public InternalActivityInstance getActivityInstance(ActivityInstanceUUID activityInstanceUUID) {
-    for (Querier querier : queriers) {
-      InternalActivityInstance activity = querier.getActivityInstance(activityInstanceUUID);
+  @Override
+  public InternalActivityInstance getActivityInstance(final ActivityInstanceUUID activityInstanceUUID) {
+    for (final Querier querier : queriers) {
+      final InternalActivityInstance activity = querier.getActivityInstance(activityInstanceUUID);
       if (activity != null) {
         return activity;
       }
@@ -527,9 +578,10 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
-  public Set<TaskInstance> getTaskInstances(ProcessInstanceUUID instanceUUID) {
-    Set<TaskInstance> activities = new HashSet<TaskInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<TaskInstance> getTaskInstances(final ProcessInstanceUUID instanceUUID) {
+    final Set<TaskInstance> activities = new HashSet<TaskInstance>();
+    for (final Querier querier : queriers) {
       activities.addAll(querier.getTaskInstances(instanceUUID));
       if (!activities.isEmpty()) {
         return activities;
@@ -538,9 +590,10 @@ public class QuerierChainer implements Querier {
     return activities;
   }
 
-  public Set<TaskInstance> getTaskInstances(ProcessInstanceUUID instanceUUID, Set<String> taskNames) {
-    Set<TaskInstance> activities = new HashSet<TaskInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<TaskInstance> getTaskInstances(final ProcessInstanceUUID instanceUUID, final Set<String> taskNames) {
+    final Set<TaskInstance> activities = new HashSet<TaskInstance>();
+    for (final Querier querier : queriers) {
       activities.addAll(querier.getTaskInstances(instanceUUID, taskNames));
       if (!activities.isEmpty()) {
         return activities;
@@ -549,9 +602,11 @@ public class QuerierChainer implements Querier {
     return activities;
   }
 
-  public Set<TaskInstance> getUserInstanceTasks(String userId, ProcessInstanceUUID instanceUUID, ActivityState taskState) {
-    Set<TaskInstance> activities = new HashSet<TaskInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<TaskInstance> getUserInstanceTasks(final String userId, final ProcessInstanceUUID instanceUUID,
+      final ActivityState taskState) {
+    final Set<TaskInstance> activities = new HashSet<TaskInstance>();
+    for (final Querier querier : queriers) {
       activities.addAll(querier.getUserInstanceTasks(userId, instanceUUID, taskState));
       if (!activities.isEmpty()) {
         return activities;
@@ -560,25 +615,28 @@ public class QuerierChainer implements Querier {
     return activities;
   }
 
-  public Set<TaskInstance> getUserTasks(String userId, ActivityState taskState) {
-    Set<TaskInstance> activities = new HashSet<TaskInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<TaskInstance> getUserTasks(final String userId, final ActivityState taskState) {
+    final Set<TaskInstance> activities = new HashSet<TaskInstance>();
+    for (final Querier querier : queriers) {
       activities.addAll(querier.getUserTasks(userId, taskState));
     }
     return activities;
   }
 
-  public Set<TaskInstance> getUserTasks(String userId, Collection<ActivityState> taskStates) {
-    Set<TaskInstance> activities = new HashSet<TaskInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<TaskInstance> getUserTasks(final String userId, final Collection<ActivityState> taskStates) {
+    final Set<TaskInstance> activities = new HashSet<TaskInstance>();
+    for (final Querier querier : queriers) {
       activities.addAll(querier.getUserTasks(userId, taskStates));
     }
     return activities;
   }
 
-  public InternalActivityDefinition getActivity(ActivityDefinitionUUID activityDefinitionUUID) {
-    for (Querier querier : queriers) {
-      InternalActivityDefinition activity = querier.getActivity(activityDefinitionUUID);
+  @Override
+  public InternalActivityDefinition getActivity(final ActivityDefinitionUUID activityDefinitionUUID) {
+    for (final Querier querier : queriers) {
+      final InternalActivityDefinition activity = querier.getActivity(activityDefinitionUUID);
       if (activity != null) {
         return activity;
       }
@@ -586,18 +644,20 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
-  public int getNumberOfUserOpenSteps(String userId) {
+  @Override
+  public int getNumberOfUserOpenSteps(final String userId) {
     int openSteps = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       openSteps += querier.getNumberOfUserOpenSteps(userId);
     }
     return openSteps;
   }
 
-  public List<Integer> getNumberOfFinishedCasesPerDay(Date since, Date to) {
-    List<Integer> finishedCases = new ArrayList<Integer>();
-    for (Querier querier : queriers) {
-      List<Integer> finishedList = querier.getNumberOfFinishedCasesPerDay(since, to);
+  @Override
+  public List<Integer> getNumberOfFinishedCasesPerDay(final Date since, final Date to) {
+    final List<Integer> finishedCases = new ArrayList<Integer>();
+    for (final Querier querier : queriers) {
+      final List<Integer> finishedList = querier.getNumberOfFinishedCasesPerDay(since, to);
       if (finishedCases.isEmpty()) {
         for (int i = 0; i < finishedList.size(); i++) {
           finishedCases.add(finishedList.get(i));
@@ -611,10 +671,11 @@ public class QuerierChainer implements Querier {
     return finishedCases;
   }
 
-  public List<Integer> getNumberOfExecutingCasesPerDay(Date since, Date to) {
-    List<Integer> executingCases = new ArrayList<Integer>();
-    for (Querier querier : queriers) {
-      List<Integer> executingList = querier.getNumberOfExecutingCasesPerDay(since, to);
+  @Override
+  public List<Integer> getNumberOfExecutingCasesPerDay(final Date since, final Date to) {
+    final List<Integer> executingCases = new ArrayList<Integer>();
+    for (final Querier querier : queriers) {
+      final List<Integer> executingList = querier.getNumberOfExecutingCasesPerDay(since, to);
       if (executingCases.isEmpty()) {
         for (int i = 0; i < executingList.size(); i++) {
           executingCases.add(executingList.get(i));
@@ -628,10 +689,11 @@ public class QuerierChainer implements Querier {
     return executingCases;
   }
 
-  public List<Integer> getNumberOfOpenStepsPerDay(Date since, Date to) {
-    List<Integer> opensteps = new ArrayList<Integer>();
-    for (Querier querier : queriers) {
-      List<Integer> openList = querier.getNumberOfOpenStepsPerDay(since, to);
+  @Override
+  public List<Integer> getNumberOfOpenStepsPerDay(final Date since, final Date to) {
+    final List<Integer> opensteps = new ArrayList<Integer>();
+    for (final Querier querier : queriers) {
+      final List<Integer> openList = querier.getNumberOfOpenStepsPerDay(since, to);
       if (opensteps.isEmpty()) {
         for (int i = 0; i < openList.size(); i++) {
           opensteps.add(openList.get(i));
@@ -645,82 +707,92 @@ public class QuerierChainer implements Querier {
     return opensteps;
   }
 
-  public int getNumberOfOverdueSteps(Date currentDate) {
+  @Override
+  public int getNumberOfOverdueSteps(final Date currentDate) {
     int openSteps = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       openSteps += querier.getNumberOfOverdueSteps(currentDate);
     }
     return openSteps;
   }
 
-  public int getNumberOfStepsAtRisk(Date currentDate, Date atRisk) {
+  @Override
+  public int getNumberOfStepsAtRisk(final Date currentDate, final Date atRisk) {
     int openSteps = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       openSteps += querier.getNumberOfStepsAtRisk(currentDate, atRisk);
     }
     return openSteps;
   }
 
+  @Override
   public int getNumberOfOpenSteps() {
     int openSteps = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       openSteps += querier.getNumberOfOpenSteps();
     }
     return openSteps;
   }
 
-  public int getNumberOfUserOverdueSteps(String userId, Date currentDate) {
+  @Override
+  public int getNumberOfUserOverdueSteps(final String userId, final Date currentDate) {
     int openSteps = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       openSteps += querier.getNumberOfUserOverdueSteps(userId, currentDate);
     }
     return openSteps;
   }
 
-  public int getNumberOfUserStepsAtRisk(String userId, Date currentDate, Date atRisk) {
+  @Override
+  public int getNumberOfUserStepsAtRisk(final String userId, final Date currentDate, final Date atRisk) {
     int stepsAtRisk = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       stepsAtRisk += querier.getNumberOfUserStepsAtRisk(userId, currentDate, atRisk);
     }
     return stepsAtRisk;
   }
 
-  public int getNumberOfFinishedSteps(int priority, Date since) {
+  @Override
+  public int getNumberOfFinishedSteps(final int priority, final Date since) {
     int finishedSteps = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       finishedSteps += querier.getNumberOfFinishedSteps(priority, since);
     }
     return finishedSteps;
   }
 
-  public int getNumberOfOpenSteps(int priority) {
+  @Override
+  public int getNumberOfOpenSteps(final int priority) {
     int openSteps = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       openSteps += querier.getNumberOfOpenSteps(priority);
     }
     return openSteps;
   }
 
-  public int getNumberOfUserFinishedSteps(String userId, int priority, Date since) {
+  @Override
+  public int getNumberOfUserFinishedSteps(final String userId, final int priority, final Date since) {
     int finishedSteps = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       finishedSteps += querier.getNumberOfUserFinishedSteps(userId, priority, since);
     }
     return finishedSteps;
   }
 
-  public int getNumberOfUserOpenSteps(String userId, int priority) {
+  @Override
+  public int getNumberOfUserOpenSteps(final String userId, final int priority) {
     int openSteps = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       openSteps += querier.getNumberOfUserOpenSteps(userId, priority);
     }
     return openSteps;
   }
 
-  public Set<InternalProcessDefinition> getProcesses(Set<ProcessDefinitionUUID> definitionUUIDs) {
-    Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessDefinition> temp = querier.getProcesses(definitionUUIDs);
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessDefinition> temp = querier.getProcesses(definitionUUIDs);
       if (temp != null) {
         processes.addAll(temp);
       }
@@ -728,10 +800,12 @@ public class QuerierChainer implements Querier {
     return processes;
   }
 
-  public Set<InternalProcessDefinition> getProcesses(Set<ProcessDefinitionUUID> definitionUUIDs, ProcessState processState) {
-    Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessDefinition> temp = querier.getProcesses(definitionUUIDs, processState);
+  @Override
+  public Set<InternalProcessDefinition> getProcesses(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final ProcessState processState) {
+    final Set<InternalProcessDefinition> processes = new HashSet<InternalProcessDefinition>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessDefinition> temp = querier.getProcesses(definitionUUIDs, processState);
       if (temp != null) {
         processes.addAll(temp);
       }
@@ -739,11 +813,13 @@ public class QuerierChainer implements Querier {
     return processes;
   }
 
-  public InternalProcessDefinition getLastDeployedProcess(Set<ProcessDefinitionUUID> definitionUUIDs, ProcessState processState) {
+  @Override
+  public InternalProcessDefinition getLastDeployedProcess(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final ProcessState processState) {
     Misc.checkArgsNotNull(processState);
-    Set<InternalProcessDefinition> processes = getProcesses(definitionUUIDs, processState);
+    final Set<InternalProcessDefinition> processes = getProcesses(definitionUUIDs, processState);
     InternalProcessDefinition lastProcess = null;
-    for (InternalProcessDefinition process : processes) {
+    for (final InternalProcessDefinition process : processes) {
       if (lastProcess == null) {
         lastProcess = process;
       } else if (process.getDeployedDate().after(lastProcess.getDeployedDate())) {
@@ -753,18 +829,21 @@ public class QuerierChainer implements Querier {
     return lastProcess;
   }
 
-  public Set<InternalProcessInstance> getProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<InternalProcessInstance> getProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
       processInsts.addAll(querier.getProcessInstances(definitionUUIDs));
     }
     return processInsts;
   }
 
-  public Set<InternalProcessInstance> getUserInstances(String userId, Set<ProcessDefinitionUUID> definitionUUIDs) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessInstance> tmp = querier.getUserInstances(userId, definitionUUIDs);
+  @Override
+  public Set<InternalProcessInstance> getUserInstances(final String userId,
+      final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessInstance> tmp = querier.getUserInstances(userId, definitionUUIDs);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -772,27 +851,31 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-  public int getNumberOfProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs) {
+  @Override
+  public int getNumberOfProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs) {
     int nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfProcessInstances(definitionUUIDs);
     }
     return nb;
   }
 
-  public int getNumberOfParentProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs) {
+  @Override
+  public int getNumberOfParentProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs) {
     int nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfParentProcessInstances(definitionUUIDs);
     }
     return nb;
   }
 
-  public Set<InternalProcessInstance> getProcessInstancesWithTaskState(Collection<ActivityState> activityStates,
-      Set<ProcessDefinitionUUID> definitionUUIDs) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessInstance> tmp = querier.getProcessInstancesWithTaskState(activityStates, definitionUUIDs);
+  @Override
+  public Set<InternalProcessInstance> getProcessInstancesWithTaskState(final Collection<ActivityState> activityStates,
+      final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessInstance> tmp = querier
+          .getProcessInstancesWithTaskState(activityStates, definitionUUIDs);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -800,11 +883,13 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-  public Set<InternalProcessInstance> getProcessInstancesWithInstanceStates(Collection<InstanceState> instanceStates,
-      Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessInstance> tmp = querier.getProcessInstancesWithInstanceStates(instanceStates, visibleProcessUUIDs);
+  @Override
+  public Set<InternalProcessInstance> getProcessInstancesWithInstanceStates(
+      final Collection<InstanceState> instanceStates, final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessInstance> tmp = querier.getProcessInstancesWithInstanceStates(instanceStates,
+          visibleProcessUUIDs);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -812,9 +897,11 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-  public TaskInstance getOneTask(String userId, ActivityState taskState, Set<ProcessDefinitionUUID> definitionUUIDs) {
-    for (Querier querier : queriers) {
-      TaskInstance task = querier.getOneTask(userId, taskState, definitionUUIDs);
+  @Override
+  public TaskInstance getOneTask(final String userId, final ActivityState taskState,
+      final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    for (final Querier querier : queriers) {
+      final TaskInstance task = querier.getOneTask(userId, taskState, definitionUUIDs);
       if (task != null) {
         return task;
       }
@@ -822,26 +909,30 @@ public class QuerierChainer implements Querier {
     return null;
   }
 
-  public Set<TaskInstance> getUserTasks(String userId, ActivityState taskState, Set<ProcessDefinitionUUID> definitionUUIDs) {
-    Set<TaskInstance> activities = new HashSet<TaskInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<TaskInstance> getUserTasks(final String userId, final ActivityState taskState,
+      final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final Set<TaskInstance> activities = new HashSet<TaskInstance>();
+    for (final Querier querier : queriers) {
       activities.addAll(querier.getUserTasks(userId, taskState, definitionUUIDs));
     }
     return activities;
   }
 
-  public int getNumberOfActivityInstanceComments(ActivityInstanceUUID activityUUID) {
+  @Override
+  public int getNumberOfActivityInstanceComments(final ActivityInstanceUUID activityUUID) {
     int comments = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       comments += querier.getNumberOfActivityInstanceComments(activityUUID);
     }
     return comments;
   }
 
-  public Set<InternalProcessInstance> getUserInstances(String userId) {
-    Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      Set<InternalProcessInstance> tmp = querier.getUserInstances(userId);
+  @Override
+  public Set<InternalProcessInstance> getUserInstances(final String userId) {
+    final Set<InternalProcessInstance> processInsts = new HashSet<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final Set<InternalProcessInstance> tmp = querier.getUserInstances(userId);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -849,10 +940,12 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-  public List<InternalProcessInstance> getParentUserInstances(String userId, int fromIndex, int pageSize) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentUserInstances(userId, fromIndex, pageSize);
+  @Override
+  public List<InternalProcessInstance> getParentUserInstances(final String userId, final int fromIndex,
+      final int pageSize) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier.getParentUserInstances(userId, fromIndex, pageSize);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -861,48 +954,56 @@ public class QuerierChainer implements Querier {
 
   }
 
-	public List<InternalProcessInstance> getParentUserInstances(String userId,
-			int startingIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> querierInstances = querier.getParentUserInstances(userId, startingIndex, pageSize, pagingCriterion);
+  @Override
+  public List<InternalProcessInstance> getParentUserInstances(final String userId, final int startingIndex,
+      final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> querierInstances = querier.getParentUserInstances(userId, startingIndex,
+          pageSize, pagingCriterion);
       if (querierInstances != null && !querierInstances.isEmpty()) {
         processInsts.addAll(querierInstances);
       }
     }
     return processInsts;
-	}
+  }
 
-  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(String userId, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithActiveUser(userId, fromIndex, pageSize, visibleProcessUUIDs);
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithActiveUser(userId, fromIndex,
+          pageSize, visibleProcessUUIDs);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
     }
     return processInsts;
   }
-  
-	public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(
-			String userId, int startingIndex, int pageSize,
-			Set<ProcessDefinitionUUID> visibleProcessUUIDs,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> querierProcessInsts = querier.getParentProcessInstancesWithActiveUser(userId, 
-      		startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
+
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int startingIndex, final int pageSize, final Set<ProcessDefinitionUUID> visibleProcessUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> querierProcessInsts = querier.getParentProcessInstancesWithActiveUser(userId,
+          startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
       if (querierProcessInsts != null && !querierProcessInsts.isEmpty()) {
         processInsts.addAll(querierProcessInsts);
       }
     }
     return processInsts;
-	}
+  }
 
-  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(String userId, int fromIndex, int pageSize) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithActiveUser(userId, fromIndex, pageSize);
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int fromIndex, final int pageSize) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithActiveUser(userId, fromIndex,
+          pageSize);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -910,25 +1011,29 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(
-			String userId, int startingIndex, int pageSize,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> querierProcessInsts = querier.getParentProcessInstancesWithActiveUser(
-      		userId, startingIndex, pageSize, pagingCriterion);
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUser(final String userId,
+      final int startingIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> querierProcessInsts = querier.getParentProcessInstancesWithActiveUser(userId,
+          startingIndex, pageSize, pagingCriterion);
       if (querierProcessInsts != null && !querierProcessInsts.isEmpty()) {
         processInsts.addAll(querierProcessInsts);
       }
     }
     return processInsts;
-	}
+  }
 
-  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, Date currentDate, Date atRisk, int startingIndex, int pageSize,
-      Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk, startingIndex, pageSize,visibleProcessUUIDs);
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final Date currentDate, final Date atRisk, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier
+          .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+              startingIndex, pageSize, visibleProcessUUIDs);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -936,25 +1041,15 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-			String userId, Date currentDate, Date atRisk, int startingIndex,
-			int pageSize, Set<ProcessDefinitionUUID> visibleProcessUUIDs,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-      		userId, currentDate, atRisk, startingIndex, pageSize,visibleProcessUUIDs, pagingCriterion);
-      if (tmp != null && !tmp.isEmpty()) {
-        processInsts.addAll(tmp);
-      }
-    }
-    return processInsts;
-	}
-
-  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, Date currentDate, Date atRisk, int startingIndex, int pageSize) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk, startingIndex, pageSize);
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final Date currentDate, final Date atRisk, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier
+          .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+              startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -962,24 +1057,14 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-			String userId, Date currentDate, Date atRisk, int startingIndex,
-			int pageSize, ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
-      		userId, currentDate, atRisk, startingIndex, pageSize, pagingCriterion);
-      if (tmp != null && !tmp.isEmpty()) {
-        processInsts.addAll(tmp);
-      }
-    }
-    return processInsts;
-	}
-
-  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(String userId, Date currentDate, int startingIndex, int pageSize, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithOverdueTasks(userId, currentDate, startingIndex, pageSize,visibleProcessUUIDs);
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final Date currentDate, final Date atRisk, final int startingIndex, final int pageSize) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier
+          .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+              startingIndex, pageSize);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -987,25 +1072,59 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(
-			String userId, Date currentDate, int startingIndex, int pageSize,
-			Set<ProcessDefinitionUUID> visibleProcessUUIDs,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> querierInstances = querier.getParentProcessInstancesWithOverdueTasks(userId, 
-      		currentDate, startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(
+      final String userId, final Date currentDate, final Date atRisk, final int startingIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier
+          .getParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk,
+              startingIndex, pageSize, pagingCriterion);
+      if (tmp != null && !tmp.isEmpty()) {
+        processInsts.addAll(tmp);
+      }
+    }
+    return processInsts;
+  }
+
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final Date currentDate, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithOverdueTasks(userId, currentDate,
+          startingIndex, pageSize, visibleProcessUUIDs);
+      if (tmp != null && !tmp.isEmpty()) {
+        processInsts.addAll(tmp);
+      }
+    }
+    return processInsts;
+  }
+
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final Date currentDate, final int startingIndex, final int pageSize,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> querierInstances = querier.getParentProcessInstancesWithOverdueTasks(userId,
+          currentDate, startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
       if (querierInstances != null && !querierInstances.isEmpty()) {
         processInsts.addAll(querierInstances);
       }
     }
     return processInsts;
-	}
+  }
 
-  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(String userId, Date currentDate, int startingIndex, int pageSize) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithOverdueTasks(userId, currentDate, startingIndex, pageSize);
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final Date currentDate, final int startingIndex, final int pageSize) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithOverdueTasks(userId, currentDate,
+          startingIndex, pageSize);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -1013,24 +1132,14 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(
-			String userId, Date currentDate, int startingIndex, int pageSize,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithOverdueTasks(
-      		userId, currentDate, startingIndex, pageSize, pagingCriterion);
-      if (tmp != null && !tmp.isEmpty()) {
-        processInsts.addAll(tmp);
-      }
-    }
-    return processInsts;
-	}
-
-  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(String userId, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithInvolvedUser(userId, fromIndex, pageSize, visibleProcessUUIDs);
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithOverdueTasks(final String userId,
+      final Date currentDate, final int startingIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithOverdueTasks(userId, currentDate,
+          startingIndex, pageSize, pagingCriterion);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -1038,25 +1147,13 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(
-			String userId, int startingIndex, int pageSize,
-			Set<ProcessDefinitionUUID> visibleProcessUUIDs,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithInvolvedUser(
-      		userId, startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
-      if (tmp != null && !tmp.isEmpty()) {
-        processInsts.addAll(tmp);
-      }
-    }
-    return processInsts;
-	}
-
-  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(String userId, int fromIndex, int pageSize) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithInvolvedUser(userId, fromIndex, pageSize);
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int fromIndex, final int pageSize, final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithInvolvedUser(userId, fromIndex,
+          pageSize, visibleProcessUUIDs);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -1064,24 +1161,14 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-	public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(
-			String userId, int startingIndex, int pageSize,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithInvolvedUser(
-      		userId, startingIndex, pageSize, pagingCriterion);
-      if (tmp != null && !tmp.isEmpty()) {
-        processInsts.addAll(tmp);
-      }
-    }
-    return processInsts;
-	}
-
-  public List<InternalProcessInstance> getParentUserInstances(String userId, int fromIndex, int pageSize, Set<ProcessDefinitionUUID> definitionUUIDs) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentUserInstances(userId, fromIndex, pageSize, definitionUUIDs);
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int startingIndex, final int pageSize, final Set<ProcessDefinitionUUID> visibleProcessUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithInvolvedUser(userId,
+          startingIndex, pageSize, visibleProcessUUIDs, pagingCriterion);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
@@ -1089,153 +1176,221 @@ public class QuerierChainer implements Querier {
     return processInsts;
   }
 
-	public List<InternalProcessInstance> getParentUserInstances(String userId,
-			int startingIndex, int pageSize,
-			Set<ProcessDefinitionUUID> definitionUUIDs,
-			ProcessInstanceCriterion pagingCriterion) {
-		List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      List<InternalProcessInstance> tmp = querier.getParentUserInstances(userId, startingIndex, 
-      		pageSize, definitionUUIDs, pagingCriterion);
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int fromIndex, final int pageSize) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithInvolvedUser(userId, fromIndex,
+          pageSize);
       if (tmp != null && !tmp.isEmpty()) {
         processInsts.addAll(tmp);
       }
     }
     return processInsts;
-	}
+  }
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUser(String userId, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesWithInvolvedUser(final String userId,
+      final int startingIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier.getParentProcessInstancesWithInvolvedUser(userId,
+          startingIndex, pageSize, pagingCriterion);
+      if (tmp != null && !tmp.isEmpty()) {
+        processInsts.addAll(tmp);
+      }
+    }
+    return processInsts;
+  }
+
+  @Override
+  public List<InternalProcessInstance> getParentUserInstances(final String userId, final int fromIndex,
+      final int pageSize, final Set<ProcessDefinitionUUID> definitionUUIDs) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier.getParentUserInstances(userId, fromIndex, pageSize,
+          definitionUUIDs);
+      if (tmp != null && !tmp.isEmpty()) {
+        processInsts.addAll(tmp);
+      }
+    }
+    return processInsts;
+  }
+
+  @Override
+  public List<InternalProcessInstance> getParentUserInstances(final String userId, final int startingIndex,
+      final int pageSize, final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      final List<InternalProcessInstance> tmp = querier.getParentUserInstances(userId, startingIndex, pageSize,
+          definitionUUIDs, pagingCriterion);
+      if (tmp != null && !tmp.isEmpty()) {
+        processInsts.addAll(tmp);
+      }
+    }
+    return processInsts;
+  }
+
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUser(final String userId,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
     Integer result = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       result += querier.getNumberOfParentProcessInstancesWithActiveUser(userId, visibleProcessUUIDs);
     }
     return result;
   }
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUser(String userId) {
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUser(final String userId) {
     Integer result = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       result += querier.getNumberOfParentProcessInstancesWithActiveUser(userId);
     }
     return result;
   }
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, Date currentDate, Date atRisk, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(final String userId,
+      final Date currentDate, final Date atRisk, final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
     Integer result = 0;
-    for (Querier querier : queriers) {
-      result += querier.getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk);
+    for (final Querier querier : queriers) {
+      result += querier.getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId,
+          currentDate, atRisk);
     }
     return result;
   }
 
-  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(String userId, Date currentDate, Date atRisk) {
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(final String userId,
+      final Date currentDate, final Date atRisk) {
     Integer result = 0;
-    for (Querier querier : queriers) {
-      result += querier.getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId, currentDate, atRisk);
+    for (final Querier querier : queriers) {
+      result += querier.getNumberOfParentProcessInstancesWithActiveUserAndActivityInstanceExpectedEndDate(userId,
+          currentDate, atRisk);
     }
     return result;
   }
 
-  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(String userId, Date currentDate, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(final String userId, final Date currentDate,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
     Integer result = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       result += querier.getNumberOfParentProcessInstancesWithOverdueTasks(userId, currentDate, visibleProcessUUIDs);
     }
     return result;
   }
 
-  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(String userId, Date currentDate) {
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithOverdueTasks(final String userId, final Date currentDate) {
     Integer result = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       result += querier.getNumberOfParentProcessInstancesWithOverdueTasks(userId, currentDate);
     }
     return result;
   }
 
-  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(String userId, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(final String userId,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
     Integer result = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       result += querier.getNumberOfParentProcessInstancesWithInvolvedUser(userId, visibleProcessUUIDs);
     }
     return result;
   }
 
-  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(String userId) {
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithInvolvedUser(final String userId) {
     Integer result = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       result += querier.getNumberOfParentProcessInstancesWithInvolvedUser(userId);
     }
     return result;
   }
 
-  public Integer getNumberOfParentProcessInstancesWithStartedBy(String userId, Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithStartedBy(final String userId,
+      final Set<ProcessDefinitionUUID> visibleProcessUUIDs) {
     Integer result = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       result += querier.getNumberOfParentProcessInstancesWithStartedBy(userId, visibleProcessUUIDs);
     }
     return result;
   }
 
-  public Integer getNumberOfParentProcessInstancesWithStartedBy(String userId) {
+  @Override
+  public Integer getNumberOfParentProcessInstancesWithStartedBy(final String userId) {
     Integer result = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       result += querier.getNumberOfParentProcessInstancesWithStartedBy(userId);
     }
     return result;
   }
 
-  public Map<ActivityInstanceUUID, Integer> getNumberOfActivityInstanceComments(Set<ActivityInstanceUUID> activityUUIDs) {
-    Map<ActivityInstanceUUID, Integer> result = new HashMap<ActivityInstanceUUID, Integer>();
-    for (Querier querier : queriers) {
+  @Override
+  public Map<ActivityInstanceUUID, Integer> getNumberOfActivityInstanceComments(
+      final Set<ActivityInstanceUUID> activityUUIDs) {
+    final Map<ActivityInstanceUUID, Integer> result = new HashMap<ActivityInstanceUUID, Integer>();
+    for (final Querier querier : queriers) {
       result.putAll(querier.getNumberOfActivityInstanceComments(activityUUIDs));
     }
     return result;
   }
 
-  public int getNumberOfComments(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public int getNumberOfComments(final ProcessInstanceUUID instanceUUID) {
     int comments = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       comments += querier.getNumberOfComments(instanceUUID);
     }
     return comments;
   }
 
-  public List<Comment> getCommentFeed(ProcessInstanceUUID instanceUUID) {
-    List<Comment> comments = new ArrayList<Comment>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Comment> getCommentFeed(final ProcessInstanceUUID instanceUUID) {
+    final List<Comment> comments = new ArrayList<Comment>();
+    for (final Querier querier : queriers) {
       comments.addAll(querier.getCommentFeed(instanceUUID));
     }
     return comments;
   }
 
-  public int getNumberOfProcessInstanceComments(ProcessInstanceUUID instanceUUID) {
+  @Override
+  public int getNumberOfProcessInstanceComments(final ProcessInstanceUUID instanceUUID) {
     int comments = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       comments += querier.getNumberOfProcessInstanceComments(instanceUUID);
     }
     return comments;
   }
 
-  public List<Comment> getProcessInstanceCommentFeed(ProcessInstanceUUID instanceUUID) {
-    List<Comment> comments = new ArrayList<Comment>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Comment> getProcessInstanceCommentFeed(final ProcessInstanceUUID instanceUUID) {
+    final List<Comment> comments = new ArrayList<Comment>();
+    for (final Querier querier : queriers) {
       comments.addAll(querier.getProcessInstanceCommentFeed(instanceUUID));
     }
     return comments;
   }
 
-  public List<Comment> getActivityInstanceCommentFeed(ActivityInstanceUUID activityUUID) {
-    List<Comment> comments = new ArrayList<Comment>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Comment> getActivityInstanceCommentFeed(final ActivityInstanceUUID activityUUID) {
+    final List<Comment> comments = new ArrayList<Comment>();
+    for (final Querier querier : queriers) {
       comments.addAll(querier.getActivityInstanceCommentFeed(activityUUID));
     }
     return comments;
   }
 
+  @Override
   public Set<ProcessDefinitionUUID> getAllProcessDefinitionUUIDs() {
-    Set<ProcessDefinitionUUID> set = new HashSet<ProcessDefinitionUUID>();
-    for (Querier querier : queriers) {
-      Set<ProcessDefinitionUUID> tmp = querier.getAllProcessDefinitionUUIDs();
+    final Set<ProcessDefinitionUUID> set = new HashSet<ProcessDefinitionUUID>();
+    for (final Querier querier : queriers) {
+      final Set<ProcessDefinitionUUID> tmp = querier.getAllProcessDefinitionUUIDs();
       if (tmp != null && !tmp.isEmpty()) {
         set.addAll(tmp);
       }
@@ -1244,10 +1399,11 @@ public class QuerierChainer implements Querier {
     return set;
   }
 
-  public Set<ProcessDefinitionUUID> getAllProcessDefinitionUUIDsExcept(Set<ProcessDefinitionUUID> processUUIDs) {
-    Set<ProcessDefinitionUUID> set = new HashSet<ProcessDefinitionUUID>();
-    for (Querier querier : queriers) {
-      Set<ProcessDefinitionUUID> tmp = querier.getAllProcessDefinitionUUIDsExcept(processUUIDs);
+  @Override
+  public Set<ProcessDefinitionUUID> getAllProcessDefinitionUUIDsExcept(final Set<ProcessDefinitionUUID> processUUIDs) {
+    final Set<ProcessDefinitionUUID> set = new HashSet<ProcessDefinitionUUID>();
+    for (final Querier querier : queriers) {
+      final Set<ProcessDefinitionUUID> tmp = querier.getAllProcessDefinitionUUIDsExcept(processUUIDs);
       if (tmp != null && !tmp.isEmpty()) {
         set.addAll(tmp);
       }
@@ -1256,430 +1412,436 @@ public class QuerierChainer implements Querier {
     return set;
   }
 
-
-  ///////////////////////////////////////////
-  ////////// PAGINATION OPERATIONS //////////
-  ///////////////////////////////////////////
+  // /////////////////////////////////////////
+  // //////// PAGINATION OPERATIONS //////////
+  // /////////////////////////////////////////
 
   /*
-	private static class PaginatedMethod {
-		private String methodName;
-		private Class< ? >[] methodSignature;
-		private List<Object> methodParameters;
-		public PaginatedMethod(String methodName, Class<?>[] methodSignature, Object... methodParameters) {
-			super();
-			this.methodName = methodName;
-			this.methodSignature = methodSignature;
-			this.methodParameters = new ArrayList<Object>();
-			if (methodParameters != null) {
-				for (Object o : methodParameters) {
-					this.methodParameters.add(o);
-				}
-			}
-		}
-		public String getMethodName() {
-			return methodName;
-		}
-		public Class<?>[] getMethodSignature() {
-			return methodSignature;
-		}
-		public List<Object> getMethodParameters() {
-			return methodParameters;
-		}
-	}
+   * private static class PaginatedMethod { private String methodName; private Class< ? >[] methodSignature; private
+   * List<Object> methodParameters; public PaginatedMethod(String methodName, Class<?>[] methodSignature, Object...
+   * methodParameters) { super(); this.methodName = methodName; this.methodSignature = methodSignature;
+   * this.methodParameters = new ArrayList<Object>(); if (methodParameters != null) { for (Object o : methodParameters)
+   * { this.methodParameters.add(o); } } } public String getMethodName() { return methodName; } public Class<?>[]
+   * getMethodSignature() { return methodSignature; } public List<Object> getMethodParameters() { return
+   * methodParameters; } }
+   * @SuppressWarnings("unchecked") private List<InternalProcessInstance> getInstancesPaging(PaginatedMethod
+   * firstPaginatedMethod, PaginatedMethod secondPaginatedMethod, int fromIndex, int pageSize) { try {
+   * List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>(); for (Querier querier :
+   * queriers) { if (processInsts.size() < fromIndex + pageSize) { //buid a set with at least all the first elements
+   * final Method firstMethod = querier.getClass().getMethod(firstPaginatedMethod.getMethodName(),
+   * firstPaginatedMethod.getMethodSignature());
+   * processInsts.addAll((List<InternalProcessInstance>)firstMethod.invoke(querier,
+   * firstPaginatedMethod.getMethodParameters().toArray())); } else { //retrieve maximum (maybe less) fromIndex+pageSize
+   * elements. //All returned elements must be younger or equal to the older elements of the current list final long
+   * currentOldestUpdate = processInsts.get(processInsts.size() - 1).getLastUpdate().getTime(); List<Object> parameters
+   * = new ArrayList<Object>(secondPaginatedMethod.getMethodParameters()); parameters.add(currentOldestUpdate); final
+   * Method secondMethod = querier.getClass().getMethod(secondPaginatedMethod.getMethodName(),
+   * secondPaginatedMethod.getMethodSignature()); final List<InternalProcessInstance> newProcessInstances =
+   * (List<InternalProcessInstance>)secondMethod.invoke(querier, parameters.toArray()); if
+   * (!newProcessInstances.isEmpty()) { processInsts.addAll(newProcessInstances); //sort the list and keep only
+   * fromIndex+pageSize elements Collections.sort(processInsts, new ProcessInstanceLastUpdateComparator()); processInsts
+   * = Misc.subList(InternalProcessInstance.class, processInsts, 0, fromIndex+pageSize); } } } return
+   * getInstancesSubset(fromIndex, pageSize, processInsts); } catch (Exception e) { throw new
+   * BonitaRuntimeException("Exception while accessing paginated API: " + e.getMessage(), e); } //USAGE
+   * //PaginatedMethod firstPaginatedMethod = new PaginatedMethod("getProcessInstances", new Class[]{int.class,
+   * int.class}, 0, fromIndex + pageSize); //PaginatedMethod secondPaginatedMethod = new
+   * PaginatedMethod("getMostRecentProcessInstances", new Class[]{int.class, long.class}, fromIndex + pageSize);
+   * //return getInstancesPaging(firstPaginatedMethod, secondPaginatedMethod, fromIndex, pageSize); }
+   */
 
-
-	@SuppressWarnings("unchecked")
-	private List<InternalProcessInstance> getInstancesPaging(PaginatedMethod firstPaginatedMethod, PaginatedMethod secondPaginatedMethod, int fromIndex, int pageSize) {
-		try {
-			List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-
-			for (Querier querier : queriers) {
-				if (processInsts.size() < fromIndex + pageSize) {
-					//buid a set with at least all the first elements
-					final Method firstMethod = querier.getClass().getMethod(firstPaginatedMethod.getMethodName(), firstPaginatedMethod.getMethodSignature());
-					processInsts.addAll((List<InternalProcessInstance>)firstMethod.invoke(querier, firstPaginatedMethod.getMethodParameters().toArray()));
-				} else {
-					//retrieve maximum (maybe less) fromIndex+pageSize elements.
-					//All returned elements must be younger or equal to the older elements of the current list
-					final long currentOldestUpdate = processInsts.get(processInsts.size() - 1).getLastUpdate().getTime();
-					List<Object> parameters = new ArrayList<Object>(secondPaginatedMethod.getMethodParameters());
-					parameters.add(currentOldestUpdate);
-					final Method secondMethod = querier.getClass().getMethod(secondPaginatedMethod.getMethodName(), secondPaginatedMethod.getMethodSignature());
-					final List<InternalProcessInstance> newProcessInstances = (List<InternalProcessInstance>)secondMethod.invoke(querier, parameters.toArray());
-					if (!newProcessInstances.isEmpty()) {
-						processInsts.addAll(newProcessInstances);
-						//sort the list and keep only fromIndex+pageSize elements
-						Collections.sort(processInsts, new ProcessInstanceLastUpdateComparator());
-						processInsts = Misc.subList(InternalProcessInstance.class, processInsts, 0, fromIndex+pageSize);
-					}
-				}
-			}
-			return getInstancesSubset(fromIndex, pageSize, processInsts);
-		} catch (Exception e) {
-			throw new BonitaRuntimeException("Exception while accessing paginated API: " + e.getMessage(), e);
-		}
-
-		//USAGE
-		//PaginatedMethod firstPaginatedMethod = new PaginatedMethod("getProcessInstances", new Class[]{int.class, int.class}, 0, fromIndex + pageSize);
-		//PaginatedMethod secondPaginatedMethod = new PaginatedMethod("getMostRecentProcessInstances", new Class[]{int.class, long.class}, fromIndex + pageSize);
-		//return getInstancesPaging(firstPaginatedMethod, secondPaginatedMethod, fromIndex, pageSize);
-	}*/
-
-  public List<InternalProcessInstance> getProcessInstances(int fromIndex, int pageSize) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final int fromIndex, final int pageSize) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processInsts.addAll(querier.getProcessInstances(fromIndex, pageSize));
       return processInsts;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       if (processInsts.size() < fromIndex + pageSize) {
-        //buid a set with at least all the first elements
+        // buid a set with at least all the first elements
         processInsts.addAll(querier.getProcessInstances(0, fromIndex + pageSize));
       } else {
-        mergePaginatedProcessInstances(processInsts, querier.getMostRecentProcessInstances(fromIndex + pageSize, 
-        		getOldestTime(processInsts)), querier, fromIndex, pageSize, ProcessInstanceCriterion.DEFAULT);
+        mergePaginatedProcessInstances(processInsts,
+            querier.getMostRecentProcessInstances(fromIndex + pageSize, getOldestTime(processInsts)), querier,
+            fromIndex, pageSize, ProcessInstanceCriterion.DEFAULT);
       }
     }
 
     return getInstancesSubset(fromIndex, pageSize, processInsts, ProcessInstanceCriterion.DEFAULT);
-    //PaginatedMethod firstPaginatedMethod = new PaginatedMethod("getProcessInstances", new Class[]{int.class, int.class}, 0, fromIndex + pageSize);
-    //PaginatedMethod secondPaginatedMethod = new PaginatedMethod("getMostRecentProcessInstances", new Class[]{int.class, long.class}, fromIndex + pageSize);
-    //return getInstancesPaging(firstPaginatedMethod, secondPaginatedMethod, fromIndex, pageSize);
+    // PaginatedMethod firstPaginatedMethod = new PaginatedMethod("getProcessInstances", new Class[]{int.class,
+    // int.class}, 0, fromIndex + pageSize);
+    // PaginatedMethod secondPaginatedMethod = new PaginatedMethod("getMostRecentProcessInstances", new
+    // Class[]{int.class, long.class}, fromIndex + pageSize);
+    // return getInstancesPaging(firstPaginatedMethod, secondPaginatedMethod, fromIndex, pageSize);
   }
-  
 
-	/* (non-Javadoc)
-	 * @see org.ow2.bonita.services.Querier#getProcessInstances(int, int, org.ow2.bonita.facade.paging.ProcessInstanceCriterion)
-	 */
-	public List<InternalProcessInstance> getProcessInstances(int fromIndex,
-			int pageSize, ProcessInstanceCriterion paginCriterion) {
-		List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+  /*
+   * (non-Javadoc)
+   * @see org.ow2.bonita.services.Querier#getProcessInstances(int, int,
+   * org.ow2.bonita.facade.paging.ProcessInstanceCriterion)
+   */
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion paginCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processInsts.addAll(querier.getProcessInstances(fromIndex, pageSize, paginCriterion));
       return processInsts;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       if (processInsts.size() < fromIndex + pageSize) {
-        //buid a set with at least all the first elements
+        // buid a set with at least all the first elements
         processInsts.addAll(querier.getProcessInstances(0, fromIndex + pageSize, paginCriterion));
-      } else {      	
-        mergePaginatedProcessInstances(processInsts, querier.getMostRecentProcessInstances(fromIndex + pageSize, 
-        		getOldestTime(processInsts), paginCriterion), querier, fromIndex, pageSize, paginCriterion);
+      } else {
+        mergePaginatedProcessInstances(processInsts,
+            querier.getMostRecentProcessInstances(fromIndex + pageSize, getOldestTime(processInsts), paginCriterion),
+            querier, fromIndex, pageSize, paginCriterion);
       }
     }
 
     return getInstancesSubset(fromIndex, pageSize, processInsts, paginCriterion);
-	}
+  }
 
   private long getOldestTime(final List<InternalProcessInstance> processInsts) {
-    final long currentOldestUpdate = processInsts.get(processInsts.size() - 1).getLastUpdate().getTime();
-    return currentOldestUpdate;
+    return processInsts.get(processInsts.size() - 1).getLastUpdate().getTime();
   }
-  
-  private void mergePaginatedProcessInstances(List<InternalProcessInstance> processInsts, 
-  		final List<InternalProcessInstance> newProcessInstances, final Querier querier, int fromIndex, 
-  		int pageSize, ProcessInstanceCriterion pagingCriterion) {
-  	
-  	Comparator<InternalProcessInstance> comparator = null;
-  	switch (pagingCriterion) {
-		case LAST_UPDATE_ASC:
-			comparator = new ProcessInstanceLastUpdateComparatorAsc();
-			break;
-		case STARTED_DATE_ASC:
-			comparator = new ProcessInstanceStartedDateComparatorAsc();
-			break;
-		case ENDED_DATE_ASC:
-			comparator = new ProcessInstanceEndedDateComparatorAsc();
-			break;
-		case INSTANCE_NUMBER_ASC:
-			comparator = new ProcessInstanceNbComparatorAsc();
-			break;
-		case INSTANCE_UUID_ASC:
-			comparator = new ProcessInstanceUUIDComparatorAsc();
-			break;
-		case LAST_UPDATE_DESC:
-			comparator = new ProcessInstanceLastUpdateComparator();
-			break;
-		case STARTED_DATE_DESC:
-			comparator = new ProcessInstanceStartedDateComparatorDesc();
-			break;
-		case ENDED_DATE_DESC:
-			comparator = new ProcessInstanceEndedDateComparatorDesc();
-			break;
-		case INSTANCE_NUMBER_DESC:
-			comparator = new ProcessInstanceNbComparatorDesc();
-			break;
-		case INSTANCE_UUID_DESC:
-			comparator = new ProcessInstanceUUIDComparatorDesc();
-			break;
-		case DEFAULT:
-			comparator = new ProcessInstanceLastUpdateComparator();
-			break;
-		}
-    //retrieve maximum (maybe less) fromIndex+pageSize elements.
-    //All returned elements must be younger or equal to the older elements of the current list		
+
+  private void mergePaginatedProcessInstances(List<InternalProcessInstance> processInsts,
+      final List<InternalProcessInstance> newProcessInstances, final Querier querier, final int fromIndex,
+      final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+
+    Comparator<InternalProcessInstance> comparator = null;
+    switch (pagingCriterion) {
+    case LAST_UPDATE_ASC:
+      comparator = new ProcessInstanceLastUpdateComparatorAsc();
+      break;
+    case STARTED_DATE_ASC:
+      comparator = new ProcessInstanceStartedDateComparatorAsc();
+      break;
+    case ENDED_DATE_ASC:
+      comparator = new ProcessInstanceEndedDateComparatorAsc();
+      break;
+    case INSTANCE_NUMBER_ASC:
+      comparator = new ProcessInstanceNbComparatorAsc();
+      break;
+    case INSTANCE_UUID_ASC:
+      comparator = new ProcessInstanceUUIDComparatorAsc();
+      break;
+    case LAST_UPDATE_DESC:
+      comparator = new ProcessInstanceLastUpdateComparator();
+      break;
+    case STARTED_DATE_DESC:
+      comparator = new ProcessInstanceStartedDateComparatorDesc();
+      break;
+    case ENDED_DATE_DESC:
+      comparator = new ProcessInstanceEndedDateComparatorDesc();
+      break;
+    case INSTANCE_NUMBER_DESC:
+      comparator = new ProcessInstanceNbComparatorDesc();
+      break;
+    case INSTANCE_UUID_DESC:
+      comparator = new ProcessInstanceUUIDComparatorDesc();
+      break;
+    case DEFAULT:
+      comparator = new ProcessInstanceLastUpdateComparator();
+      break;
+    }
+    // retrieve maximum (maybe less) fromIndex+pageSize elements.
+    // All returned elements must be younger or equal to the older elements of the current list
     if (!newProcessInstances.isEmpty()) {
       processInsts.addAll(newProcessInstances);
-      //sort the list and keep only fromIndex+pageSize elements
+      // sort the list and keep only fromIndex+pageSize elements
       Collections.sort(processInsts, comparator);
-      processInsts = Misc.subList(InternalProcessInstance.class, processInsts, 0, fromIndex+pageSize);
+      processInsts = Misc.subList(InternalProcessInstance.class, processInsts, 0, fromIndex + pageSize);
     }
   }
 
-  public List<InternalProcessInstance> getMostRecentProcessInstances(int maxResults, long time) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<InternalProcessInstance> getMostRecentProcessInstances(final int maxResults, final long time) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
       processInsts.addAll(querier.getMostRecentProcessInstances(maxResults, time));
     }
     return processInsts;
   }
-  
-  public List<InternalProcessInstance> getMostRecentProcessInstances(
-			int maxResults, long time, ProcessInstanceCriterion pagingCriterion) {
-  	List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
+
+  @Override
+  public List<InternalProcessInstance> getMostRecentProcessInstances(final int maxResults, final long time,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
       processInsts.addAll(querier.getMostRecentProcessInstances(maxResults, time, pagingCriterion));
     }
     return processInsts;
-	}
+  }
 
-  public List<InternalProcessInstance> getMostRecentParentProcessInstances(int maxResults, long time) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<InternalProcessInstance> getMostRecentParentProcessInstances(final int maxResults, final long time) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
       processInsts.addAll(querier.getMostRecentParentProcessInstances(maxResults, time));
     }
     return processInsts;
   }
-  
-  public List<InternalProcessInstance> getMostRecentParentProcessInstances(
-			int maxResults, long time, ProcessInstanceCriterion pagingCriterion) {
-  	List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
+
+  @Override
+  public List<InternalProcessInstance> getMostRecentParentProcessInstances(final int maxResults, final long time,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
       processInsts.addAll(querier.getMostRecentParentProcessInstances(maxResults, time, pagingCriterion));
     }
     return processInsts;
-	}
-  
-  public List<InternalProcessInstance> getParentProcessInstances(int fromIndex, int pageSize) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+  }
+
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstances(final int fromIndex, final int pageSize) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processInsts.addAll(querier.getParentProcessInstances(fromIndex, pageSize));
       return processInsts;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       if (processInsts.size() < fromIndex + pageSize) {
-        //buid a set with at least all the first elements
+        // buid a set with at least all the first elements
         processInsts.addAll(querier.getParentProcessInstances(0, fromIndex + pageSize));
       } else {
-        mergePaginatedProcessInstances(processInsts, querier.getMostRecentParentProcessInstances(fromIndex + pageSize, 
-        		getOldestTime(processInsts)), querier, fromIndex, pageSize, ProcessInstanceCriterion.DEFAULT);
+        mergePaginatedProcessInstances(processInsts,
+            querier.getMostRecentParentProcessInstances(fromIndex + pageSize, getOldestTime(processInsts)), querier,
+            fromIndex, pageSize, ProcessInstanceCriterion.DEFAULT);
       }
     }
     return getInstancesSubset(fromIndex, pageSize, processInsts, ProcessInstanceCriterion.DEFAULT);
-    //PaginatedMethod firstPaginatedMethod = new PaginatedMethod("getParentProcessInstances", new Class[]{int.class, int.class}, 0, fromIndex + pageSize);
-    //PaginatedMethod secondPaginatedMethod = new PaginatedMethod("getMostRecentParentProcessInstances", new Class[]{int.class, long.class}, fromIndex + pageSize);
-    //return getInstancesPaging(firstPaginatedMethod, secondPaginatedMethod, fromIndex, pageSize);
+    // PaginatedMethod firstPaginatedMethod = new PaginatedMethod("getParentProcessInstances", new Class[]{int.class,
+    // int.class}, 0, fromIndex + pageSize);
+    // PaginatedMethod secondPaginatedMethod = new PaginatedMethod("getMostRecentParentProcessInstances", new
+    // Class[]{int.class, long.class}, fromIndex + pageSize);
+    // return getInstancesPaging(firstPaginatedMethod, secondPaginatedMethod, fromIndex, pageSize);
   }
-  
-  public List<InternalProcessInstance> getParentProcessInstances(int fromIndex,
-			int pageSize, ProcessInstanceCriterion pagingCriterion) {
-  	List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstances(final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processInsts.addAll(querier.getParentProcessInstances(fromIndex, pageSize, pagingCriterion));
       return processInsts;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       if (processInsts.size() < fromIndex + pageSize) {
-        //buid a set with at least all the first elements
+        // buid a set with at least all the first elements
         processInsts.addAll(querier.getParentProcessInstances(0, fromIndex + pageSize, pagingCriterion));
       } else {
-      	mergePaginatedProcessInstances(processInsts, querier.getMostRecentParentProcessInstances(fromIndex + pageSize, 
-        		getOldestTime(processInsts), pagingCriterion), querier, fromIndex, pageSize, pagingCriterion);
+        mergePaginatedProcessInstances(processInsts, querier.getMostRecentParentProcessInstances(fromIndex + pageSize,
+            getOldestTime(processInsts), pagingCriterion), querier, fromIndex, pageSize, pagingCriterion);
       }
     }
     return getInstancesSubset(fromIndex, pageSize, processInsts, pagingCriterion);
-	}
+  }
 
-  public List<InternalProcessInstance> getParentProcessInstances(
-      Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {    
-    if (processUUIDs == null || processUUIDs.isEmpty()){
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstances(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    if (processUUIDs == null || processUUIDs.isEmpty()) {
       return Collections.emptyList();
     }
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processInsts.addAll(querier.getParentProcessInstances(processUUIDs, fromIndex, pageSize, pagingCriterion));
       return processInsts;
     }
-    
-    for (Querier querier : queriers) {      
-        processInsts.addAll(querier.getParentProcessInstances(processUUIDs, fromIndex, pageSize, pagingCriterion));      
-    }    
+
+    for (final Querier querier : queriers) {
+      processInsts.addAll(querier.getParentProcessInstances(processUUIDs, fromIndex, pageSize, pagingCriterion));
+    }
     Collections.sort(processInsts, new InternalProcessInstanceComparator(pagingCriterion));
-    
+
     return Misc.subList(InternalProcessInstance.class, processInsts, 0, pageSize);
   }
 
-  public List<InternalProcessInstance> getParentProcessInstancesExcept(
-      Set<ProcessDefinitionUUID> exceptions, int fromIndex, int pageSize,
-      ProcessInstanceCriterion pagingCriterion) {
-    if (exceptions == null || exceptions.isEmpty()){
+  @Override
+  public List<InternalProcessInstance> getParentProcessInstancesExcept(final Set<ProcessDefinitionUUID> exceptions,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    if (exceptions == null || exceptions.isEmpty()) {
       return getParentProcessInstances(fromIndex, pageSize, pagingCriterion);
     }
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processInsts.addAll(querier.getParentProcessInstancesExcept(exceptions, fromIndex, pageSize, pagingCriterion));
       return processInsts;
     }
-    
-    for (Querier querier : queriers) {      
-        processInsts.addAll(querier.getParentProcessInstancesExcept(exceptions, fromIndex, pageSize, pagingCriterion));      
-    }    
+
+    for (final Querier querier : queriers) {
+      processInsts.addAll(querier.getParentProcessInstancesExcept(exceptions, fromIndex, pageSize, pagingCriterion));
+    }
     Collections.sort(processInsts, new InternalProcessInstanceComparator(pagingCriterion));
-    
+
     return Misc.subList(InternalProcessInstance.class, processInsts, 0, pageSize);
   }
 
-  public List<InternalProcessInstance> getMostRecentMatchingProcessInstances(Collection<ProcessInstanceUUID> instanceUUIDs, int maxResults, long time) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<InternalProcessInstance> getMostRecentMatchingProcessInstances(
+      final Collection<ProcessInstanceUUID> instanceUUIDs, final int maxResults, final long time) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
       processInsts.addAll(querier.getMostRecentMatchingProcessInstances(instanceUUIDs, maxResults, time));
     }
     return processInsts;
   }
-    
+
+  @Override
   public List<InternalProcessInstance> getMostRecentMatchingProcessInstances(
-			Set<ProcessInstanceUUID> instanceUUIDs, int maxResults, long time,
-			ProcessInstanceCriterion pagingCriterion) {
-  	List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      processInsts.addAll(querier.getMostRecentMatchingProcessInstances(instanceUUIDs, maxResults, time, pagingCriterion));
+      final Set<ProcessInstanceUUID> instanceUUIDs, final int maxResults, final long time,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      processInsts.addAll(querier.getMostRecentMatchingProcessInstances(instanceUUIDs, maxResults, time,
+          pagingCriterion));
     }
     return processInsts;
-	}
-    
-  public List<InternalProcessInstance> getProcessInstances(Collection<ProcessInstanceUUID> instanceUUIDs, int fromIndex, int pageSize) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+  }
+
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final Collection<ProcessInstanceUUID> instanceUUIDs,
+      final int fromIndex, final int pageSize) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processInsts.addAll(querier.getProcessInstances(instanceUUIDs, fromIndex, pageSize));
       return processInsts;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       if (processInsts.size() < fromIndex + pageSize) {
-        //buid a set with at least all the first elements
+        // buid a set with at least all the first elements
         processInsts.addAll(querier.getProcessInstances(instanceUUIDs, 0, fromIndex + pageSize));
       } else {
-        mergePaginatedProcessInstances(processInsts, querier.getMostRecentMatchingProcessInstances(instanceUUIDs, fromIndex + pageSize, 
-        		getOldestTime(processInsts)), querier, fromIndex, pageSize, ProcessInstanceCriterion.DEFAULT);
+        mergePaginatedProcessInstances(processInsts, querier.getMostRecentMatchingProcessInstances(instanceUUIDs,
+            fromIndex + pageSize, getOldestTime(processInsts)), querier, fromIndex, pageSize,
+            ProcessInstanceCriterion.DEFAULT);
       }
     }
     return getInstancesSubset(fromIndex, pageSize, processInsts, ProcessInstanceCriterion.DEFAULT);
-    //PaginatedMethod firstPaginatedMethod = new PaginatedMethod("getProcessInstances", new Class[]{Collection.class, int.class, int.class}, instanceUUIDs, 0, fromIndex + pageSize);
-    //PaginatedMethod secondPaginatedMethod = new PaginatedMethod("getMostRecentMatchingProcessInstances", new Class[]{Collection.class, int.class, long.class}, instanceUUIDs, fromIndex + pageSize);
-    //return getInstancesPaging(firstPaginatedMethod, secondPaginatedMethod, fromIndex, pageSize);
+    // PaginatedMethod firstPaginatedMethod = new PaginatedMethod("getProcessInstances", new Class[]{Collection.class,
+    // int.class, int.class}, instanceUUIDs, 0, fromIndex + pageSize);
+    // PaginatedMethod secondPaginatedMethod = new PaginatedMethod("getMostRecentMatchingProcessInstances", new
+    // Class[]{Collection.class, int.class, long.class}, instanceUUIDs, fromIndex + pageSize);
+    // return getInstancesPaging(firstPaginatedMethod, secondPaginatedMethod, fromIndex, pageSize);
   }
-  
+
+  @Override
   public List<InternalProcessInstance> getProcessInstancesWithInstanceUUIDs(
-			Set<ProcessInstanceUUID> instanceUUIDs, int fromIndex, int pageSize,
-			ProcessInstanceCriterion pagingCriterion) {
-  	List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+      final Set<ProcessInstanceUUID> instanceUUIDs, final int fromIndex, final int pageSize,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
-      processInsts.addAll(querier.getProcessInstancesWithInstanceUUIDs(instanceUUIDs, fromIndex, pageSize, pagingCriterion));
+      processInsts.addAll(querier.getProcessInstancesWithInstanceUUIDs(instanceUUIDs, fromIndex, pageSize,
+          pagingCriterion));
       return processInsts;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       if (processInsts.size() < fromIndex + pageSize) {
-        //buid a set with at least all the first elements
-        processInsts.addAll(querier.getProcessInstancesWithInstanceUUIDs(instanceUUIDs, 0, fromIndex + pageSize, pagingCriterion));
+        // buid a set with at least all the first elements
+        processInsts.addAll(querier.getProcessInstancesWithInstanceUUIDs(instanceUUIDs, 0, fromIndex + pageSize,
+            pagingCriterion));
       } else {
-      	mergePaginatedProcessInstances(processInsts, querier.getMostRecentMatchingProcessInstances(instanceUUIDs, fromIndex + pageSize, 
-        		getOldestTime(processInsts), pagingCriterion), querier, fromIndex, pageSize, pagingCriterion);
+        mergePaginatedProcessInstances(processInsts, querier.getMostRecentMatchingProcessInstances(instanceUUIDs,
+            fromIndex + pageSize, getOldestTime(processInsts), pagingCriterion), querier, fromIndex, pageSize,
+            pagingCriterion);
       }
     }
     return getInstancesSubset(fromIndex, pageSize, processInsts, pagingCriterion);
-	}
+  }
 
-  public List<InternalProcessInstance> getMostRecentProcessesProcessInstances(Collection<ProcessDefinitionUUID> definitionUUIDs, int maxResults, long time) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<InternalProcessInstance> getMostRecentProcessesProcessInstances(
+      final Collection<ProcessDefinitionUUID> definitionUUIDs, final int maxResults, final long time) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
       processInsts.addAll(querier.getMostRecentProcessesProcessInstances(definitionUUIDs, maxResults, time));
     }
     return processInsts;
   }
-  
-  public List<InternalProcessInstance> getMostRecentProcessesProcessInstances(Collection<ProcessDefinitionUUID> definitionUUIDs, 
-  		int maxResults, long time, ProcessInstanceCriterion pagingCriterion) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
-    for (Querier querier : queriers) {
-      processInsts.addAll(querier.getMostRecentProcessesProcessInstances(definitionUUIDs, maxResults, time, pagingCriterion));
+
+  @Override
+  public List<InternalProcessInstance> getMostRecentProcessesProcessInstances(
+      final Collection<ProcessDefinitionUUID> definitionUUIDs, final int maxResults, final long time,
+      final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+    for (final Querier querier : queriers) {
+      processInsts.addAll(querier.getMostRecentProcessesProcessInstances(definitionUUIDs, maxResults, time,
+          pagingCriterion));
     }
     return processInsts;
   }
-  
-  public List<InternalProcessInstance> getProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs, int fromIndex, int pageSize) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final int fromIndex, final int pageSize) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processInsts.addAll(querier.getProcessInstances(definitionUUIDs, fromIndex, pageSize));
       return processInsts;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       if (processInsts.size() < fromIndex + pageSize) {
-        //buid a set with at least all the first elements
+        // buid a set with at least all the first elements
         processInsts.addAll(querier.getProcessInstances(definitionUUIDs, 0, fromIndex + pageSize));
       } else {
-        mergePaginatedProcessInstances(processInsts, querier.getMostRecentProcessesProcessInstances(definitionUUIDs, fromIndex + pageSize, 
-        		getOldestTime(processInsts)), querier, fromIndex, pageSize, ProcessInstanceCriterion.DEFAULT);
+        mergePaginatedProcessInstances(processInsts, querier.getMostRecentProcessesProcessInstances(definitionUUIDs,
+            fromIndex + pageSize, getOldestTime(processInsts)), querier, fromIndex, pageSize,
+            ProcessInstanceCriterion.DEFAULT);
       }
     }
     return getInstancesSubset(fromIndex, pageSize, processInsts, ProcessInstanceCriterion.DEFAULT);
-    //PaginatedMethod firstPaginatedMethod = new PaginatedMethod("getProcessInstances", new Class[]{Collection.class, int.class, int.class}, definitionUUIDs, 0, fromIndex + pageSize);
-    //PaginatedMethod secondPaginatedMethod = new PaginatedMethod("getMostRecentProcessesProcessInstances", new Class[]{Collection.class, int.class, long.class}, definitionUUIDs, fromIndex + pageSize);
-    //return getInstancesPaging(firstPaginatedMethod, secondPaginatedMethod, fromIndex, pageSize);
+    // PaginatedMethod firstPaginatedMethod = new PaginatedMethod("getProcessInstances", new Class[]{Collection.class,
+    // int.class, int.class}, definitionUUIDs, 0, fromIndex + pageSize);
+    // PaginatedMethod secondPaginatedMethod = new PaginatedMethod("getMostRecentProcessesProcessInstances", new
+    // Class[]{Collection.class, int.class, long.class}, definitionUUIDs, fromIndex + pageSize);
+    // return getInstancesPaging(firstPaginatedMethod, secondPaginatedMethod, fromIndex, pageSize);
   }
-  
-  public List<InternalProcessInstance> getProcessInstances(Set<ProcessDefinitionUUID> definitionUUIDs, 
-  		int fromIndex, int pageSize, ProcessInstanceCriterion pagingCriterion) {
-    List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
+
+  @Override
+  public List<InternalProcessInstance> getProcessInstances(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final int fromIndex, final int pageSize, final ProcessInstanceCriterion pagingCriterion) {
+    final List<InternalProcessInstance> processInsts = new ArrayList<InternalProcessInstance>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processInsts.addAll(querier.getProcessInstances(definitionUUIDs, fromIndex, pageSize, pagingCriterion));
       return processInsts;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       if (processInsts.size() < fromIndex + pageSize) {
-        //buid a set with at least all the first elements
+        // buid a set with at least all the first elements
         processInsts.addAll(querier.getProcessInstances(definitionUUIDs, 0, fromIndex + pageSize, pagingCriterion));
       } else {
-      	mergePaginatedProcessInstances(processInsts, querier.getMostRecentProcessesProcessInstances(
-      			definitionUUIDs, fromIndex + pageSize, getOldestTime(processInsts), pagingCriterion), 
-      			querier, fromIndex, pageSize, pagingCriterion);
+        mergePaginatedProcessInstances(processInsts, querier.getMostRecentProcessesProcessInstances(definitionUUIDs,
+            fromIndex + pageSize, getOldestTime(processInsts), pagingCriterion), querier, fromIndex, pageSize,
+            pagingCriterion);
       }
     }
-    return getInstancesSubset(fromIndex, pageSize, processInsts, pagingCriterion);    
+    return getInstancesSubset(fromIndex, pageSize, processInsts, pagingCriterion);
   }
 
-  private List<InternalProcessInstance> getInstancesSubset(int fromIndex, int pageSize, 
-  		List<InternalProcessInstance> processInstances, ProcessInstanceCriterion pagingCriterion) {
+  private List<InternalProcessInstance> getInstancesSubset(final int fromIndex, final int pageSize,
+      final List<InternalProcessInstance> processInstances, final ProcessInstanceCriterion pagingCriterion) {
     if (processInstances == null || processInstances.isEmpty() || fromIndex > processInstances.size()) {
       return Collections.emptyList();
     }
@@ -1687,172 +1849,183 @@ public class QuerierChainer implements Querier {
     if (toIndex > processInstances.size()) {
       toIndex = processInstances.size();
     }
-    Comparator<InternalProcessInstance> comparator = null;    
+    Comparator<InternalProcessInstance> comparator = null;
     switch (pagingCriterion) {
-		case LAST_UPDATE_ASC:
-			comparator = new ProcessInstanceLastUpdateComparatorAsc();
-			break;
-		case STARTED_DATE_ASC:
-			comparator = new ProcessInstanceStartedDateComparatorAsc();
-			break;
-		case ENDED_DATE_ASC:
-			comparator = new ProcessInstanceEndedDateComparatorAsc();
-			break;
-		case INSTANCE_NUMBER_ASC:
-			comparator = new ProcessInstanceNbComparatorAsc();
-			break;
-		case INSTANCE_UUID_ASC:
-			comparator = new ProcessInstanceUUIDComparatorAsc();
-			break;
-		case LAST_UPDATE_DESC:
-			comparator = new ProcessInstanceLastUpdateComparator();
-			break;
-		case STARTED_DATE_DESC:
-			comparator = new ProcessInstanceStartedDateComparatorDesc();
-			break;
-		case ENDED_DATE_DESC:
-			comparator = new ProcessInstanceEndedDateComparatorDesc();
-			break;
-		case INSTANCE_NUMBER_DESC:
-			comparator = new ProcessInstanceNbComparatorDesc();
-			break;
-		case INSTANCE_UUID_DESC:
-			comparator = new ProcessInstanceUUIDComparatorDesc();
-			break;
-		case DEFAULT:
-			comparator = new ProcessInstanceLastUpdateComparator();
-			break;
-		}
+    case LAST_UPDATE_ASC:
+      comparator = new ProcessInstanceLastUpdateComparatorAsc();
+      break;
+    case STARTED_DATE_ASC:
+      comparator = new ProcessInstanceStartedDateComparatorAsc();
+      break;
+    case ENDED_DATE_ASC:
+      comparator = new ProcessInstanceEndedDateComparatorAsc();
+      break;
+    case INSTANCE_NUMBER_ASC:
+      comparator = new ProcessInstanceNbComparatorAsc();
+      break;
+    case INSTANCE_UUID_ASC:
+      comparator = new ProcessInstanceUUIDComparatorAsc();
+      break;
+    case LAST_UPDATE_DESC:
+      comparator = new ProcessInstanceLastUpdateComparator();
+      break;
+    case STARTED_DATE_DESC:
+      comparator = new ProcessInstanceStartedDateComparatorDesc();
+      break;
+    case ENDED_DATE_DESC:
+      comparator = new ProcessInstanceEndedDateComparatorDesc();
+      break;
+    case INSTANCE_NUMBER_DESC:
+      comparator = new ProcessInstanceNbComparatorDesc();
+      break;
+    case INSTANCE_UUID_DESC:
+      comparator = new ProcessInstanceUUIDComparatorDesc();
+      break;
+    case DEFAULT:
+      comparator = new ProcessInstanceLastUpdateComparator();
+      break;
+    }
     Collections.sort(processInstances, comparator);
     return Misc.subList(InternalProcessInstance.class, processInstances, fromIndex, toIndex);
   }
 
-  public List<InternalProcessDefinition> getProcesses(int fromIndex, int pageSize) {
-    List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
+  @Override
+  public List<InternalProcessDefinition> getProcesses(final int fromIndex, final int pageSize) {
+    final List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processes.addAll(querier.getProcesses(fromIndex, pageSize));
       return processes;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       processes.addAll(querier.getProcesses(0, fromIndex + pageSize));
     }
     return getProcessesSubset(fromIndex, pageSize, processes, ProcessDefinitionCriterion.DEFAULT);
   }
 
-  public List<InternalProcessDefinition> getProcesses(int fromIndex,
-      int pageSize, ProcessDefinitionCriterion pagingCriterion) {
-    List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
+  @Override
+  public List<InternalProcessDefinition> getProcesses(final int fromIndex, final int pageSize,
+      final ProcessDefinitionCriterion pagingCriterion) {
+    final List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processes.addAll(querier.getProcesses(fromIndex, pageSize, pagingCriterion));
       return processes;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       processes.addAll(querier.getProcesses(0, fromIndex + pageSize, pagingCriterion));
-    }    
+    }
     return getProcessesSubset(fromIndex, pageSize, processes, pagingCriterion);
   }
 
-  public List<InternalProcessDefinition> getProcesses(Set<ProcessDefinitionUUID> definitionUUIDs, int fromIndex, int pageSize) {
-    List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
+  @Override
+  public List<InternalProcessDefinition> getProcesses(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final int fromIndex, final int pageSize) {
+    final List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processes.addAll(querier.getProcesses(definitionUUIDs, fromIndex, pageSize));
       return processes;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       processes.addAll(querier.getProcesses(definitionUUIDs, 0, fromIndex + pageSize));
     }
     return getProcessesSubset(fromIndex, pageSize, processes, ProcessDefinitionCriterion.DEFAULT);
   }
 
-  public List<InternalProcessDefinition> getProcesses(
-      Set<ProcessDefinitionUUID> definitionUUIDs, int fromIndex, int pageSize,
-      ProcessDefinitionCriterion pagingCriterion) {
-    List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
+  @Override
+  public List<InternalProcessDefinition> getProcesses(final Set<ProcessDefinitionUUID> definitionUUIDs,
+      final int fromIndex, final int pageSize, final ProcessDefinitionCriterion pagingCriterion) {
+    final List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processes.addAll(querier.getProcesses(definitionUUIDs, fromIndex, pageSize, pagingCriterion));
       return processes;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       processes.addAll(querier.getProcesses(definitionUUIDs, 0, fromIndex + pageSize, pagingCriterion));
     }
     return getProcessesSubset(fromIndex, pageSize, processes, pagingCriterion);
   }
 
-  public List<InternalProcessDefinition> getProcessesExcept(Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize) {
-    List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
+  @Override
+  public List<InternalProcessDefinition> getProcessesExcept(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize) {
+    final List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processes.addAll(querier.getProcessesExcept(processUUIDs, fromIndex, pageSize));
       return processes;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       processes.addAll(querier.getProcessesExcept(processUUIDs, 0, fromIndex + pageSize));
     }
     return getProcessesSubset(fromIndex, pageSize, processes, ProcessDefinitionCriterion.DEFAULT);
   }
 
-  public List<InternalProcessDefinition> getProcessesExcept(
-      Set<ProcessDefinitionUUID> processUUIDs, int fromIndex, int pageSize,
-      ProcessDefinitionCriterion pagingCriterion) {
-    List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
+  @Override
+  public List<InternalProcessDefinition> getProcessesExcept(final Set<ProcessDefinitionUUID> processUUIDs,
+      final int fromIndex, final int pageSize, final ProcessDefinitionCriterion pagingCriterion) {
+    final List<InternalProcessDefinition> processes = new ArrayList<InternalProcessDefinition>();
     if (queriers.size() == 1) {
-      //can perform directly the query
+      // can perform directly the query
       final Querier querier = queriers.get(0);
       processes.addAll(querier.getProcessesExcept(processUUIDs, fromIndex, pageSize, pagingCriterion));
       return processes;
     }
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       processes.addAll(querier.getProcessesExcept(processUUIDs, 0, fromIndex + pageSize, pagingCriterion));
     }
     return getProcessesSubset(fromIndex, pageSize, processes, pagingCriterion);
   }
 
-  public Set<Category> getCategories(Collection<String> categoryNames) {
-    Set<Category> result = new HashSet<Category>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<Category> getCategories(final Collection<String> categoryNames) {
+    final Set<Category> result = new HashSet<Category>();
+    for (final Querier querier : queriers) {
       result.addAll(querier.getCategories(categoryNames));
     }
     return result;
   }
 
+  @Override
   public Set<Category> getAllCategories() {
-    Set<Category> result = new HashSet<Category>();
-    for (Querier querier : queriers) {
+    final Set<Category> result = new HashSet<Category>();
+    for (final Querier querier : queriers) {
       result.addAll(querier.getAllCategories());
     }
     return result;
   }
 
-  public Set<Category> getAllCategoriesExcept(Set<String> uuids) {
-    Set<Category> result = new HashSet<Category>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<Category> getAllCategoriesExcept(final Set<String> uuids) {
+    final Set<Category> result = new HashSet<Category>();
+    for (final Querier querier : queriers) {
       result.addAll(querier.getAllCategoriesExcept(uuids));
     }
     return result;
   }
-  
-  public Set<CategoryImpl> getCategoriesByUUIDs(Set<CategoryUUID> uuids) {
-    Set<CategoryImpl> result = new HashSet<CategoryImpl>();
-    for (Querier querier : queriers) {
+
+  @Override
+  public Set<CategoryImpl> getCategoriesByUUIDs(final Set<CategoryUUID> uuids) {
+    final Set<CategoryImpl> result = new HashSet<CategoryImpl>();
+    for (final Querier querier : queriers) {
       result.addAll(querier.getCategoriesByUUIDs(uuids));
     }
     return result;
   }
-  
-  public CategoryImpl getCategoryByUUID(String uuid) {
-    CategoryImpl category=null;
+
+  @Override
+  public CategoryImpl getCategoryByUUID(final String uuid) {
+    CategoryImpl category = null;
     int i = 0;
     Querier querier;
-    while (category==null && i<queriers.size()) {
+    while (category == null && i < queriers.size()) {
       querier = queriers.get(i);
       category = querier.getCategoryByUUID(uuid);
       i++;
@@ -1860,15 +2033,17 @@ public class QuerierChainer implements Querier {
     return category;
   }
 
-  public Set<ProcessDefinitionUUID> getProcessUUIDsFromCategory(String category) {
-    Set<ProcessDefinitionUUID> result = new HashSet<ProcessDefinitionUUID>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<ProcessDefinitionUUID> getProcessUUIDsFromCategory(final String category) {
+    final Set<ProcessDefinitionUUID> result = new HashSet<ProcessDefinitionUUID>();
+    for (final Querier querier : queriers) {
       result.addAll(querier.getProcessUUIDsFromCategory(category));
     }
     return result;
   }
 
-  private List<InternalProcessDefinition> getProcessesSubset(int fromIndex, int pageSize, List<InternalProcessDefinition> processes, ProcessDefinitionCriterion pagingCriterion) {
+  private List<InternalProcessDefinition> getProcessesSubset(final int fromIndex, final int pageSize,
+      final List<InternalProcessDefinition> processes, final ProcessDefinitionCriterion pagingCriterion) {
     int toIndex = fromIndex + pageSize;
     if (toIndex > processes.size()) {
       toIndex = processes.size();
@@ -1877,43 +2052,48 @@ public class QuerierChainer implements Querier {
     return Misc.subList(InternalProcessDefinition.class, processes, fromIndex, toIndex);
   }
 
-  public List<Object> search(SearchQueryBuilder query, int firstResult, int maxResults, Class<?> indexClass) {
+  @Override
+  public List<Object> search(final SearchQueryBuilder query, final int firstResult, final int maxResults,
+      final Class<?> indexClass) {
     List<Object> entities = new ArrayList<Object>();
     if (queriers.size() == 1) {
       final Querier querier = queriers.get(0);
       entities.addAll(querier.search(query, firstResult, maxResults, indexClass));
     } else {
-      for (Querier querier : queriers) {
-        List<Object> temp = querier.search(query, firstResult, maxResults, indexClass);
+      for (final Querier querier : queriers) {
+        final List<Object> temp = querier.search(query, firstResult, maxResults, indexClass);
         entities.addAll(temp);
         if (entities.size() > maxResults) {
           entities = entities.subList(firstResult, maxResults);
           break;
-        }        
+        }
       }
     }
     return entities;
   }
 
-  public int search(SearchQueryBuilder query, Class<?> indexClass) {
+  @Override
+  public int search(final SearchQueryBuilder query, final Class<?> indexClass) {
     int count = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       count += querier.search(query, indexClass);
     }
     return count;
   }
 
-  public Set<ActivityDefinitionUUID> getProcessTaskUUIDs(ProcessDefinitionUUID definitionUUID) {
-    Set<ActivityDefinitionUUID> result = new HashSet<ActivityDefinitionUUID>();
-    for (Querier querier : queriers) {
+  @Override
+  public Set<ActivityDefinitionUUID> getProcessTaskUUIDs(final ProcessDefinitionUUID definitionUUID) {
+    final Set<ActivityDefinitionUUID> result = new HashSet<ActivityDefinitionUUID>();
+    for (final Querier querier : queriers) {
       result.addAll(querier.getProcessTaskUUIDs(definitionUUID));
     }
     return result;
   }
 
-  public boolean processExists(ProcessDefinitionUUID definitionUUID) {
-    for (Querier querier : queriers) {
-      boolean querierExists = querier.processExists(definitionUUID);
+  @Override
+  public boolean processExists(final ProcessDefinitionUUID definitionUUID) {
+    for (final Querier querier : queriers) {
+      final boolean querierExists = querier.processExists(definitionUUID);
       if (querierExists) {
         return true;
       }
@@ -1921,366 +2101,401 @@ public class QuerierChainer implements Querier {
     return false;
   }
 
-  public List<Long> getProcessInstancesDuration(Date since, Date until) {
-    List<Long> durations = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getProcessInstancesDuration(final Date since, final Date until) {
+    final List<Long> durations = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       durations.addAll(querier.getProcessInstancesDuration(since, until));
     }
     Collections.sort(durations);
     return durations;
   }
 
-  public List<Long> getProcessInstancesDuration(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
-    List<Long> durations = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getProcessInstancesDuration(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
+    final List<Long> durations = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       durations.addAll(querier.getProcessInstancesDuration(processUUID, since, until));
     }
     Collections.sort(durations);
     return durations;
   }
 
-  public List<Long> getProcessInstancesDurationFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
-    List<Long> durations = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getProcessInstancesDurationFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
+    final List<Long> durations = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       durations.addAll(querier.getProcessInstancesDurationFromProcessUUIDs(processUUIDs, since, until));
     }
     Collections.sort(durations);
     return durations;
   }
 
-  public List<Long> getActivityInstancesExecutionTime(Date since, Date until) {
-    List<Long> executionTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getActivityInstancesExecutionTime(final Date since, final Date until) {
+    final List<Long> executionTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       executionTimes.addAll(querier.getActivityInstancesExecutionTime(since, until));
     }
     Collections.sort(executionTimes);
     return executionTimes;
   }
 
-  public List<Long> getActivityInstancesExecutionTime(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
-    List<Long> executionTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getActivityInstancesExecutionTime(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
+    final List<Long> executionTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       executionTimes.addAll(querier.getActivityInstancesExecutionTime(processUUID, since, until));
     }
     Collections.sort(executionTimes);
     return executionTimes;
   }
 
-  public List<Long> getActivityInstancesExecutionTimeFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
-    List<Long> executionTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getActivityInstancesExecutionTimeFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
+    final List<Long> executionTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       executionTimes.addAll(querier.getActivityInstancesExecutionTimeFromProcessUUIDs(processUUIDs, since, until));
     }
     Collections.sort(executionTimes);
-    return executionTimes;  
+    return executionTimes;
   }
 
-  public List<Long> getActivityInstancesExecutionTime(
-      ActivityDefinitionUUID activityUUID, Date since, Date until) {
-    List<Long> executionTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getActivityInstancesExecutionTime(final ActivityDefinitionUUID activityUUID, final Date since,
+      final Date until) {
+    final List<Long> executionTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       executionTimes.addAll(querier.getActivityInstancesExecutionTime(activityUUID, since, until));
     }
     Collections.sort(executionTimes);
     return executionTimes;
   }
 
-  public List<Long> getActivityInstancesExecutionTimeFromActivityUUIDs(
-      Set<ActivityDefinitionUUID> activityUUIDs, Date since, Date until) {
-    List<Long> executionTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getActivityInstancesExecutionTimeFromActivityUUIDs(final Set<ActivityDefinitionUUID> activityUUIDs,
+      final Date since, final Date until) {
+    final List<Long> executionTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       executionTimes.addAll(querier.getActivityInstancesExecutionTimeFromActivityUUIDs(activityUUIDs, since, until));
     }
     Collections.sort(executionTimes);
     return executionTimes;
   }
 
-  public List<Long> getTaskInstancesWaitingTime(Date since, Date until) {
-    List<Long> waitingTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTime(final Date since, final Date until) {
+    final List<Long> waitingTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       waitingTimes.addAll(querier.getTaskInstancesWaitingTime(since, until));
     }
     Collections.sort(waitingTimes);
     return waitingTimes;
   }
 
-  public List<Long> getTaskInstancesWaitingTime(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
-    List<Long> waitingTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTime(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
+    final List<Long> waitingTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       waitingTimes.addAll(querier.getTaskInstancesWaitingTime(processUUID, since, until));
     }
     Collections.sort(waitingTimes);
     return waitingTimes;
   }
 
-  public List<Long> getTaskInstancesWaitingTimeFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
-    List<Long> waitingTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
+    final List<Long> waitingTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       waitingTimes.addAll(querier.getTaskInstancesWaitingTimeFromProcessUUIDs(processUUIDs, since, until));
     }
     Collections.sort(waitingTimes);
     return waitingTimes;
   }
 
-  public List<Long> getTaskInstancesWaitingTime(
-      ActivityDefinitionUUID taskUUID, Date since, Date until) {
-    List<Long> waitingTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTime(final ActivityDefinitionUUID taskUUID, final Date since,
+      final Date until) {
+    final List<Long> waitingTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       waitingTimes.addAll(querier.getTaskInstancesWaitingTime(taskUUID, since, until));
     }
     Collections.sort(waitingTimes);
     return waitingTimes;
   }
 
-  public List<Long> getTaskInstancesWaitingTimeFromTaskUUIDs(
-      Set<ActivityDefinitionUUID> taskUUIDs, Date since, Date until) {
-    List<Long> waitingTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeFromTaskUUIDs(final Set<ActivityDefinitionUUID> taskUUIDs,
+      final Date since, final Date until) {
+    final List<Long> waitingTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       waitingTimes.addAll(querier.getTaskInstancesWaitingTimeFromTaskUUIDs(taskUUIDs, since, until));
     }
     Collections.sort(waitingTimes);
     return waitingTimes;
   }
 
-  public List<Long> getTaskInstancesWaitingTimeOfUser(String username,
-      Date since, Date until) {
-    List<Long> waitingTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeOfUser(final String username, final Date since, final Date until) {
+    final List<Long> waitingTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       waitingTimes.addAll(querier.getTaskInstancesWaitingTimeOfUser(username, since, until));
     }
     Collections.sort(waitingTimes);
     return waitingTimes;
   }
 
-  public List<Long> getTaskInstancesWaitingTimeOfUser(String username,
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
-    List<Long> waitingTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeOfUser(final String username, final ProcessDefinitionUUID processUUID,
+      final Date since, final Date until) {
+    final List<Long> waitingTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       waitingTimes.addAll(querier.getTaskInstancesWaitingTimeOfUser(username, processUUID, since, until));
     }
     Collections.sort(waitingTimes);
     return waitingTimes;
   }
 
-  public List<Long> getTaskInstancesWaitingTimeOfUserFromProcessUUIDs(
-      String username, Set<ProcessDefinitionUUID> processUUIDs, Date since,
-      Date until) {
-    List<Long> waitingTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
-      waitingTimes.addAll(querier.getTaskInstancesWaitingTimeOfUserFromProcessUUIDs(username, processUUIDs, since, until));
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeOfUserFromProcessUUIDs(final String username,
+      final Set<ProcessDefinitionUUID> processUUIDs, final Date since, final Date until) {
+    final List<Long> waitingTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
+      waitingTimes.addAll(querier.getTaskInstancesWaitingTimeOfUserFromProcessUUIDs(username, processUUIDs, since,
+          until));
     }
     Collections.sort(waitingTimes);
     return waitingTimes;
   }
 
-  public List<Long> getTaskInstancesWaitingTimeOfUser(String username,
-      ActivityDefinitionUUID taskUUID, Date since, Date until) {
-    List<Long> waitingTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeOfUser(final String username, final ActivityDefinitionUUID taskUUID,
+      final Date since, final Date until) {
+    final List<Long> waitingTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       waitingTimes.addAll(querier.getTaskInstancesWaitingTimeOfUser(username, taskUUID, since, until));
     }
     Collections.sort(waitingTimes);
     return waitingTimes;
   }
 
-  public List<Long> getTaskInstancesWaitingTimeOfUserFromTaskUUIDs(
-      String username, Set<ActivityDefinitionUUID> taskUUIDs, Date since,
-      Date until) {
-    List<Long> waitingTimes = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getTaskInstancesWaitingTimeOfUserFromTaskUUIDs(final String username,
+      final Set<ActivityDefinitionUUID> taskUUIDs, final Date since, final Date until) {
+    final List<Long> waitingTimes = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       waitingTimes.addAll(querier.getTaskInstancesWaitingTimeOfUserFromTaskUUIDs(username, taskUUIDs, since, until));
     }
     Collections.sort(waitingTimes);
     return waitingTimes;
   }
 
-  public List<Long> getActivityInstancesDuration(Date since, Date until) {
-    List<Long> durations = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getActivityInstancesDuration(final Date since, final Date until) {
+    final List<Long> durations = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       durations.addAll(querier.getActivityInstancesDuration(since, until));
     }
     Collections.sort(durations);
     return durations;
   }
 
-  public List<Long> getActivityInstancesDuration(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
-    List<Long> durations = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getActivityInstancesDuration(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
+    final List<Long> durations = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       durations.addAll(querier.getActivityInstancesDuration(processUUID, since, until));
     }
     Collections.sort(durations);
     return durations;
   }
 
-  public List<Long> getActivityInstancesDurationFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
-    List<Long> durations = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getActivityInstancesDurationFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
+    final List<Long> durations = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       durations.addAll(querier.getActivityInstancesDurationFromProcessUUIDs(processUUIDs, since, until));
     }
     Collections.sort(durations);
     return durations;
   }
 
-  public List<Long> getActivityInstancesDuration(
-      ActivityDefinitionUUID activityUUID, Date since, Date until) {
-    List<Long> durations = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getActivityInstancesDuration(final ActivityDefinitionUUID activityUUID, final Date since,
+      final Date until) {
+    final List<Long> durations = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       durations.addAll(querier.getActivityInstancesDuration(activityUUID, since, until));
     }
     Collections.sort(durations);
     return durations;
   }
 
-  public List<Long> getActivityInstancesDurationFromActivityUUIDs(
-      Set<ActivityDefinitionUUID> activityUUIDs, Date since, Date until) {
-    List<Long> durations = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getActivityInstancesDurationFromActivityUUIDs(final Set<ActivityDefinitionUUID> activityUUIDs,
+      final Date since, final Date until) {
+    final List<Long> durations = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       durations.addAll(querier.getActivityInstancesDurationFromActivityUUIDs(activityUUIDs, since, until));
     }
     Collections.sort(durations);
     return durations;
   }
 
-  public List<Long> getActivityInstancesDurationByActivityType(
-      Type activityType, Date since, Date until) {
-    List<Long> durations = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getActivityInstancesDurationByActivityType(final Type activityType, final Date since,
+      final Date until) {
+    final List<Long> durations = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       durations.addAll(querier.getActivityInstancesDurationByActivityType(activityType, since, until));
     }
     Collections.sort(durations);
     return durations;
   }
 
-  public List<Long> getActivityInstancesDurationByActivityType(
-      Type activityType, ProcessDefinitionUUID processUUID, Date since,
-      Date until) {
-    List<Long> durations = new ArrayList<Long>();
-    for (Querier querier : queriers) {
+  @Override
+  public List<Long> getActivityInstancesDurationByActivityType(final Type activityType,
+      final ProcessDefinitionUUID processUUID, final Date since, final Date until) {
+    final List<Long> durations = new ArrayList<Long>();
+    for (final Querier querier : queriers) {
       durations.addAll(querier.getActivityInstancesDurationByActivityType(activityType, processUUID, since, until));
     }
     Collections.sort(durations);
-    return durations;  
+    return durations;
   }
 
-  public List<Long> getActivityInstancesDurationByActivityTypeFromProcessUUIDs(
-      Type activityType, Set<ProcessDefinitionUUID> processUUIDs, Date since,
-      Date until) {
-    List<Long> durations = new ArrayList<Long>();
+  @Override
+  public List<Long> getActivityInstancesDurationByActivityTypeFromProcessUUIDs(final Type activityType,
+      final Set<ProcessDefinitionUUID> processUUIDs, final Date since, final Date until) {
+    final List<Long> durations = new ArrayList<Long>();
     if (queriers.size() == 1) {
-      return queriers.get(0).getActivityInstancesDurationByActivityTypeFromProcessUUIDs(activityType, processUUIDs, since, until);
+      return queriers.get(0).getActivityInstancesDurationByActivityTypeFromProcessUUIDs(activityType, processUUIDs,
+          since, until);
     }
-    for (Querier querier : queriers) {
-      durations.addAll(querier.getActivityInstancesDurationByActivityTypeFromProcessUUIDs(activityType, processUUIDs, since, until));
+    for (final Querier querier : queriers) {
+      durations.addAll(querier.getActivityInstancesDurationByActivityTypeFromProcessUUIDs(activityType, processUUIDs,
+          since, until));
     }
     Collections.sort(durations);
-    return durations; 
+    return durations;
   }
 
-  public long getNumberOfCreatedProcessInstances(Date since, Date until) {    
+  @Override
+  public long getNumberOfCreatedProcessInstances(final Date since, final Date until) {
     long nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfCreatedProcessInstances(since, until);
     }
-    return nb; 
+    return nb;
   }
 
-  public long getNumberOfCreatedProcessInstances(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedProcessInstances(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     long nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfCreatedProcessInstances(processUUID, since, until);
     }
     return nb;
   }
 
-  public long getNumberOfCreatedActivityInstances(Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstances(final Date since, final Date until) {
     long nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfCreatedActivityInstances(since, until);
     }
     return nb;
   }
 
-  public long getNumberOfCreatedActivityInstances(
-      ProcessDefinitionUUID processUUID, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstances(final ProcessDefinitionUUID processUUID, final Date since,
+      final Date until) {
     long nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfCreatedActivityInstances(processUUID, since, until);
-    }    
+    }
     return nb;
   }
 
-  public long getNumberOfCreatedActivityInstancesFromProcessUUIDs(
-      Set<ProcessDefinitionUUID> processUUIDs, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstancesFromProcessUUIDs(final Set<ProcessDefinitionUUID> processUUIDs,
+      final Date since, final Date until) {
     long nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfCreatedActivityInstancesFromProcessUUIDs(processUUIDs, since, until);
-    }    
+    }
     return nb;
   }
 
-  public long getNumberOfCreatedActivityInstances(
-      ActivityDefinitionUUID activityUUID, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstances(final ActivityDefinitionUUID activityUUID, final Date since,
+      final Date until) {
     long nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfCreatedActivityInstances(activityUUID, since, until);
-    }    
+    }
     return nb;
   }
 
-  public long getNumberOfCreatedActivityInstancesFromActivityUUIDs(
-      Set<ActivityDefinitionUUID> activityUUIDs, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstancesFromActivityUUIDs(final Set<ActivityDefinitionUUID> activityUUIDs,
+      final Date since, final Date until) {
     long nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfCreatedActivityInstancesFromActivityUUIDs(activityUUIDs, since, until);
-    }    
+    }
     return nb;
   }
 
-  public long getNumberOfCreatedActivityInstancesByActivityType(
-      Type activityType, Date since, Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstancesByActivityType(final Type activityType, final Date since,
+      final Date until) {
     long nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfCreatedActivityInstancesByActivityType(activityType, since, until);
-    }    
+    }
     return nb;
   }
 
-  public long getNumberOfCreatedActivityInstancesByActivityType(
-      Type activityType, ProcessDefinitionUUID processUUID, Date since,
-      Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstancesByActivityType(final Type activityType,
+      final ProcessDefinitionUUID processUUID, final Date since, final Date until) {
     long nb = 0;
-    for (Querier querier : queriers) {
+    for (final Querier querier : queriers) {
       nb += querier.getNumberOfCreatedActivityInstancesByActivityType(activityType, processUUID, since, until);
-    }    
+    }
     return nb;
   }
 
-  public long getNumberOfCreatedActivityInstancesByActivityTypeFromProcessUUIDs(
-      Type activityType, Set<ProcessDefinitionUUID> processUUIDs, Date since,
-      Date until) {
+  @Override
+  public long getNumberOfCreatedActivityInstancesByActivityTypeFromProcessUUIDs(final Type activityType,
+      final Set<ProcessDefinitionUUID> processUUIDs, final Date since, final Date until) {
     long nb = 0;
-    for (Querier querier : queriers) {
-      nb += querier.getNumberOfCreatedActivityInstancesByActivityTypeFromProcessUUIDs(activityType, processUUIDs, since, until);
-    }    
+    for (final Querier querier : queriers) {
+      nb += querier.getNumberOfCreatedActivityInstancesByActivityTypeFromProcessUUIDs(activityType, processUUIDs,
+          since, until);
+    }
     return nb;
   }
 
-  public boolean containsOtherActiveActivities(ProcessInstanceUUID instanceUUID, ActivityInstanceUUID activityUUID) {
-    for (Querier querier : queriers) {
+  @Override
+  public boolean containsOtherActiveActivities(final ProcessInstanceUUID instanceUUID,
+      final ActivityInstanceUUID activityUUID) {
+    for (final Querier querier : queriers) {
       if (querier.containsOtherActiveActivities(instanceUUID, activityUUID)) {
         return true;
       }
     }
     return false;
   }
-  
+
 }

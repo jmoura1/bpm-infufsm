@@ -24,16 +24,23 @@ import org.ow2.bonita.APITestCase;
 import org.ow2.bonita.facade.def.element.HookDefinition.Event;
 import org.ow2.bonita.facade.def.majorElement.ActivityDefinition.JoinType;
 import org.ow2.bonita.facade.def.majorElement.ProcessDefinition;
+import org.ow2.bonita.facade.exception.DocumentationCreationException;
+import org.ow2.bonita.facade.runtime.ActivityInstance;
 import org.ow2.bonita.facade.runtime.ActivityState;
+import org.ow2.bonita.facade.runtime.Document;
 import org.ow2.bonita.facade.runtime.InstanceState;
 import org.ow2.bonita.facade.runtime.TaskInstance;
 import org.ow2.bonita.facade.uuid.ActivityDefinitionUUID;
 import org.ow2.bonita.facade.uuid.ActivityInstanceUUID;
+import org.ow2.bonita.facade.uuid.DocumentUUID;
 import org.ow2.bonita.facade.uuid.ProcessDefinitionUUID;
 import org.ow2.bonita.facade.uuid.ProcessInstanceUUID;
 import org.ow2.bonita.light.LightActivityInstance;
 import org.ow2.bonita.light.LightProcessInstance;
 import org.ow2.bonita.light.LightTaskInstance;
+import org.ow2.bonita.search.DocumentResult;
+import org.ow2.bonita.search.DocumentSearchBuilder;
+import org.ow2.bonita.search.index.DocumentIndex;
 import org.ow2.bonita.util.BonitaRuntimeException;
 import org.ow2.bonita.util.Misc;
 import org.ow2.bonita.util.ProcessBuilder;
@@ -1242,6 +1249,101 @@ public class MessageEventTest extends APITestCase {
     getRuntimeAPI().instantiateProcess(creatorUUID);
 
     getManagementAPI().deleteProcess(creatorUUID);
+  }
+  
+  public void testSendMessageWithAttachments() throws Exception {
+    Map<String, Object> parameters = new HashMap<String, Object>();
+    parameters.put("a1", "${att1}");
+    parameters.put("a2", "${att2}");
+    
+    ProcessDefinition procDefToSend = ProcessBuilder.createProcess("pToSend", "1.0")
+      .addAttachment("att1")
+      .addAttachment("att2")
+      .addHuman(getLogin())
+      .addHumanTask("step1", getLogin())
+      .addSendEventTask("send")
+        .addOutgoingEvent("m1", "pToReceive", "receive", parameters)
+      .addTransition("step1", "send")
+      .done();
+    
+    
+    ProcessDefinition procDefToReceive = ProcessBuilder.createProcess("pToReceive", "d")
+        .addAttachment("doc1")
+        .addAttachment("doc2")
+        .addHuman(getLogin())
+        .addReceiveEventTask("receive", "m1")
+          .addReceiveEventConnector(SetVarConnector.class.getName(), true)
+            .addInputParameter("variableName", "doc2")
+            .addInputParameter("value", "${a2}")
+          .addReceiveEventConnector(SetVarConnector.class.getName(), true)
+            .addInputParameter("variableName", "doc1")
+            .addInputParameter("value", "${a1}")
+        .addHumanTask("step2", getLogin())
+        .addTransition("receive", "step2")
+        .done();
+    
+    procDefToSend = getManagementAPI().deploy(getBusinessArchive(procDefToSend));
+    procDefToReceive = getManagementAPI().deploy(getBusinessArchive(procDefToReceive, null, SetVarConnector.class));
+    
+    ProcessInstanceUUID sendProcInstUUID = getRuntimeAPI().instantiateProcess(procDefToSend.getUUID());
+    Set<ActivityInstance> activityInstances = getQueryRuntimeAPI().getActivityInstances(sendProcInstUUID, "step1");
+    assertEquals(1, activityInstances.size());
+    
+    String strDoc1Content = "this is the content of file1";
+    updateDocument(sendProcInstUUID, "att1", strDoc1Content.getBytes());
+    String strDoc2Content = "this is the content of file2";
+    updateDocument(sendProcInstUUID, "att2", strDoc2Content.getBytes());
+    
+    executeTask(sendProcInstUUID, "step1");
+    waitForStartingInstance(60 * 1000, 50, procDefToReceive.getUUID());
+
+    Set<LightProcessInstance> lightProcessInstances = getQueryRuntimeAPI().getLightProcessInstances(procDefToReceive.getUUID());
+    assertEquals(1, lightProcessInstances.size());
+    ProcessInstanceUUID receiveProcInstUUUID = lightProcessInstances.iterator().next().getUUID();
+    
+    activityInstances = getQueryRuntimeAPI().getActivityInstances(receiveProcInstUUUID, "receive");
+    assertEquals(1, activityInstances.size());
+    ActivityInstance activityInstance = activityInstances.iterator().next();
+    assertEquals(ActivityState.FINISHED, activityInstance.getState());
+
+    activityInstances = getQueryRuntimeAPI().getActivityInstances(receiveProcInstUUUID, "step2");
+    assertEquals(1, activityInstances.size());
+    
+    DocumentResult documentResult = searchDocuments(receiveProcInstUUUID, "doc1");
+    assertEquals(1, documentResult.getCount());
+    Document document = documentResult.getDocuments().get(0);
+    byte[] doc1Content = getQueryRuntimeAPI().getDocumentContent(document.getUUID());
+    assertEquals(strDoc1Content, new String(doc1Content));
+    assertEquals("a/b/c/att1.txt", document.getContentFileName());
+    
+    documentResult = searchDocuments(receiveProcInstUUUID, "doc2");
+    assertEquals(1, documentResult.getCount());
+    document = documentResult.getDocuments().get(0);
+    byte[] doc2Content = getQueryRuntimeAPI().getDocumentContent(document.getUUID());
+    assertEquals(strDoc2Content, new String(doc2Content));
+    assertEquals("a/b/c/att2.txt", document.getContentFileName());
+    
+    getManagementAPI().deleteProcess(procDefToSend.getUUID());
+    getManagementAPI().deleteProcess(procDefToReceive.getUUID());
+    
+  }
+
+  private void updateDocument(ProcessInstanceUUID procInstUUID, String documentName, byte [] newContent)
+      throws DocumentationCreationException {
+    DocumentResult documentsResult = searchDocuments(procInstUUID, documentName);
+    assertEquals(1, documentsResult.getCount());
+    Document document = documentsResult.getDocuments().get(0);
+    DocumentUUID documentUUID = document.getUUID();
+    
+    getRuntimeAPI().addDocumentVersion(documentUUID, document.isMajorVersion(), "a/b/c/" + documentName + ".txt", "text/*", newContent);
+  }
+
+  private DocumentResult searchDocuments(ProcessInstanceUUID procInstUUID,
+      String documentName) {
+    DocumentSearchBuilder searchBuilder = new DocumentSearchBuilder();
+    searchBuilder.criterion(DocumentIndex.NAME).equalsTo(documentName).and().criterion(DocumentIndex.PROCESS_INSTANCE_UUID).equalsTo(procInstUUID.getValue());
+    DocumentResult documentsResult = getQueryRuntimeAPI().searchDocuments(searchBuilder, 0, 10);
+    return documentsResult;
   }
 
 }

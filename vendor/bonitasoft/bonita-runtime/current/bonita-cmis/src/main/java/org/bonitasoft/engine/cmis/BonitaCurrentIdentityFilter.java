@@ -41,10 +41,9 @@ import org.exoplatform.services.security.web.HttpSessionStateKey;
 
 /**
  * @author Baptiste Mesta
- *
+ * 
  */
 public class BonitaCurrentIdentityFilter extends AbstractFilter {
-
 
   private boolean restoreIdentity;
 
@@ -57,155 +56,129 @@ public class BonitaCurrentIdentityFilter extends AbstractFilter {
    * {@inheritDoc}
    */
   @Override
-  protected void afterInit(FilterConfig config) throws ServletException
-  {
-     super.afterInit(config);
-     restoreIdentity = Boolean.parseBoolean(config.getInitParameter("restoreIdentity"));
+  protected void afterInit(final FilterConfig config) throws ServletException {
+    super.afterInit(config);
+    restoreIdentity = Boolean.parseBoolean(config.getInitParameter("restoreIdentity"));
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see javax.servlet.Filter#destroy()
    */
+  @Override
   public void destroy() {
     // TODO Auto-generated method stub
-    
+
   }
 
-  /* (non-Javadoc)
-   * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
+  /*
+   * (non-Javadoc)
+   * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse,
+   * javax.servlet.FilterChain)
    */
-  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+  @Override
+  public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
+      throws IOException, ServletException {
 
-    HttpServletRequest httpRequest = (HttpServletRequest)request;
-    ExoContainer container = getContainer();
+    final HttpServletRequest httpRequest = (HttpServletRequest) request;
+    final ExoContainer container = getContainer();
 
-    try
-    {
-       ExoContainerContext.setCurrentContainer(container);
-       ConversationState state = getCurrentState(container, httpRequest);
-       ConversationState.setCurrent(state);
-       chain.doFilter(request, response);
-    }
-    finally
-    {
-       try
-       {
-          ConversationState.setCurrent(null);
-       }
-       catch (Exception e)
-       {
-          log.warn("An error occured while cleaning the ThreadLocal", e);
-       }
-       try
-       {
-          ExoContainerContext.setCurrentContainer(null);
-       }
-       catch (Exception e)
-       {
-          log.warn("An error occured while cleaning the ThreadLocal", e);
-       }
+    try {
+      ExoContainerContext.setCurrentContainer(container);
+      final ConversationState state = getCurrentState(container, httpRequest);
+      ConversationState.setCurrent(state);
+      chain.doFilter(request, response);
+    } finally {
+      try {
+        ConversationState.setCurrent(null);
+      } catch (final Exception e) {
+        log.warn("An error occured while cleaning the ThreadLocal", e);
+      }
+      try {
+        ExoContainerContext.setCurrentContainer(null);
+      } catch (final Exception e) {
+        log.warn("An error occured while cleaning the ThreadLocal", e);
+      }
     }
   }
-
-
 
   /**
    * Gives the current state
    */
-  private ConversationState getCurrentState(ExoContainer container, HttpServletRequest httpRequest)
-  {
-     ConversationRegistry conversationRegistry =
-        (ConversationRegistry)container.getComponentInstanceOfType(ConversationRegistry.class);
+  private ConversationState getCurrentState(final ExoContainer container, final HttpServletRequest httpRequest) {
+    final ConversationRegistry conversationRegistry = (ConversationRegistry) container
+        .getComponentInstanceOfType(ConversationRegistry.class);
 
-     IdentityRegistry identityRegistry =
-        (IdentityRegistry)container.getComponentInstanceOfType(IdentityRegistry.class);
+    final IdentityRegistry identityRegistry = (IdentityRegistry) container
+        .getComponentInstanceOfType(IdentityRegistry.class);
 
-     ConversationState state = null;
-     String userId = httpRequest.getRemoteUser();
+    ConversationState state = null;
+    String userId = httpRequest.getRemoteUser();
 
-     // only if user authenticated, otherwise there is no reason to do anythings
-     if (userId != null)
-     {
-        HttpSession httpSession = httpRequest.getSession();
-        StateKey stateKey = new HttpSessionStateKey(httpSession);
+    // only if user authenticated, otherwise there is no reason to do anythings
+    if (userId != null) {
+      final HttpSession httpSession = httpRequest.getSession();
+      final StateKey stateKey = new HttpSessionStateKey(httpSession);
 
-        if (log.isDebugEnabled())
-        {
-           log.debug("Looking for Conversation State " + httpSession.getId());
+      if (log.isDebugEnabled()) {
+        log.debug("Looking for Conversation State " + httpSession.getId());
+      }
+
+      state = conversationRegistry.getState(stateKey);
+
+      if (state == null) {
+        if (log.isDebugEnabled()) {
+          log.debug("Conversation State not found, try create new one.");
         }
 
-        state = conversationRegistry.getState(stateKey);
+        Identity identity = identityRegistry.getIdentity(userId);
+        if (identity == null) {
+          int index = 0;
+          if ((index = userId.lastIndexOf('#')) > -1) {
+            userId = userId.substring(index + 1);
+            identity = identityRegistry.getIdentity(userId);
+          }
+        }
+        if (identity != null) {
+          state = new ConversationState(identity);
+          // Keep subject as attribute in ConversationState.
+          // TODO remove this, do not need it any more.
+          state.setAttribute(ConversationState.SUBJECT, identity.getSubject());
+        } else {
 
-        if (state == null)
-        {
-           if (log.isDebugEnabled())
-           {
-              log.debug("Conversation State not found, try create new one.");
-           }
+          if (restoreIdentity) {
+            if (log.isDebugEnabled()) {
+              log.debug("Not found identity for " + userId + " try to restore it. ");
+            }
 
-           Identity identity = identityRegistry.getIdentity(userId);
-           if(identity == null){
-             int index = 0;
-             if(userId != null && (index = userId.lastIndexOf('#')) > -1){
-               userId = userId.substring(index+1);
-               identity = identityRegistry.getIdentity(userId);
-             }
-           }
-           if (identity != null)
-           {
+            final Authenticator authenticator = (Authenticator) container
+                .getComponentInstanceOfType(Authenticator.class);
+            try {
+              identity = authenticator.createIdentity(userId);
+              identityRegistry.register(identity);
+            } catch (final Exception e) {
+              log.error("Unable restore identity. " + e.getMessage(), e);
+            }
+
+            if (identity != null) {
               state = new ConversationState(identity);
-              // Keep subject as attribute in ConversationState.
-              // TODO remove this, do not need it any more.
-              state.setAttribute(ConversationState.SUBJECT, identity.getSubject());
-           }
-           else
-           {
-             
-              if (restoreIdentity)
-              {
-                 if (log.isDebugEnabled())
-                 {
-                    log.debug("Not found identity for " + userId + " try to restore it. ");
-                 }
-
-                 Authenticator authenticator =
-                    (Authenticator)container.getComponentInstanceOfType(Authenticator.class);
-                 try
-                 {
-                    identity = authenticator.createIdentity(userId);
-                    identityRegistry.register(identity);
-                 }
-                 catch (Exception e)
-                 {
-                    log.error("Unable restore identity. " + e.getMessage(), e);
-                 }
-
-                 if (identity != null)
-                 {
-                    state = new ConversationState(identity);
-                 }
-              }
-              else
-              {
-                 log.error("Not found identity in IdentityRegistry for user " + userId + ", check Login Module.");
-              }
-           }
-
-           if (state != null)
-           {
-              conversationRegistry.register(stateKey, state);
-              if (log.isDebugEnabled())
-              {
-                 log.debug("Register Conversation state " + httpSession.getId());
-              }
-           }
+            }
+          } else {
+            log.error("Not found identity in IdentityRegistry for user " + userId + ", check Login Module.");
+          }
         }
-     }
-     else
-     {
-        state = new ConversationState(new Identity("__anonim"));
-     }
-     return state;
+
+        if (state != null) {
+          conversationRegistry.register(stateKey, state);
+          if (log.isDebugEnabled()) {
+            log.debug("Register Conversation state " + httpSession.getId());
+          }
+        }
+      }
+    } else {
+      state = new ConversationState(new Identity("__anonim"));
+    }
+    return state;
   }
 
 }

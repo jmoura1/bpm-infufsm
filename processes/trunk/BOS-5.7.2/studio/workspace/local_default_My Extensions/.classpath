@@ -55,6 +55,7 @@
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/aopalliance-1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/database/lib/jtds-1.2.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/geronimo-activation_1.0.2_spec-1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/MiniStockCheckConnector.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/sugar/sugar-5.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/spring-aop-3.0.5.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/sharepoint/lib/jackrabbit-webdav-1.6.0.jar"/>
@@ -157,6 +158,7 @@
 	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/abdera-core-0.3.0-incubating.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/abdera-protocol-0.3.0-incubating.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/sharepoint/lib/jackrabbit-jcr-commons-1.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/MiniDueDateConnector.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/database/lib/ojdbc5.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/wsdl4j-1.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/axiom-impl-1.2.5.jar"/>

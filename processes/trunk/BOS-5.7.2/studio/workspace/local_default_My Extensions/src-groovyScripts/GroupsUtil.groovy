@@ -1,6 +1,4 @@
-/*METADATAList<String> getAllTipoACG()=No Documentation
-boolean requerTutor(String tipo)=No Documentation
-HashMap<String,String> buildChildrenGroupsPathMAP(List<Group> groupsToFilter, String parentGroupUUID)=No Documentation
+/*METADATAHashMap<String,String> buildChildrenGroupsPathMAP(List<Group> groupsToFilter, String parentGroupUUID)=No Documentation
 ArrayList usuariosDoGrupo(List<String> path)=No Documentation
 HashMap<String,String> buildGroupsMAP(List<Group> groups)=No Documentation
 HashMap<String,String> getPathOfChildren(String parentGroupUUID)=No Documentation

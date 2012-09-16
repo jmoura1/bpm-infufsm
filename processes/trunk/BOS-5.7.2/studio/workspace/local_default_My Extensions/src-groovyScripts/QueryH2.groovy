@@ -68,8 +68,8 @@ public class QueryH2 {
 	
 	  public static String getQuerySolicita(ProcessInstance processInstance) {
 	
-		def allvars = ["timeStamp", "login", "numeroMatricula", "name", "subtipoACG", "tipoACG", "descricao", "nomeTutor", "dataInicio", "dataFim", "cargaHoraria", "comprovante", "estado", "chAprovada", "tipoAprovado"];
-		def intvars = ["cargaHoraria", "chAprovada"];
+		def allvars = ["timeStamp", "login", "numeroMatricula", "name", "subtipoACG", "tipoACG", "descricao", "nomeTutor", "dataInicio", "dataFim", "cargaHoraria", "acgComprovante", "acgEstado", "acgChAprovada", "acgTipoAprovado"];
+		def intvars = ["cargaHoraria", "acgChAprovada"];
 	
 		// Obtem os valores das variaveis
 		ArrayList<String> values = getCurrentValues(processInstance, allvars);

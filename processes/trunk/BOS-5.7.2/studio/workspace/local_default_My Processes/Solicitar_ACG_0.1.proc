@@ -125,6 +125,8 @@
               <script xmi:type="form:GroovyScript" xmi:id="_xlNHgO8PEeG1cZ5cXPleEg" inputScript="${field_Copia_de_TipoDeACG}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_uzjfQO8PEeG1cZ5cXPleEg"/>
             </widgets>
+            <scripts xmi:type="form:GroovyScript" xmi:id="_Tsmq0ABMEeKNc5oRhz2Hxg" exprScript="${GroupsUtil.createLink(GroupsUtil.concat3(timeStamp,numeroMatricula,file.getFileName()), link)}" setVarScript="acgComprovante"/>
+            <scripts xmi:type="form:GroovyScript" xmi:id="_WkSCkABMEeKNc5oRhz2Hxg" exprScript="${acgEstadoSolicitada}" setVarScript="acgEstado"/>
           </form>
           <transientData xmi:type="process:JavaObjectData" xmi:id="_n3QUBe4pEeGKhq6eruyG6w" name="listOfAllGroups" label="listOfAllGroups" dataType="_n3Xo0O4pEeGKhq6eruyG6w" defaultValue="" className="java.util.List"/>
         </elements>
@@ -264,10 +266,11 @@
               <script xmi:type="form:GroovyScript" xmi:id="_k_lq0O8PEeG1cZ5cXPleEg" inputScript="&lt;hr>&lt;/hr>"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_khTzYO8PEeG1cZ5cXPleEg" line="11"/>
             </widgets>
-            <widgets xmi:type="form:TextAreaFormField" xmi:id="_TMbRYPFjEeGfefz74zRb1Q" name="Campo_de_texto1" label="Campo de texto1" displayLabel="Data da avaliação:">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3SJM-4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.getCurrentDate()}" setVarScript="data_aval_tutor"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3SJNO4pEeGKhq6eruyG6w"/>
+            <widgets xmi:type="form:TextInfo" xmi:id="_YRQ54AAtEeK65tptLHklZg" name="Text1" label="Text1" displayLabel="Data da avaliação:">
+              <script xmi:type="form:GroovyScript" xmi:id="_fKFL0AAtEeK65tptLHklZg" inputScript="${GroupsUtil.getCurrentDate()}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_YRdHIAAtEeK65tptLHklZg"/>
             </widgets>
+            <scripts xmi:type="form:GroovyScript" xmi:id="_olJYEAAtEeK65tptLHklZg" exprScript="${field_Text1}" setVarScript="data_aval_tutor"/>
           </form>
         </elements>
         <elements xmi:type="process:EndEvent" xmi:id="_n3TXYO4pEeGKhq6eruyG6w" name="Fim" label="Fim" incoming="_n3WazO4pEeGKhq6eruyG6w"/>
@@ -312,10 +315,6 @@
             <parameters xmi:type="process:Parameter" xmi:id="_n3T-fO4pEeGKhq6eruyG6w" key="setHtml" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
             <parameters xmi:type="process:Parameter" xmi:id="_n3T-fe4pEeGKhq6eruyG6w" key="setPassword"/>
             <parameters xmi:type="process:Parameter" xmi:id="_n3T-fu4pEeGKhq6eruyG6w" key="setSubject" value="ACED000574002E4176616C6961C3A7C3A36F2064652041434720646F20637572736F20646520534920636F6D6F2072656C61746F72"/>
-          </connectors>
-          <connectors xmi:type="process:Connector" xmi:id="_n3T-f-4pEeGKhq6eruyG6w" name="setIdRelator" label="setIdRelator" connectorId="SetVariable" event="taskOnReady" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-gO4pEeGKhq6eruyG6w" key="setVariableName" value="ACED0005740009696452656C61746F72"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-ge4pEeGKhq6eruyG6w" key="setValue" value="ACED0005740021247B6163746976697479496E7374616E63652E6765745461736B5573657228297D"/>
           </connectors>
           <connectors xmi:type="process:Connector" xmi:id="_LLTlsPGGEeGYL4Lj_tSn2A" name="h2_relator" label="h2-relator" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_Ly-5wPxHEeGdtb-JBdbL6Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
@@ -414,6 +413,7 @@
               <script xmi:type="form:GroovyScript" xmi:id="_n3T-hu4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.getCurrentDate()}" setVarScript="data_aval_relator"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3T-h-4pEeGKhq6eruyG6w"/>
             </widgets>
+            <scripts xmi:type="form:GroovyScript" xmi:id="_ZzDmUAA5EeK65tptLHklZg" exprScript="${activityInstance.getTaskUser()}" setVarScript="idRelator"/>
           </form>
           <filters xmi:type="process:Connector" xmi:id="_n3Ulke4pEeGKhq6eruyG6w" name="filtro" label="filtro" connectorId="UniqueRandom"/>
         </elements>
@@ -439,10 +439,6 @@
             <parameters xmi:type="process:Parameter" xmi:id="_n3VMhO4pEeGKhq6eruyG6w" key="setHtml" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
             <parameters xmi:type="process:Parameter" xmi:id="_n3VMhe4pEeGKhq6eruyG6w" key="setPassword"/>
             <parameters xmi:type="process:Parameter" xmi:id="_n3VMhu4pEeGKhq6eruyG6w" key="setSubject" value="ACED000574003A4176616C6961C3A7C3A36F2064652041434720646F20637572736F20646520534920636F6D6F206D656D62726F20646F20636F6C65676961646F"/>
-          </connectors>
-          <connectors xmi:type="process:Connector" xmi:id="_oGZdsPBiEeGgZqChN-hpWQ" name="setRespostaFinalColegiado" label="setRespostaFinalColegiado" connectorId="SetVariable" event="taskOnFinish" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_k43d0PLrEeGcD7MAkxJ97A" key="setVariableName" value="ACED000574000D726573706F73746146696E616C"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_k43d0fLrEeGcD7MAkxJ97A" key="setValue" value="ACED0005740014247B726573706F737461436F6C65676961646F7D"/>
           </connectors>
           <data xmi:type="process:Data" xmi:id="_n3VMh-4pEeGKhq6eruyG6w" name="respostaMembroColegiado" label="respostaMembroColegiado" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
           <multiInstantiation xmi:type="process:MultiInstantiation" xmi:id="_n3VMiO4pEeGKhq6eruyG6w" enabled="true">
@@ -551,6 +547,7 @@
             </widgets>
             <scripts xmi:type="form:GroovyScript" xmi:id="_n3VzqO4pEeGKhq6eruyG6w" exprScript="${if(field_Botoes_de_radio1==&quot;Sim&quot;) conta+1&#xD;else conta}" setVarScript="conta"/>
             <scripts xmi:type="form:GroovyScript" xmi:id="_n3Vzqe4pEeGKhq6eruyG6w" exprScript="${GroupsUtil.numMembros([&quot;colegiado&quot;])}" setVarScript="membros"/>
+            <scripts xmi:type="form:GroovyScript" xmi:id="_uedHQABNEeKNc5oRhz2Hxg" exprScript="${respostaColegiado}" setVarScript="respostaFinal"/>
           </form>
           <filters xmi:type="process:Connector" xmi:id="_n3Vzqu4pEeGKhq6eruyG6w" name="escolhido" label="escolhido" connectorId="GroovyFilter">
             <parameters xmi:type="process:Parameter" xmi:id="_n3Vzq-4pEeGKhq6eruyG6w" key="setScript" value="ACED000574001F47726F7570735574696C2E6573636F6C6869646F28696452656C61746F7229"/>
@@ -646,10 +643,6 @@
           </connectors>
         </elements>
         <elements xmi:type="process:Task" xmi:id="_mVGBgPBJEeGgZqChN-hpWQ" name="Secretaria_avalia_ACG" label="Secretaria avalia ACG" outgoing="_k06LsPBKEeGgZqChN-hpWQ _mBghsPBKEeGgZqChN-hpWQ" incoming="_dG5-MPBKEeGgZqChN-hpWQ" user="" groups="_SrwEkPBjEeGgZqChN-hpWQ" overrideGroupsOfTheLane="true">
-          <connectors xmi:type="process:Connector" xmi:id="_5-QQEPBiEeGgZqChN-hpWQ" name="setRespostaFinalSecretaria" label="setRespostaFinalSecretaria" connectorId="SetVariable" event="taskOnFinish" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_H5EL0PBoEeGgZqChN-hpWQ" key="setVariableName" value="ACED000574000D726573706F73746146696E616C"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_H5EL0fBoEeGgZqChN-hpWQ" key="setValue" value="ACED0005740015247B726573706F737461536563726574617269617D"/>
-          </connectors>
           <connectors xmi:type="process:Connector" xmi:id="_ZUVvsPK0EeGJtsQHnHlI9Q" name="h2_sec" label="h2-sec" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_ZP_4gPxHEeGdtb-JBdbL6Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
             <parameters xmi:type="process:Parameter" xmi:id="_ZP_4gfxHEeGdtb-JBdbL6Q" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
@@ -726,13 +719,10 @@
               <script xmi:type="form:GroovyScript" xmi:id="_XJf1gPBTEeGgZqChN-hpWQ" inputScript="${GroupsUtil.getCurrentDate()}" setVarScript="data_aval_sec"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_UrW_IfBTEeGgZqChN-hpWQ"/>
             </widgets>
+            <scripts xmi:type="form:GroovyScript" xmi:id="_D1iPAABNEeKNc5oRhz2Hxg" exprScript="${respostaSecretaria}" setVarScript="respostaFinal"/>
           </form>
         </elements>
         <elements xmi:type="process:Task" xmi:id="_N63R0PBKEeGgZqChN-hpWQ" name="Coordenador_avalia_ACG" label="Coordenador avalia ACG" outgoing="_nCyYgPBKEeGgZqChN-hpWQ _oeVwgPBKEeGgZqChN-hpWQ" incoming="_mBghsPBKEeGgZqChN-hpWQ" user="" groups="_YtVMgPBjEeGgZqChN-hpWQ" overrideGroupsOfTheLane="true">
-          <connectors xmi:type="process:Connector" xmi:id="_uwewEPBiEeGgZqChN-hpWQ" name="setRespostaFinalCoordenador" label="setRespostaFinalCoordenador" connectorId="SetVariable" event="taskOnFinish" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_Jhe7IPBoEeGgZqChN-hpWQ" key="setVariableName" value="ACED000574000D726573706F73746146696E616C"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Jhe7IfBoEeGgZqChN-hpWQ" key="setValue" value="ACED0005740016247B726573706F737461436F6F7264656E61646F727D"/>
-          </connectors>
           <connectors xmi:type="process:Connector" xmi:id="_AMVEwPGIEeGYL4Lj_tSn2A" name="db_sec_coord" label="db_sec_coord" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_geL9gPxHEeGdtb-JBdbL6Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
             <parameters xmi:type="process:Parameter" xmi:id="_geL9gfxHEeGdtb-JBdbL6Q" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
@@ -805,6 +795,7 @@
               <script xmi:type="form:GroovyScript" xmi:id="_z7E-8PBdEeGgZqChN-hpWQ" inputScript="${GroupsUtil.getCurrentDate()}" setVarScript="data_aval_coord"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_KPl_UPBdEeGgZqChN-hpWQ"/>
             </widgets>
+            <scripts xmi:type="form:GroovyScript" xmi:id="_fDDJMABNEeKNc5oRhz2Hxg" exprScript="${respostaCoordenador}" setVarScript="respostaFinal"/>
           </form>
         </elements>
         <elements xmi:type="process:Activity" xmi:id="_-ih4YPFmEeGfefz74zRb1Q" name="Avisa_ao_aluno_Indeferido" label="Avisa ao aluno-Indeferido" outgoing="_RnQtkPFnEeGfefz74zRb1Q" incoming="_AL0KYPFnEeGfefz74zRb1Q">
@@ -845,6 +836,11 @@
       <processTemplate xmi:type="process:AssociatedFile" xmi:id="_n3Vzt-4pEeGKhq6eruyG6w" path="User/_n3Oe0u4pEeGKhq6eruyG6w/html/process.html"/>
       <pageTemplate xmi:type="process:AssociatedFile" xmi:id="_n3VzuO4pEeGKhq6eruyG6w" path="User/_n3Oe0u4pEeGKhq6eruyG6w/html/page.html"/>
       <consultationTemplate xmi:type="process:AssociatedFile" xmi:id="_n3Vzue4pEeGKhq6eruyG6w" path="User/_n3Oe0u4pEeGKhq6eruyG6w/html/consultation.html"/>
+      <data xmi:type="process:Data" xmi:id="_F1WnIABMEeKNc5oRhz2Hxg" name="acgChAprovada" label="acgChAprovada" dataType="_n3XozO4pEeGKhq6eruyG6w" defaultValue="0"/>
+      <data xmi:type="process:Data" xmi:id="_CQqYYABMEeKNc5oRhz2Hxg" name="acgComprovante" label="acgComprovante" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
+      <data xmi:type="process:Data" xmi:id="_AxfEoABMEeKNc5oRhz2Hxg" name="acgEstado" label="acgEstado" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
+      <data xmi:type="process:Data" xmi:id="__H9iEQBLEeKNc5oRhz2Hxg" name="acgEstadoSolicitada" label="acgEstadoSolicitada" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="Solicitada-Pendente"/>
+      <data xmi:type="process:Data" xmi:id="_JY-e4ABMEeKNc5oRhz2Hxg" name="acgTipoAprovado" label="acgTipoAprovado" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="-"/>
       <data xmi:type="process:Data" xmi:id="_vAaSwO5PEeGo0f37u06zsQ" name="alfrescoDestinationFolder" label="alfrescoDestinationFolder" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="/Guest%20Home"/>
       <data xmi:type="process:Data" xmi:id="_wkJoUO5NEeGo0f37u06zsQ" name="alfrescoHost" label="alfrescoHost" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="bpm.inf.ufsm.br"/>
       <data xmi:type="process:Data" xmi:id="_24bp0O5NEeGo0f37u06zsQ" name="alfrescoPassword" label="alfrescoPassword" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="admin"/>
@@ -1874,9 +1870,9 @@
       <children xmi:type="notation:DecorationNode" xmi:id="_khTMUO8PEeG1cZ5cXPleEg" type="5159"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_khR-Me8PEeG1cZ5cXPleEg"/>
     </children>
-    <children xmi:type="notation:Shape" xmi:id="_TM0S8PFjEeGfefz74zRb1Q" type="2121" element="_TMbRYPFjEeGfefz74zRb1Q" fontName="Ubuntu">
-      <children xmi:type="notation:DecorationNode" xmi:id="_TM06APFjEeGfefz74zRb1Q" type="5109"/>
-      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_TM0S8fFjEeGfefz74zRb1Q"/>
+    <children xmi:type="notation:Shape" xmi:id="_YRbR8AAtEeK65tptLHklZg" type="2132" element="_YRQ54AAtEeK65tptLHklZg" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_YRcgEAAtEeK65tptLHklZg" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_YRb5AAAtEeK65tptLHklZg"/>
     </children>
     <styles xmi:type="notation:DiagramStyle" xmi:id="_n3dvYu4pEeGKhq6eruyG6w"/>
   </notation:Diagram>

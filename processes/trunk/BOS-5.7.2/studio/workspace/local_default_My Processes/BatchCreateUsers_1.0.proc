@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:decision="http://www.bonitasoft.org/ns/studio/process/decision" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:form="http://www.bonitasoft.org/ns/studio/form" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:process="http://www.bonitasoft.org/ns/studio/process" xsi:schemaLocation="http://www.bonitasoft.org/ns/studio/process/decision http://www.bonitasoft.org/ns/studio/process#//decision">
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:decision="http://www.bonitasoft.org/ns/studio/process/decision" xmlns:form="http://www.bonitasoft.org/ns/studio/form" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:process="http://www.bonitasoft.org/ns/studio/process" xsi:schemaLocation="http://www.bonitasoft.org/ns/studio/process/decision http://www.bonitasoft.org/ns/studio/process#//decision">
   <process:MainProcess xmi:id="_gGaqwP-JEeGAceQv5y3Wpw" name="BatchCreateUsers" label="BatchCreateUsers" bonitaVersion="5.7" bonitaModelVersion="5.7">
     <elements xmi:type="process:Pool" xmi:id="_gKvKEP-JEeGAceQv5y3Wpw" name="BatchCreateUsers" label="BatchCreateUsers" welcomePageInternal="false" basedOnLookAndFeel="Default Application" entryPageFlowType="SKIP">
       <elements xmi:type="process:Task" xmi:id="_gMYI0P-JEeGAceQv5y3Wpw" name="Create_users_groups_roles" label="Create users/groups/roles" outgoing="_ElXxwP-jEeGvCuBtCMfJng" incoming="_gNuzsP-JEeGAceQv5y3Wpw" groups="_gM4fIP-JEeGAceQv5y3Wpw">
@@ -10,8 +10,7 @@
           <widgets xmi:type="form:SubmitFormButton" xmi:id="_7MYWAf-KEeGAceQv5y3Wpw" name="Submit" label="Submit" displayLabel="Submit">
             <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_7MYWAv-KEeGAceQv5y3Wpw" line="1"/>
           </widgets>
-          <widgets xmi:type="form:TextAreaFormField" xmi:id="_-jcYcP-KEeGAceQv5y3Wpw" name="Text_area1" label="Text_area1" displayLabel="List of users/groups/roles">
-            <htmlAttributes xmi:type="ecore:EStringToStringMapEntry" xmi:id="_aKRnkP_5EeG64fwjYw690Q" key="input_css:height" value="200"/>
+          <widgets xmi:type="form:TextAreaFormField" xmi:id="_-jcYcP-KEeGAceQv5y3Wpw" name="Text_area1" label="Text_area1" displayLabel="List of users/groups/roles" maxHeigth="10">
             <script xmi:type="form:GroovyScript" xmi:id="__6vikP-KEeGAceQv5y3Wpw" exprScript="${Eval.me(field_Text_area1)}" inputScript="${defaultMemberList}" setVarScript="memberList"/>
             <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_-jnXkP-KEeGAceQv5y3Wpw"/>
           </widgets>

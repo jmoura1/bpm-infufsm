@@ -59,12 +59,12 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PGAu4pEeGKhq6eruyG6w" line="6"/>
               <validators xmi:type="form:Validator" xmi:id="_n3PGA-4pEeGKhq6eruyG6w" validatorClass="org.bonitasoft.forms.server.validator.GroovyFieldValidator" label="Carga horária deve ser um número inteiro maior que 0." name="Campo_de_texto6Validador1" parameter="return (Integer.parseInt(field_Campo_de_texto6)>0)"/>
             </widgets>
-            <widgets xmi:type="form:DateFormField" xmi:id="_n3PGBO4pEeGKhq6eruyG6w" name="DataInicio" label="DataInicio" displayLabel="Data inicial" mandatory="true" displayFormat="yyyy-MM-dd">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3PGBe4pEeGKhq6eruyG6w" exprScript="${int year=field_DataInicio.getYear();&#xD;int month=field_DataInicio.getMonth();&#xD;int day=field_DataInicio.getDate();&#xD;Date DateIss=new Date(year,month,day);&#xD;date_issued=DateIss.format(&quot;yyyy-MM-dd&quot;)}" inputScript="" setVarScript="dataInicio"/>
+            <widgets xmi:type="form:DateFormField" xmi:id="_n3PGBO4pEeGKhq6eruyG6w" name="DataInicio" label="DataInicio" displayLabel="Data inicial" mandatory="true" displayFormat="dd-MM-yyyy">
+              <script xmi:type="form:GroovyScript" xmi:id="_n3PGBe4pEeGKhq6eruyG6w" exprScript="${int year=field_DataInicio.getYear();&#xD;int month=field_DataInicio.getMonth();&#xD;int day=field_DataInicio.getDate();&#xD;Date DateIss=new Date(year,month,day);&#xD;date_issued=DateIss.format(&quot;dd-MM-yyyy&quot;)}" inputScript="" setVarScript="dataInicio"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PGBu4pEeGKhq6eruyG6w" line="7"/>
             </widgets>
-            <widgets xmi:type="form:DateFormField" xmi:id="_n3Ps8O4pEeGKhq6eruyG6w" name="DataFim" label="DataFim" displayLabel="Data final" mandatory="true" useDefaultValidator="false" displayFormat="yyyy-MM-dd">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3Ps8e4pEeGKhq6eruyG6w" exprScript="${int year=field_DataFim.getYear();&#xD;int month=field_DataFim.getMonth();&#xD;int day=field_DataFim.getDate();&#xD;Date DateIss=new Date(year,month,day);&#xD;date_issued=DateIss.format(&quot;yyyy-MM-dd&quot;)}" inputScript="" setVarScript="dataFim"/>
+            <widgets xmi:type="form:DateFormField" xmi:id="_n3Ps8O4pEeGKhq6eruyG6w" name="DataFim" label="DataFim" displayLabel="Data final" mandatory="true" useDefaultValidator="false" displayFormat="dd-MM-yyyy">
+              <script xmi:type="form:GroovyScript" xmi:id="_n3Ps8e4pEeGKhq6eruyG6w" exprScript="${int year=field_DataFim.getYear();&#xD;int month=field_DataFim.getMonth();&#xD;int day=field_DataFim.getDate();&#xD;Date DateIss=new Date(year,month,day);&#xD;date_issued=DateIss.format(&quot;dd-MM-yyyy&quot;)}" inputScript="" setVarScript="dataFim"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ps8u4pEeGKhq6eruyG6w" line="8"/>
             </widgets>
             <widgets xmi:type="form:SelectFormField" xmi:id="_n3Ps-e4pEeGKhq6eruyG6w" name="Copia_de_TipoDeACG" label="Cópia de TipoDeACG" tooltip="" displayLabel="Tipo de ACG" mandatory="true" injectWidgetScript="${tacgs}" defaultValue="VIII - Monitoria;">
@@ -121,7 +121,7 @@
               <script xmi:type="form:GroovyScript" xmi:id="_n3QUA-4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.usuariosDoGrupoIncludingOne([grupoTutores],tutorNaoCadastrado)}" setVarScript="nomeTutor"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3QUBO4pEeGKhq6eruyG6w" line="2"/>
             </widgets>
-            <widgets xmi:type="form:TextFormField" xmi:id="_uzf04O8PEeG1cZ5cXPleEg" name="Text_field2" label="Text_field2" displayLabel="Tipo de ACG">
+            <widgets xmi:type="form:TextFormField" xmi:id="_uzf04O8PEeG1cZ5cXPleEg" name="Text_field2" label="Text_field2" displayLabel="Tipo de ACG" readOnly="true">
               <script xmi:type="form:GroovyScript" xmi:id="_xlNHgO8PEeG1cZ5cXPleEg" inputScript="${field_Copia_de_TipoDeACG}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_uzjfQO8PEeG1cZ5cXPleEg"/>
             </widgets>
@@ -173,6 +173,7 @@
             </widgets>
           </form>
         </elements>
+        <elements xmi:type="process:TextAnnotation" xmi:id="_JaZ6sAAqEeKniaGoVnu4cQ" text="Nesta etapa, o aluno terá que anexar o parecer digitalizado."/>
       </elements>
       <elements xmi:type="process:Lane" xmi:id="_n3RiLu4pEeGKhq6eruyG6w" name="Tutor" label="Tutor" user="" groups="_n3XB0u4pEeGKhq6eruyG6w">
         <elements xmi:type="process:Task" xmi:id="_n3RiL-4pEeGKhq6eruyG6w" name="Tutor_avalia_a_ACG" label="Tutor avalia a ACG" outgoing="_n3XBs-4pEeGKhq6eruyG6w _n3XBu-4pEeGKhq6eruyG6w" incoming="_KSYyAO5XEeGo0f37u06zsQ" user="${nomeTutor}" groups="_n3XB3-4pEeGKhq6eruyG6w" overrideGroupsOfTheLane="true">
@@ -1283,6 +1284,13 @@
             <children xmi:type="notation:Shape" xmi:id="_im8AMO5FEeGo0f37u06zsQ" type="3005" element="_imuk0O5FEeGo0f37u06zsQ" fontName="Cantarell" fillColor="14334392" lineColor="10710316">
               <children xmi:type="notation:DecorationNode" xmi:id="_im8nQO5FEeGo0f37u06zsQ" type="5005"/>
               <layoutConstraint xmi:type="notation:Bounds" xmi:id="_im8AMe5FEeGo0f37u06zsQ" x="604" y="31" width="120" height="60"/>
+            </children>
+            <children xmi:type="notation:Node" xmi:id="_JbmNgAAqEeKniaGoVnu4cQ" type="3015" element="_JaZ6sAAqEeKniaGoVnu4cQ">
+              <children xmi:type="notation:DecorationNode" xmi:id="_JbnboAAqEeKniaGoVnu4cQ" type="5010"/>
+              <styles xmi:type="notation:DescriptionStyle" xmi:id="_JbmNgQAqEeKniaGoVnu4cQ"/>
+              <styles xmi:type="notation:FontStyle" xmi:id="_JbmNggAqEeKniaGoVnu4cQ" fontName="Cantarell"/>
+              <styles xmi:type="notation:LineStyle" xmi:id="_Jbm0kAAqEeKniaGoVnu4cQ"/>
+              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_Jbm0kQAqEeKniaGoVnu4cQ" x="744" y="18" width="171" height="58"/>
             </children>
           </children>
           <styles xmi:type="notation:DescriptionStyle" xmi:id="_n3YP5O4pEeGKhq6eruyG6w"/>

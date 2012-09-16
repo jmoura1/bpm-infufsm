@@ -23,6 +23,10 @@
             <parameters xmi:type="process:Parameter" xmi:id="_1-g1aPIVEeGCZs4Ps_Re8w" key="setHost" value="ACED000574000F247B616C66726573636F486F73747D"/>
             <outputs xmi:type="process:OutputParameterMapping" xmi:id="_1-g1afIVEeGCZs4Ps_Re8w" valueExpression="import org.apache.abdera.model.Entry;&#xA;import org.apache.abdera.model.Document;&#xA;import org.apache.abdera.model.Element;&#xA;Document&lt;Element> doc = (Document&lt;Element>)responseDocument;&#xA;Entry entry = (Entry)doc.getRoot();&#xA;return entry.getId().toString();" targetData="_n3Waru4pEeGKhq6eruyG6w"/>
           </connectors>
+          <connectors xmi:type="process:Connector" xmi:id="_L27uEABXEeKBSarwiR6AFg" name="setAcgComprovante" label="setAcgComprovante" connectorId="SetVariable" event="taskOnFinish" ignoreErrors="false">
+            <parameters xmi:type="process:Parameter" xmi:id="_L27uEQBXEeKBSarwiR6AFg" key="setVariableName" value="ACED000574000E616367436F6D70726F76616E7465"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_L27uEgBXEeKBSarwiR6AFg" key="setValue" value="ACED0005740060247B47726F7570735574696C2E6372656174654C696E6B2847726F7570735574696C2E636F6E636174332874696D655374616D702C6E756D65726F4D6174726963756C612C66696C652E67657446696C654E616D652829292C206C696E6B297D"/>
+          </connectors>
           <connectors xmi:type="process:Connector" xmi:id="_OOK4kPFsEeGg2roXhIzz6Q" name="h2_solicitar" label="h2-solicitar" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_3X8IAP6uEeGtmtw5Q_ieVQ" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
             <parameters xmi:type="process:Parameter" xmi:id="_3X8IAf6uEeGtmtw5Q_ieVQ" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
@@ -125,7 +129,6 @@
               <script xmi:type="form:GroovyScript" xmi:id="_xlNHgO8PEeG1cZ5cXPleEg" inputScript="${field_Copia_de_TipoDeACG}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_uzjfQO8PEeG1cZ5cXPleEg"/>
             </widgets>
-            <scripts xmi:type="form:GroovyScript" xmi:id="_Tsmq0ABMEeKNc5oRhz2Hxg" exprScript="${GroupsUtil.createLink(GroupsUtil.concat3(timeStamp,numeroMatricula,file.getFileName()), link)}" setVarScript="acgComprovante"/>
             <scripts xmi:type="form:GroovyScript" xmi:id="_WkSCkABMEeKNc5oRhz2Hxg" exprScript="${acgEstadoSolicitada}" setVarScript="acgEstado"/>
           </form>
           <transientData xmi:type="process:JavaObjectData" xmi:id="_n3QUBe4pEeGKhq6eruyG6w" name="listOfAllGroups" label="listOfAllGroups" dataType="_n3Xo0O4pEeGKhq6eruyG6w" defaultValue="" className="java.util.List"/>

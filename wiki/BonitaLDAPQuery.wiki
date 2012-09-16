@@ -7,7 +7,8 @@
 
 = Code =
 
-Get username from LDAP
+Get username from LDAP (based on http://www.bonitasoft.org/forum/viewtopic.php?pid=14798#p14798)
+
 {{{
 ${import org.apache.directory.groovyldap.LDAP
 import org.apache.directory.groovyldap.Search

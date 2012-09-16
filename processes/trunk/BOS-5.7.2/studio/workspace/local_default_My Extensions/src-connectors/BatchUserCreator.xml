@@ -1,0 +1,32 @@
+<connector>
+  <connectorId>BatchUserCreator</connectorId>
+  <version>5.0</version>
+  <categories>
+    <category>
+      <name>Other</name>
+    </category>
+  </categories>
+  <inputs>
+    <setter>
+      <setterName>setMemberListVar</setterName>
+      <required></required>
+      <parameters>
+        <string></string>
+      </parameters>
+    </setter>
+  </inputs>
+  <outputs/>
+  <pages>
+    <page>
+      <pageId>ConnectorSetup</pageId>
+      <widgets>
+        <text>
+          <labelId>memberListVar</labelId>
+          <setter reference="/connector/inputs/setter"/>
+          <size>20</size>
+          <maxChar>40</maxChar>
+        </text>
+      </widgets>
+    </page>
+  </pages>
+</connector>

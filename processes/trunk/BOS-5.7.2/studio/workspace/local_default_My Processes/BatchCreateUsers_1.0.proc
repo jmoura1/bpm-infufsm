@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:decision="http://www.bonitasoft.org/ns/studio/process/decision" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:form="http://www.bonitasoft.org/ns/studio/form" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:process="http://www.bonitasoft.org/ns/studio/process" xsi:schemaLocation="http://www.bonitasoft.org/ns/studio/process/decision http://www.bonitasoft.org/ns/studio/process#//decision">
+  <process:MainProcess xmi:id="_gGaqwP-JEeGAceQv5y3Wpw" name="BatchCreateUsers" label="BatchCreateUsers" bonitaVersion="5.7" bonitaModelVersion="5.7">
+    <elements xmi:type="process:Pool" xmi:id="_gKvKEP-JEeGAceQv5y3Wpw" name="BatchCreateUsers" label="BatchCreateUsers" welcomePageInternal="false" basedOnLookAndFeel="Default Application" entryPageFlowType="SKIP">
+      <elements xmi:type="process:Task" xmi:id="_gMYI0P-JEeGAceQv5y3Wpw" name="Create_users_groups_roles" label="Create users/groups/roles" outgoing="_ElXxwP-jEeGvCuBtCMfJng" incoming="_gNuzsP-JEeGAceQv5y3Wpw" groups="_gM4fIP-JEeGAceQv5y3Wpw">
+        <connectors xmi:type="process:Connector" xmi:id="_Rl4HkP-LEeGAceQv5y3Wpw" name="BatchCreateUserConnector" label="BatchCreateUserConnector" connectorId="BatchUserCreator" event="taskOnFinish" ignoreErrors="false">
+          <parameters xmi:type="process:Parameter" xmi:id="_O3BbAP-TEeGvCuBtCMfJng" key="setMemberListVar" value="ACED000574000A6D656D6265724C697374"/>
+        </connectors>
+        <form xmi:type="form:Form" xmi:id="_7MYWAP-KEeGAceQv5y3Wpw" name="Create_users_groups_roles" label="Create users/groups/roles" nLine="2" pageLabel="Create users/groups/roles">
+          <widgets xmi:type="form:SubmitFormButton" xmi:id="_7MYWAf-KEeGAceQv5y3Wpw" name="Submit" label="Submit" displayLabel="Submit">
+            <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_7MYWAv-KEeGAceQv5y3Wpw" line="1"/>
+          </widgets>
+          <widgets xmi:type="form:TextAreaFormField" xmi:id="_-jcYcP-KEeGAceQv5y3Wpw" name="Text_area1" label="Text_area1" displayLabel="List of users/groups/roles">
+            <htmlAttributes xmi:type="ecore:EStringToStringMapEntry" xmi:id="_aKRnkP_5EeG64fwjYw690Q" key="input_css:height" value="200"/>
+            <script xmi:type="form:GroovyScript" xmi:id="__6vikP-KEeGAceQv5y3Wpw" exprScript="${Eval.me(field_Text_area1)}" inputScript="${defaultMemberList}" setVarScript="memberList"/>
+            <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_-jnXkP-KEeGAceQv5y3Wpw"/>
+          </widgets>
+        </form>
+      </elements>
+      <elements xmi:type="process:StartEvent" xmi:id="_gMtgAP-JEeGAceQv5y3Wpw" name="Start" label="Start" outgoing="_gNuzsP-JEeGAceQv5y3Wpw"/>
+      <elements xmi:type="process:EndTerminatedEvent" xmi:id="_-bfpcP-iEeGvCuBtCMfJng" name="End" label="End" incoming="_ElXxwP-jEeGvCuBtCMfJng"/>
+      <resourceFolders xmi:type="process:ResourceFolder" xmi:id="_gNaDkP-JEeGAceQv5y3Wpw" path="User/_gKvKEP-JEeGAceQv5y3Wpw/application/application"/>
+      <errorTemplate xmi:type="process:AssociatedFile" xmi:id="_gNaDk_-JEeGAceQv5y3Wpw" path="User/_gKvKEP-JEeGAceQv5y3Wpw/html/error.html"/>
+      <processTemplate xmi:type="process:AssociatedFile" xmi:id="_gNaDkf-JEeGAceQv5y3Wpw" path="User/_gKvKEP-JEeGAceQv5y3Wpw/html/process.html"/>
+      <pageTemplate xmi:type="process:AssociatedFile" xmi:id="_gNaqoP-JEeGAceQv5y3Wpw" path="User/_gKvKEP-JEeGAceQv5y3Wpw/html/page.html"/>
+      <consultationTemplate xmi:type="process:AssociatedFile" xmi:id="_gNaDkv-JEeGAceQv5y3Wpw" path="User/_gKvKEP-JEeGAceQv5y3Wpw/html/consultation.html"/>
+      <data xmi:type="process:Data" xmi:id="_xAeOwP-iEeGvCuBtCMfJng" name="defaultMemberList" label="defaultMemberList" dataType="_gGaqxf-JEeGAceQv5y3Wpw" defaultValue="[[&quot;andrea&quot;,&quot;tutores:user&quot;,&quot;coordenacao:admin&quot;],&#xA; [&quot;john&quot;, &quot;colegiado:user&quot;,&quot;relatores:user&quot;,&quot;coordenacao:user&quot;],&#xA; [&quot;james&quot;, &quot;colegiado:user&quot;,&quot;relatores:user&quot;],&#xA; [&quot;jack&quot;, &quot;colegiado:user&quot;,&quot;relatores:user&quot;]]"/>
+      <data xmi:type="process:JavaObjectData" xmi:id="_JwmNYP-LEeGAceQv5y3Wpw" name="memberList" label="memberList" dataType="_gGaqx_-JEeGAceQv5y3Wpw" defaultValue="${[[&quot;andrea&quot;,&quot;tutores:user&quot;,&quot;coordenacao:admin&quot;], [&quot;john&quot;, &quot;colegiado:user&quot;,&quot;relatores:user&quot;,&quot;coordenacao:user&quot;], [&quot;james&quot;, &quot;colegiado:user&quot;,&quot;relatores:user&quot;],[&quot;jack&quot;, &quot;colegiado:user&quot;,&quot;relatores:user&quot;]]}" className="java.lang.Object"/>
+      <connections xmi:type="process:SequenceFlow" xmi:id="_gNuzsP-JEeGAceQv5y3Wpw" source="_gMtgAP-JEeGAceQv5y3Wpw" target="_gMYI0P-JEeGAceQv5y3Wpw">
+        <decisionTable xmi:type="decision:DecisionTable" xmi:id="_gNvawP-JEeGAceQv5y3Wpw"/>
+      </connections>
+      <connections xmi:type="process:SequenceFlow" xmi:id="_ElXxwP-jEeGvCuBtCMfJng" source="_gMYI0P-JEeGAceQv5y3Wpw" target="_-bfpcP-iEeGvCuBtCMfJng">
+        <decisionTable xmi:type="decision:DecisionTable" xmi:id="_ElY_4P-jEeGvCuBtCMfJng"/>
+      </connections>
+    </elements>
+    <groups xmi:type="process:Group" xmi:id="_gM4fIP-JEeGAceQv5y3Wpw" documentation="Person who takes the first action to start the process" name="Initiator" label="Initiator" connectorId="ProcessInitiatior"/>
+    <datatypes xmi:type="process:BooleanType" xmi:id="_gGaqwf-JEeGAceQv5y3Wpw" name="Boolean" label="Boolean"/>
+    <datatypes xmi:type="process:DateType" xmi:id="_gGaqwv-JEeGAceQv5y3Wpw" name="Date" label="Date"/>
+    <datatypes xmi:type="process:IntegerType" xmi:id="_gGaqw_-JEeGAceQv5y3Wpw" name="Integer" label="Integer"/>
+    <datatypes xmi:type="process:FloatType" xmi:id="_gGaqxP-JEeGAceQv5y3Wpw" name="Decimal" label="Decimal"/>
+    <datatypes xmi:type="process:StringType" xmi:id="_gGaqxf-JEeGAceQv5y3Wpw" name="Text" label="Text"/>
+    <datatypes xmi:type="process:AttachmentType" xmi:id="_gGaqxv-JEeGAceQv5y3Wpw" name="Attachment" label="Attachment"/>
+    <datatypes xmi:type="process:JavaType" xmi:id="_gGaqx_-JEeGAceQv5y3Wpw" name="Java_object" label="Java object"/>
+    <datatypes xmi:type="process:XMLType" xmi:id="_gGaqyP-JEeGAceQv5y3Wpw" name="XML" label="XML"/>
+    <includedEntries>BatchUserCreator</includedEntries>
+    <includedEntries>bonita/bonita</includedEntries>
+  </process:MainProcess>
+  <notation:Diagram xmi:id="_gGduEP-JEeGAceQv5y3Wpw" type="Process" element="_gGaqwP-JEeGAceQv5y3Wpw" name="BatchCreateUsers_1.0.proc" measurementUnit="Pixel">
+    <children xmi:type="notation:Node" xmi:id="_gMLUgP-JEeGAceQv5y3Wpw" type="2007" element="_gKvKEP-JEeGAceQv5y3Wpw">
+      <children xmi:type="notation:DecorationNode" xmi:id="_gML7kP-JEeGAceQv5y3Wpw" type="5008"/>
+      <children xmi:type="notation:DecorationNode" xmi:id="_gML7kf-JEeGAceQv5y3Wpw" type="7001">
+        <children xmi:type="notation:Shape" xmi:id="_gMZ-AP-JEeGAceQv5y3Wpw" type="3005" element="_gMYI0P-JEeGAceQv5y3Wpw" fontName="Cantarell" fillColor="14334392" lineColor="10710316">
+          <children xmi:type="notation:DecorationNode" xmi:id="_gMalEP-JEeGAceQv5y3Wpw" type="5005"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_gMZ-Af-JEeGAceQv5y3Wpw" x="110" y="55" width="120" height="60"/>
+        </children>
+        <children xmi:type="notation:Shape" xmi:id="_gMvVMP-JEeGAceQv5y3Wpw" type="3002" element="_gMtgAP-JEeGAceQv5y3Wpw" fontName="Cantarell">
+          <children xmi:type="notation:DecorationNode" xmi:id="_gMv8QP-JEeGAceQv5y3Wpw" type="5024">
+            <layoutConstraint xmi:type="notation:Location" xmi:id="_gMv8Qf-JEeGAceQv5y3Wpw" y="5"/>
+          </children>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_gMvVMf-JEeGAceQv5y3Wpw" x="40" y="65"/>
+        </children>
+        <children xmi:type="notation:Shape" xmi:id="_-bqokP-iEeGvCuBtCMfJng" type="3062" element="_-bfpcP-iEeGvCuBtCMfJng" fontName="Cantarell">
+          <children xmi:type="notation:DecorationNode" xmi:id="_-br2sP-iEeGvCuBtCMfJng" type="5090">
+            <layoutConstraint xmi:type="notation:Location" xmi:id="_-br2sf-iEeGvCuBtCMfJng" y="5"/>
+          </children>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_-bqokf-iEeGvCuBtCMfJng" x="287" y="65"/>
+        </children>
+      </children>
+      <styles xmi:type="notation:DescriptionStyle" xmi:id="_gMLUgf-JEeGAceQv5y3Wpw"/>
+      <styles xmi:type="notation:FontStyle" xmi:id="_gMLUgv-JEeGAceQv5y3Wpw" fontName="Cantarell"/>
+      <styles xmi:type="notation:LineStyle" xmi:id="_gMLUg_-JEeGAceQv5y3Wpw"/>
+      <styles xmi:type="notation:FillStyle" xmi:id="_gML7kv-JEeGAceQv5y3Wpw"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_gMLUhP-JEeGAceQv5y3Wpw"/>
+    </children>
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_gGduEf-JEeGAceQv5y3Wpw"/>
+    <edges xmi:type="notation:Connector" xmi:id="_gNxP8P-JEeGAceQv5y3Wpw" type="4001" element="_gNuzsP-JEeGAceQv5y3Wpw" source="_gMvVMP-JEeGAceQv5y3Wpw" target="_gMZ-AP-JEeGAceQv5y3Wpw" roundedBendpointsRadius="10" routing="Rectilinear">
+      <children xmi:type="notation:DecorationNode" xmi:id="_gNzFIP-JEeGAceQv5y3Wpw" type="6001">
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_gNzFIf-JEeGAceQv5y3Wpw" y="-10"/>
+      </children>
+      <children xmi:type="notation:DecorationNode" xmi:id="_gNzsMP-JEeGAceQv5y3Wpw" visible="false" type="6002">
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_gNzsMf-JEeGAceQv5y3Wpw" y="-10"/>
+      </children>
+      <styles xmi:type="notation:FontStyle" xmi:id="_gNxP8f-JEeGAceQv5y3Wpw" fontName="Cantarell"/>
+      <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_gNxP8v-JEeGAceQv5y3Wpw" points="[0, 0, 0, 0]$[0, 0, 0, 0]"/>
+    </edges>
+    <edges xmi:type="notation:Connector" xmi:id="_ElcDMP-jEeGvCuBtCMfJng" type="4001" element="_ElXxwP-jEeGvCuBtCMfJng" source="_gMZ-AP-JEeGAceQv5y3Wpw" target="_-bqokP-iEeGvCuBtCMfJng" roundedBendpointsRadius="10" routing="Rectilinear">
+      <children xmi:type="notation:DecorationNode" xmi:id="_EldRUP-jEeGvCuBtCMfJng" type="6001">
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_EldRUf-jEeGvCuBtCMfJng" y="-10"/>
+      </children>
+      <children xmi:type="notation:DecorationNode" xmi:id="_Eld4YP-jEeGvCuBtCMfJng" visible="false" type="6002">
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_Eld4Yf-jEeGvCuBtCMfJng" y="-10"/>
+      </children>
+      <styles xmi:type="notation:FontStyle" xmi:id="_ElcDMf-jEeGvCuBtCMfJng" fontName="Cantarell"/>
+      <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_ElcDMv-jEeGvCuBtCMfJng" points="[7, 0, -63, -3]$[64, 3, -6, 0]"/>
+      <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_EljX8P-jEeGvCuBtCMfJng" id="(0.9416666666666667,0.4)"/>
+      <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_EljX8f-jEeGvCuBtCMfJng" id="(0.2,0.5)"/>
+    </edges>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_7MdOgP-KEeGAceQv5y3Wpw" type="Form" element="_7MYWAP-KEeGAceQv5y3Wpw" measurementUnit="Pixel">
+    <children xmi:type="notation:Node" xmi:id="_7OdZoP-KEeGAceQv5y3Wpw" type="2126" element="_7MYWAf-KEeGAceQv5y3Wpw">
+      <children xmi:type="notation:DecorationNode" xmi:id="_7OeAsP-KEeGAceQv5y3Wpw" type="5125"/>
+      <styles xmi:type="notation:DescriptionStyle" xmi:id="_7OdZof-KEeGAceQv5y3Wpw"/>
+      <styles xmi:type="notation:FontStyle" xmi:id="_7OdZov-KEeGAceQv5y3Wpw" fontName="Cantarell"/>
+      <styles xmi:type="notation:LineStyle" xmi:id="_7OdZo_-KEeGAceQv5y3Wpw"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_7OdZpP-KEeGAceQv5y3Wpw"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_-jliYP-KEeGAceQv5y3Wpw" type="2121" element="_-jcYcP-KEeGAceQv5y3Wpw" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_-jliYv-KEeGAceQv5y3Wpw" type="5109"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_-jliYf-KEeGAceQv5y3Wpw"/>
+    </children>
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_7MdOgf-KEeGAceQv5y3Wpw"/>
+  </notation:Diagram>
+</xmi:XMI>

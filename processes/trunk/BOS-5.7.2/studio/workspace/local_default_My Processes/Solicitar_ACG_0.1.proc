@@ -621,27 +621,25 @@
             <scripts xmi:type="form:GroovyScript" xmi:id="_n3VzqO4pEeGKhq6eruyG6w" exprScript="${if(field_Botoes_de_radio1==&quot;Sim&quot;) conta+1&#xD;else conta}" setVarScript="conta"/>
             <scripts xmi:type="form:GroovyScript" xmi:id="_n3Vzqe4pEeGKhq6eruyG6w" exprScript="${GroupsUtil.numMembros([&quot;colegiado&quot;])}" setVarScript="membros"/>
             <scripts xmi:type="form:GroovyScript" xmi:id="_uedHQABNEeKNc5oRhz2Hxg" exprScript="${respostaColegiado}" setVarScript="respostaFinal"/>
+            <scripts xmi:type="form:GroovyScript" xmi:id="_7N_cEADpEeKESvWV9cdW4A" exprScript="${GroupsUtil.getCurrentDate()}" setVarScript="data_aval_col"/>
+            <scripts xmi:type="form:GroovyScript" xmi:id="_KbvjMADrEeKESvWV9cdW4A" exprScript="Avaliada pelo colegiado" setVarScript="acgEstado"/>
           </form>
           <filters xmi:type="process:Connector" xmi:id="_n3Vzqu4pEeGKhq6eruyG6w" name="escolhido" label="escolhido" connectorId="GroovyFilter">
             <parameters xmi:type="process:Parameter" xmi:id="_n3Vzq-4pEeGKhq6eruyG6w" key="setScript" value="ACED000574001F47726F7570735574696C2E6573636F6C6869646F28696452656C61746F7229"/>
           </filters>
         </elements>
-        <elements xmi:type="process:Activity" xmi:id="_lep9YPLpEeGcD7MAkxJ97A" name="BD1" label="BD1" outgoing="_sA-a4PLpEeGcD7MAkxJ97A" incoming="_eVACsO9-EeGDf8wCPuoYjQ">
-          <connectors xmi:type="process:Connector" xmi:id="_V22FkPLqEeGcD7MAkxJ97A" name="h2_colegiado1" label="h2-colegiado1" connectorId="H2" event="automaticOnExit" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_SEy2EPxHEeGdtb-JBdbL6Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_SEy2EfxHEeGdtb-JBdbL6Q" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_SEy2EvxHEeGdtb-JBdbL6Q" key="setPort" value="ACED0005740009247B6462506F72747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_SEy2E_xHEeGdtb-JBdbL6Q" key="setDatabase" value="ACED000574000A247B64624C6F63616C7D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_SEy2FPxHEeGdtb-JBdbL6Q" key="setLocal" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_SEy2FfxHEeGdtb-JBdbL6Q" key="setQuery" value="ACED00057400DD55504441544520414347205345542045535441444F3D274170726F7661646F2070656C6F20636F6C65676961646F27205748455245204C4F47494E3D27247B6C6F67696E7D2720414E4420444154415F534F4C49433D27247B74696D655374616D707D273B0A494E5345525420494E544F204156414C494143414F5F434F4C45474941444F2056414C5545532827247B74696D655374616D707D272C27247B6C6F67696E7D272C27247B636F6E74617D272C27247B726573706F737461436F6C65676961646F7D272C27247B646174615F6176616C5F636F6C7D27293B"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_SEy2FvxHEeGdtb-JBdbL6Q" key="setSsl" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_SEy2F_xHEeGdtb-JBdbL6Q" key="setUsername" value="ACED0005740009247B6462557365727D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_SEy2GPxHEeGdtb-JBdbL6Q" key="setPassword"/>
-            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_SEy2GfxHEeGdtb-JBdbL6Q" valueExpression="rowSet"/>
-          </connectors>
-          <connectors xmi:type="process:Connector" xmi:id="_ee8uYPLrEeGcD7MAkxJ97A" name="setDataAval" label="setDataAval" connectorId="SetVariable" event="automaticOnEnter" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_deZI8PLuEeGGkrhn-wgxtg" key="setVariableName" value="ACED000574000D646174615F6176616C5F636F6C"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_deZI8fLuEeGGkrhn-wgxtg" key="setValue" value="ACED000574001E247B47726F7570735574696C2E67657443757272656E744461746528297D"/>
+        <elements xmi:type="process:Activity" xmi:id="_lep9YPLpEeGcD7MAkxJ97A" name="Atualiza_BD__1_" label="Atualiza BD (1)" outgoing="_sA-a4PLpEeGcD7MAkxJ97A" incoming="_eVACsO9-EeGDf8wCPuoYjQ">
+          <connectors xmi:type="process:Connector" xmi:id="_V22FkPLqEeGcD7MAkxJ97A" name="h2_colegiado" label="h2-colegiado" connectorId="H2" event="automaticOnExit" ignoreErrors="false">
+            <parameters xmi:type="process:Parameter" xmi:id="_5rSWYADtEeKESvWV9cdW4A" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_5rSWYQDtEeKESvWV9cdW4A" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_5rSWYgDtEeKESvWV9cdW4A" key="setPort" value="ACED0005740009247B6462506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_5rSWYwDtEeKESvWV9cdW4A" key="setDatabase" value="ACED000574000A247B64624C6F63616C7D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_5rSWZADtEeKESvWV9cdW4A" key="setLocal" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_5rSWZQDtEeKESvWV9cdW4A" key="setQuery" value="ACED000574005B247B517565727948322E6765745175657279436F6C65676961646F2870726F63657373496E7374616E6365292B517565727948322E676574517565727955706461746545737461646F2870726F63657373496E7374616E6365297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_5rSWZgDtEeKESvWV9cdW4A" key="setSsl" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_5rSWZwDtEeKESvWV9cdW4A" key="setUsername" value="ACED0005740009247B6462557365727D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_5rSWaADtEeKESvWV9cdW4A" key="setPassword"/>
+            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_5rS9cADtEeKESvWV9cdW4A" valueExpression="rowSet"/>
           </connectors>
         </elements>
       </elements>
@@ -907,7 +905,7 @@
             <outputs xmi:type="process:OutputParameterMapping" xmi:id="_oKIVgPxHEeGdtb-JBdbL6Q" valueExpression="rowSet"/>
           </connectors>
         </elements>
-        <elements xmi:type="process:Activity" xmi:id="_d7EasPLqEeGcD7MAkxJ97A" name="BD2" label="BD2" outgoing="_AL0KYPFnEeGfefz74zRb1Q _fbrW4O9-EeGDf8wCPuoYjQ" incoming="_jzx6gPLqEeGcD7MAkxJ97A">
+        <elements xmi:type="process:Activity" xmi:id="_d7EasPLqEeGcD7MAkxJ97A" name="Atualiza_BD__2_" label="Atualiza BD (2)" outgoing="_AL0KYPFnEeGfefz74zRb1Q _fbrW4O9-EeGDf8wCPuoYjQ" incoming="_jzx6gPLqEeGcD7MAkxJ97A">
           <connectors xmi:type="process:Connector" xmi:id="_uhKqQPLqEeGcD7MAkxJ97A" name="h2_colegiado2" label="h2-colegiado2" connectorId="H2" event="automaticOnExit" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_lSy8APxHEeGdtb-JBdbL6Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
             <parameters xmi:type="process:Parameter" xmi:id="_lSy8AfxHEeGdtb-JBdbL6Q" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
@@ -1462,7 +1460,7 @@
               <children xmi:type="notation:DecorationNode" xmi:id="_n3Y2-O4pEeGKhq6eruyG6w" type="5025">
                 <layoutConstraint xmi:type="notation:Location" xmi:id="_n3Y2-e4pEeGKhq6eruyG6w" y="5"/>
               </children>
-              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3Y2-u4pEeGKhq6eruyG6w" x="1226" y="99"/>
+              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3Y2-u4pEeGKhq6eruyG6w" x="1300" y="99"/>
             </children>
             <children xmi:type="notation:Shape" xmi:id="_JjFvcO99EeGDf8wCPuoYjQ" type="3005" element="_Jizbke99EeGDf8wCPuoYjQ" fontName="Cantarell" fillColor="14334392" lineColor="10710316">
               <children xmi:type="notation:DecorationNode" xmi:id="_JjG9kO99EeGDf8wCPuoYjQ" type="5005"/>
@@ -1482,7 +1480,7 @@
             </children>
             <children xmi:type="notation:Shape" xmi:id="_-imw4PFmEeGfefz74zRb1Q" type="3006" element="_-ih4YPFmEeGfefz74zRb1Q" fontName="Ubuntu" fillColor="14334392" lineColor="10710316">
               <children xmi:type="notation:DecorationNode" xmi:id="_-inX8PFmEeGfefz74zRb1Q" type="5006"/>
-              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_-imw4fFmEeGfefz74zRb1Q" x="1046" y="32" width="120" height="60"/>
+              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_-imw4fFmEeGfefz74zRb1Q" x="1132" y="39" width="120" height="60"/>
             </children>
             <children xmi:type="notation:Shape" xmi:id="_d7IsIPLqEeGcD7MAkxJ97A" type="3006" element="_d7EasPLqEeGcD7MAkxJ97A" fontName="Ubuntu" fillColor="14334392" lineColor="10710316">
               <children xmi:type="notation:DecorationNode" xmi:id="_d7JTMPLqEeGcD7MAkxJ97A" type="5006"/>
@@ -1732,7 +1730,7 @@
         <layoutConstraint xmi:type="notation:Location" xmi:id="_AL2mo_FnEeGfefz74zRb1Q" y="-10"/>
       </children>
       <styles xmi:type="notation:FontStyle" xmi:id="_AL1_kfFnEeGfefz74zRb1Q" fontName="Ubuntu"/>
-      <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_AL1_kvFnEeGfefz74zRb1Q" points="[0, -10, -351, 16]$[150, -10, -201, 16]$[150, -23, -201, 3]$[301, -23, -50, 3]"/>
+      <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_AL1_kvFnEeGfefz74zRb1Q" points="[11, -13, -320, -13]$[271, -13, -60, -13]"/>
       <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_AL5p8PFnEeGfefz74zRb1Q" id="(0.89,0.5)"/>
     </edges>
     <edges xmi:type="notation:Connector" xmi:id="_RnSiwPFnEeGfefz74zRb1Q" type="4001" element="_RnQtkPFnEeGfefz74zRb1Q" source="_-imw4PFmEeGfefz74zRb1Q" target="_n3Y29-4pEeGKhq6eruyG6w" roundedBendpointsRadius="10" routing="Rectilinear">

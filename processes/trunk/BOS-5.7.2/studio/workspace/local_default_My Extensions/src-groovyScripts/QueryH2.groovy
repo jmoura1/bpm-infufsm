@@ -114,6 +114,14 @@ public class QueryH2 {
         return query;
     }
 
+    public static String getQueryColegiado(ProcessInstance processInstance) {
+        def allvars = ["timeStamp", "login", "conta", "respostaColegiado", "data_aval_col"];
+        def intvars = ["conta"];
+        setValuesAndFormat(processInstance, allvars, intvars);
+        String query = "INSERT INTO AVALIACAO_COLEGIADO (DATA_SOLIC, LOGIN_ALUNO, N_VOTOS_SIM, DECISAO, DATA_AVAL) VALUES " + 
+            String.format(strformat, (java.lang.Object[]) values.toArray()) + ";";
+    }
+
 
     public static String getQueryUpdateEstado(ProcessInstance processInstance) {
         def allvars = ["acgEstado", "login", "timeStamp"];
@@ -122,13 +130,5 @@ public class QueryH2 {
         String query = String.format(strformat, (java.lang.Object[]) values.toArray());
         return query;
     }
-
-/*
-INSERT INTO AVALIACAO_RELATOR VALUES('${timeStamp}','${login}','${idRelator}','${parecerRelator}','${respostaRelator}','${data_aval_relator}');
-
-Task: Avisa ao aluno (indeferido)
-UPDATE ACG SET ESTADO='Terminada-Recusada pelo tutor' WHERE LOGIN='${login}' AND DATA_SOLIC='${timeStamp}'; 
-
-*/
 
 }

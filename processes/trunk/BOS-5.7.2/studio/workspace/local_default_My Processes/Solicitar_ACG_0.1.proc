@@ -3,12 +3,51 @@
   <process:MainProcess xmi:id="_n3Oe0e4pEeGKhq6eruyG6w" name="Solicitar_ACG" label="Solicitar ACG" version="0.1" bonitaVersion="5.7" bonitaModelVersion="5.7">
     <elements xmi:type="process:Pool" xmi:id="_n3Oe0u4pEeGKhq6eruyG6w" name="Solicitar_ACG" label="Solicitar ACG" welcomePageInternal="false" entryPageFlowType="SKIP" version="0.1">
       <elements xmi:type="process:Lane" xmi:id="_n3PF4O4pEeGKhq6eruyG6w" name="Aluno" label="Aluno" user="" groups="_n3XBze4pEeGKhq6eruyG6w">
-        <elements xmi:type="process:StartEvent" xmi:id="_n3PF4e4pEeGKhq6eruyG6w" name="Inicio" label="Início" outgoing="_n3WayO4pEeGKhq6eruyG6w"/>
-        <elements xmi:type="process:Task" xmi:id="_n3PF4u4pEeGKhq6eruyG6w" name="Aluno_solicita_ACG" label="Aluno solicita ACG" outgoing="_n3XBue4pEeGKhq6eruyG6w _3JiEEO5REeGo0f37u06zsQ _KSYyAO5XEeGo0f37u06zsQ _dG5-MPBKEeGgZqChN-hpWQ" incoming="_n3WayO4pEeGKhq6eruyG6w" dynamicLabel="" stepSummary="${cargaHoraria}" confirmationMessage="Solicitação realizada com sucesso." user="" groups="_n3XBze4pEeGKhq6eruyG6w" overrideGroupsOfTheLane="true">
-          <viewForm xmi:type="form:ViewForm" xmi:id="_UgbjAP2wEeGCRoLsB0Ohdw" name="Aluno_solicita_ACG" label="Aluno solicita ACG" nLine="3" pageLabel="Aluno solicita ACG">
-            <widgets xmi:type="form:MessageInfo" xmi:id="_VwhR4P2wEeGCRoLsB0Ohdw" name="Mensagem2" label="Mensagem2">
-              <script xmi:type="form:GroovyScript" xmi:id="_V-8IYP2wEeGCRoLsB0Ohdw" inputScript="oi"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_Vwn_kP2wEeGCRoLsB0Ohdw"/>
+        <elements xmi:type="process:StartEvent" xmi:id="_n3PF4e4pEeGKhq6eruyG6w" name="Inicio" label="Início" outgoing="_n3WayO4pEeGKhq6eruyG6w">
+          <viewForm xmi:type="form:ViewForm" xmi:id="_5HnmQAC5EeK4zIrf8BB_zA" name="Inicio" label="Início" nLine="1" pageLabel="Início">
+            <widgets xmi:type="form:MessageInfo" xmi:id="_6VfHkAC5EeK4zIrf8BB_zA" name="Mensagem1" label="Mensagem1">
+              <script xmi:type="form:GroovyScript" xmi:id="_6lMXgAC5EeK4zIrf8BB_zA" inputScript="Caso iniciado com sucesso."/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_6Vg8wAC5EeK4zIrf8BB_zA"/>
+            </widgets>
+          </viewForm>
+        </elements>
+        <elements xmi:type="process:Task" xmi:id="_n3PF4u4pEeGKhq6eruyG6w" name="Aluno_solicita_ACG" label="Aluno solicita ACG" outgoing="_n3XBue4pEeGKhq6eruyG6w _3JiEEO5REeGo0f37u06zsQ _KSYyAO5XEeGo0f37u06zsQ _dG5-MPBKEeGgZqChN-hpWQ" incoming="_n3WayO4pEeGKhq6eruyG6w" dynamicLabel="" stepSummary="" confirmationMessage="Solicitação realizada com sucesso." user="" groups="_n3XBze4pEeGKhq6eruyG6w" overrideGroupsOfTheLane="true">
+          <viewForm xmi:type="form:ViewForm" xmi:id="_b_ad0AC1EeK4zIrf8BB_zA" name="Aluno_solicita_ACG" label="Aluno solicita ACG" nLine="9" pageLabel="Aluno solicita ACG">
+            <widgets xmi:type="form:TextInfo" xmi:id="_e32DgAC1EeK4zIrf8BB_zA" name="NomeDoAluno" label="NomeDoAluno" displayLabel="Nome do aluno:">
+              <script xmi:type="form:GroovyScript" xmi:id="_e32DgQC1EeK4zIrf8BB_zA" inputScript="${name}" setVarScript="name"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_e32DggC1EeK4zIrf8BB_zA"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_fw7noAC1EeK4zIrf8BB_zA" name="matricula" label="matricula" displayLabel="Matrícula:">
+              <script xmi:type="form:GroovyScript" xmi:id="_fw7noQC1EeK4zIrf8BB_zA" inputScript="${numeroMatricula}" setVarScript="matricula"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_fw7nogC1EeK4zIrf8BB_zA" line="1"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_gsWuEAC1EeK4zIrf8BB_zA" name="Texto1" label="Texto1" displayLabel="Local da atividade:">
+              <script xmi:type="form:GroovyScript" xmi:id="_gsWuEQC1EeK4zIrf8BB_zA" inputScript="${local}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_gsWuEgC1EeK4zIrf8BB_zA" line="2"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_iE7qkAC1EeK4zIrf8BB_zA" name="Texto3" label="Texto3" displayLabel="Descrição da atividade:">
+              <script xmi:type="form:GroovyScript" xmi:id="_iE7qkQC1EeK4zIrf8BB_zA" inputScript="${descricao}" allowHTMLInValues="true"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_iE7qkgC1EeK4zIrf8BB_zA" line="3"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_i4-WoAC1EeK4zIrf8BB_zA" name="Campo_de_texto3" label="Campo_de_texto3" displayLabel="Data inicial:">
+              <script xmi:type="form:GroovyScript" xmi:id="_i4-WoQC1EeK4zIrf8BB_zA" inputScript="${dataInicio}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_i4-WogC1EeK4zIrf8BB_zA" line="4"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_j-UOEAC1EeK4zIrf8BB_zA" name="Campo_de_texto4" label="Campo_de_texto4" displayLabel="Data final:">
+              <script xmi:type="form:GroovyScript" xmi:id="_j-UOEQC1EeK4zIrf8BB_zA" inputScript="${dataFim}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_j-UOEgC1EeK4zIrf8BB_zA" line="5"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_lIeUEAC1EeK4zIrf8BB_zA" name="cargaHoraria" label="cargaHoraria" displayLabel="Carga horária:">
+              <script xmi:type="form:GroovyScript" xmi:id="_lIeUEQC1EeK4zIrf8BB_zA" inputScript="${cargaHoraria}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_lIeUEgC1EeK4zIrf8BB_zA" line="6"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_mFqVEAC1EeK4zIrf8BB_zA" name="tipoACG" label="tipoACG" displayLabel="Tipo de ACG:">
+              <script xmi:type="form:GroovyScript" xmi:id="_mFqVEQC1EeK4zIrf8BB_zA" inputScript="${GroupsUtil.concat(tipoACG,subtipoACG)}" setVarScript="tipoACG"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_mFqVEgC1EeK4zIrf8BB_zA" line="7"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_nSG6EAC1EeK4zIrf8BB_zA" name="Lins" label="Lins" displayLabel="Link para a documentação:">
+              <script xmi:type="form:GroovyScript" xmi:id="_nSG6EQC1EeK4zIrf8BB_zA" inputScript="${GroupsUtil.createLink(GroupsUtil.concat3(timeStamp,numeroMatricula,file.getFileName()), link)}" allowHTMLInValues="true"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_nSG6EgC1EeK4zIrf8BB_zA" line="8"/>
             </widgets>
           </viewForm>
           <connectors xmi:type="process:Connector" xmi:id="_n3PF4-4pEeGKhq6eruyG6w" name="upload" label="upload" connectorId="AlfrescoUploadFileByPath" event="taskOnFinish" ignoreErrors="false">
@@ -28,16 +67,16 @@
             <parameters xmi:type="process:Parameter" xmi:id="_L27uEgBXEeKBSarwiR6AFg" key="setValue" value="ACED0005740060247B47726F7570735574696C2E6372656174654C696E6B2847726F7570735574696C2E636F6E636174332874696D655374616D702C6E756D65726F4D6174726963756C612C66696C652E67657446696C654E616D652829292C206C696E6B297D"/>
           </connectors>
           <connectors xmi:type="process:Connector" xmi:id="_OOK4kPFsEeGg2roXhIzz6Q" name="h2_solicitar" label="h2-solicitar" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_3X8IAP6uEeGtmtw5Q_ieVQ" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3X8IAf6uEeGtmtw5Q_ieVQ" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3X8IAv6uEeGtmtw5Q_ieVQ" key="setPort" value="ACED0005740009247B6462506F72747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3X8IA_6uEeGtmtw5Q_ieVQ" key="setDatabase" value="ACED000574000A247B64624C6F63616C7D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3X8IBP6uEeGtmtw5Q_ieVQ" key="setLocal" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3X8IBf6uEeGtmtw5Q_ieVQ" key="setQuery" value="ACED000574002C247B517565727948322E6765745175657279536F6C69636974612870726F63657373496E7374616E6365297D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3X8vEP6uEeGtmtw5Q_ieVQ" key="setSsl" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3X8vEf6uEeGtmtw5Q_ieVQ" key="setUsername" value="ACED0005740009247B6462557365727D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3X8vEv6uEeGtmtw5Q_ieVQ" key="setPassword"/>
-            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_3X8vE_6uEeGtmtw5Q_ieVQ" valueExpression="rowSet"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_ZjU14AC1EeK4zIrf8BB_zA" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_ZjU14QC1EeK4zIrf8BB_zA" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_ZjU14gC1EeK4zIrf8BB_zA" key="setPort" value="ACED0005740009247B6462506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_ZjU14wC1EeK4zIrf8BB_zA" key="setDatabase" value="ACED000574000A247B64624C6F63616C7D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_ZjU15AC1EeK4zIrf8BB_zA" key="setLocal" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_ZjU15QC1EeK4zIrf8BB_zA" key="setQuery" value="ACED000574002C247B517565727948322E6765745175657279536F6C69636974612870726F63657373496E7374616E6365297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_ZjU15gC1EeK4zIrf8BB_zA" key="setSsl" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_ZjU15wC1EeK4zIrf8BB_zA" key="setUsername" value="ACED0005740009247B6462557365727D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_ZjU16AC1EeK4zIrf8BB_zA" key="setPassword"/>
+            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_ZjVc8AC1EeK4zIrf8BB_zA" valueExpression="rowSet"/>
           </connectors>
           <data xmi:type="process:Data" xmi:id="_n3PF7u4pEeGKhq6eruyG6w" name="acgs" label="acgs" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
           <data xmi:type="process:JavaObjectData" xmi:id="_n3PF7-4pEeGKhq6eruyG6w" name="listOfAlGroups" label="listOfAlGroups" dataType="_n3Xo0O4pEeGKhq6eruyG6w" defaultValue="" className="java.util.ArrayList"/>
@@ -182,6 +221,16 @@
       </elements>
       <elements xmi:type="process:Lane" xmi:id="_n3RiLu4pEeGKhq6eruyG6w" name="Tutor" label="Tutor" user="" groups="_n3XB0u4pEeGKhq6eruyG6w">
         <elements xmi:type="process:Task" xmi:id="_n3RiL-4pEeGKhq6eruyG6w" name="Tutor_avalia_a_ACG" label="Tutor avalia a ACG" outgoing="_n3XBs-4pEeGKhq6eruyG6w _n3XBu-4pEeGKhq6eruyG6w" incoming="_KSYyAO5XEeGo0f37u06zsQ" user="${nomeTutor}" groups="_n3XB3-4pEeGKhq6eruyG6w" overrideGroupsOfTheLane="true">
+          <viewForm xmi:type="form:ViewForm" xmi:id="_rWxCUAC1EeK4zIrf8BB_zA" name="Tutor_avalia_a_ACG" label="Tutor avalia a ACG" nLine="3" pageLabel="Tutor avalia a ACG">
+            <widgets xmi:type="form:TextInfo" xmi:id="_t4QusAC1EeK4zIrf8BB_zA" name="Text1" label="Text1" displayLabel="Tutor/responsável:">
+              <script xmi:type="form:GroovyScript" xmi:id="_t4QusQC1EeK4zIrf8BB_zA" inputScript="${if (!GroupsUtil.requerTutor(tipoACG)) {&#xD;&#x9;&quot;Nao se aplica&quot;&#xD;} else {&#xD;&#x9;nomeTutor&#xD;}}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_t4QusgC1EeK4zIrf8BB_zA"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_u2HeEAC1EeK4zIrf8BB_zA" name="textParecerTutor" label="textParecerTutor" displayLabel="Parecer do responsável:" injectWidgetScript="boolTutor == true">
+              <script xmi:type="form:GroovyScript" xmi:id="_u2HeEQC1EeK4zIrf8BB_zA" inputScript="${if (!GroupsUtil.requerTutor(tipoACG)) {&#xD;&#x9;&quot;Nao se aplica&quot;&#xD;} else {&#xD;&#x9;parecerTutor&#xD;}}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_u2HeEgC1EeK4zIrf8BB_zA" line="1"/>
+            </widgets>
+          </viewForm>
           <connectors xmi:type="process:Connector" xmi:id="_x-0SsO5REeGo0f37u06zsQ" name="reminderTutor" label="reminderTutor" connectorId="Email" event="taskOnReady" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_x-0Sse5REeGo0f37u06zsQ" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000A78"/>
             <parameters xmi:type="process:Parameter" xmi:id="_x-0Ssu5REeGo0f37u06zsQ" key="setMessage" value="ACED00057401C24F6CC3A12C0A0A3C703E566F63C3AA20666F6920696E64696361646F20636F6D6F205455544F522070617261206176616C69617220756D6120736F6C6963697461C3A7C3A36F2064652041434720646520756D20616C756E6F20646F20637572736F2064652053492E3C2F703E0A0A506F72206661766F722C2061636573736520657374612055524C2070617261206176616C696172206120736F6C6963697461C3A7C3A36F3A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F72206661766F7220726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
@@ -300,6 +349,28 @@
       </elements>
       <elements xmi:type="process:Lane" xmi:id="_n3T-a-4pEeGKhq6eruyG6w" name="Relator" label="Relator" user="" groups="_n3Xox-4pEeGKhq6eruyG6w">
         <elements xmi:type="process:Task" xmi:id="_n3T-bO4pEeGKhq6eruyG6w" name="Relator_avalia_ACG" label="Relator avalia ACG" outgoing="_n3XBte4pEeGKhq6eruyG6w _bQ2xsO99EeGDf8wCPuoYjQ" incoming="_n3XBue4pEeGKhq6eruyG6w _n3XBs-4pEeGKhq6eruyG6w _UvIh4O5QEeGo0f37u06zsQ" stepSummary="" user="" groups="_n3Xox-4pEeGKhq6eruyG6w">
+          <viewForm xmi:type="form:ViewForm" xmi:id="_yUFZwAC1EeK4zIrf8BB_zA" name="Relator_avalia_ACG" label="Relator avalia ACG" nLine="5" pageLabel="Relator avalia ACG">
+            <widgets xmi:type="form:TextInfo" xmi:id="_1dxHgAC1EeK4zIrf8BB_zA" name="Text3" label="Text3" displayLabel="Relator:">
+              <script xmi:type="form:GroovyScript" xmi:id="_1dxHgQC1EeK4zIrf8BB_zA" inputScript="${idRelator}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_1dxHggC1EeK4zIrf8BB_zA"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_2cQJAAC1EeK4zIrf8BB_zA" name="Texto3" label="Texto3" displayLabel="Parecer do relator:">
+              <script xmi:type="form:GroovyScript" xmi:id="_2cQJAQC1EeK4zIrf8BB_zA" inputScript="${parecerRelator}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_2cQJAgC1EeK4zIrf8BB_zA" line="1"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_3RWlAAC1EeK4zIrf8BB_zA" name="Texto5" label="Texto5" displayLabel="Decisão do relator:">
+              <script xmi:type="form:GroovyScript" xmi:id="_3RWlAQC1EeK4zIrf8BB_zA" inputScript="${if (cargaHoraria != cargaHorariaAlterada || tipoACG != tipoACGalterado) {&#xD;&#x9;respostaRelator + &quot; com alteracoes&quot;&#xD;} else {&#xD;&#x9;respostaRelator&#xD;}}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_3RWlAgC1EeK4zIrf8BB_zA" line="2"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_48GPkAC1EeK4zIrf8BB_zA" name="Text4" label="Text4" displayLabel="Carga horária aprovada:" injectWidgetCondition="true" injectWidgetScript="${cargaHoraria!=cargaHorariaAlterada}">
+              <script xmi:type="form:GroovyScript" xmi:id="_48GPkQC1EeK4zIrf8BB_zA" inputScript="${cargaHorariaAlterada}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_48GPkgC1EeK4zIrf8BB_zA" line="3"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_6LmvoAC1EeK4zIrf8BB_zA" name="Text5" label="Text5" displayLabel="Tipo de ACG aprovado:" injectWidgetCondition="true" injectWidgetScript="${tipoACG!=tipoACGalterado}">
+              <script xmi:type="form:GroovyScript" xmi:id="_6LmvoQC1EeK4zIrf8BB_zA" inputScript="${tipoACGalterado}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_6LmvogC1EeK4zIrf8BB_zA" line="4"/>
+            </widgets>
+          </viewForm>
           <connectors xmi:type="process:Connector" xmi:id="_n3T-be4pEeGKhq6eruyG6w" name="reminderRelator" label="reminderRelator" connectorId="Email" event="taskOnReady" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_n3T-bu4pEeGKhq6eruyG6w" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
             <parameters xmi:type="process:Parameter" xmi:id="_n3T-b-4pEeGKhq6eruyG6w" key="setMessage" value="ACED00057401C44F6CC3A12C0A0A3C703E566F63C3AA20666F6920696E64696361646F20636F6D6F2052454C41544F522070617261206176616C69617220756D6120736F6C6963697461C3A7C3A36F2064652041434720646520756D20616C756E6F20646F20637572736F2064652053492E3C2F703E0A0A506F72206661766F722C2061636573736520657374612055524C2070617261206176616C696172206120736F6C6963697461C3A7C3A36F3A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F72206661766F7220726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
@@ -424,6 +495,12 @@
       </elements>
       <elements xmi:type="process:Lane" xmi:id="_n3Ulk-4pEeGKhq6eruyG6w" name="Colegiado" label="Colegiado" user="" groups="_n3XBze4pEeGKhq6eruyG6w">
         <elements xmi:type="process:Task" xmi:id="_n3UllO4pEeGKhq6eruyG6w" name="Colegiado_avalia_ACG" label="Colegiado avalia ACG" outgoing="_n3XBye4pEeGKhq6eruyG6w _eVACsO9-EeGDf8wCPuoYjQ" incoming="_n3XBte4pEeGKhq6eruyG6w" testBefore="true" loopCondition="result != &quot;Sim&quot;" user="${number}" groups="_n3XoxO4pEeGKhq6eruyG6w" overrideGroupsOfTheLane="true">
+          <viewForm xmi:type="form:ViewForm" xmi:id="_Bk87wAC2EeK4zIrf8BB_zA" name="Colegiado_avalia_ACG" label="Colegiado avalia ACG" nLine="2" pageLabel="Colegiado avalia ACG">
+            <widgets xmi:type="form:TextInfo" xmi:id="_HbFBoAC2EeK4zIrf8BB_zA" name="Texto6" label="Texto6" displayLabel="Resposta do colegiado:">
+              <script xmi:type="form:GroovyScript" xmi:id="_Kwe3MAC2EeK4zIrf8BB_zA" inputScript="${respostaFinal}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_HbJ6IwC2EeK4zIrf8BB_zA"/>
+            </widgets>
+          </viewForm>
           <connectors xmi:type="process:Connector" xmi:id="_n3Ulle4pEeGKhq6eruyG6w" name="reminderColegiado" label="reminderColegiado" connectorId="Email" event="taskOnReady" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_n3Ullu4pEeGKhq6eruyG6w" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
             <parameters xmi:type="process:Parameter" xmi:id="_n3Ull-4pEeGKhq6eruyG6w" key="setMessage" value="ACED00057401EC4F6CC3A12C0A0A3C703E48C3A120756D6120736F6C6963697461C3A7C3A36F2064652041434720717565206AC3A120666F69206176616C6961646120706F7220756D2072656C61746F722065206E6563657373697461207061737361722070656C6F20636F6C65676961646F20646F20437572736F2064652053492E3C703E0A0A50617261207265676973747261722073657520766F746F20636F6D6F206D656D62726F20646F20636F6C65676961646F2C20706F72206661766F722061636573736520657374612055524C3A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F722067656E74696C657A6120726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
@@ -460,7 +537,7 @@
               <parameters xmi:type="process:Parameter" xmi:id="_iXBf9u95EeGdDd8nrBFK1A" key="setOutputvariable" value="ACED0005740011726573706F737461436F6C65676961646F"/>
             </joinChecker>
           </multiInstantiation>
-          <form xmi:type="form:Form" xmi:id="_n3VMle4pEeGKhq6eruyG6w" name="Colegiado_avalia_ACG" label="Colegiado avalia ACG" nLine="22" pageLabel="Colegiado avalia ACG">
+          <form xmi:type="form:Form" xmi:id="_n3VMle4pEeGKhq6eruyG6w" name="Colegiado_avalia_ACG" label="Colegiado avalia ACG" nLine="23" pageLabel="Colegiado avalia ACG">
             <widgets xmi:type="form:TextInfo" xmi:id="_n3VMlu4pEeGKhq6eruyG6w" name="t" label="t" displayLabel="Data da avaliação:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3VMl-4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.getCurrentDate()}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3VMmO4pEeGKhq6eruyG6w"/>
@@ -478,7 +555,7 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3VMoe4pEeGKhq6eruyG6w" line="9"/>
             </widgets>
             <widgets xmi:type="form:SubmitFormButton" xmi:id="_n3VMou4pEeGKhq6eruyG6w" name="Enviar1" label="Enviar1" displayLabel="Enviar">
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3VMo-4pEeGKhq6eruyG6w" line="21"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3VMo-4pEeGKhq6eruyG6w" line="22"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3VMpO4pEeGKhq6eruyG6w" name="Copia_de_Texto1" label="Cópia de Texto1" displayLabel="Local da atividade:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3VMpe4pEeGKhq6eruyG6w" inputScript="${local}"/>
@@ -578,6 +655,12 @@
       <elements xmi:type="process:Lane" xmi:id="_n3VzrO4pEeGKhq6eruyG6w" name="Coordenacao" label="Coordenação" user="" groups="_fUVxAPBIEeGgZqChN-hpWQ">
         <elements xmi:type="process:EndEvent" xmi:id="_n3Vzre4pEeGKhq6eruyG6w" name="Fim2" label="Fim2" incoming="_n3XBy-4pEeGKhq6eruyG6w _RnQtkPFnEeGfefz74zRb1Q"/>
         <elements xmi:type="process:Task" xmi:id="_Jizbke99EeGDf8wCPuoYjQ" name="Reuniao_presencial" label="Reuniao presencial" outgoing="_jzx6gPLqEeGcD7MAkxJ97A" incoming="_bQ2xsO99EeGDf8wCPuoYjQ _n3XBye4pEeGKhq6eruyG6w _oeVwgPBKEeGgZqChN-hpWQ" user="">
+          <viewForm xmi:type="form:ViewForm" xmi:id="_1fwPEAC2EeK4zIrf8BB_zA" name="Reuniao_presencial" label="Reuniao presencial" nLine="3" pageLabel="Reuniao presencial">
+            <widgets xmi:type="form:TextInfo" xmi:id="_2UwkcAC2EeK4zIrf8BB_zA" name="Texto1" label="Texto1" displayLabel="Decisão da reunião presencial:">
+              <script xmi:type="form:GroovyScript" xmi:id="_4bN6oAC2EeK4zIrf8BB_zA" inputScript="${respostaFinal}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_2UxykQC2EeK4zIrf8BB_zA"/>
+            </widgets>
+          </viewForm>
           <multiInstantiation xmi:type="process:MultiInstantiation" xmi:id="_gLx7EPBjEeGgZqChN-hpWQ" enabled="true">
             <instantiator xmi:type="process:Connector" xmi:id="_gLx7EfBjEeGgZqChN-hpWQ" name="instantiatorCoordenacao" label="instantiatorCoordenacao" connectorId="VariableInstantiator">
               <parameters xmi:type="process:Parameter" xmi:id="_Ce_soPBkEeGgZqChN-hpWQ" key="setValues" value="ACED000574002E247B47726F7570735574696C2E7573756172696F73446F477275706F285B22636F6F7264656E6163616F225D297D"/>
@@ -646,6 +729,16 @@
           </connectors>
         </elements>
         <elements xmi:type="process:Task" xmi:id="_mVGBgPBJEeGgZqChN-hpWQ" name="Secretaria_avalia_ACG" label="Secretaria avalia ACG" outgoing="_k06LsPBKEeGgZqChN-hpWQ _mBghsPBKEeGgZqChN-hpWQ" incoming="_dG5-MPBKEeGgZqChN-hpWQ" user="" groups="_SrwEkPBjEeGgZqChN-hpWQ" overrideGroupsOfTheLane="true">
+          <viewForm xmi:type="form:ViewForm" xmi:id="_PG9IMAC2EeK4zIrf8BB_zA" name="Secretaria_avalia_ACG" label="Secretaria avalia ACG" nLine="2" pageLabel="Secretaria avalia ACG">
+            <widgets xmi:type="form:TextInfo" xmi:id="_SAs8gAC2EeK4zIrf8BB_zA" name="Text12" label="Text12" displayLabel="Parecer da secretaria:">
+              <script xmi:type="form:GroovyScript" xmi:id="_SAs8gQC2EeK4zIrf8BB_zA" inputScript="${parecerSecretaria}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_SAs8ggC2EeK4zIrf8BB_zA"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_XsKDcAC2EeK4zIrf8BB_zA" name="Texto1" label="Texto1" displayLabel="Resposta secretaria:">
+              <script xmi:type="form:GroovyScript" xmi:id="_ZHG-gAC2EeK4zIrf8BB_zA" inputScript="${respostaSecretaria}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_XsMfsAC2EeK4zIrf8BB_zA" line="1"/>
+            </widgets>
+          </viewForm>
           <connectors xmi:type="process:Connector" xmi:id="_ZUVvsPK0EeGJtsQHnHlI9Q" name="h2_sec" label="h2-sec" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_ZP_4gPxHEeGdtb-JBdbL6Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
             <parameters xmi:type="process:Parameter" xmi:id="_ZP_4gfxHEeGdtb-JBdbL6Q" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
@@ -726,6 +819,12 @@
           </form>
         </elements>
         <elements xmi:type="process:Task" xmi:id="_N63R0PBKEeGgZqChN-hpWQ" name="Coordenador_avalia_ACG" label="Coordenador avalia ACG" outgoing="_nCyYgPBKEeGgZqChN-hpWQ _oeVwgPBKEeGgZqChN-hpWQ" incoming="_mBghsPBKEeGgZqChN-hpWQ" user="" groups="_YtVMgPBjEeGgZqChN-hpWQ" overrideGroupsOfTheLane="true">
+          <viewForm xmi:type="form:ViewForm" xmi:id="_iaDwkAC2EeK4zIrf8BB_zA" name="Coordenador_avalia_ACG" label="Coordenador avalia ACG" nLine="2" pageLabel="Coordenador avalia ACG">
+            <widgets xmi:type="form:TextInfo" xmi:id="_jmnqUAC2EeK4zIrf8BB_zA" name="Texto1" label="Texto1" displayLabel="Resposta Coordenador:">
+              <script xmi:type="form:GroovyScript" xmi:id="_luCp0AC2EeK4zIrf8BB_zA" inputScript="${respostaCoordenador}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_jmqGkAC2EeK4zIrf8BB_zA"/>
+            </widgets>
+          </viewForm>
           <connectors xmi:type="process:Connector" xmi:id="_AMVEwPGIEeGYL4Lj_tSn2A" name="db_sec_coord" label="db_sec_coord" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_geL9gPxHEeGdtb-JBdbL6Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
             <parameters xmi:type="process:Parameter" xmi:id="_geL9gfxHEeGdtb-JBdbL6Q" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
@@ -983,6 +1082,12 @@
           <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_9C6Xkv3OEeGsm4cVofvf_g" line="15"/>
         </widgets>
       </recapForms>
+      <viewForm xmi:type="form:ViewForm" xmi:id="_1IalwAC5EeK4zIrf8BB_zA" name="Solicitar_ACG" label="Solicitar ACG" nLine="3" pageLabel="Solicitar ACG">
+        <widgets xmi:type="form:MessageInfo" xmi:id="_2QDjQAC5EeK4zIrf8BB_zA" name="Mensagem2" label="Mensagem2">
+          <script xmi:type="form:GroovyScript" xmi:id="_2hobcAC5EeK4zIrf8BB_zA" inputScript="Caso iniciado."/>
+          <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_2QIbwAC5EeK4zIrf8BB_zA"/>
+        </widgets>
+      </viewForm>
       <connections xmi:type="process:SequenceFlow" xmi:id="_n3WayO4pEeGKhq6eruyG6w" source="_n3PF4e4pEeGKhq6eruyG6w" target="_n3PF4u4pEeGKhq6eruyG6w">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3Waye4pEeGKhq6eruyG6w"/>
       </connections>
@@ -2224,17 +2329,65 @@
     </children>
     <styles xmi:type="notation:DiagramStyle" xmi:id="_WglLofBkEeGgZqChN-hpWQ"/>
   </notation:Diagram>
-  <notation:Diagram xmi:id="_UgsBsP2wEeGCRoLsB0Ohdw" type="Form" element="_UgbjAP2wEeGCRoLsB0Ohdw" measurementUnit="Pixel">
-    <children xmi:type="notation:Shape" xmi:id="_VwmKYP2wEeGCRoLsB0Ohdw" type="2131" element="_VwhR4P2wEeGCRoLsB0Ohdw" fontName="Ubuntu">
-      <children xmi:type="notation:DecorationNode" xmi:id="_VwnYgP2wEeGCRoLsB0Ohdw" type="5135"/>
-      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_VwmxcP2wEeGCRoLsB0Ohdw"/>
-    </children>
-    <styles xmi:type="notation:DiagramStyle" xmi:id="_UgsBsf2wEeGCRoLsB0Ohdw"/>
-  </notation:Diagram>
-  <notation:Diagram xmi:id="_cRuEUP3MEeGsm4cVofvf_g" type="Form" measurementUnit="Pixel">
-    <styles xmi:type="notation:DiagramStyle" xmi:id="_cRuEUf3MEeGsm4cVofvf_g"/>
-  </notation:Diagram>
   <notation:Diagram xmi:id="_t1hSQP3MEeGsm4cVofvf_g" type="Form" element="_t1akkP3MEeGsm4cVofvf_g" measurementUnit="Pixel">
     <styles xmi:type="notation:DiagramStyle" xmi:id="_t1hSQf3MEeGsm4cVofvf_g"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_b_vN8AC1EeK4zIrf8BB_zA" type="Form" element="_b_ad0AC1EeK4zIrf8BB_zA" measurementUnit="Pixel">
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_b_vN8QC1EeK4zIrf8BB_zA"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_rW0FoAC1EeK4zIrf8BB_zA" type="Form" element="_rWxCUAC1EeK4zIrf8BB_zA" measurementUnit="Pixel">
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_rW0FoQC1EeK4zIrf8BB_zA"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_yUIdEAC1EeK4zIrf8BB_zA" type="Form" element="_yUFZwAC1EeK4zIrf8BB_zA" measurementUnit="Pixel">
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_yUIdEQC1EeK4zIrf8BB_zA"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_Bk__EAC2EeK4zIrf8BB_zA" type="Form" element="_Bk87wAC2EeK4zIrf8BB_zA" measurementUnit="Pixel">
+    <children xmi:type="notation:Shape" xmi:id="_HbJ6IAC2EeK4zIrf8BB_zA" type="2132" element="_HbFBoAC2EeK4zIrf8BB_zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_HbJ6IgC2EeK4zIrf8BB_zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_HbJ6IQC2EeK4zIrf8BB_zA"/>
+    </children>
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_Bk__EQC2EeK4zIrf8BB_zA"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_PHAykAC2EeK4zIrf8BB_zA" type="Form" element="_PG9IMAC2EeK4zIrf8BB_zA" measurementUnit="Pixel">
+    <children xmi:type="notation:Shape" xmi:id="_SAwm4AC2EeK4zIrf8BB_zA" type="2132" element="_SAs8gAC2EeK4zIrf8BB_zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_SAxN8AC2EeK4zIrf8BB_zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_SAwm4QC2EeK4zIrf8BB_zA"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_XsL4oAC2EeK4zIrf8BB_zA" type="2132" element="_XsKDcAC2EeK4zIrf8BB_zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_XsL4ogC2EeK4zIrf8BB_zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XsL4oQC2EeK4zIrf8BB_zA"/>
+    </children>
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_PHAykQC2EeK4zIrf8BB_zA"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_iaHa8AC2EeK4zIrf8BB_zA" type="Form" element="_iaDwkAC2EeK4zIrf8BB_zA" measurementUnit="Pixel">
+    <children xmi:type="notation:Shape" xmi:id="_jmo4cAC2EeK4zIrf8BB_zA" type="2132" element="_jmnqUAC2EeK4zIrf8BB_zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_jmpfgAC2EeK4zIrf8BB_zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_jmo4cQC2EeK4zIrf8BB_zA"/>
+    </children>
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_iaHa8QC2EeK4zIrf8BB_zA"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_1fyrUAC2EeK4zIrf8BB_zA" type="Form" element="_1fwPEAC2EeK4zIrf8BB_zA" measurementUnit="Pixel">
+    <children xmi:type="notation:Shape" xmi:id="_2UxLgAC2EeK4zIrf8BB_zA" type="2132" element="_2UwkcAC2EeK4zIrf8BB_zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_2UxykAC2EeK4zIrf8BB_zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_2UxLgQC2EeK4zIrf8BB_zA"/>
+    </children>
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_1fyrUQC2EeK4zIrf8BB_zA"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_b01BoAC5EeK4zIrf8BB_zA" type="Form" measurementUnit="Pixel">
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_b01BoQC5EeK4zIrf8BB_zA"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_1IfeQAC5EeK4zIrf8BB_zA" type="Form" element="_1IalwAC5EeK4zIrf8BB_zA" measurementUnit="Pixel">
+    <children xmi:type="notation:Shape" xmi:id="_2QHNoAC5EeK4zIrf8BB_zA" type="2131" element="_2QDjQAC5EeK4zIrf8BB_zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_2QH0sAC5EeK4zIrf8BB_zA" type="5135"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_2QHNoQC5EeK4zIrf8BB_zA"/>
+    </children>
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_1IgFUAC5EeK4zIrf8BB_zA"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_5Hts4AC5EeK4zIrf8BB_zA" type="Form" element="_5HnmQAC5EeK4zIrf8BB_zA" measurementUnit="Pixel">
+    <children xmi:type="notation:Shape" xmi:id="_6VgVsAC5EeK4zIrf8BB_zA" type="2131" element="_6VfHkAC5EeK4zIrf8BB_zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_6VgVsgC5EeK4zIrf8BB_zA" type="5135"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_6VgVsQC5EeK4zIrf8BB_zA"/>
+    </children>
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_5Hts4QC5EeK4zIrf8BB_zA"/>
   </notation:Diagram>
 </xmi:XMI>

@@ -1,0 +1,4 @@
+#summary Bonita engine flow
+
+* [http://www.bonitasoft.org/forum/viewtopic.php?id=8294 Can someone explain the Forms/connector lifecycle?]
+ 

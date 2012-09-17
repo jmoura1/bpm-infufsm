@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:decision="http://www.bonitasoft.org/ns/studio/process/decision" xmlns:form="http://www.bonitasoft.org/ns/studio/form" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:process="http://www.bonitasoft.org/ns/studio/process" xsi:schemaLocation="http://www.bonitasoft.org/ns/studio/process/decision http://www.bonitasoft.org/ns/studio/process#//decision">
+  <process:MainProcess xmi:id="_SJzu0fIIEeGTPsxLRzTMCA" name="Listar_ACGs_do_Usuario" label="Listar ACGs do Usuario" bonitaVersion="5.7" bonitaModelVersion="5.7">
+    <elements xmi:type="process:Pool" xmi:id="_StMIsPIIEeGTPsxLRzTMCA" name="Listar_ACGs_do_usuario" label="Listar ACGs do usuario" welcomePageInternal="false" basedOnLookAndFeel="Default Application" entryPageFlowType="SKIP">
+      <elements xmi:type="process:StartEvent" xmi:id="_S7iGsPIIEeGTPsxLRzTMCA" name="Inicio" label="Inicio" outgoing="_S85_sPIIEeGTPsxLRzTMCA"/>
+      <elements xmi:type="process:EndTerminatedEvent" xmi:id="_j2MmIPIKEeGTPsxLRzTMCA" name="fim" label="fim" incoming="_n-VGsPk9EeG91Iyp-Fc8vQ"/>
+      <elements xmi:type="process:Activity" xmi:id="_e1QCUPk9EeG91Iyp-Fc8vQ" name="Gerar_Relatorio" label="Gerar Relatorio" outgoing="_m8OJcPk9EeG91Iyp-Fc8vQ" incoming="_S85_sPIIEeGTPsxLRzTMCA">
+        <connectors xmi:type="process:Connector" xmi:id="_BmES4PIMEeGTPsxLRzTMCA" name="ACGporAuno" label="ACGporAuno" connectorId="JasperReport - CreateReportFromDataBase" event="automaticOnExit" ignoreErrors="false">
+          <parameters xmi:type="process:Parameter" xmi:id="_w42KMAEKEeKNTqzZ55I1gA" key="setParameters" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A657870000000017704000000017371007E00000000000277040000000A74000E53656C6563696F6E61416C756E6F740008247B6C6F67696E7D7878"/>
+          <parameters xmi:type="process:Parameter" xmi:id="_w42KMQEKEeKNTqzZ55I1gA" key="setJdbcUrl" value="ACED000574002D6A6462633A68323A7463703A2F2F6C6F63616C686F73742F7E2F4465736B746F702F414347732F646274657374"/>
+          <parameters xmi:type="process:Parameter" xmi:id="_w42KMgEKEeKNTqzZ55I1gA" key="setDbDriver" value="ACED000574000D6F72672E68322E447269766572"/>
+          <parameters xmi:type="process:Parameter" xmi:id="_w42KMwEKEeKNTqzZ55I1gA" key="setUser" value="ACED00057400027361"/>
+          <parameters xmi:type="process:Parameter" xmi:id="_w42KNAEKEeKNTqzZ55I1gA" key="setOutputFormat" value="ACED0005740003706466"/>
+          <parameters xmi:type="process:Parameter" xmi:id="_w42KNQEKEeKNTqzZ55I1gA" key="setOutputFilePath" value="ACED000574000B247B66696C65506174687D"/>
+          <parameters xmi:type="process:Parameter" xmi:id="_w42KNgEKEeKNTqzZ55I1gA" key="setJrxmlFilePath" value="ACED0005740008247B6A72786D6C7D"/>
+          <parameters xmi:type="process:Parameter" xmi:id="_w42KNwEKEeKNTqzZ55I1gA" key="setPassword"/>
+        </connectors>
+        <data xmi:type="process:Data" xmi:id="_VikugPIVEeGq4PHJLEH97w" name="login" label="login" dataType="_SJ0V5PIIEeGTPsxLRzTMCA" defaultValue="${GroupsUtil.nameOfLoggedUser()}"/>
+      </elements>
+      <elements xmi:type="process:Task" xmi:id="_QuMyoPk-EeG91Iyp-Fc8vQ" name="Mostrar_Relatorio" label="Mostrar Relatorio" outgoing="_n-VGsPk9EeG91Iyp-Fc8vQ" incoming="_m8OJcPk9EeG91Iyp-Fc8vQ" user="" groups="_S8UJ0PIIEeGTPsxLRzTMCA">
+        <form xmi:type="form:Form" xmi:id="_pUqgIPlAEeG91Iyp-Fc8vQ" name="Mostrar_Relatorio" label="Mostrar Relatorio" nLine="3" pageLabel="Mostrar Relatorio">
+          <widgets xmi:type="form:FileWidget" xmi:id="_pUqgIflAEeG91Iyp-Fc8vQ" name="arquvio" label="arquvio" displayLabel="Relatório:" fileData="_nSqMIPlAEeG91Iyp-Fc8vQ" downloadOnly="true">
+            <script xmi:type="form:GroovyScript" xmi:id="_pUqgIvlAEeG91Iyp-Fc8vQ" inputScript="arquivo" setVarScript="arquivo"/>
+            <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_pUqgI_lAEeG91Iyp-Fc8vQ"/>
+          </widgets>
+          <widgets xmi:type="form:SubmitFormButton" xmi:id="_pUqgJPlAEeG91Iyp-Fc8vQ" name="Finalizar" label="Finalizar" displayLabel="Finalizar">
+            <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_pUqgJflAEeG91Iyp-Fc8vQ" line="2"/>
+          </widgets>
+        </form>
+      </elements>
+      <resourceFolders xmi:type="process:ResourceFolder" xmi:id="_S8mdsPIIEeGTPsxLRzTMCA" path="User/_StMIsPIIEeGTPsxLRzTMCA/application/application"/>
+      <errorTemplate xmi:type="process:AssociatedFile" xmi:id="_S8nEwvIIEeGTPsxLRzTMCA" path="User/_StMIsPIIEeGTPsxLRzTMCA/html/error.html"/>
+      <processTemplate xmi:type="process:AssociatedFile" xmi:id="_S8nEwPIIEeGTPsxLRzTMCA" path="User/_StMIsPIIEeGTPsxLRzTMCA/html/process.html"/>
+      <pageTemplate xmi:type="process:AssociatedFile" xmi:id="_S8nEw_IIEeGTPsxLRzTMCA" path="User/_StMIsPIIEeGTPsxLRzTMCA/html/page.html"/>
+      <consultationTemplate xmi:type="process:AssociatedFile" xmi:id="_S8nEwfIIEeGTPsxLRzTMCA" path="User/_StMIsPIIEeGTPsxLRzTMCA/html/consultation.html"/>
+      <data xmi:type="process:AttachmentData" xmi:id="_nSqMIPlAEeG91Iyp-Fc8vQ" name="arquivo" label="arquivo" dataType="_SJ0V5fIIEeGTPsxLRzTMCA" defaultValue="ACGporAluno.pdf" barPath="attachments/ACGporAluno.pdf"/>
+      <data xmi:type="process:Data" xmi:id="_afi94PPNEeGKFoPqFZ0d-Q" name="filePath" label="filePath" dataType="_SJ0V5PIIEeGTPsxLRzTMCA" defaultValue="/home/andrea/Desktop/ACGs/ACGporAluno.pdf"/>
+      <data xmi:type="process:Data" xmi:id="_BxPG8Pg0EeGzitLis2_jZw" name="jrxml" label="jrxml" dataType="_SJ0V5PIIEeGTPsxLRzTMCA" defaultValue="/home/andrea/Desktop/ACGs/ACGporAluno.jrxml"/>
+      <connections xmi:type="process:SequenceFlow" xmi:id="_S85_sPIIEeGTPsxLRzTMCA" source="_S7iGsPIIEeGTPsxLRzTMCA" target="_e1QCUPk9EeG91Iyp-Fc8vQ">
+        <decisionTable xmi:type="decision:DecisionTable" xmi:id="_S8704PIIEeGTPsxLRzTMCA"/>
+      </connections>
+      <connections xmi:type="process:SequenceFlow" xmi:id="_m8OJcPk9EeG91Iyp-Fc8vQ" source="_e1QCUPk9EeG91Iyp-Fc8vQ" target="_QuMyoPk-EeG91Iyp-Fc8vQ">
+        <decisionTable xmi:type="decision:DecisionTable" xmi:id="_m8OJcfk9EeG91Iyp-Fc8vQ"/>
+      </connections>
+      <connections xmi:type="process:SequenceFlow" xmi:id="_n-VGsPk9EeG91Iyp-Fc8vQ" source="_QuMyoPk-EeG91Iyp-Fc8vQ" target="_j2MmIPIKEeGTPsxLRzTMCA">
+        <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n-VGsfk9EeG91Iyp-Fc8vQ"/>
+      </connections>
+    </elements>
+    <groups xmi:type="process:Group" xmi:id="_S8UJ0PIIEeGTPsxLRzTMCA" documentation="Pessoa que efetua a primeira ação para iniciar o processo" name="Inicializador" label="Inicializador" connectorId="ProcessInitiatior"/>
+    <datatypes xmi:type="process:BooleanType" xmi:id="_SJ0V4PIIEeGTPsxLRzTMCA" name="Boolean" label="Boolean"/>
+    <datatypes xmi:type="process:DateType" xmi:id="_SJ0V4fIIEeGTPsxLRzTMCA" name="Date" label="Date"/>
+    <datatypes xmi:type="process:IntegerType" xmi:id="_SJ0V4vIIEeGTPsxLRzTMCA" name="Integer" label="Integer"/>
+    <datatypes xmi:type="process:FloatType" xmi:id="_SJ0V4_IIEeGTPsxLRzTMCA" name="Decimal" label="Decimal"/>
+    <datatypes xmi:type="process:StringType" xmi:id="_SJ0V5PIIEeGTPsxLRzTMCA" name="Text" label="Text"/>
+    <datatypes xmi:type="process:AttachmentType" xmi:id="_SJ0V5fIIEeGTPsxLRzTMCA" name="Attachment" label="Attachment"/>
+    <datatypes xmi:type="process:JavaType" xmi:id="_SJ0V5vIIEeGTPsxLRzTMCA" name="Java_object" label="Java object"/>
+    <datatypes xmi:type="process:XMLType" xmi:id="_SJ0V5_IIEeGTPsxLRzTMCA" name="XML" label="XML"/>
+    <includedEntries>GroupsUtil.groovy</includedEntries>
+    <includedEntries>jasperreports-4.7.0.jar</includedEntries>
+    <includedEntries>jasper/lib/commons-digester</includedEntries>
+    <includedEntries>jasper/lib/jcommon</includedEntries>
+    <includedEntries>jasper/lib/itext</includedEntries>
+    <includedEntries>jasper/jasper</includedEntries>
+    <includedEntries>jasper/lib/commons-beanutils</includedEntries>
+    <includedEntries>jasper/lib/jfreechart</includedEntries>
+    <includedEntries>bonita/bonita</includedEntries>
+  </process:MainProcess>
+  <notation:Diagram xmi:id="_SK4F0PIIEeGTPsxLRzTMCA" type="Process" element="_SJzu0fIIEeGTPsxLRzTMCA" name="Listar_ACGs_do_Usuario_1.0.proc" measurementUnit="Pixel">
+    <children xmi:type="notation:Node" xmi:id="_S28hoPIIEeGTPsxLRzTMCA" type="2007" element="_StMIsPIIEeGTPsxLRzTMCA">
+      <children xmi:type="notation:DecorationNode" xmi:id="_S3AMAPIIEeGTPsxLRzTMCA" type="5008"/>
+      <children xmi:type="notation:DecorationNode" xmi:id="_S3AMAfIIEeGTPsxLRzTMCA" type="7001">
+        <children xmi:type="notation:Shape" xmi:id="_S7ki8PIIEeGTPsxLRzTMCA" type="3002" element="_S7iGsPIIEeGTPsxLRzTMCA" fontName="Ubuntu">
+          <children xmi:type="notation:DecorationNode" xmi:id="_S7lKAPIIEeGTPsxLRzTMCA" type="5024">
+            <layoutConstraint xmi:type="notation:Location" xmi:id="_S7lKAfIIEeGTPsxLRzTMCA" y="5"/>
+          </children>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_S7ki8fIIEeGTPsxLRzTMCA" x="93" y="51"/>
+        </children>
+        <children xmi:type="notation:Shape" xmi:id="_j2ObUPIKEeGTPsxLRzTMCA" type="3062" element="_j2MmIPIKEeGTPsxLRzTMCA" fontName="Ubuntu">
+          <children xmi:type="notation:DecorationNode" xmi:id="_j2ObUvIKEeGTPsxLRzTMCA" type="5090">
+            <layoutConstraint xmi:type="notation:Location" xmi:id="_j2PCYPIKEeGTPsxLRzTMCA" y="5"/>
+          </children>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_j2ObUfIKEeGTPsxLRzTMCA" x="610" y="54"/>
+        </children>
+        <children xmi:type="notation:Shape" xmi:id="_e1SekPk9EeG91Iyp-Fc8vQ" type="3006" element="_e1QCUPk9EeG91Iyp-Fc8vQ" fontName="Ubuntu" fillColor="14334392" lineColor="10710316">
+          <children xmi:type="notation:DecorationNode" xmi:id="_e1TFoPk9EeG91Iyp-Fc8vQ" type="5006"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_e1Sekfk9EeG91Iyp-Fc8vQ" x="163" y="41" width="120" height="60"/>
+        </children>
+        <children xmi:type="notation:Shape" xmi:id="_QuPO4Pk-EeG91Iyp-Fc8vQ" type="3005" element="_QuMyoPk-EeG91Iyp-Fc8vQ" fontName="Ubuntu" fillColor="14334392" lineColor="10710316">
+          <children xmi:type="notation:DecorationNode" xmi:id="_QuP18Pk-EeG91Iyp-Fc8vQ" type="5005"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_QuPO4fk-EeG91Iyp-Fc8vQ" x="373" y="46" width="100" height="50"/>
+        </children>
+      </children>
+      <styles xmi:type="notation:DescriptionStyle" xmi:id="_S28hofIIEeGTPsxLRzTMCA"/>
+      <styles xmi:type="notation:FontStyle" xmi:id="_S28hovIIEeGTPsxLRzTMCA" fontName="Ubuntu"/>
+      <styles xmi:type="notation:LineStyle" xmi:id="_S28ho_IIEeGTPsxLRzTMCA"/>
+      <styles xmi:type="notation:FillStyle" xmi:id="_S3BaIPIIEeGTPsxLRzTMCA"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_S28hpPIIEeGTPsxLRzTMCA" width="473" height="155"/>
+    </children>
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_SK4F0fIIEeGTPsxLRzTMCA"/>
+    <edges xmi:type="notation:Connector" xmi:id="_S9B7gPIIEeGTPsxLRzTMCA" type="4001" element="_S85_sPIIEeGTPsxLRzTMCA" source="_S7ki8PIIEeGTPsxLRzTMCA" target="_e1SekPk9EeG91Iyp-Fc8vQ" roundedBendpointsRadius="10" routing="Rectilinear">
+      <children xmi:type="notation:DecorationNode" xmi:id="_S9CikPIIEeGTPsxLRzTMCA" type="6001">
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_S9CikfIIEeGTPsxLRzTMCA" y="-10"/>
+      </children>
+      <children xmi:type="notation:DecorationNode" xmi:id="_S9DJoPIIEeGTPsxLRzTMCA" visible="false" type="6002">
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_S9DJofIIEeGTPsxLRzTMCA" y="-10"/>
+      </children>
+      <styles xmi:type="notation:FontStyle" xmi:id="_S9B7gfIIEeGTPsxLRzTMCA" fontName="Ubuntu"/>
+      <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_S9B7gvIIEeGTPsxLRzTMCA" points="[0, 0, 0, 0]$[0, 0, 0, 0]"/>
+    </edges>
+    <edges xmi:type="notation:Connector" xmi:id="_m8OwgPk9EeG91Iyp-Fc8vQ" type="4001" element="_m8OJcPk9EeG91Iyp-Fc8vQ" source="_e1SekPk9EeG91Iyp-Fc8vQ" target="_QuPO4Pk-EeG91Iyp-Fc8vQ" roundedBendpointsRadius="10" routing="Rectilinear">
+      <children xmi:type="notation:DecorationNode" xmi:id="_m8Owg_k9EeG91Iyp-Fc8vQ" type="6001">
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_m8OwhPk9EeG91Iyp-Fc8vQ" y="-10"/>
+      </children>
+      <children xmi:type="notation:DecorationNode" xmi:id="_m8Owhfk9EeG91Iyp-Fc8vQ" visible="false" type="6002">
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_m8Owhvk9EeG91Iyp-Fc8vQ" y="-10"/>
+      </children>
+      <styles xmi:type="notation:FontStyle" xmi:id="_m8Owgfk9EeG91Iyp-Fc8vQ" fontName="Ubuntu"/>
+      <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_m8Owgvk9EeG91Iyp-Fc8vQ" points="[0, 0, 0, 0]$[0, 0, 0, 0]"/>
+    </edges>
+    <edges xmi:type="notation:Connector" xmi:id="_n-WU0Pk9EeG91Iyp-Fc8vQ" type="4001" element="_n-VGsPk9EeG91Iyp-Fc8vQ" source="_QuPO4Pk-EeG91Iyp-Fc8vQ" target="_j2ObUPIKEeGTPsxLRzTMCA" roundedBendpointsRadius="10" routing="Rectilinear">
+      <children xmi:type="notation:DecorationNode" xmi:id="_n-Xi8Pk9EeG91Iyp-Fc8vQ" type="6001">
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_n-Xi8fk9EeG91Iyp-Fc8vQ" y="-10"/>
+      </children>
+      <children xmi:type="notation:DecorationNode" xmi:id="_n-Xi8vk9EeG91Iyp-Fc8vQ" visible="false" type="6002">
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_n-Xi8_k9EeG91Iyp-Fc8vQ" y="-10"/>
+      </children>
+      <styles xmi:type="notation:FontStyle" xmi:id="_n-W74Pk9EeG91Iyp-Fc8vQ" fontName="Ubuntu"/>
+      <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_n-W74fk9EeG91Iyp-Fc8vQ" points="[0, 1, -101, 5]$[87, 13, -14, 17]"/>
+      <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_n-Z_MPk9EeG91Iyp-Fc8vQ" id="(0.99,0.46)"/>
+    </edges>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_MUwGIPk-EeG91Iyp-Fc8vQ" type="Form" measurementUnit="Pixel">
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_MUwGIfk-EeG91Iyp-Fc8vQ"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_pUsVUPlAEeG91Iyp-Fc8vQ" type="Form" element="_pUqgIPlAEeG91Iyp-Fc8vQ" measurementUnit="Pixel">
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_pUsVUflAEeG91Iyp-Fc8vQ"/>
+  </notation:Diagram>
+</xmi:XMI>

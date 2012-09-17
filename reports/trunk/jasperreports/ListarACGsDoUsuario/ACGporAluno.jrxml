@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ACGporAluno" language="groovy" pageWidth="792" pageHeight="612" orientation="Landscape" whenNoDataType="BlankPage" columnWidth="752" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="50a1549e-7c1e-483e-8db9-e52eceea3ef6">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="SelecionaAluno" class="java.lang.String">
+		<parameterDescription><![CDATA[selecionar um aluno em tempo de execução da aplicação]]></parameterDescription>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+     ACG."DATA_SOLIC" AS ACG_DATA_SOLIC,
+     ACG."LOGIN" AS ACG_LOGIN,
+     ACG."MATRICULA" AS ACG_MATRICULA,
+     ACG."NOME" AS ACG_NOME,
+     ACG."TIPO" AS ACG_TIPO,
+     ACG."DESCRICAO" AS ACG_DESCRICAO,
+     ACG."DATA_INI" AS ACG_DATA_INI,
+     ACG."DATA_FIM" AS ACG_DATA_FIM,
+     ACG."CH" AS ACG_CH,
+     ACG."ESTADO" AS ACG_ESTADO,
+     ACG."TIPO_APROVADO" AS ACG_TIPO_APROVADO
+FROM
+     "PUBLIC"."ACG" ACG WHERE ACG.LOGIN = $P{SelecionaAluno}]]>
+	</queryString>
+	<field name="ACG_DATA_SOLIC" class="java.lang.String"/>
+	<field name="ACG_LOGIN" class="java.lang.String"/>
+	<field name="ACG_MATRICULA" class="java.lang.String"/>
+	<field name="ACG_NOME" class="java.lang.String"/>
+	<field name="ACG_TIPO" class="java.lang.String"/>
+	<field name="ACG_DESCRICAO" class="java.lang.String"/>
+	<field name="ACG_DATA_INI" class="java.lang.String"/>
+	<field name="ACG_DATA_FIM" class="java.lang.String"/>
+	<field name="ACG_CH" class="java.lang.Integer"/>
+	<field name="ACG_ESTADO" class="java.lang.String"/>
+	<field name="ACG_TIPO_APROVADO" class="java.lang.String"/>
+	<variable name="CountRegistros" class="java.lang.Integer" incrementType="Column" calculation="Count"/>
+	<variable name="DATA_SOLIC_1" class="java.lang.Integer" resetType="Page" calculation="Count">
+		<variableExpression><![CDATA[]]></variableExpression>
+	</variable>
+	<variable name="ACG_DATA_SOLIC_1" class="java.lang.Integer" resetType="Page" calculation="Count">
+		<variableExpression><![CDATA[$F{ACG_DATA_SOLIC}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="54" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="018a14ec-c3ce-4191-8cb5-3c3b44f02516" x="87" y="0" width="553" height="43"/>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Universidade Federal de Santa Maria
+Centro de Tecnologia
+Coordenação dos cursos de Ciência da Computação e Sistemas de Informação]]></text>
+			</staticText>
+			<line>
+				<reportElement uuid="06566555-b424-4114-aab4-bbca880fb339" x="0" y="52" width="752" height="2"/>
+			</line>
+			<image>
+				<reportElement uuid="880654ab-c418-4dfa-9520-ced9ad4805b8" x="0" y="0" width="43" height="52"/>
+				<imageExpression><![CDATA["logo_ufsm.jpg"]]></imageExpression>
+			</image>
+			<image>
+				<reportElement uuid="42bf3dd0-b30b-48e8-8c55-e609994537e6" x="710" y="5" width="42" height="46"/>
+				<imageExpression><![CDATA["sozinhoInf.jpg"]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="38" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="e295f5bd-560a-4380-8e12-778574992d80" x="18" y="17" width="37" height="14"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nome:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="e295f5bd-560a-4380-8e12-778574992d80" x="18" y="5" width="58" height="14"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Matrícula:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="e295f5bd-560a-4380-8e12-778574992d80" x="364" y="5" width="103" height="14"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Data do relatório:]]></text>
+			</staticText>
+			<textField pattern="EEEEE dd MMMMM yyyy">
+				<reportElement uuid="967801d3-2318-40ac-ae51-271a324e1059" x="467" y="5" width="162" height="14"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField pattern="h.mm a">
+				<reportElement uuid="2afac862-992d-4a77-a9f7-c74300ee8331" x="640" y="5" width="100" height="14"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="e295f5bd-560a-4380-8e12-778574992d80" x="364" y="17" width="120" height="14"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total de requisições:]]></text>
+			</staticText>
+			<textField>
+				<reportElement uuid="5bb97b06-8bc0-4e0a-853e-6daf1b624d77" isPrintRepeatedValues="false" x="76" y="5" width="263" height="12"/>
+				<textElement>
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ACG_MATRICULA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="2e5abf7d-53f6-42a9-86a8-1f8e700cb3cc" x="55" y="17" width="298" height="13"/>
+				<textElement>
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ACG_NOME}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Page">
+				<reportElement uuid="c559657e-3df8-49bf-83b4-61690c9346bc" x="484" y="18" width="100" height="13"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$V{ACG_DATA_SOLIC_1}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="36" splitType="Stretch">
+			<rectangle>
+				<reportElement uuid="5fefa97c-33b9-419f-b808-e856e7224bb7" mode="Opaque" x="0" y="15" width="752" height="20" forecolor="#FEFEFE" backcolor="#848484"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="5fefa97c-33b9-419f-b808-e856e7224bb7" mode="Opaque" x="0" y="0" width="752" height="15" forecolor="#DCDCDC" backcolor="#E0E0E0"/>
+			</rectangle>
+			<staticText>
+				<reportElement uuid="98a96292-a458-4b8e-a5b7-de55ab4a62e8" x="0" y="0" width="752" height="15" forecolor="#010101" backcolor="#B64949"/>
+				<textElement textAlignment="Center">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Histórico de requisções por aluno]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="3527941a-3b5e-494d-9d29-3a26d3ef0586" x="0" y="15" width="97" height="20" forecolor="#F8F8F8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PEDIDO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="09762a64-9175-438b-a659-5636b98c7cc5" x="579" y="16" width="52" height="19" forecolor="#FEFEFE"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[CH]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="b3573882-609e-439d-a858-f921d9c31a82" x="631" y="15" width="121" height="20" forecolor="#FEFEFE"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[ESTADO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="3527941a-3b5e-494d-9d29-3a26d3ef0586" x="107" y="15" width="283" height="20" forecolor="#F8F8F8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[DESCRIÇÃO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="3527941a-3b5e-494d-9d29-3a26d3ef0586" x="390" y="16" width="189" height="19" forecolor="#F8F8F8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[CLASSIFICAÇÃO]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<line>
+				<reportElement uuid="2a93a173-9e5d-421c-8290-596d4de984f5" x="0" y="13" width="752" height="1"/>
+				<graphicElement>
+					<pen lineStyle="Dotted"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement uuid="5ccd02b7-2b00-452c-bb01-f712d4c3dece" x="0" y="0" width="97" height="13"/>
+				<textElement>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ACG_DATA_SOLIC}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="3bf32e75-b697-4287-938f-c058ec016158" x="107" y="0" width="283" height="15"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{ACG_DESCRICAO}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="bd82bdb1-9ea5-4cd3-93f7-96f7519f9704" x="579" y="0" width="52" height="14"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{ACG_CH}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="4c647fc8-41ba-443e-a963-f92fccd9fb96" x="631" y="0" width="121" height="14"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{ACG_ESTADO}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="ec605741-81ef-4939-8b60-bf415f57a0be" x="390" y="0" width="189" height="13"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{ACG_TIPO}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="56" splitType="Stretch">
+			<textField>
+				<reportElement uuid="18c6d428-d2b6-4870-aa46-d7cb8a87e1ba" x="310" y="36" width="80" height="20"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Página "+$V{PAGE_NUMBER}+" de"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement uuid="59502301-79b7-4e28-8386-cfd4ab7bdada" x="390" y="36" width="40" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

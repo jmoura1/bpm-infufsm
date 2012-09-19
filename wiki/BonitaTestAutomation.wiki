@@ -1,0 +1,4 @@
+#summary About Bonita test automation
+
+  * [http://www.bonitasoft.org/forum/viewtopic.php?id=2841 Forum: Test Cases]
+  * [https://projects.savoirfairelinux.com/projects/bonita/wiki/TestingAutomation Bonita Testing automation]

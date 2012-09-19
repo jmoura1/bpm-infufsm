@@ -1,5 +1,5 @@
 <connector>
-  <connectorId>MajorityWithVetoJoinChecker</connectorId>
+  <connectorId>MajorityOrVetoJoinChecker</connectorId>
   <version>5.0</version>
   <icon>bonita.png</icon>
   <categories>

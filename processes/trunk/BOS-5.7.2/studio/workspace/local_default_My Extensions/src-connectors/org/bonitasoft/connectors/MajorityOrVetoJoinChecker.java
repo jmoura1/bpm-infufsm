@@ -37,7 +37,7 @@ import org.ow2.bonita.util.AccessorUtil;
  * @author Andrea Charao (mixing VetoJoinChecker.java with PercentageJoinChecker.java)
  *
  */
-public class MajorityWithVetoJoinChecker extends MultipleInstancesJoinChecker {
+public class MajorityOrVetoJoinChecker extends MultipleInstancesJoinChecker {
 
   // DO NOT REMOVE NOR RENAME THIS FIELD
   private double percentage;

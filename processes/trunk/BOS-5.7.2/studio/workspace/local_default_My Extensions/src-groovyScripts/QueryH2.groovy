@@ -83,8 +83,7 @@ public class QueryH2 {
 
     }
 
-
-    public static String getQuerySolicita(ProcessInstance processInstance) {
+    public static String getQueryAluno(ProcessInstance processInstance) {
         def allvars = ["timeStamp", "login", "numeroMatricula", "name", "subtipoACG",
                      "tipoACG", "descricao", "nomeTutor", "dataInicio", "dataFim",
                      "cargaHoraria", "acgComprovante", "acgEstado", "acgChAprovada",
@@ -95,33 +94,41 @@ public class QueryH2 {
         return query;
     }
 
-
-    public static String getQueryTutorAvalia(ProcessInstance processInstance) {
+    public static String getQueryTutor(ProcessInstance processInstance) {
         def allvars = ["timeStamp", "login", "nomeTutor", "parecerTutor", "respostaTutor", "data_aval_tutor"];
         def intvars = [];
         setValuesAndFormat(processInstance, allvars, intvars);
         String query = "INSERT INTO AVALIACAO_TUTOR (DATA_SOLIC, LOGIN_ALUNO, LOGIN_TUTOR, PARECER, DECISAO, DATA_AVAL) VALUES " + 
             String.format(strformat, (java.lang.Object[]) values.toArray()) + ";";
-        return query;
+        return query + getQueryUpdateEstado(processInstance);
     }
 
-    public static String getQueryRelatorAvalia(ProcessInstance processInstance) {
-        def allvars = ["timeStamp", "login", "idRelator", "parecerRelator", "respostaRelator", "data_aval_tutor"];
+    public static String getQueryRelator(ProcessInstance processInstance) {
+        def allvars = ["timeStamp", "login", "idRelator", "parecerRelator", "respostaRelator", "data_aval_relator"];
         def intvars = [];
         setValuesAndFormat(processInstance, allvars, intvars);
         String query = "INSERT INTO AVALIACAO_RELATOR (DATA_SOLIC, LOGIN_ALUNO, LOGIN_RELATOR, PARECER, DECISAO, DATA_AVAL) VALUES " + 
             String.format(strformat, (java.lang.Object[]) values.toArray()) + ";";
+        return query + getQueryUpdateEstado(processInstance);
+    }
+
+    public static String getQuerySecretaria(ProcessInstance processInstance) {
+        def allvars = ["timeStamp", "login", "data_aval_sec", "data_aval_coord", "parecerSecretaria", "respostaSecretaria", "respostaCoordenador"];
+        def intvars = [];
+        setValuesAndFormat(processInstance, allvars, intvars);
+        String query = "INSERT INTO AVALIACAO_SEC_COORD (DATA_SOLIC, LOGIN_ALUNO, DATA_AVAL_SEC, DATA_AVAL_COORD, PARECER_SEC, DECISAO_SEC, DECISAO_COORD) VALUES " + 
+            String.format(strformat, (java.lang.Object[]) values.toArray()) + ";";
         return query;
     }
 
-    public static String getQueryColegiado(ProcessInstance processInstance) {
-        def allvars = ["timeStamp", "login", "conta", "respostaColegiado", "data_aval_col"];
-        def intvars = ["conta"];
-        setValuesAndFormat(processInstance, allvars, intvars);
-        String query = "INSERT INTO AVALIACAO_COLEGIADO (DATA_SOLIC, LOGIN_ALUNO, N_VOTOS_SIM, DECISAO, DATA_AVAL) VALUES " + 
-            String.format(strformat, (java.lang.Object[]) values.toArray()) + ";";
-    }
 
+    public static String getQueryCoordenador(ProcessInstance processInstance) {
+        def allvars = ["data_aval_coord", "respostaCoordenador", "login", "timeStamp"];
+        values = getCurrentValues(processInstance, allvars);
+        strformat = "UPDATE AVALIACAO_SEC_COORD SET DATA_AVAL_COORD='%s', DECISAO_COORD='%s' WHERE LOGIN_ALUNO='%s' AND DATA_SOLIC='%s';";
+        String query = String.format(strformat, (java.lang.Object[]) values.toArray());
+        return query;
+    }
 
     public static String getQueryUpdateEstado(ProcessInstance processInstance) {
         def allvars = ["acgEstado", "login", "timeStamp"];
@@ -131,4 +138,39 @@ public class QueryH2 {
         return query;
     }
 
+    public static String getQueryRespostaFinal(ProcessInstance processInstance) {
+        def allvars = ["acgEstado", "acgChAprovada", "acgTipoAprovado", "login", "timeStamp"];
+        values = getCurrentValues(processInstance, allvars);
+        strformat = "UPDATE ACG SET ESTADO='%s', CH_APROVADA=%s, TIPO_APROVADO='%s' WHERE LOGIN='%s' AND DATA_SOLIC='%s';";
+        String query = String.format(strformat, (java.lang.Object[]) values.toArray());
+        return query;
+    }
+ 
+    public static String getQueryColegiado(ProcessInstance processInstance) {
+        def allvars = ["timeStamp", "login", "conta", "respostaColegiado", "data_aval_col"];
+        def intvars = ["conta"];
+        setValuesAndFormat(processInstance, allvars, intvars);
+        String query = "INSERT INTO AVALIACAO_COLEGIADO (DATA_SOLIC, LOGIN_ALUNO, N_VOTOS_SIM, DECISAO, DATA_AVAL) VALUES " + 
+            String.format(strformat, (java.lang.Object[]) values.toArray()) + ";";
+        return query + getQueryUpdateEstado(processInstance);
+    }
+
 }
+/*
+
+
+Task: BD2
+UPDATE ACG SET ESTADO='Avaliada pelo colegiado' WHERE LOGIN='${login}' AND DATA_SOLIC='${timeStamp}';
+INSERT INTO AVALIACAO_COLEGIADO VALUES('${timeStamp}','${login}',${conta},'${respostaFinal}','${data_aval_col}');
+
+Task: Avisa ao aluno (indeferido) - no final 
+UPDATE ACG SET ESTADO='Terminada-Reprovada' WHERE LOGIN='${login}' AND DATA_SOLIC='${timeStamp}';
+UPDATE ACG SET CH_APROVADA=0 WHERE LOGIN='${login}' AND DATA_SOLIC='${timeStamp}';
+UPDATE ACG SET TIPO_APROVADO='Nenhum tipo aprovado.' WHERE LOGIN='${login}' AND DATA_SOLIC='${timeStamp}';
+
+Task: Avisa ao aluno (aprovado)
+UPDATE ACG SET ESTADO='Terminada-Aprovada' WHERE LOGIN='${login}' AND DATA_SOLIC='${timeStamp}';
+UPDATE ACG SET CH_APROVADA='${cargaHorariaAlterada}' WHERE LOGIN='${login}' AND DATA_SOLIC='${timeStamp}';
+UPDATE ACG SET TIPO_APROVADO='${tipoACGalterado}' WHERE LOGIN='${login}' AND DATA_SOLIC='${timeStamp}';
+
+*/

@@ -650,7 +650,7 @@
       </elements>
       <elements xmi:type="process:Lane" xmi:id="_n3VzrO4pEeGKhq6eruyG6w" name="Coordenacao" label="Coordenação" user="" groups="_fUVxAPBIEeGgZqChN-hpWQ">
         <elements xmi:type="process:EndEvent" xmi:id="_n3Vzre4pEeGKhq6eruyG6w" name="Fim2" label="Fim2" incoming="_n3XBy-4pEeGKhq6eruyG6w _RnQtkPFnEeGfefz74zRb1Q"/>
-        <elements xmi:type="process:Task" xmi:id="_Jizbke99EeGDf8wCPuoYjQ" name="Reuniao_presencial" label="Reuniao presencial" outgoing="_AL0KYPFnEeGfefz74zRb1Q _fbrW4O9-EeGDf8wCPuoYjQ" incoming="_bQ2xsO99EeGDf8wCPuoYjQ _n3XBye4pEeGKhq6eruyG6w _oeVwgPBKEeGgZqChN-hpWQ" user="">
+        <elements xmi:type="process:Task" xmi:id="_Jizbke99EeGDf8wCPuoYjQ" name="Reuniao_presencial" label="Reuniao presencial" outgoing="_AL0KYPFnEeGfefz74zRb1Q _fbrW4O9-EeGDf8wCPuoYjQ" incoming="_bQ2xsO99EeGDf8wCPuoYjQ _n3XBye4pEeGKhq6eruyG6w _oeVwgPBKEeGgZqChN-hpWQ" user="" groups="_ouHIwANMEeKum8AAOeZ0jw" overrideGroupsOfTheLane="true">
           <viewForm xmi:type="form:ViewForm" xmi:id="_1fwPEAC2EeK4zIrf8BB_zA" name="Reuniao_presencial" label="Reuniao presencial" nLine="3" pageLabel="Reuniao presencial">
             <widgets xmi:type="form:TextInfo" xmi:id="_2UwkcAC2EeK4zIrf8BB_zA" name="Texto1" label="Texto1" displayLabel="Decisão da reunião presencial:">
               <script xmi:type="form:GroovyScript" xmi:id="_4bN6oAC2EeK4zIrf8BB_zA" inputScript="${respostaFinal}"/>
@@ -1206,6 +1206,10 @@
     <groups xmi:type="process:Group" xmi:id="_YtVMgPBjEeGgZqChN-hpWQ" name="selectCoordenador" label="selectCoordenador" connectorId="GroupRoleUsers">
       <parameters xmi:type="process:Parameter" xmi:id="_YtVMgfBjEeGgZqChN-hpWQ" key="setRoleName" value="ACED000574000561646D696E"/>
       <parameters xmi:type="process:Parameter" xmi:id="_YtVMgvBjEeGgZqChN-hpWQ" key="setGroupPath" value="ACED000574000C2F636F6F7264656E6163616F"/>
+    </groups>
+    <groups xmi:type="process:Group" xmi:id="_ouHIwANMEeKum8AAOeZ0jw" name="membrosCoordenacao" label="membrosCoordenacao" connectorId="GroupUsers">
+      <parameters xmi:type="process:Parameter" xmi:id="_ouHv0ANMEeKum8AAOeZ0jw" key="setIncludingSubGroups" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+      <parameters xmi:type="process:Parameter" xmi:id="_ouHv0QNMEeKum8AAOeZ0jw" key="setGroupPath" value="ACED000574000C2F636F6F7264656E6163616F"/>
     </groups>
     <datatypes xmi:type="process:BooleanType" xmi:id="_n3Xoyu4pEeGKhq6eruyG6w" name="Boolean" label="Boolean"/>
     <datatypes xmi:type="process:DateType" xmi:id="_n3Xoy-4pEeGKhq6eruyG6w" name="Date" label="Date"/>

@@ -254,7 +254,9 @@ public static String escolhido(String exclude){//, List<String> path){
 
 public static String escolhido(){//, List<String> path){
 	List user = usuariosDoGrupo(["colegiado"]);
-	if(ind==numMembros(["colegiado"])) 
+	List user2 = usuariosDoGrupo(["coordenacao"]);
+	user.addAll(user2);
+	if(ind==(numMembros(["colegiado"])+numMembros(["coordenacao"]))) 
 		ind=0;
 	String escolhido = user.get(ind);
 	ind=ind+1;

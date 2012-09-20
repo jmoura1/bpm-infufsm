@@ -621,7 +621,6 @@
             </widgets>
             <scripts xmi:type="form:GroovyScript" xmi:id="_n3VzqO4pEeGKhq6eruyG6w" exprScript="${if(field_Botoes_de_radio1==&quot;Sim&quot;) conta+1&#xD;else conta}" setVarScript="conta"/>
             <scripts xmi:type="form:GroovyScript" xmi:id="_n3Vzqe4pEeGKhq6eruyG6w" exprScript="${GroupsUtil.numMembros([&quot;colegiado&quot;])}" setVarScript="membros"/>
-            <scripts xmi:type="form:GroovyScript" xmi:id="_uedHQABNEeKNc5oRhz2Hxg" exprScript="${respostaColegiado}" setVarScript="respostaFinal"/>
             <scripts xmi:type="form:GroovyScript" xmi:id="_7N_cEADpEeKESvWV9cdW4A" exprScript="${GroupsUtil.getCurrentDate()}" setVarScript="data_aval_col"/>
             <scripts xmi:type="form:GroovyScript" xmi:id="_KbvjMADrEeKESvWV9cdW4A" exprScript="Avaliada pelo colegiado" setVarScript="acgEstado"/>
           </form>
@@ -641,6 +640,10 @@
             <parameters xmi:type="process:Parameter" xmi:id="_i8JBpwJxEeKZAMBS1mYV2Q" key="setUsername" value="ACED0005740009247B6462557365727D"/>
             <parameters xmi:type="process:Parameter" xmi:id="_i8JBqAJxEeKZAMBS1mYV2Q" key="setPassword"/>
             <outputs xmi:type="process:OutputParameterMapping" xmi:id="_i8JosAJxEeKZAMBS1mYV2Q" valueExpression="rowSet"/>
+          </connectors>
+          <connectors xmi:type="process:Connector" xmi:id="_erltMANHEeKyqN-WxS2lTA" name="setRespostaFinalColegiado" label="setRespostaFinalColegiado" connectorId="SetVariable" event="automaticOnExit" ignoreErrors="false">
+            <parameters xmi:type="process:Parameter" xmi:id="_erltMQNHEeKyqN-WxS2lTA" key="setVariableName" value="ACED000574000D726573706F73746146696E616C"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_erltMgNHEeKyqN-WxS2lTA" key="setValue" value="ACED0005740011726573706F737461436F6C65676961646F"/>
           </connectors>
         </elements>
         <elements xmi:type="process:TextAnnotation" xmi:id="_I6RQoAJwEeKZAMBS1mYV2Q" text="Esta atualização é feita em uma tarefa separada porque a tarefa anterior é multi-instanciada."/>
@@ -1101,7 +1104,7 @@
       <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBu-4pEeGKhq6eruyG6w" name="indeferir" label="indeferir" source="_n3RiL-4pEeGKhq6eruyG6w" target="_XhNxgO5cEeGo0f37u06zsQ" condition="respostaTutor == decisaoIndeferido">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3XBvO4pEeGKhq6eruyG6w"/>
       </connections>
-      <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBye4pEeGKhq6eruyG6w" name="indeferir" label="indeferir" source="_n3UllO4pEeGKhq6eruyG6w" target="_Jizbke99EeGDf8wCPuoYjQ" condition="respostaFinal==decisaoIndeferido">
+      <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBye4pEeGKhq6eruyG6w" name="indeferir" label="indeferir" source="_n3UllO4pEeGKhq6eruyG6w" target="_Jizbke99EeGDf8wCPuoYjQ" condition="respostaColegiado == decisaoIndeferido">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3XByu4pEeGKhq6eruyG6w"/>
       </connections>
       <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBy-4pEeGKhq6eruyG6w" source="_WIfUQO9-EeGDf8wCPuoYjQ" target="_n3Vzre4pEeGKhq6eruyG6w">
@@ -1119,7 +1122,7 @@
       <connections xmi:type="process:SequenceFlow" xmi:id="_bQ2xsO99EeGDf8wCPuoYjQ" name="indeferir" label="indeferir" source="_n3T-bO4pEeGKhq6eruyG6w" target="_Jizbke99EeGDf8wCPuoYjQ" condition="respostaRelator == decisaoIndeferido">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_bQ3_0O99EeGDf8wCPuoYjQ"/>
       </connections>
-      <connections xmi:type="process:SequenceFlow" xmi:id="_eVACsO9-EeGDf8wCPuoYjQ" name="aprovar" label="aprovar" source="_n3UllO4pEeGKhq6eruyG6w" target="_lep9YPLpEeGcD7MAkxJ97A" condition="respostaFinal!=decisaoIndeferido">
+      <connections xmi:type="process:SequenceFlow" xmi:id="_eVACsO9-EeGDf8wCPuoYjQ" name="aprovar" label="aprovar" source="_n3UllO4pEeGKhq6eruyG6w" target="_lep9YPLpEeGcD7MAkxJ97A" condition="respostaColegiado != decisaoIndeferido">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_eVApwO9-EeGDf8wCPuoYjQ"/>
       </connections>
       <connections xmi:type="process:SequenceFlow" xmi:id="_fbrW4O9-EeGDf8wCPuoYjQ" name="decisao_final" label="decisao final" source="_Jizbke99EeGDf8wCPuoYjQ" target="_WIfUQO9-EeGDf8wCPuoYjQ" condition="respostaFinal==decisaoAprovado">

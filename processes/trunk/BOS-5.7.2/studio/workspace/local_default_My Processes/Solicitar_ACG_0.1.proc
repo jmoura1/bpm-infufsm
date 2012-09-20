@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:decision="http://www.bonitasoft.org/ns/studio/process/decision" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:form="http://www.bonitasoft.org/ns/studio/form" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:process="http://www.bonitasoft.org/ns/studio/process" xmlns:simulation="http://www.bonitasoft.org/ns/studio/process/simulation" xsi:schemaLocation="http://www.bonitasoft.org/ns/studio/process/decision http://www.bonitasoft.org/ns/studio/process#//decision">
   <process:MainProcess xmi:id="_n3Oe0e4pEeGKhq6eruyG6w" name="Solicitar_ACG" label="Solicitar ACG" version="0.1" bonitaVersion="5.7" bonitaModelVersion="5.7">
-    <elements xmi:type="process:Pool" xmi:id="_n3Oe0u4pEeGKhq6eruyG6w" name="Solicitar_ACG" label="Solicitar ACG" welcomePageInternal="false" entryPageFlowType="SKIP" version="0.1">
+    <elements xmi:type="process:Pool" xmi:id="_n3Oe0u4pEeGKhq6eruyG6w" name="Solicitar_ACG" label="Solicitar ACG" welcomePageInternal="false" basedOnLookAndFeel="white" entryPageFlowType="SKIP" version="0.1">
       <elements xmi:type="process:Lane" xmi:id="_n3PF4O4pEeGKhq6eruyG6w" name="Aluno" label="Aluno" user="" groups="_n3XBze4pEeGKhq6eruyG6w">
         <elements xmi:type="process:StartEvent" xmi:id="_n3PF4e4pEeGKhq6eruyG6w" name="Inicio" label="Início" outgoing="_n3WayO4pEeGKhq6eruyG6w">
           <viewForm xmi:type="form:ViewForm" xmi:id="_5HnmQAC5EeK4zIrf8BB_zA" name="Inicio" label="Início" nLine="1" pageLabel="Início">
@@ -671,8 +671,8 @@
           </connectors>
           <multiInstantiation xmi:type="process:MultiInstantiation" xmi:id="_gLx7EPBjEeGgZqChN-hpWQ" enabled="true">
             <instantiator xmi:type="process:Connector" xmi:id="_gLx7EfBjEeGgZqChN-hpWQ" name="instantiatorCoordenacao" label="instantiatorCoordenacao" connectorId="VariableInstantiator">
-              <parameters xmi:type="process:Parameter" xmi:id="_Ce_soPBkEeGgZqChN-hpWQ" key="setValues" value="ACED000574002E247B47726F7570735574696C2E7573756172696F73446F477275706F285B22636F6F7264656E6163616F225D297D"/>
-              <parameters xmi:type="process:Parameter" xmi:id="_Ce_sofBkEeGgZqChN-hpWQ" key="setName" value="ACED0005740017696E7374616E746961746F72436F6F7264656E6163616F"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_K9UKwANSEeKMAI_3nsDFvw" key="setValues" value="ACED000574002E247B47726F7570735574696C2E7573756172696F73446F477275706F285B22636F6F7264656E6163616F225D297D"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_K9UKwQNSEeKMAI_3nsDFvw" key="setName" value="ACED0005740017696E7374616E746961746F72436F6F7264656E6163616F"/>
             </instantiator>
             <joinChecker xmi:type="process:Connector" xmi:id="_gLx7EvBjEeGgZqChN-hpWQ" name="anyoneComplete" label="anyoneComplete" connectorId="FixedNumberJoinChecker">
               <parameters xmi:type="process:Parameter" xmi:id="_KH27cPBkEeGgZqChN-hpWQ" key="setActivityNumber" value="ACED000574000131"/>
@@ -716,6 +716,9 @@
             </widgets>
             <scripts xmi:type="form:GroovyScript" xmi:id="_aeguAAJxEeKZAMBS1mYV2Q" exprScript="${GroupsUtil.getCurrentDate()}" setVarScript="data_aval_col"/>
           </form>
+          <filters xmi:type="process:Connector" xmi:id="_rWoQ4QNREeKMAI_3nsDFvw" name="filtro_reuniao" label="filtro_reuniao" connectorId="GroovyFilter">
+            <parameters xmi:type="process:Parameter" xmi:id="_AKnAsANTEeKMAI_3nsDFvw" key="setScript" value="ACED000574001647726F7570735574696C2E6573636F6C6869646F2829"/>
+          </filters>
         </elements>
         <elements xmi:type="process:Activity" xmi:id="_WIfUQO9-EeGDf8wCPuoYjQ" name="Avisa_ao_aluno_Aprovada" label="Avisa ao aluno-Aprovada" outgoing="_n3XBy-4pEeGKhq6eruyG6w" incoming="_fbrW4O9-EeGDf8wCPuoYjQ _k06LsPBKEeGgZqChN-hpWQ _nCyYgPBKEeGgZqChN-hpWQ _sA-a4PLpEeGcD7MAkxJ97A">
           <viewForm xmi:type="form:ViewForm" xmi:id="_WgazkPBkEeGgZqChN-hpWQ" name="Avisa_ao_aluno" label="Avisa ao aluno" nLine="1" pageLabel="Avisa ao aluno">
@@ -928,11 +931,10 @@
           </connectors>
         </elements>
       </elements>
-      <resourceFolders xmi:type="process:ResourceFolder" xmi:id="_n8q_gO4pEeGKhq6eruyG6w" path="User/_n3Oe0u4pEeGKhq6eruyG6w/application/application"/>
-      <errorTemplate xmi:type="process:AssociatedFile" xmi:id="_n3Vztu4pEeGKhq6eruyG6w" path="User/_n3Oe0u4pEeGKhq6eruyG6w/html/error.html"/>
-      <processTemplate xmi:type="process:AssociatedFile" xmi:id="_n3Vzt-4pEeGKhq6eruyG6w" path="User/_n3Oe0u4pEeGKhq6eruyG6w/html/process.html"/>
-      <pageTemplate xmi:type="process:AssociatedFile" xmi:id="_n3VzuO4pEeGKhq6eruyG6w" path="User/_n3Oe0u4pEeGKhq6eruyG6w/html/page.html"/>
-      <consultationTemplate xmi:type="process:AssociatedFile" xmi:id="_n3Vzue4pEeGKhq6eruyG6w" path="User/_n3Oe0u4pEeGKhq6eruyG6w/html/consultation.html"/>
+      <resourceFolders xmi:type="process:ResourceFolder" xmi:id="_UzfigANOEeKnipXWV98s8A" path="User/_n3Oe0u4pEeGKhq6eruyG6w/application/application"/>
+      <processTemplate xmi:type="process:AssociatedFile" xmi:id="_UzfigQNOEeKnipXWV98s8A" path="User/_n3Oe0u4pEeGKhq6eruyG6w/html/process.html"/>
+      <pageTemplate xmi:type="process:AssociatedFile" xmi:id="_UzfigwNOEeKnipXWV98s8A" path="User/_n3Oe0u4pEeGKhq6eruyG6w/html/page.html"/>
+      <consultationTemplate xmi:type="process:AssociatedFile" xmi:id="_UzfiggNOEeKnipXWV98s8A" path="User/_n3Oe0u4pEeGKhq6eruyG6w/html/consultation.html"/>
       <data xmi:type="process:Data" xmi:id="_F1WnIABMEeKNc5oRhz2Hxg" name="acgChAprovada" label="acgChAprovada" dataType="_n3XozO4pEeGKhq6eruyG6w" defaultValue="0"/>
       <data xmi:type="process:Data" xmi:id="_CQqYYABMEeKNc5oRhz2Hxg" name="acgComprovante" label="acgComprovante" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
       <data xmi:type="process:Data" xmi:id="_AxfEoABMEeKNc5oRhz2Hxg" name="acgEstado" label="acgEstado" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
@@ -1208,8 +1210,8 @@
       <parameters xmi:type="process:Parameter" xmi:id="_YtVMgvBjEeGgZqChN-hpWQ" key="setGroupPath" value="ACED000574000C2F636F6F7264656E6163616F"/>
     </groups>
     <groups xmi:type="process:Group" xmi:id="_ouHIwANMEeKum8AAOeZ0jw" name="membrosCoordenacao" label="membrosCoordenacao" connectorId="GroupUsers">
-      <parameters xmi:type="process:Parameter" xmi:id="_ouHv0ANMEeKum8AAOeZ0jw" key="setIncludingSubGroups" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-      <parameters xmi:type="process:Parameter" xmi:id="_ouHv0QNMEeKum8AAOeZ0jw" key="setGroupPath" value="ACED000574000C2F636F6F7264656E6163616F"/>
+      <parameters xmi:type="process:Parameter" xmi:id="_-sRP4ANREeKMAI_3nsDFvw" key="setIncludingSubGroups" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+      <parameters xmi:type="process:Parameter" xmi:id="_-sRP4QNREeKMAI_3nsDFvw" key="setGroupPath" value="ACED000574000C2F636F6F7264656E6163616F"/>
     </groups>
     <datatypes xmi:type="process:BooleanType" xmi:id="_n3Xoyu4pEeGKhq6eruyG6w" name="Boolean" label="Boolean"/>
     <datatypes xmi:type="process:DateType" xmi:id="_n3Xoy-4pEeGKhq6eruyG6w" name="Date" label="Date"/>

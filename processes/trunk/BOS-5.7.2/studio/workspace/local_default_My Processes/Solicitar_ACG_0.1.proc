@@ -650,7 +650,7 @@
       </elements>
       <elements xmi:type="process:Lane" xmi:id="_n3VzrO4pEeGKhq6eruyG6w" name="Coordenacao" label="Coordenação" user="" groups="_fUVxAPBIEeGgZqChN-hpWQ">
         <elements xmi:type="process:EndEvent" xmi:id="_n3Vzre4pEeGKhq6eruyG6w" name="Fim2" label="Fim2" incoming="_n3XBy-4pEeGKhq6eruyG6w _RnQtkPFnEeGfefz74zRb1Q"/>
-        <elements xmi:type="process:Task" xmi:id="_Jizbke99EeGDf8wCPuoYjQ" name="Reuniao_presencial" label="Reuniao presencial" outgoing="_AL0KYPFnEeGfefz74zRb1Q _fbrW4O9-EeGDf8wCPuoYjQ" incoming="_bQ2xsO99EeGDf8wCPuoYjQ _n3XBye4pEeGKhq6eruyG6w _oeVwgPBKEeGgZqChN-hpWQ" user="" groups="_ouHIwANMEeKum8AAOeZ0jw" overrideGroupsOfTheLane="true">
+        <elements xmi:type="process:Task" xmi:id="_Jizbke99EeGDf8wCPuoYjQ" name="Reuniao_presencial" label="Reuniao presencial" outgoing="_AL0KYPFnEeGfefz74zRb1Q _fbrW4O9-EeGDf8wCPuoYjQ" incoming="_bQ2xsO99EeGDf8wCPuoYjQ _n3XBye4pEeGKhq6eruyG6w _oeVwgPBKEeGgZqChN-hpWQ" user="" groups="_l6ly0QP9EeK4Y6ptlbj6_w" overrideGroupsOfTheLane="true">
           <viewForm xmi:type="form:ViewForm" xmi:id="_1fwPEAC2EeK4zIrf8BB_zA" name="Reuniao_presencial" label="Reuniao presencial" nLine="3" pageLabel="Reuniao presencial">
             <widgets xmi:type="form:TextInfo" xmi:id="_2UwkcAC2EeK4zIrf8BB_zA" name="Texto1" label="Texto1" displayLabel="Decisão da reunião presencial:">
               <script xmi:type="form:GroovyScript" xmi:id="_4bN6oAC2EeK4zIrf8BB_zA" inputScript="${respostaFinal}"/>
@@ -671,8 +671,8 @@
           </connectors>
           <multiInstantiation xmi:type="process:MultiInstantiation" xmi:id="_gLx7EPBjEeGgZqChN-hpWQ" enabled="true">
             <instantiator xmi:type="process:Connector" xmi:id="_gLx7EfBjEeGgZqChN-hpWQ" name="instantiatorCoordenacao" label="instantiatorCoordenacao" connectorId="VariableInstantiator">
-              <parameters xmi:type="process:Parameter" xmi:id="_K9UKwANSEeKMAI_3nsDFvw" key="setValues" value="ACED000574002E247B47726F7570735574696C2E7573756172696F73446F477275706F285B22636F6F7264656E6163616F225D297D"/>
-              <parameters xmi:type="process:Parameter" xmi:id="_K9UKwQNSEeKMAI_3nsDFvw" key="setName" value="ACED0005740017696E7374616E746961746F72436F6F7264656E6163616F"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_KriQcAQREeK8b8wb0ISHew" key="setValues" value="ACED000574002E247B47726F7570735574696C2E7573756172696F73446F477275706F285B22636F6F7264656E6163616F225D297D"/>
+              <parameters xmi:type="process:Parameter" xmi:id="_KriQcQQREeK8b8wb0ISHew" key="setName" value="ACED0005740017696E7374616E746961746F72436F6F7264656E6163616F"/>
             </instantiator>
             <joinChecker xmi:type="process:Connector" xmi:id="_gLx7EvBjEeGgZqChN-hpWQ" name="anyoneComplete" label="anyoneComplete" connectorId="FixedNumberJoinChecker">
               <parameters xmi:type="process:Parameter" xmi:id="_KH27cPBkEeGgZqChN-hpWQ" key="setActivityNumber" value="ACED000574000131"/>
@@ -716,9 +716,6 @@
             </widgets>
             <scripts xmi:type="form:GroovyScript" xmi:id="_aeguAAJxEeKZAMBS1mYV2Q" exprScript="${GroupsUtil.getCurrentDate()}" setVarScript="data_aval_col"/>
           </form>
-          <filters xmi:type="process:Connector" xmi:id="_rWoQ4QNREeKMAI_3nsDFvw" name="filtro_reuniao" label="filtro_reuniao" connectorId="GroovyFilter">
-            <parameters xmi:type="process:Parameter" xmi:id="_AKnAsANTEeKMAI_3nsDFvw" key="setScript" value="ACED000574001647726F7570735574696C2E6573636F6C6869646F2829"/>
-          </filters>
         </elements>
         <elements xmi:type="process:Activity" xmi:id="_WIfUQO9-EeGDf8wCPuoYjQ" name="Avisa_ao_aluno_Aprovada" label="Avisa ao aluno-Aprovada" outgoing="_n3XBy-4pEeGKhq6eruyG6w" incoming="_fbrW4O9-EeGDf8wCPuoYjQ _k06LsPBKEeGgZqChN-hpWQ _nCyYgPBKEeGgZqChN-hpWQ _sA-a4PLpEeGcD7MAkxJ97A">
           <viewForm xmi:type="form:ViewForm" xmi:id="_WgazkPBkEeGgZqChN-hpWQ" name="Avisa_ao_aluno" label="Avisa ao aluno" nLine="1" pageLabel="Avisa ao aluno">
@@ -977,6 +974,7 @@
       <data xmi:type="process:Data" xmi:id="_n3Waq-4pEeGKhq6eruyG6w" name="idRelator" label="idRelator" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
       <data xmi:type="process:Data" xmi:id="_n3WarO4pEeGKhq6eruyG6w" name="ind" label="ind" dataType="_n3XozO4pEeGKhq6eruyG6w" defaultValue="0"/>
       <data xmi:type="process:Data" xmi:id="_n3Ware4pEeGKhq6eruyG6w" name="ind2" label="ind2" dataType="_n3XozO4pEeGKhq6eruyG6w" defaultValue="0"/>
+      <data xmi:type="process:Data" xmi:id="_Ck1TQAQKEeK8b8wb0ISHew" name="instantiatorCoordenacao" label="instantiatorCoordenacao" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
       <data xmi:type="process:Data" xmi:id="_n3Waru4pEeGKhq6eruyG6w" name="link" label="link" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
       <data xmi:type="process:Data" xmi:id="_n3War-4pEeGKhq6eruyG6w" name="local" label="local" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
       <data xmi:type="process:Data" xmi:id="_n3WasO4pEeGKhq6eruyG6w" name="login" label="login" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="login"/>
@@ -1212,6 +1210,12 @@
     <groups xmi:type="process:Group" xmi:id="_ouHIwANMEeKum8AAOeZ0jw" name="membrosCoordenacao" label="membrosCoordenacao" connectorId="GroupUsers">
       <parameters xmi:type="process:Parameter" xmi:id="_-sRP4ANREeKMAI_3nsDFvw" key="setIncludingSubGroups" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
       <parameters xmi:type="process:Parameter" xmi:id="_-sRP4QNREeKMAI_3nsDFvw" key="setGroupPath" value="ACED000574000C2F636F6F7264656E6163616F"/>
+    </groups>
+    <groups xmi:type="process:Group" xmi:id="_l6ly0QP9EeK4Y6ptlbj6_w" name="membrosCoordenacaoUserList" label="membrosCoordenacaoUserList" connectorId="User List">
+      <parameters xmi:type="process:Parameter" xmi:id="_R68A8AQSEeK8b8wb0ISHew" key="setUsers" value="ACED000574001A247B696E7374616E746961746F72436F6F7264656E6163616F7D"/>
+    </groups>
+    <groups xmi:type="process:Group" xmi:id="_TBKi0AQKEeK8b8wb0ISHew" name="membrosCoordena" label="membrosCoordena" connectorId="User List">
+      <parameters xmi:type="process:Parameter" xmi:id="_AjmT8AQNEeK8b8wb0ISHew" key="setUsers" value="ACED0005740008757365726E616D65"/>
     </groups>
     <datatypes xmi:type="process:BooleanType" xmi:id="_n3Xoyu4pEeGKhq6eruyG6w" name="Boolean" label="Boolean"/>
     <datatypes xmi:type="process:DateType" xmi:id="_n3Xoy-4pEeGKhq6eruyG6w" name="Date" label="Date"/>

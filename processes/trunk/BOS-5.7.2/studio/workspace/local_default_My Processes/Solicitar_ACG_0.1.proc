@@ -51,20 +51,20 @@
             </widgets>
           </viewForm>
           <connectors xmi:type="process:Connector" xmi:id="_n3PF4-4pEeGKhq6eruyG6w" name="upload" label="upload" connectorId="AlfrescoUploadFileByPath" event="taskOnFinish" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_1-g1YPIVEeGCZs4Ps_Re8w" key="setMimeType" value="ACED0005740070247B696D706F7274206A617661782E61637469766174696F6E2E4D696D65747970657346696C65547970654D61703B0D0D6E6577204D696D65747970657346696C65547970654D617028292E676574436F6E74656E74547970652866696C652E67657446696C654E616D652829293B7D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_1-g1YfIVEeGCZs4Ps_Re8w" key="setPort" value="ACED000574000F247B616C66726573636F506F72747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_1-g1YvIVEeGCZs4Ps_Re8w" key="setDescription"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_1-g1Y_IVEeGCZs4Ps_Re8w" key="setFileName" value="ACED0005740043247B47726F7570735574696C2E636F6E636174332874696D655374616D702C6E756D65726F4D6174726963756C612C66696C652E67657446696C654E616D652829297D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_1-g1ZPIVEeGCZs4Ps_Re8w" key="setUsername" value="ACED0005740013247B616C66726573636F557365726E616D657D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_1-g1ZfIVEeGCZs4Ps_Re8w" key="setDestinationFolder" value="ACED000574000D2F4775657374253230486F6D65"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_1-g1ZvIVEeGCZs4Ps_Re8w" key="setPassword" value="ACED0005740013247B616C66726573636F50617373776F72647D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_1-g1Z_IVEeGCZs4Ps_Re8w" key="setFileObject" value="ACED0005740007247B66696C657D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_1-g1aPIVEeGCZs4Ps_Re8w" key="setHost" value="ACED000574000F247B616C66726573636F486F73747D"/>
-            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_1-g1afIVEeGCZs4Ps_Re8w" valueExpression="import org.apache.abdera.model.Entry;&#xA;import org.apache.abdera.model.Document;&#xA;import org.apache.abdera.model.Element;&#xA;Document&lt;Element> doc = (Document&lt;Element>)responseDocument;&#xA;Entry entry = (Entry)doc.getRoot();&#xA;return entry.getId().toString();" targetData="_n3Waru4pEeGKhq6eruyG6w"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_gREeYAQlEeK5ubdOWbUsPw" key="setMimeType" value="ACED0005740070247B696D706F7274206A617661782E61637469766174696F6E2E4D696D65747970657346696C65547970654D61703B0D0D6E6577204D696D65747970657346696C65547970654D617028292E676574436F6E74656E74547970652866696C652E67657446696C654E616D652829293B7D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_gREeYQQlEeK5ubdOWbUsPw" key="setPort" value="ACED000574000F247B616C66726573636F506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_gREeYgQlEeK5ubdOWbUsPw" key="setDescription"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_gREeYwQlEeK5ubdOWbUsPw" key="setFileName" value="ACED0005740042247B47726F7570735574696C2E676574436F6D70726F7646696C654E616D652874696D655374616D702C206E756D65726F4D6174726963756C612C2066696C65297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_gREeZAQlEeK5ubdOWbUsPw" key="setUsername" value="ACED0005740013247B616C66726573636F557365726E616D657D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_gREeZQQlEeK5ubdOWbUsPw" key="setDestinationFolder" value="ACED000574000D2F4775657374253230486F6D65"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_gREeZgQlEeK5ubdOWbUsPw" key="setPassword" value="ACED0005740013247B616C66726573636F50617373776F72647D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_gREeZwQlEeK5ubdOWbUsPw" key="setFileObject" value="ACED0005740007247B66696C657D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_gREeaAQlEeK5ubdOWbUsPw" key="setHost" value="ACED000574000F247B616C66726573636F486F73747D"/>
+            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_gREeaQQlEeK5ubdOWbUsPw" valueExpression="import org.apache.abdera.model.Entry;&#xA;import org.apache.abdera.model.Document;&#xA;import org.apache.abdera.model.Element;&#xA;Document&lt;Element> doc = (Document&lt;Element>)responseDocument;&#xA;Entry entry = (Entry)doc.getRoot();&#xA;return entry.getId().toString();" targetData="_n3Waru4pEeGKhq6eruyG6w"/>
           </connectors>
           <connectors xmi:type="process:Connector" xmi:id="_L27uEABXEeKBSarwiR6AFg" name="setAcgComprovante" label="setAcgComprovante" connectorId="SetVariable" event="taskOnFinish" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_L27uEQBXEeKBSarwiR6AFg" key="setVariableName" value="ACED000574000E616367436F6D70726F76616E7465"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_L27uEgBXEeKBSarwiR6AFg" key="setValue" value="ACED0005740060247B47726F7570735574696C2E6372656174654C696E6B2847726F7570735574696C2E636F6E636174332874696D655374616D702C6E756D65726F4D6174726963756C612C66696C652E67657446696C654E616D652829292C206C696E6B297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_jpXacAQmEeK5ubdOWbUsPw" key="setVariableName" value="ACED000574000E616367436F6D70726F76616E7465"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_jpXacQQmEeK5ubdOWbUsPw" key="setValue" value="ACED000574005D247B47726F7570735574696C2E6372656174654C696E6B2847726F7570735574696C2E676574436F6D70726F7646696C654E616D652874696D655374616D702C6E756D65726F4D6174726963756C612C66696C65292C206C696E6B297D"/>
           </connectors>
           <connectors xmi:type="process:Connector" xmi:id="_OOK4kPFsEeGg2roXhIzz6Q" name="h2_solicitar" label="h2-solicitar" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_wpcuEAKQEeKZAMBS1mYV2Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
@@ -174,28 +174,32 @@
         </elements>
         <elements xmi:type="process:Task" xmi:id="_imuk0O5FEeGo0f37u06zsQ" name="Step1" label="Anexar parecer tutor" outgoing="_UvIh4O5QEeGo0f37u06zsQ" incoming="_3JiEEO5REeGo0f37u06zsQ" user="">
           <connectors xmi:type="process:Connector" xmi:id="_hyHFcO5PEeGo0f37u06zsQ" name="uploadParecerTutor" label="uploadParecerTutor" connectorId="AlfrescoUploadFileByPath" event="taskOnFinish" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_cMfpUPgqEeGIsrbqFrLDTA" key="setMimeType" value="ACED000574007B247B696D706F7274206A617661782E61637469766174696F6E2E4D696D65747970657346696C65547970654D61703B0D0D6E6577204D696D65747970657346696C65547970654D617028292E676574436F6E74656E745479706528617271506172656365725475746F722E67657446696C654E616D652829293B7D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_cMfpUfgqEeGIsrbqFrLDTA" key="setPort" value="ACED000574000F247B616C66726573636F506F72747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_cMfpUvgqEeGIsrbqFrLDTA" key="setDescription"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_cMfpU_gqEeGIsrbqFrLDTA" key="setFileName" value="ACED0005740043247B47726F7570735574696C2E636F6E636174286E756D65726F4D6174726963756C612C617271506172656365725475746F722E67657446696C654E616D652829297D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_cMfpVPgqEeGIsrbqFrLDTA" key="setUsername" value="ACED0005740013247B616C66726573636F557365726E616D657D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_cMfpVfgqEeGIsrbqFrLDTA" key="setDestinationFolder" value="ACED000574001C247B616C66726573636F44657374696E6174696F6E466F6C6465727D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_cMfpVvgqEeGIsrbqFrLDTA" key="setPassword" value="ACED0005740013247B616C66726573636F50617373776F72647D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_cMfpV_gqEeGIsrbqFrLDTA" key="setFileObject" value="ACED0005740012247B617271506172656365725475746F727D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_cMfpWPgqEeGIsrbqFrLDTA" key="setHost" value="ACED000574000F247B616C66726573636F486F73747D"/>
-            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_cMgQYPgqEeGIsrbqFrLDTA" valueExpression="import org.apache.abdera.model.Entry;&#xA;import org.apache.abdera.model.Document;&#xA;import org.apache.abdera.model.Element;&#xA;Document&lt;Element> doc = (Document&lt;Element>)responseDocument;&#xA;Entry entry = (Entry)doc.getRoot();&#xA;return entry.getId().toString();" targetData="_qpLz0O5PEeGo0f37u06zsQ"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kvGv8AQlEeK5ubdOWbUsPw" key="setMimeType" value="ACED000574007B247B696D706F7274206A617661782E61637469766174696F6E2E4D696D65747970657346696C65547970654D61703B0D0D6E6577204D696D65747970657346696C65547970654D617028292E676574436F6E74656E745479706528617271506172656365725475746F722E67657446696C654E616D652829293B7D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kvGv8QQlEeK5ubdOWbUsPw" key="setPort" value="ACED000574000F247B616C66726573636F506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kvGv8gQlEeK5ubdOWbUsPw" key="setDescription"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kvGv8wQlEeK5ubdOWbUsPw" key="setFileName" value="ACED000574004D247B47726F7570735574696C2E6765745061726563657246696C654E616D652874696D655374616D702C206E756D65726F4D6174726963756C612C20617271506172656365725475746F72297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kvGv9AQlEeK5ubdOWbUsPw" key="setUsername" value="ACED0005740013247B616C66726573636F557365726E616D657D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kvHXAAQlEeK5ubdOWbUsPw" key="setDestinationFolder" value="ACED000574001C247B616C66726573636F44657374696E6174696F6E466F6C6465727D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kvHXAQQlEeK5ubdOWbUsPw" key="setPassword" value="ACED0005740013247B616C66726573636F50617373776F72647D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kvHXAgQlEeK5ubdOWbUsPw" key="setFileObject" value="ACED0005740012247B617271506172656365725475746F727D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kvHXAwQlEeK5ubdOWbUsPw" key="setHost" value="ACED000574000F247B616C66726573636F486F73747D"/>
+            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_kvHXBAQlEeK5ubdOWbUsPw" valueExpression="import org.apache.abdera.model.Entry;&#xA;import org.apache.abdera.model.Document;&#xA;import org.apache.abdera.model.Element;&#xA;Document&lt;Element> doc = (Document&lt;Element>)responseDocument;&#xA;Entry entry = (Entry)doc.getRoot();&#xA;return entry.getId().toString();" targetData="_qpLz0O5PEeGo0f37u06zsQ"/>
+          </connectors>
+          <connectors xmi:type="process:Connector" xmi:id="_uCl4EAQmEeK5ubdOWbUsPw" name="setParecerTutor" label="setParecerTutor" connectorId="SetVariable" event="taskOnFinish" ignoreErrors="false">
+            <parameters xmi:type="process:Parameter" xmi:id="_uCl4EQQmEeK5ubdOWbUsPw" key="setVariableName" value="ACED000574000C706172656365725475746F72"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_uCl4EgQmEeK5ubdOWbUsPw" key="setValue" value="ACED0005740068247B47726F7570735574696C2E6372656174654C696E6B2847726F7570735574696C2E6765745061726563657246696C654E616D652874696D655374616D702C6E756D65726F4D6174726963756C612C66696C65292C2075726C506172656365725475746F72297D"/>
           </connectors>
           <connectors xmi:type="process:Connector" xmi:id="_xiTJQPgqEeGIsrbqFrLDTA" name="h2_tutornaocadastrado" label="h2_tutornaocadastrado" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_3ByDsADQEeKP5YPXfqLH5A" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3ByDsQDQEeKP5YPXfqLH5A" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3ByDsgDQEeKP5YPXfqLH5A" key="setPort" value="ACED0005740009247B6462506F72747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3ByDswDQEeKP5YPXfqLH5A" key="setDatabase" value="ACED000574000A247B64624C6F63616C7D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3ByDtADQEeKP5YPXfqLH5A" key="setLocal" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3ByDtQDQEeKP5YPXfqLH5A" key="setQuery" value="ACED000574002F247B517565727948322E67657451756572795475746F724176616C69612870726F63657373496E7374616E6365297D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3ByDtgDQEeKP5YPXfqLH5A" key="setSsl" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3ByDtwDQEeKP5YPXfqLH5A" key="setUsername" value="ACED0005740009247B6462557365727D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_3ByDuADQEeKP5YPXfqLH5A" key="setPassword"/>
-            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_3ByqwADQEeKP5YPXfqLH5A" valueExpression="rowSet"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_4lPboAQfEeK5ubdOWbUsPw" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_4lPboQQfEeK5ubdOWbUsPw" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_4lQCsAQfEeK5ubdOWbUsPw" key="setPort" value="ACED0005740009247B6462506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_4lQCsQQfEeK5ubdOWbUsPw" key="setDatabase" value="ACED000574000A247B64624C6F63616C7D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_4lQCsgQfEeK5ubdOWbUsPw" key="setLocal" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_4lQCswQfEeK5ubdOWbUsPw" key="setQuery" value="ACED0005740029247B517565727948322E67657451756572795475746F722870726F63657373496E7374616E6365297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_4lQCtAQfEeK5ubdOWbUsPw" key="setSsl" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_4lQCtQQfEeK5ubdOWbUsPw" key="setUsername" value="ACED0005740009247B6462557365727D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_4lQCtgQfEeK5ubdOWbUsPw" key="setPassword"/>
+            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_4lQCtwQfEeK5ubdOWbUsPw" valueExpression="rowSet"/>
           </connectors>
           <data xmi:type="process:Data" xmi:id="_UVNYQO5LEeGo0f37u06zsQ" name="urlFormParecerTutor" label="urlFormParecerTutor" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="http://www.inf.ufsm.br/index/graduacao/si/Formulario%20ACG.doc"/>
           <form xmi:type="form:Form" xmi:id="_1ypN0O5KEeGo0f37u06zsQ" name="Anexar_parecer_do_tutor" label="Anexar parecer do tutor" pageLabel="Anexar parecer do tutor">
@@ -215,9 +219,8 @@
               <script xmi:type="form:GroovyScript" xmi:id="_N2lAkO5OEeGo0f37u06zsQ" setVarScript="arqParecerTutor"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_I0uQQO5OEeGo0f37u06zsQ" line="2"/>
             </widgets>
-            <scripts xmi:type="form:GroovyScript" xmi:id="_6YicwADTEeKP5YPXfqLH5A" exprScript="Em arquivo anexo" setVarScript="parecerTutor"/>
             <scripts xmi:type="form:GroovyScript" xmi:id="_CxZlIADUEeKP5YPXfqLH5A" exprScript="${GroupsUtil.getCurrentDate()}" setVarScript="data_aval_tutor"/>
-            <scripts xmi:type="form:GroovyScript" xmi:id="_ET-LIADUEeKP5YPXfqLH5A" exprScript="Link a preencher" setVarScript="respostaTutor"/>
+            <scripts xmi:type="form:GroovyScript" xmi:id="_ET-LIADUEeKP5YPXfqLH5A" exprScript="Ver parecer" setVarScript="respostaTutor"/>
           </form>
         </elements>
         <elements xmi:type="process:TextAnnotation" xmi:id="_JaZ6sAAqEeKniaGoVnu4cQ" text="Se o tutor não estiver cadastrado, o aluno terá que anexar o parecer digitalizado."/>
@@ -416,11 +419,11 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ulde4pEeGKhq6eruyG6w" line="8"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3Uldu4pEeGKhq6eruyG6w" name="Lins" label="Lins" displayLabel="Link para a documentação:">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3Uld-4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.createLink(GroupsUtil.concat3(timeStamp,numeroMatricula,file.getFileName()), link)}" allowHTMLInValues="true"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3Uld-4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.createLink(GroupsUtil.getComprovFileName(timeStamp,numeroMatricula,file), link)}" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3UleO4pEeGKhq6eruyG6w" line="9"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3Ulee4pEeGKhq6eruyG6w" name="textParecerTutor" label="textParecerTutor" displayLabel="Parecer do responsável:" injectWidgetScript="boolTutor == true">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3Uleu4pEeGKhq6eruyG6w" inputScript="${if (!GroupsUtil.requerTutor(tipoACG)) {&#xD;&#x9;&quot;Nao se aplica&quot;&#xD;} else {&#xD;&#x9;parecerTutor&#xD;}}"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3Uleu4pEeGKhq6eruyG6w" inputScript="${if (!GroupsUtil.requerTutor(tipoACG)) {&#xD;&#x9;&quot;Nao se aplica&quot;&#xD;} else {&#xD;&#x9;parecerTutor&#xD;}}" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ule-4pEeGKhq6eruyG6w" line="11"/>
             </widgets>
             <widgets xmi:type="form:TextAreaFormField" xmi:id="_n3UlfO4pEeGKhq6eruyG6w" name="Area_de_texto1" label="Área de texto1" displayLabel="Parecer:">
@@ -545,7 +548,7 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3VMnu4pEeGKhq6eruyG6w" line="8"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3VMn-4pEeGKhq6eruyG6w" name="Lins" label="Lins" displayLabel="Link para a documentação:">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3VMoO4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.createLink(GroupsUtil.concat3(timeStamp,numeroMatricula,file.getFileName()), link)}" allowHTMLInValues="true"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3VMoO4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.createLink(GroupsUtil.getComprovFileName(timeStamp,numeroMatricula,file), link)}" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3VMoe4pEeGKhq6eruyG6w" line="9"/>
             </widgets>
             <widgets xmi:type="form:SubmitFormButton" xmi:id="_n3VMou4pEeGKhq6eruyG6w" name="Enviar1" label="Enviar1" displayLabel="Enviar">
@@ -560,7 +563,7 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3VMqe4pEeGKhq6eruyG6w" line="14"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3VMqu4pEeGKhq6eruyG6w" name="Texto4" label="Texto4" displayLabel="Parecer do responsável:" injectWidgetCondition="true" injectWidgetScript="boolTutor == true">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3VMq-4pEeGKhq6eruyG6w" inputScript="${if (!GroupsUtil.requerTutor(tipoACG)) {&#xD;&#x9;&quot;Nao se aplica&quot;&#xD;} else {&#xD;&#x9;parecerTutor&#xD;}}"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3VMq-4pEeGKhq6eruyG6w" inputScript="${if (!GroupsUtil.requerTutor(tipoACG)) {&#xD;&#x9;&quot;Nao se aplica&quot;&#xD;} else {&#xD;&#x9;parecerTutor&#xD;}}" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3VMrO4pEeGKhq6eruyG6w" line="12"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3VzkO4pEeGKhq6eruyG6w" name="Campo_de_texto7" label="Campo de texto7" displayLabel="Nome:">

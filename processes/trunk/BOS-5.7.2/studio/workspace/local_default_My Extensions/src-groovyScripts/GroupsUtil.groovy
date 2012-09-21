@@ -72,6 +72,7 @@ import org.ow2.bonita.search.SearchQueryBuilder;
  import org.ow2.bonita.facade.QueryRuntimeAPI;
  import org.ow2.bonita.facade.impl.StandardAPIAccessorImpl;
  import org.ow2.bonita.facade.runtime.ProcessInstance;
+ import org.ow2.bonita.facade.runtime.AttachmentInstance;
  import org.ow2.bonita.facade.uuid.DocumentUUID;
  import org.ow2.bonita.services.Document;
  import java.net.FileNameMap;
@@ -353,6 +354,13 @@ public static String getTime() {
 	return Long.toString(now.getTimeInMillis());
 }
 
+public static String getComprovFileName(String time, String a, AttachmentInstance f) {
+    return a + "-" + time + "-comprovantes-" + f.getFileName();
+}
+
+public static String getParecerFileName(String time, String a, AttachmentInstance f) {
+    return a + "-" + time + "-parecer-" + f.getFileName();
+}
 
 public static String concat3(String time, String a, String b) {
 	String nome;

@@ -191,6 +191,7 @@ public static String getPathGroupUUID(List<String> path) {
 	return g.getUUID();
 }
 
+
 public static ArrayList usuariosDoGrupo(List<String> path){//recebe uma list de string com o caminho do grupo
 	String caminho;
 	Group g = AccessorUtil.getIdentityAPI().getGroupUsingPath(path);

@@ -282,7 +282,7 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3RiPO4pEeGKhq6eruyG6w" line="2"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3RiPe4pEeGKhq6eruyG6w" name="Lins" label="Lins" displayLabel="Link para a documentação:">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3SJMO4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.createLink(GroupsUtil.concat3(timeStamp,numeroMatricula,file.getFileName()), link)}" allowHTMLInValues="true"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3SJMO4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.createLink(GroupsUtil.getComprovFileName(timeStamp, numeroMatricula,file), link)}" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3SJMe4pEeGKhq6eruyG6w" line="9"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3SJO-4pEeGKhq6eruyG6w" name="Texto1" label="Texto1" displayLabel="Local da atividade:">
@@ -649,7 +649,7 @@
             <parameters xmi:type="process:Parameter" xmi:id="_erltMgNHEeKyqN-WxS2lTA" key="setValue" value="ACED0005740011726573706F737461436F6C65676961646F"/>
           </connectors>
         </elements>
-        <elements xmi:type="process:TextAnnotation" xmi:id="_I6RQoAJwEeKZAMBS1mYV2Q" text="Esta atualização é feita em uma tarefa separada porque a tarefa anterior é multi-instanciada."/>
+        <elements xmi:type="process:TextAnnotation" xmi:id="_I6RQoAJwEeKZAMBS1mYV2Q" text="A avaliação pelo colegiado é uma tarefa multi-instanciada, mas a atualização do BD só ocorre uma vez, por isso é feita em uma tarefa separada. Todas as demais atualizações são feitas de forma concomitante com as tarefas."/>
       </elements>
       <elements xmi:type="process:Lane" xmi:id="_n3VzrO4pEeGKhq6eruyG6w" name="Coordenacao" label="Coordenação" user="" groups="_fUVxAPBIEeGgZqChN-hpWQ">
         <elements xmi:type="process:EndEvent" xmi:id="_n3Vzre4pEeGKhq6eruyG6w" name="Fim2" label="Fim2" incoming="_n3XBy-4pEeGKhq6eruyG6w _RnQtkPFnEeGfefz74zRb1Q"/>
@@ -1466,14 +1466,14 @@
               <styles xmi:type="notation:DescriptionStyle" xmi:id="_I6qSMQJwEeKZAMBS1mYV2Q"/>
               <styles xmi:type="notation:FontStyle" xmi:id="_I6qSMgJwEeKZAMBS1mYV2Q" fontName="Cantarell"/>
               <styles xmi:type="notation:LineStyle" xmi:id="_I6qSMwJwEeKZAMBS1mYV2Q"/>
-              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_I6qSNAJwEeKZAMBS1mYV2Q" x="1126" y="72" width="174" height="87"/>
+              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_I6qSNAJwEeKZAMBS1mYV2Q" x="1126" y="24" width="174" height="184"/>
             </children>
           </children>
           <styles xmi:type="notation:DescriptionStyle" xmi:id="_n3Y27-4pEeGKhq6eruyG6w"/>
           <styles xmi:type="notation:FontStyle" xmi:id="_n3Y28O4pEeGKhq6eruyG6w" fontName="Segoe UI"/>
           <styles xmi:type="notation:LineStyle" xmi:id="_n3Y28e4pEeGKhq6eruyG6w"/>
           <styles xmi:type="notation:FillStyle" xmi:id="_n3Y28u4pEeGKhq6eruyG6w"/>
-          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3Y28-4pEeGKhq6eruyG6w" x="45" y="536" width="1372" height="214"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3Y28-4pEeGKhq6eruyG6w" x="45" y="536" width="1372" height="263"/>
         </children>
         <children xmi:type="notation:Node" xmi:id="_n3Y29O4pEeGKhq6eruyG6w" type="3007" element="_n3VzrO4pEeGKhq6eruyG6w">
           <children xmi:type="notation:DecorationNode" xmi:id="_n3Y29e4pEeGKhq6eruyG6w" type="5007"/>
@@ -1597,7 +1597,7 @@
         <layoutConstraint xmi:type="notation:Location" xmi:id="_n3bTN-4pEeGKhq6eruyG6w" y="-10"/>
       </children>
       <styles xmi:type="notation:FontStyle" xmi:id="_n3bTOO4pEeGKhq6eruyG6w" fontName="Ubuntu"/>
-      <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_n3bTOe4pEeGKhq6eruyG6w" points="[0, 0, -54, -97]$[55, 90, 1, -7]"/>
+      <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_n3bTOe4pEeGKhq6eruyG6w" points="[-41, 29, 204, -232]$[-41, 141, 204, -120]$[-238, 141, 7, -120]$[-238, 254, 7, -7]"/>
       <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_n3bTOu4pEeGKhq6eruyG6w" id="(1.0,0.5166666666666667)"/>
       <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_n3bTO-4pEeGKhq6eruyG6w" id="(0.6,0.12)"/>
     </edges>

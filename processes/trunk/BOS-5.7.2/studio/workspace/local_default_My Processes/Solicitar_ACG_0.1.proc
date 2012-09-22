@@ -201,7 +201,6 @@
             <parameters xmi:type="process:Parameter" xmi:id="_4lQCtgQfEeK5ubdOWbUsPw" key="setPassword"/>
             <outputs xmi:type="process:OutputParameterMapping" xmi:id="_4lQCtwQfEeK5ubdOWbUsPw" valueExpression="rowSet"/>
           </connectors>
-          <data xmi:type="process:Data" xmi:id="_UVNYQO5LEeGo0f37u06zsQ" name="urlFormParecerTutor" label="urlFormParecerTutor" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="http://www.inf.ufsm.br/index/graduacao/si/Formulario%20ACG.doc"/>
           <form xmi:type="form:Form" xmi:id="_1ypN0O5KEeGo0f37u06zsQ" name="Anexar_parecer_do_tutor" label="Anexar parecer do tutor" pageLabel="Anexar parecer do tutor">
             <widgets xmi:type="form:SubmitFormButton" xmi:id="_1ypN1O5KEeGo0f37u06zsQ" name="Submit1" label="Submit1" displayLabel="Enviar">
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_1ypN1e5KEeGo0f37u06zsQ" line="3"/>
@@ -237,24 +236,24 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_u2HeEgC1EeK4zIrf8BB_zA" line="1"/>
             </widgets>
           </viewForm>
-          <connectors xmi:type="process:Connector" xmi:id="_x-0SsO5REeGo0f37u06zsQ" name="reminderTutor" label="reminderTutor" connectorId="Email" event="taskOnReady" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_x-0Sse5REeGo0f37u06zsQ" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000A78"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-0Ssu5REeGo0f37u06zsQ" key="setMessage" value="ACED00057401C24F6CC3A12C0A0A3C703E566F63C3AA20666F6920696E64696361646F20636F6D6F205455544F522070617261206176616C69617220756D6120736F6C6963697461C3A7C3A36F2064652041434720646520756D20616C756E6F20646F20637572736F2064652053492E3C2F703E0A0A506F72206661766F722C2061636573736520657374612055524C2070617261206176616C696172206120736F6C6963697461C3A7C3A36F3A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F72206661766F7220726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-0Ss-5REeGo0f37u06zsQ" key="setSmtpHost" value="ACED000574000D247B6D61696C6572486F73747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-0StO5REeGo0f37u06zsQ" key="setAttachments" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-0Ste5REeGo0f37u06zsQ" key="setReplyTo"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-0Stu5REeGo0f37u06zsQ" key="setSslSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-0St-5REeGo0f37u06zsQ" key="setFrom" value="ACED00057400157765626D617374657240696E662E7566736D2E6272"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-05wO5REeGo0f37u06zsQ" key="setTo" value="ACED000574002F247B47726F7570735574696C2E636F6E63617432286E6F6D655475746F722C2240696E662E7566736D2E627222297D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-05we5REeGo0f37u06zsQ" key="setBcc"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-05wu5REeGo0f37u06zsQ" key="setCc"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-05w-5REeGo0f37u06zsQ" key="setUserName"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-05xO5REeGo0f37u06zsQ" key="setCharset" value="ACED00057400057574662D38"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-05xe5REeGo0f37u06zsQ" key="setStarttlsSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-05xu5REeGo0f37u06zsQ" key="setSmtpPort" value="ACED000574000D247B6D61696C6572506F72747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-05x-5REeGo0f37u06zsQ" key="setHtml" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-05yO5REeGo0f37u06zsQ" key="setPassword"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_x-05ye5REeGo0f37u06zsQ" key="setSubject" value="ACED000574002C4176616C6961C3A7C3A36F2064652041434720646F20637572736F20646520534920636F6D6F207475746F72"/>
+          <connectors xmi:type="process:Connector" xmi:id="_x-0SsO5REeGo0f37u06zsQ" name="reminderTutor" label="reminderTutor" connectorId="Email" event="taskOnReady">
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OYATlEeKNsPe18H1dtw" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OYQTlEeKNsPe18H1dtw" key="setMessage" value="ACED00057401C24F6CC3A12C0A0A3C703E566F63C3AA20666F6920696E64696361646F20636F6D6F205455544F522070617261206176616C69617220756D6120736F6C6963697461C3A7C3A36F2064652041434720646520756D20616C756E6F20646F20637572736F2064652053492E3C2F703E0A0A506F72206661766F722C2061636573736520657374612055524C2070617261206176616C696172206120736F6C6963697461C3A7C3A36F3A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F72206661766F7220726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OYgTlEeKNsPe18H1dtw" key="setSmtpHost" value="ACED000574000D247B6D61696C6572486F73747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OYwTlEeKNsPe18H1dtw" key="setAttachments" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OZATlEeKNsPe18H1dtw" key="setReplyTo"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OZQTlEeKNsPe18H1dtw" key="setSslSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OZgTlEeKNsPe18H1dtw" key="setFrom" value="ACED00057400157765626D617374657240696E662E7566736D2E6272"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OZwTlEeKNsPe18H1dtw" key="setTo" value="ACED000574002F247B47726F7570735574696C2E636F6E63617432286E6F6D655475746F722C2240696E662E7566736D2E627222297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OaATlEeKNsPe18H1dtw" key="setBcc"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OaQTlEeKNsPe18H1dtw" key="setCc"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OagTlEeKNsPe18H1dtw" key="setUserName"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OawTlEeKNsPe18H1dtw" key="setCharset" value="ACED00057400057574662D38"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4ObATlEeKNsPe18H1dtw" key="setStarttlsSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4ObQTlEeKNsPe18H1dtw" key="setSmtpPort" value="ACED000574000D247B6D61696C6572506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4ObgTlEeKNsPe18H1dtw" key="setHtml" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4ObwTlEeKNsPe18H1dtw" key="setPassword"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OcATlEeKNsPe18H1dtw" key="setSubject" value="ACED000574002C4176616C6961C3A7C3A36F2064652041434720646F20637572736F20646520534920636F6D6F207475746F72"/>
           </connectors>
           <connectors xmi:type="process:Connector" xmi:id="_cR8VUPFsEeGg2roXhIzz6Q" name="h2_tutor" label="h2-tutor" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_rLM8sAKQEeKZAMBS1mYV2Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
@@ -306,7 +305,7 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3TXVO4pEeGKhq6eruyG6w" line="12"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3TXWO4pEeGKhq6eruyG6w" name="Texto2" label="Texto2" displayLabel="Normas:" realHtmlAttributes="">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3TXWe4pEeGKhq6eruyG6w" inputScript="&lt;a href=&quot;http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf&quot;>Normas para ACG do Curso de SI&lt;/a>&#xA;&#xA;" allowHTMLInValues="true"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3TXWe4pEeGKhq6eruyG6w" inputScript="&lt;a href=&quot;${urlNormas}&quot;>Normas para ACG do Curso de SI&lt;/a>&#xA;&#xA;" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3TXWu4pEeGKhq6eruyG6w" line="10"/>
             </widgets>
             <widgets xmi:type="form:SubmitFormButton" xmi:id="_n3TXW-4pEeGKhq6eruyG6w" name="Enviar2" label="Enviar2" displayLabel="Enviar">
@@ -366,24 +365,24 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_6LmvogC1EeK4zIrf8BB_zA" line="4"/>
             </widgets>
           </viewForm>
-          <connectors xmi:type="process:Connector" xmi:id="_n3T-be4pEeGKhq6eruyG6w" name="reminderRelator" label="reminderRelator" connectorId="Email" event="taskOnReady" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-bu4pEeGKhq6eruyG6w" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-b-4pEeGKhq6eruyG6w" key="setMessage" value="ACED00057401C44F6CC3A12C0A0A3C703E566F63C3AA20666F6920696E64696361646F20636F6D6F2052454C41544F522070617261206176616C69617220756D6120736F6C6963697461C3A7C3A36F2064652041434720646520756D20616C756E6F20646F20637572736F2064652053492E3C2F703E0A0A506F72206661766F722C2061636573736520657374612055524C2070617261206176616C696172206120736F6C6963697461C3A7C3A36F3A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F72206661766F7220726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-cO4pEeGKhq6eruyG6w" key="setSmtpHost" value="ACED00057400166D61696C2D72656C61792E696E662E7566736D2E6272"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-ce4pEeGKhq6eruyG6w" key="setAttachments" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-cu4pEeGKhq6eruyG6w" key="setReplyTo"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-c-4pEeGKhq6eruyG6w" key="setSslSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-dO4pEeGKhq6eruyG6w" key="setFrom" value="ACED00057400157765626D617374657240696E662E7566736D2E6272"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-de4pEeGKhq6eruyG6w" key="setTo" value="ACED0005740044247B47726F7570735574696C2E636F6E63617432286163746976697479496E7374616E63652E6765745461736B5573657228292C2240696E662E7566736D2E627222297D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-du4pEeGKhq6eruyG6w" key="setBcc"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-d-4pEeGKhq6eruyG6w" key="setCc"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-eO4pEeGKhq6eruyG6w" key="setUserName"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-ee4pEeGKhq6eruyG6w" key="setCharset" value="ACED00057400057574662D38"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-eu4pEeGKhq6eruyG6w" key="setStarttlsSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-e-4pEeGKhq6eruyG6w" key="setSmtpPort" value="ACED00057400023235"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-fO4pEeGKhq6eruyG6w" key="setHtml" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-fe4pEeGKhq6eruyG6w" key="setPassword"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3T-fu4pEeGKhq6eruyG6w" key="setSubject" value="ACED000574002E4176616C6961C3A7C3A36F2064652041434720646F20637572736F20646520534920636F6D6F2072656C61746F72"/>
+          <connectors xmi:type="process:Connector" xmi:id="_n3T-be4pEeGKhq6eruyG6w" name="reminderRelator" label="reminderRelator" connectorId="Email" event="taskOnReady">
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzwATlEeKNsPe18H1dtw" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzwQTlEeKNsPe18H1dtw" key="setMessage" value="ACED00057401C44F6CC3A12C0A0A3C703E566F63C3AA20666F6920696E64696361646F20636F6D6F2052454C41544F522070617261206176616C69617220756D6120736F6C6963697461C3A7C3A36F2064652041434720646520756D20616C756E6F20646F20637572736F2064652053492E3C2F703E0A0A506F72206661766F722C2061636573736520657374612055524C2070617261206176616C696172206120736F6C6963697461C3A7C3A36F3A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F72206661766F7220726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzwgTlEeKNsPe18H1dtw" key="setSmtpHost" value="ACED00057400166D61696C2D72656C61792E696E662E7566736D2E6272"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzwwTlEeKNsPe18H1dtw" key="setAttachments" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzxATlEeKNsPe18H1dtw" key="setReplyTo"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzxQTlEeKNsPe18H1dtw" key="setSslSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzxgTlEeKNsPe18H1dtw" key="setFrom" value="ACED00057400157765626D617374657240696E662E7566736D2E6272"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzxwTlEeKNsPe18H1dtw" key="setTo" value="ACED0005740044247B47726F7570735574696C2E636F6E63617432286163746976697479496E7374616E63652E6765745461736B5573657228292C2240696E662E7566736D2E627222297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzyATlEeKNsPe18H1dtw" key="setBcc"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzyQTlEeKNsPe18H1dtw" key="setCc"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzygTlEeKNsPe18H1dtw" key="setUserName"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzywTlEeKNsPe18H1dtw" key="setCharset" value="ACED00057400057574662D38"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzzATlEeKNsPe18H1dtw" key="setStarttlsSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzzQTlEeKNsPe18H1dtw" key="setSmtpPort" value="ACED00057400023235"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzzgTlEeKNsPe18H1dtw" key="setHtml" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_FrzzzwTlEeKNsPe18H1dtw" key="setPassword"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Frzz0ATlEeKNsPe18H1dtw" key="setSubject" value="ACED000574002E4176616C6961C3A7C3A36F2064652041434720646F20637572736F20646520534920636F6D6F2072656C61746F72"/>
           </connectors>
           <connectors xmi:type="process:Connector" xmi:id="_LLTlsPGGEeGYL4Lj_tSn2A" name="h2_relator" label="h2-relator" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_pFtP0AKQEeKZAMBS1mYV2Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
@@ -426,7 +425,7 @@
               <script xmi:type="form:GroovyScript" xmi:id="_n3Uleu4pEeGKhq6eruyG6w" inputScript="${if (!GroupsUtil.requerTutor(tipoACG)) {&#xD;&#x9;&quot;Nao se aplica&quot;&#xD;} else {&#xD;&#x9;parecerTutor&#xD;}}" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ule-4pEeGKhq6eruyG6w" line="11"/>
             </widgets>
-            <widgets xmi:type="form:TextAreaFormField" xmi:id="_n3UlfO4pEeGKhq6eruyG6w" name="Area_de_texto1" label="Área de texto1" displayLabel="Parecer:">
+            <widgets xmi:type="form:TextAreaFormField" xmi:id="_n3UlfO4pEeGKhq6eruyG6w" name="Area_de_texto1" label="Área de texto1" displayLabel="Parecer/Comentário:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3Ulfe4pEeGKhq6eruyG6w" setVarScript="parecerRelator"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ulfu4pEeGKhq6eruyG6w" line="17"/>
             </widgets>
@@ -443,7 +442,7 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Ulh-4pEeGKhq6eruyG6w" line="7"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3UliO4pEeGKhq6eruyG6w" name="Copia_de_Texto2" label="Cópia de Texto2" displayLabel="Normas:" realHtmlAttributes="">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3Ulie4pEeGKhq6eruyG6w" inputScript="&lt;a href=&quot;http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf&quot;>Normas para ACG do Curso de SI&lt;/a>" allowHTMLInValues="true"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3Ulie4pEeGKhq6eruyG6w" inputScript="&lt;a href=&quot;${urlNormas}&quot;>Normas para ACG do Curso de SI&lt;/a>" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Uliu4pEeGKhq6eruyG6w" line="12"/>
             </widgets>
             <widgets xmi:type="form:RadioFormField" xmi:id="_n3Uli-4pEeGKhq6eruyG6w" name="Botoes_de_radio1" label="Botoes_de_radio1" displayLabel="Decisão:">
@@ -463,19 +462,19 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_AIqtkO7nEeG1cZ5cXPleEg" line="13"/>
             </widgets>
             <widgets xmi:type="form:MessageInfo" xmi:id="_T5KckO7nEeG1cZ5cXPleEg" name="Message1" label="Message1">
-              <script xmi:type="form:GroovyScript" xmi:id="_UW0o8O7nEeG1cZ5cXPleEg" inputScript="Como relator, você pode recomendar alterações na carga horária e/ou classificação da atividade:"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_UW0o8O7nEeG1cZ5cXPleEg" inputScript="Como relator, você pode alterar a carga horária e/ou a classificação da atividade antes de aprová-la."/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_T5MRwO7nEeG1cZ5cXPleEg" line="14"/>
             </widgets>
             <widgets xmi:type="form:TextFormField" xmi:id="_ZL6voO7nEeG1cZ5cXPleEg" name="Text_field1" label="Text_field1" displayLabel="Carga horária:">
-              <script xmi:type="form:GroovyScript" xmi:id="_ZN0NEO7nEeG1cZ5cXPleEg" inputScript="${cargaHoraria}" setVarScript="cargaHorariaAlterada"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_ZN0NEO7nEeG1cZ5cXPleEg" inputScript="${cargaHoraria}" setVarScript="acgChAprovada"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_ZMAPMO7nEeG1cZ5cXPleEg" line="15"/>
             </widgets>
             <widgets xmi:type="form:SelectFormField" xmi:id="_cb4rkO7nEeG1cZ5cXPleEg" name="Select1" label="Select1" displayLabel="Tipo de ACG:" defaultValue="${tipoACG}">
-              <script xmi:type="form:GroovyScript" xmi:id="_cdlUsO7nEeG1cZ5cXPleEg" inputScript="${GroupsUtil.getAllTipoACG()}" setVarScript="tipoACGalterado"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_cdlUsO7nEeG1cZ5cXPleEg" inputScript="${GroupsUtil.getAllTipoACG()}" setVarScript="acgTipoAprovado"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_cb7H0O7nEeG1cZ5cXPleEg" line="16"/>
             </widgets>
             <widgets xmi:type="form:MessageInfo" xmi:id="_P5zG4PBOEeGgZqChN-hpWQ" name="Message2" label="Message2">
-              <script xmi:type="form:GroovyScript" xmi:id="_Q6iLIPBOEeGgZqChN-hpWQ" inputScript="Se houver problema na solicitação, marque &quot;${decisaoIndeferido}&quot; para levá-la a uma reunião presencial do colegiado."/>
+              <script xmi:type="form:GroovyScript" xmi:id="_Q6iLIPBOEeGgZqChN-hpWQ" inputScript="Se houver irregularidade/dúvida, marque &quot;${decisaoIndeferido}&quot; para levar a solicitação a uma reunião presencial do colegiado."/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_P6BJUPBOEeGgZqChN-hpWQ" line="18"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_7NRFYAKAEeKZAMBS1mYV2Q" name="Text6" label="Text6" displayLabel="Data da avaliação:">
@@ -498,25 +497,6 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_HbJ6IwC2EeK4zIrf8BB_zA"/>
             </widgets>
           </viewForm>
-          <connectors xmi:type="process:Connector" xmi:id="_n3Ulle4pEeGKhq6eruyG6w" name="reminderColegiado" label="reminderColegiado" connectorId="Email" event="taskOnReady" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_n3Ullu4pEeGKhq6eruyG6w" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3Ull-4pEeGKhq6eruyG6w" key="setMessage" value="ACED00057401EC4F6CC3A12C0A0A3C703E48C3A120756D6120736F6C6963697461C3A7C3A36F2064652041434720717565206AC3A120666F69206176616C6961646120706F7220756D2072656C61746F722065206E6563657373697461207061737361722070656C6F20636F6C65676961646F20646F20437572736F2064652053492E3C703E0A0A50617261207265676973747261722073657520766F746F20636F6D6F206D656D62726F20646F20636F6C65676961646F2C20706F72206661766F722061636573736520657374612055524C3A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F722067656E74696C657A6120726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3UlmO4pEeGKhq6eruyG6w" key="setSmtpHost" value="ACED00057400166D61696C2D72656C61792E696E662E7566736D2E6272"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3Ulme4pEeGKhq6eruyG6w" key="setAttachments" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3Ulmu4pEeGKhq6eruyG6w" key="setReplyTo"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3Ulm-4pEeGKhq6eruyG6w" key="setSslSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3UlnO4pEeGKhq6eruyG6w" key="setFrom" value="ACED00057400157765626D617374657240696E662E7566736D2E6272"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3Ulne4pEeGKhq6eruyG6w" key="setTo" value="ACED0005740044247B47726F7570735574696C2E636F6E63617432286163746976697479496E7374616E63652E6765745461736B5573657228292C2240696E662E7566736D2E627222297D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3Ulnu4pEeGKhq6eruyG6w" key="setBcc"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3Uln-4pEeGKhq6eruyG6w" key="setCc"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3VMgO4pEeGKhq6eruyG6w" key="setUserName"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3VMge4pEeGKhq6eruyG6w" key="setCharset" value="ACED00057400057574662D38"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3VMgu4pEeGKhq6eruyG6w" key="setStarttlsSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3VMg-4pEeGKhq6eruyG6w" key="setSmtpPort" value="ACED00057400023235"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3VMhO4pEeGKhq6eruyG6w" key="setHtml" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3VMhe4pEeGKhq6eruyG6w" key="setPassword"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_n3VMhu4pEeGKhq6eruyG6w" key="setSubject" value="ACED000574003A4176616C6961C3A7C3A36F2064652041434720646F20637572736F20646520534920636F6D6F206D656D62726F20646F20636F6C65676961646F"/>
-          </connectors>
           <data xmi:type="process:Data" xmi:id="_n3VMh-4pEeGKhq6eruyG6w" name="respostaMembroColegiado" label="respostaMembroColegiado" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
           <multiInstantiation xmi:type="process:MultiInstantiation" xmi:id="_n3VMiO4pEeGKhq6eruyG6w" enabled="true">
             <instantiator xmi:type="process:Connector" xmi:id="_n3VMie4pEeGKhq6eruyG6w" name="instanciador" label="instanciador" connectorId="VariableInstantiator">
@@ -583,7 +563,7 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Vzm-4pEeGKhq6eruyG6w" line="7"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3VznO4pEeGKhq6eruyG6w" name="Texto5" label="Texto5" displayLabel="Decisão do relator:">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3Vzne4pEeGKhq6eruyG6w" inputScript="${if (cargaHoraria != cargaHorariaAlterada || tipoACG != tipoACGalterado) {&#xD;&#x9;respostaRelator + &quot; com alteracoes&quot;&#xD;} else {&#xD;&#x9;respostaRelator&#xD;}}"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3Vzne4pEeGKhq6eruyG6w" inputScript="${if (cargaHoraria != acgChAprovada || tipoACG != acgTipoAprovado) {&#xD;&#x9;respostaRelator + &quot; com alteracoes&quot;&#xD;} else {&#xD;&#x9;respostaRelator&#xD;}}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Vznu4pEeGKhq6eruyG6w" line="15"/>
             </widgets>
             <widgets xmi:type="form:RadioFormField" xmi:id="_n3Vzn-4pEeGKhq6eruyG6w" name="Botoes_de_radio1" label="Botoes_de_radio1" displayLabel="Decisão:">
@@ -591,7 +571,7 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Vzoe4pEeGKhq6eruyG6w" line="20"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3Vzou4pEeGKhq6eruyG6w" name="Text1" label="Text1" displayLabel="Normas:">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3Vzo-4pEeGKhq6eruyG6w" inputScript="&lt;a href=&quot;http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf&quot;>Normas para ACG do Curso de SI&lt;/a>" allowHTMLInValues="true"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_n3Vzo-4pEeGKhq6eruyG6w" inputScript="&lt;a href=&quot;${urlNormas}&quot;>Normas para ACG do Curso de SI&lt;/a>" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3VzpO4pEeGKhq6eruyG6w" line="18"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_n3Vzpe4pEeGKhq6eruyG6w" name="Copia_de_Texto3" label="Cópia de Texto3" displayLabel="Descrição da atividade:">
@@ -611,15 +591,15 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_oWtFMfBPEeGgZqChN-hpWQ" line="13"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_d-TRgPBQEeGgZqChN-hpWQ" name="Text4" label="Text4" displayLabel="Carga horária aprovada:" injectWidgetCondition="true" injectWidgetScript="${cargaHoraria!=cargaHorariaAlterada}">
-              <script xmi:type="form:GroovyScript" xmi:id="_d_j1wPBQEeGgZqChN-hpWQ" inputScript="${cargaHorariaAlterada}"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_d_j1wPBQEeGgZqChN-hpWQ" inputScript="${acgChAprovada}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_d-Xi8fBQEeGgZqChN-hpWQ" line="16"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_0b0AYPBQEeGgZqChN-hpWQ" name="Text5" label="Text5" displayLabel="Tipo de ACG aprovado:" injectWidgetCondition="true" injectWidgetScript="${tipoACG!=tipoACGalterado}">
-              <script xmi:type="form:GroovyScript" xmi:id="_0mx6QPBQEeGgZqChN-hpWQ" inputScript="${tipoACGalterado}"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_0mx6QPBQEeGgZqChN-hpWQ" inputScript="${acgTipoAprovado}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_0b444PBQEeGgZqChN-hpWQ" line="17"/>
             </widgets>
             <widgets xmi:type="form:MessageInfo" xmi:id="_5QNuEPBREeGgZqChN-hpWQ" name="Message1" label="Message1">
-              <script xmi:type="form:GroovyScript" xmi:id="_6VukoPBREeGgZqChN-hpWQ" inputScript="Se houver problema na solicitação, marque &quot;Indeferir&quot; para levá-la a uma reunião presencial do colegiado."/>
+              <script xmi:type="form:GroovyScript" xmi:id="_6VukoPBREeGgZqChN-hpWQ" inputScript="Se houver irregularidade/dúvida, marque &quot;${decisaoIndeferido}&quot; para levar a solicitação a uma reunião presencial do colegiado."/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_5QR_gfBREeGgZqChN-hpWQ" line="19"/>
             </widgets>
             <scripts xmi:type="form:GroovyScript" xmi:id="_n3VzqO4pEeGKhq6eruyG6w" exprScript="${if(field_Botoes_de_radio1==&quot;Sim&quot;) conta+1&#xD;else conta}" setVarScript="conta"/>
@@ -681,13 +661,9 @@
               <parameters xmi:type="process:Parameter" xmi:id="_KH27cPBkEeGgZqChN-hpWQ" key="setActivityNumber" value="ACED000574000131"/>
             </joinChecker>
           </multiInstantiation>
-          <form xmi:type="form:Form" xmi:id="_3mxYIPBeEeGgZqChN-hpWQ" name="Reuniao_presencial" label="Reuniao presencial" nLine="9" pageLabel="Reuniao presencial">
+          <form xmi:type="form:Form" xmi:id="_3mxYIPBeEeGgZqChN-hpWQ" name="Reuniao_presencial" label="Reuniao presencial" nLine="11" pageLabel="Reuniao presencial">
             <widgets xmi:type="form:SubmitFormButton" xmi:id="_3mxYIfBeEeGgZqChN-hpWQ" name="Submit1" label="Submit1" displayLabel="Enviar">
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_3mxYIvBeEeGgZqChN-hpWQ" line="8"/>
-            </widgets>
-            <widgets xmi:type="form:TextInfo" xmi:id="_9a1ogPBeEeGgZqChN-hpWQ" name="Text1" label="Text1" displayLabel="Data da avaliação:">
-              <script xmi:type="form:GroovyScript" xmi:id="_a789APBfEeGgZqChN-hpWQ" inputScript="${GroupsUtil.getCurrentDate()}"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_9a5S4PBeEeGgZqChN-hpWQ"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_3mxYIvBeEeGgZqChN-hpWQ" line="10"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_9qtQgPBeEeGgZqChN-hpWQ" name="Text2" label="Text2" displayLabel="Nome do aluno:">
               <script xmi:type="form:GroovyScript" xmi:id="_dKDMQPBfEeGgZqChN-hpWQ" inputScript="${name}"/>
@@ -706,18 +682,29 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_Sv_oMPBfEeGgZqChN-hpWQ" line="4"/>
             </widgets>
             <widgets xmi:type="form:SelectFormField" xmi:id="_-yHvEPBfEeGgZqChN-hpWQ" name="Select1" label="Select1" displayLabel="Tipo de ACG:" defaultValue="${tipoACG}">
-              <script xmi:type="form:GroovyScript" xmi:id="__z9mkPBfEeGgZqChN-hpWQ" inputScript="${GroupsUtil.getAllTipoACG()}" setVarScript="tipoACGaprovado"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_-yMAgfBfEeGgZqChN-hpWQ" line="6"/>
+              <script xmi:type="form:GroovyScript" xmi:id="__z9mkPBfEeGgZqChN-hpWQ" inputScript="${GroupsUtil.getAllTipoACG()}" setVarScript="acgTipoAprovado"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_-yMAgfBfEeGgZqChN-hpWQ" line="9"/>
             </widgets>
             <widgets xmi:type="form:RadioFormField" xmi:id="_Z-YsEPBgEeGgZqChN-hpWQ" name="Radio_buttons1" label="Radio_buttons1" displayLabel="Decisão:">
               <script xmi:type="form:GroovyScript" xmi:id="_aH5NYPBgEeGgZqChN-hpWQ" inputScript="${def decisaoChoices = [decisaoAprovado,decisaoIndeferido]}" setVarScript="respostaFinal"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_Z-cWcPBgEeGgZqChN-hpWQ" line="7"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_Z-cWcPBgEeGgZqChN-hpWQ" line="6"/>
             </widgets>
             <widgets xmi:type="form:TextFormField" xmi:id="_2PysMPBgEeGgZqChN-hpWQ" name="Text_field2" label="Text_field2" displayLabel="Carga horária:">
-              <script xmi:type="form:GroovyScript" xmi:id="_2sAuIPBgEeGgZqChN-hpWQ" inputScript="${cargaHoraria}"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_2P0hYPBgEeGgZqChN-hpWQ" line="5"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_2sAuIPBgEeGgZqChN-hpWQ" inputScript="${cargaHoraria}" setVarScript="acgChAprovada"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_2P0hYPBgEeGgZqChN-hpWQ" line="8"/>
             </widgets>
-            <scripts xmi:type="form:GroovyScript" xmi:id="_aeguAAJxEeKZAMBS1mYV2Q" exprScript="${GroupsUtil.getCurrentDate()}" setVarScript="data_aval_col"/>
+            <widgets xmi:type="form:MessageInfo" xmi:id="_x2NCoAThEeKNsPe18H1dtw" name="Message1" label="Message1">
+              <script xmi:type="form:GroovyScript" xmi:id="_x4uLIAThEeKNsPe18H1dtw" inputScript="Caso a solicitação tenha sido aprovada, indique abaixo a carga horária e o tipo aprovados. &lt;/br>Caso contrário, ignore os campos abaixo." allowHTMLInValues="true"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_x24YEAThEeKNsPe18H1dtw" line="7"/>
+            </widgets>
+            <widgets xmi:type="form:MessageInfo" xmi:id="_emNtwATjEeKNsPe18H1dtw" name="Message2" label="Message2">
+              <script xmi:type="form:GroovyScript" xmi:id="_fMV5oATjEeKNsPe18H1dtw" inputScript="Nesta etapa, a coordenação registra o resultado da reunião presencial do colegiado sobre a ACG abaixo."/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_emR_MATjEeKNsPe18H1dtw"/>
+            </widgets>
+            <widgets xmi:type="form:DateFormField" xmi:id="_IVGmsATkEeKNsPe18H1dtw" name="Date1" label="Date1" displayLabel="Data da avaliação pelo colegiado:" displayFormat="dd-MM-yyyy">
+              <script xmi:type="form:GroovyScript" xmi:id="_JFStgATkEeKNsPe18H1dtw" exprScript="${int year=field_Date1.getYear();&#xD;int month=field_Date1.getMonth();&#xD;int day=field_Date1.getDate();&#xD;Date DateIss=new Date(year,month,day);&#xD;date_issued=DateIss.format(&quot;dd-MM-yyyy&quot;)}" setVarScript="data_aval_col"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_IVK4IATkEeKNsPe18H1dtw" line="5"/>
+            </widgets>
           </form>
         </elements>
         <elements xmi:type="process:Activity" xmi:id="_WIfUQO9-EeGDf8wCPuoYjQ" name="Avisa_ao_aluno_Aprovada" label="Avisa ao aluno-Aprovada" outgoing="_n3XBy-4pEeGKhq6eruyG6w" incoming="_fbrW4O9-EeGDf8wCPuoYjQ _k06LsPBKEeGgZqChN-hpWQ _nCyYgPBKEeGgZqChN-hpWQ _sA-a4PLpEeGcD7MAkxJ97A">
@@ -800,11 +787,11 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_9XokgPBTEeGgZqChN-hpWQ" line="8"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_EDyTcPBUEeGgZqChN-hpWQ" name="Text10" label="Text10" displayLabel="Link para a documentação:">
-              <script xmi:type="form:GroovyScript" xmi:id="_EUSNkPBUEeGgZqChN-hpWQ" inputScript="${GroupsUtil.createLink(GroupsUtil.concat3(timeStamp,numeroMatricula,file.getFileName()), link)}" allowHTMLInValues="true"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_EUSNkPBUEeGgZqChN-hpWQ" inputScript="${GroupsUtil.createLink(GroupsUtil.getComprovFileName(timeStamp,numeroMatricula,file), link)}" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_ED190fBUEeGgZqChN-hpWQ" line="9"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_KyxT8PBUEeGgZqChN-hpWQ" name="Text11" label="Text11" displayLabel="Normas:">
-              <script xmi:type="form:GroovyScript" xmi:id="_K90GUPBUEeGgZqChN-hpWQ" inputScript="&lt;a href=&quot;http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf&quot;>Normas para ACG do Curso de SI&lt;/a>&#xA;&#xA;" allowHTMLInValues="true"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_K90GUPBUEeGgZqChN-hpWQ" inputScript="&lt;a href=&quot;${urlNormas}&quot;>Normas para ACG do Curso de SI&lt;/a>&#xA;&#xA;" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_Ky0-UPBUEeGgZqChN-hpWQ" line="10"/>
             </widgets>
             <widgets xmi:type="form:HtmlWidget" xmi:id="_SJ1oIPBUEeGgZqChN-hpWQ" name="HTML_widget1" label="HTML_widget1">
@@ -889,11 +876,11 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_gIp9UfBdEeGgZqChN-hpWQ" line="8"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_iTT3APBdEeGgZqChN-hpWQ" name="Text10" label="Text10" displayLabel="Link para a documentação:">
-              <script xmi:type="form:GroovyScript" xmi:id="_BGl-APBeEeGgZqChN-hpWQ" inputScript="${GroupsUtil.createLink(GroupsUtil.concat3(timeStamp,numeroMatricula,file.getFileName()), link)}" allowHTMLInValues="true"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_BGl-APBeEeGgZqChN-hpWQ" inputScript="${GroupsUtil.createLink(GroupsUtil.getComprovFileName(timeStamp,numeroMatricula,file), link)}" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_iTXhYPBdEeGgZqChN-hpWQ" line="9"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_j9zp8PBdEeGgZqChN-hpWQ" name="Text11" label="Text11" displayLabel="Normas:">
-              <script xmi:type="form:GroovyScript" xmi:id="_CtHP4PBeEeGgZqChN-hpWQ" inputScript="&lt;a href=&quot;http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf&quot;>Normas para ACG do Curso de SI&lt;/a>" allowHTMLInValues="true"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_CtHP4PBeEeGgZqChN-hpWQ" inputScript="&lt;a href=&quot;${urlNormas}&quot;>Normas para ACG do Curso de SI&lt;/a>" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_j93UUPBdEeGgZqChN-hpWQ" line="10"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_rd5XQPBdEeGgZqChN-hpWQ" name="Text12" label="Text12" displayLabel="Parecer da secretaria:">
@@ -1009,6 +996,8 @@
       <data xmi:type="process:Data" xmi:id="_n3Wawe4pEeGKhq6eruyG6w" name="tipos1" label="tipos1" dataType="_n3Xo4e4pEeGKhq6eruyG6w" defaultValue=""/>
       <data xmi:type="process:Data" xmi:id="_n3Wawu4pEeGKhq6eruyG6w" name="tipos2" label="tipos2" dataType="_n3Xo4u4pEeGKhq6eruyG6w" defaultValue=""/>
       <data xmi:type="process:Data" xmi:id="_R7vqse5EEeGo0f37u06zsQ" name="tutorNaoCadastrado" label="tutorNaoCadastrado" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="Nao cadastrado"/>
+      <data xmi:type="process:Data" xmi:id="_UVNYQO5LEeGo0f37u06zsQ" name="urlFormParecerTutor" label="urlFormParecerTutor" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="http://www.inf.ufsm.br/index/graduacao/si/Formulario%20ACG.doc"/>
+      <data xmi:type="process:Data" xmi:id="_yUiMIQTbEeKNsPe18H1dtw" name="urlNormas" label="urlNormas" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="http://www.inf.ufsm.br/index/graduacao/si/Normas%20internas%20de%20ACgs%2022-11.pdf"/>
       <data xmi:type="process:Data" xmi:id="_qpLz0O5PEeGo0f37u06zsQ" name="urlParecerTutor" label="urlParecerTutor" dataType="_n3Xozu4pEeGKhq6eruyG6w"/>
       <form xmi:type="form:Form" xmi:id="_n3Waw-4pEeGKhq6eruyG6w" name="Diagrama_ACGS" label="Diagrama ACGS" nLine="3" pageLabel="Diagrama ACGS">
         <widgets xmi:type="form:SubmitFormButton" xmi:id="_n3WaxO4pEeGKhq6eruyG6w" name="Enviar1" label="Enviar1" displayLabel="Enviar1">
@@ -2289,10 +2278,6 @@
       <styles xmi:type="notation:LineStyle" xmi:id="_3nS8k_BeEeGgZqChN-hpWQ"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_3nS8lPBeEeGgZqChN-hpWQ"/>
     </children>
-    <children xmi:type="notation:Shape" xmi:id="_9a4EwPBeEeGgZqChN-hpWQ" type="2132" element="_9a1ogPBeEeGgZqChN-hpWQ" fontName="Cantarell">
-      <children xmi:type="notation:DecorationNode" xmi:id="_9a4r0PBeEeGgZqChN-hpWQ" type="5136"/>
-      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_9a4EwfBeEeGgZqChN-hpWQ"/>
-    </children>
     <children xmi:type="notation:Shape" xmi:id="_9qvFsPBeEeGgZqChN-hpWQ" type="2132" element="_9qtQgPBeEeGgZqChN-hpWQ" fontName="Cantarell">
       <children xmi:type="notation:DecorationNode" xmi:id="_9qvswPBeEeGgZqChN-hpWQ" type="5136"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_9qvFsfBeEeGgZqChN-hpWQ"/>
@@ -2320,6 +2305,18 @@
     <children xmi:type="notation:Shape" xmi:id="_2Pz6UPBgEeGgZqChN-hpWQ" type="2120" element="_2PysMPBgEeGgZqChN-hpWQ" fontName="Cantarell">
       <children xmi:type="notation:DecorationNode" xmi:id="_2Pz6UvBgEeGgZqChN-hpWQ" type="5108"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_2Pz6UfBgEeGgZqChN-hpWQ"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_x22i4AThEeKNsPe18H1dtw" type="2131" element="_x2NCoAThEeKNsPe18H1dtw" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_x23xAAThEeKNsPe18H1dtw" type="5135"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_x22i4QThEeKNsPe18H1dtw"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_emQxEATjEeKNsPe18H1dtw" type="2131" element="_emNtwATjEeKNsPe18H1dtw" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_emRYIATjEeKNsPe18H1dtw" type="5135"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_emQxEQTjEeKNsPe18H1dtw"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_IVJqAATkEeKNsPe18H1dtw" type="2115" element="_IVGmsATkEeKNsPe18H1dtw" fontName="Cantarell">
+      <children xmi:type="notation:DecorationNode" xmi:id="_IVKREATkEeKNsPe18H1dtw" type="5103"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_IVJqAQTkEeKNsPe18H1dtw"/>
     </children>
     <styles xmi:type="notation:DiagramStyle" xmi:id="_3m2QofBeEeGgZqChN-hpWQ"/>
   </notation:Diagram>

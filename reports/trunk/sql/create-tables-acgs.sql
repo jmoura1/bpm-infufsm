@@ -12,7 +12,7 @@ insert into TIPO_ACG values ('VI - Publicacao de trabalho;',75);
 insert into TIPO_ACG values ('VII - Participacao em orgaos colegiados;',75);
 insert into TIPO_ACG values ('VIII - Monitoria;',135);
 insert into TIPO_ACG values ('IX - Outra atividade a criterio do Colegiado;',75);
-insert into TIPO_ACG values ('-',0); --valor para dar certo enquanto TIPO_APROVADO, em ACG, não for setado.
+insert into TIPO_ACG values ('-',0);  --valor para dar certo enquanto TIPO_APROVADO, em ACG, não for setado.
 
 
 create table ACG

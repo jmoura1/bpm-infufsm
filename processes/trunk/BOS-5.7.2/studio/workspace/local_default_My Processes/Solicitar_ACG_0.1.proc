@@ -970,7 +970,7 @@
       <data xmi:type="process:Data" xmi:id="_nio24PKzEeGJtsQHnHlI9Q" name="data_aval_sec" label="data_aval_sec" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue=""/>
       <data xmi:type="process:Data" xmi:id="_V4G0gPFjEeGfefz74zRb1Q" name="data_aval_tutor" label="data_aval_tutor" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue=""/>
       <data xmi:type="process:Data" xmi:id="_lW454PFnEeGfefz74zRb1Q" name="dbHost" label="dbHost" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="localhost"/>
-      <data xmi:type="process:Data" xmi:id="_hwtdYPFnEeGfefz74zRb1Q" name="dbLocal" label="dbLocal" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="/home/jessica/test"/>
+      <data xmi:type="process:Data" xmi:id="_hwtdYPFnEeGfefz74zRb1Q" name="dbLocal" label="dbLocal" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="/home/gabriel/ACGs"/>
       <data xmi:type="process:Data" xmi:id="_mlFLUPFnEeGfefz74zRb1Q" name="dbPort" label="dbPort" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="9092"/>
       <data xmi:type="process:Data" xmi:id="_jn4aYPFnEeGfefz74zRb1Q" name="dbUser" label="dbUser" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="sa"/>
       <data xmi:type="process:Data" xmi:id="_PWDNke9yEeGdDd8nrBFK1A" name="decisaoAprovado" label="decisaoAprovado" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="Aprovar"/>
@@ -1350,7 +1350,6 @@
     <includedEntries>microsoft/sharepoint/lib/commons-httpclient</includedEntries>
     <includedEntries>microsoft/sharepoint/lib/webdav</includedEntries>
     <includedEntries>bonita/bonita</includedEntries>
-    <includedEntries>database/lib/jtds</includedEntries>
     <includedEntries>alfresco/lib/abdera-parser</includedEntries>
     <includedEntries>microsoft/sharepoint/lib/axis2-jws-api</includedEntries>
     <includedEntries>alfresco/lib/commons-httpclient</includedEntries>
@@ -1359,17 +1358,12 @@
     <includedEntries>email/lib/mail</includedEntries>
     <includedEntries>microsoft/sharepoint/lib/slf4j-api</includedEntries>
     <includedEntries>microsoft/sharepoint/lib/stax</includedEntries>
-    <includedEntries>database/lib/ojdbc5.jar</includedEntries>
     <includedEntries>alfresco/lib/axiom-api</includedEntries>
     <includedEntries>microsoft/sharepoint/lib/slf4j-jdk14</includedEntries>
     <includedEntries>alfresco/lib/abdera-i18n</includedEntries>
     <includedEntries>alfresco/lib/abdera-protocol</includedEntries>
-    <includedEntries>database/lib/hsqldb</includedEntries>
-    <includedEntries>database/lib/postgresql-8.3</includedEntries>
     <includedEntries>alfresco/lib/commons-codec</includedEntries>
     <includedEntries>alfresco/lib/abdera-core</includedEntries>
-    <includedEntries>database/lib/h2</includedEntries>
-    <includedEntries>database/lib/mysql-connector-java</includedEntries>
     <includedEntries>microsoft/sharepoint/lib/gmbal</includedEntries>
     <includedEntries>database/database</includedEntries>
     <includedEntries>microsoft/sharepoint/lib/sharepoint</includedEntries>
@@ -1383,6 +1377,13 @@
     <includedEntries>QueryH2.groovy</includedEntries>
     <includedEntries>groovy-ldap.jar</includedEntries>
     <includedEntries>MajorityOrVetoJoinChecker</includedEntries>
+    <includedEntries>decisaoChoices.groovy</includedEntries>
+    <includedEntries>database/lib/h2</includedEntries>
+    <includedEntries>database/lib/hsqldb</includedEntries>
+    <includedEntries>database/lib/jtds</includedEntries>
+    <includedEntries>database/lib/mysql-connector-java</includedEntries>
+    <includedEntries>database/lib/ojdbc5.jar</includedEntries>
+    <includedEntries>database/lib/postgresql-8.3</includedEntries>
   </process:MainProcess>
   <notation:Diagram xmi:id="_n3Xo6e4pEeGKhq6eruyG6w" type="Process" element="_n3Oe0e4pEeGKhq6eruyG6w" name="Solicitar_ACG_0.1" measurementUnit="Pixel">
     <children xmi:type="notation:Node" xmi:id="_n3Xo6u4pEeGKhq6eruyG6w" type="2007" element="_n3Oe0u4pEeGKhq6eruyG6w">

@@ -237,23 +237,23 @@
             </widgets>
           </viewForm>
           <connectors xmi:type="process:Connector" xmi:id="_x-0SsO5REeGo0f37u06zsQ" name="reminderTutor" label="reminderTutor" connectorId="Email" event="taskOnReady">
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OYATlEeKNsPe18H1dtw" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OYQTlEeKNsPe18H1dtw" key="setMessage" value="ACED00057401C24F6CC3A12C0A0A3C703E566F63C3AA20666F6920696E64696361646F20636F6D6F205455544F522070617261206176616C69617220756D6120736F6C6963697461C3A7C3A36F2064652041434720646520756D20616C756E6F20646F20637572736F2064652053492E3C2F703E0A0A506F72206661766F722C2061636573736520657374612055524C2070617261206176616C696172206120736F6C6963697461C3A7C3A36F3A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F72206661766F7220726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OYgTlEeKNsPe18H1dtw" key="setSmtpHost" value="ACED000574000D247B6D61696C6572486F73747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OYwTlEeKNsPe18H1dtw" key="setAttachments" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OZATlEeKNsPe18H1dtw" key="setReplyTo"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OZQTlEeKNsPe18H1dtw" key="setSslSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OZgTlEeKNsPe18H1dtw" key="setFrom" value="ACED00057400157765626D617374657240696E662E7566736D2E6272"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OZwTlEeKNsPe18H1dtw" key="setTo" value="ACED000574002F247B47726F7570735574696C2E636F6E63617432286E6F6D655475746F722C2240696E662E7566736D2E627222297D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OaATlEeKNsPe18H1dtw" key="setBcc"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OaQTlEeKNsPe18H1dtw" key="setCc"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OagTlEeKNsPe18H1dtw" key="setUserName"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OawTlEeKNsPe18H1dtw" key="setCharset" value="ACED00057400057574662D38"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4ObATlEeKNsPe18H1dtw" key="setStarttlsSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4ObQTlEeKNsPe18H1dtw" key="setSmtpPort" value="ACED000574000D247B6D61696C6572506F72747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4ObgTlEeKNsPe18H1dtw" key="setHtml" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4ObwTlEeKNsPe18H1dtw" key="setPassword"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_Ch4OcATlEeKNsPe18H1dtw" key="setSubject" value="ACED000574002C4176616C6961C3A7C3A36F2064652041434720646F20637572736F20646520534920636F6D6F207475746F72"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YIAixEeKCv9ZMjn90zA" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YIQixEeKCv9ZMjn90zA" key="setMessage" value="ACED00057401C24F6CC3A12C0A0A3C703E566F63C3AA20666F6920696E64696361646F20636F6D6F205455544F522070617261206176616C69617220756D6120736F6C6963697461C3A7C3A36F2064652041434720646520756D20616C756E6F20646F20637572736F2064652053492E3C2F703E0A0A506F72206661766F722C2061636573736520657374612055524C2070617261206176616C696172206120736F6C6963697461C3A7C3A36F3A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F72206661766F7220726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YIgixEeKCv9ZMjn90zA" key="setSmtpHost" value="ACED000574000D247B6D61696C6572486F73747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YIwixEeKCv9ZMjn90zA" key="setAttachments" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YJAixEeKCv9ZMjn90zA" key="setReplyTo"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YJQixEeKCv9ZMjn90zA" key="setSslSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YJgixEeKCv9ZMjn90zA" key="setFrom" value="ACED00057400157765626D617374657240696E662E7566736D2E6272"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YJwixEeKCv9ZMjn90zA" key="setTo" value="ACED000574002F247B47726F7570735574696C2E636F6E63617432286E6F6D655475746F722C2240696E662E7566736D2E627222297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YKAixEeKCv9ZMjn90zA" key="setBcc"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YKQixEeKCv9ZMjn90zA" key="setCc"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YKgixEeKCv9ZMjn90zA" key="setUserName"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YKwixEeKCv9ZMjn90zA" key="setCharset" value="ACED00057400057574662D38"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YLAixEeKCv9ZMjn90zA" key="setStarttlsSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YLQixEeKCv9ZMjn90zA" key="setSmtpPort" value="ACED000574000D247B6D61696C6572506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YLgixEeKCv9ZMjn90zA" key="setHtml" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YLwixEeKCv9ZMjn90zA" key="setPassword"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LL_YMAixEeKCv9ZMjn90zA" key="setSubject" value="ACED000574002C4176616C6961C3A7C3A36F2064652041434720646F20637572736F20646520534920636F6D6F207475746F72"/>
           </connectors>
           <connectors xmi:type="process:Connector" xmi:id="_cR8VUPFsEeGg2roXhIzz6Q" name="h2_tutor" label="h2-tutor" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
             <parameters xmi:type="process:Parameter" xmi:id="_rLM8sAKQEeKZAMBS1mYV2Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
@@ -332,13 +332,81 @@
           </form>
         </elements>
         <elements xmi:type="process:EndEvent" xmi:id="_n3TXYO4pEeGKhq6eruyG6w" name="Fim" label="Fim" incoming="_n3WazO4pEeGKhq6eruyG6w"/>
-        <elements xmi:type="process:Activity" xmi:id="_XhNxgO5cEeGo0f37u06zsQ" name="Avisa_ao_aluno__indeferido_" label="Avisa ao aluno (indeferido)" outgoing="_n3WazO4pEeGKhq6eruyG6w" incoming="_n3XBu-4pEeGKhq6eruyG6w">
-          <viewForm xmi:type="form:ViewForm" xmi:id="_n3Q7Me4pEeGKhq6eruyG6w" name="Avisa__ao_aluno___Pedido_rejeitado" label="Avisa  ao aluno - Pedido rejeitado" nLine="3" pageLabel="Avisa  ao aluno - Pedido rejeitado">
-            <widgets xmi:type="form:TextFormField" xmi:id="_n3Q7Mu4pEeGKhq6eruyG6w" name="Campo_de_texto1" label="Campo de texto1" displayLabel="Campo_de_texto1">
-              <script xmi:type="form:GroovyScript" xmi:id="_n3Q7M-4pEeGKhq6eruyG6w" inputScript="Nao deu!"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3Q7NO4pEeGKhq6eruyG6w"/>
+        <elements xmi:type="process:Task" xmi:id="_34OzAAixEeKCv9ZMjn90zA" name="Avisa_ao_aluno__indeferido_" label="Avisa ao aluno (indeferido)" outgoing="_n3WazO4pEeGKhq6eruyG6w" incoming="_n3XBu-4pEeGKhq6eruyG6w">
+          <viewForm xmi:type="form:ViewForm" xmi:id="_n3Q7Me4pEeGKhq6eruyG6w" name="Avisa__ao_aluno___Pedido_rejeitado" label="Avisa  ao aluno - Pedido rejeitado" nLine="7" pageLabel="Avisa  ao aluno - Pedido rejeitado">
+            <widgets xmi:type="form:MessageInfo" xmi:id="_ucyzUAixEeKCv9ZMjn90zA" name="Mensagem1" label="Mensagem1">
+              <script xmi:type="form:GroovyScript" xmi:id="_ucyzUQixEeKCv9ZMjn90zA" inputScript="Sua solicitação de aproveitamento de Atividade Complementar de Graduação foi indeferida.&#xA;"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_ucyzUgixEeKCv9ZMjn90zA"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_vQHGoAixEeKCv9ZMjn90zA" name="Text2" label="Text2" displayLabel="Nome do aluno:">
+              <script xmi:type="form:GroovyScript" xmi:id="_vQHtsAixEeKCv9ZMjn90zA" inputScript="${name}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_vQHtsQixEeKCv9ZMjn90zA" line="1"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_wQgzsAixEeKCv9ZMjn90zA" name="Text3" label="Text3" displayLabel="Matrícula:">
+              <script xmi:type="form:GroovyScript" xmi:id="_wQgzsQixEeKCv9ZMjn90zA" inputScript="${numeroMatricula}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_wQgzsgixEeKCv9ZMjn90zA" line="2"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_xgi4MAixEeKCv9ZMjn90zA" name="Text8" label="Text8" displayLabel="Carga horária:">
+              <script xmi:type="form:GroovyScript" xmi:id="_xgi4MQixEeKCv9ZMjn90zA" inputScript="${cargaHoraria}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_xgi4MgixEeKCv9ZMjn90zA" line="3"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_ypF0oAixEeKCv9ZMjn90zA" name="Text9" label="Text9" displayLabel="Tipo de ACG:">
+              <script xmi:type="form:GroovyScript" xmi:id="_ypF0oQixEeKCv9ZMjn90zA" inputScript="${GroupsUtil.concat(tipoACG,subtipoACG)}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_ypF0ogixEeKCv9ZMjn90zA" line="4"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_zvD-MAixEeKCv9ZMjn90zA" name="Texto1" label="Texto1" displayLabel="Situação:">
+              <script xmi:type="form:GroovyScript" xmi:id="_zvD-MQixEeKCv9ZMjn90zA" inputScript="Indeferido após reunião presencial."/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_zvElQAixEeKCv9ZMjn90zA" line="5"/>
             </widgets>
           </viewForm>
+          <connectors xmi:type="process:Connector" xmi:id="_kCpIoAixEeKCv9ZMjn90zA" name="aluno_reminder" label="aluno reminder" connectorId="Email" event="taskOnStart" ignoreErrors="false">
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIoQixEeKCv9ZMjn90zA" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000A78"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIogixEeKCv9ZMjn90zA" key="setMessage" value="ACED00057401934F6CC3A12C0A0A3C703E53756120736F6C6963697461C3A7C3A36F206465206170726F76656974616D656E746F2064652041434720666F6920696E64656665726964612E3C2F703E0A0A506F72206661766F722C2061636573736520657374612055524C2070617261206D61697320646574616C6865733A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F72206661766F7220726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIowixEeKCv9ZMjn90zA" key="setSmtpHost" value="ACED000574000D247B6D61696C6572486F73747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIpAixEeKCv9ZMjn90zA" key="setAttachments" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000078"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIpQixEeKCv9ZMjn90zA" key="setReplyTo"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIpgixEeKCv9ZMjn90zA" key="setSslSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIpwixEeKCv9ZMjn90zA" key="setFrom" value="ACED00057400157765626D617374657240696E662E7566736D2E6272"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIqAixEeKCv9ZMjn90zA" key="setTo" value="ACED000574002B247B47726F7570735574696C2E636F6E63617432286C6F67696E2C2240696E662E7566736D2E627222297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIqQixEeKCv9ZMjn90zA" key="setBcc"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIqgixEeKCv9ZMjn90zA" key="setCc"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIqwixEeKCv9ZMjn90zA" key="setUserName"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIrAixEeKCv9ZMjn90zA" key="setCharset" value="ACED00057400057574662D38"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIrQixEeKCv9ZMjn90zA" key="setStarttlsSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIrgixEeKCv9ZMjn90zA" key="setSmtpPort" value="ACED000574000D247B6D61696C6572506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIrwixEeKCv9ZMjn90zA" key="setHtml" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIsAixEeKCv9ZMjn90zA" key="setPassword"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_kCpIsQixEeKCv9ZMjn90zA" key="setSubject" value="ACED0005740031536F6C6963697461C3A7C3A36F206465206170726F76656974616D656E746F2064652041434720696E6465666572696461"/>
+          </connectors>
+          <form xmi:type="form:Form" xmi:id="_6K-4wAixEeKCv9ZMjn90zA" name="Avisa_ao_aluno__indeferido_" label="Avisa ao aluno (indeferido)" nLine="7" pageLabel="Avisa ao aluno (indeferido)">
+            <widgets xmi:type="form:SubmitFormButton" xmi:id="_6K_f0AixEeKCv9ZMjn90zA" name="Enviar1" label="Enviar1" displayLabel="OK">
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_6K_f0QixEeKCv9ZMjn90zA" line="6"/>
+            </widgets>
+            <widgets xmi:type="form:MessageInfo" xmi:id="_7VMpIAixEeKCv9ZMjn90zA" name="Mensagem1" label="Mensagem1">
+              <script xmi:type="form:GroovyScript" xmi:id="_7VMpIQixEeKCv9ZMjn90zA" inputScript="Sua solicitação de aproveitamento de Atividade Complementar de Graduação foi indeferida.&#xA;"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_7VMpIgixEeKCv9ZMjn90zA"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_8GoGEAixEeKCv9ZMjn90zA" name="Text2" label="Text2" displayLabel="Nome do aluno:">
+              <script xmi:type="form:GroovyScript" xmi:id="_8GoGEQixEeKCv9ZMjn90zA" inputScript="${name}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_8GoGEgixEeKCv9ZMjn90zA" line="1"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_9JPZoAixEeKCv9ZMjn90zA" name="Text3" label="Text3" displayLabel="Matrícula:">
+              <script xmi:type="form:GroovyScript" xmi:id="_9JPZoQixEeKCv9ZMjn90zA" inputScript="${numeroMatricula}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_9JPZogixEeKCv9ZMjn90zA" line="2"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_-baMIAixEeKCv9ZMjn90zA" name="Text8" label="Text8" displayLabel="Carga horária:">
+              <script xmi:type="form:GroovyScript" xmi:id="_-baMIQixEeKCv9ZMjn90zA" inputScript="${cargaHoraria}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_-baMIgixEeKCv9ZMjn90zA" line="3"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="__MY9IAixEeKCv9ZMjn90zA" name="Text9" label="Text9" displayLabel="Tipo de ACG:">
+              <script xmi:type="form:GroovyScript" xmi:id="__MY9IQixEeKCv9ZMjn90zA" inputScript="${GroupsUtil.concat(tipoACG,subtipoACG)}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="__MY9IgixEeKCv9ZMjn90zA" line="4"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_AN1zEAiyEeKCv9ZMjn90zA" name="Texto1" label="Texto1" displayLabel="Situação:">
+              <script xmi:type="form:GroovyScript" xmi:id="_AN1zEQiyEeKCv9ZMjn90zA" inputScript="Indeferido pelo tutor/professor responsável."/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_AN1zEgiyEeKCv9ZMjn90zA" line="5"/>
+            </widgets>
+          </form>
         </elements>
       </elements>
       <elements xmi:type="process:Lane" xmi:id="_n3T-a-4pEeGKhq6eruyG6w" name="Relator" label="Relator" user="" groups="_n3Xox-4pEeGKhq6eruyG6w">
@@ -890,48 +958,126 @@
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_c2CuUAZcEeK6NJZ9xto8mg"/>
             </widgets>
           </viewForm>
-          <connectors xmi:type="process:Connector" xmi:id="_Bn8G0PLrEeGcD7MAkxJ97A" name="h2_aluno2" label="h2-aluno2" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_mjGeQAKSEeKZAMBS1mYV2Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_mjGeQQKSEeKZAMBS1mYV2Q" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_mjGeQgKSEeKZAMBS1mYV2Q" key="setPort" value="ACED0005740009247B6462506F72747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_mjGeQwKSEeKZAMBS1mYV2Q" key="setDatabase" value="ACED000574000A247B64624C6F63616C7D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_mjGeRAKSEeKZAMBS1mYV2Q" key="setLocal" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_mjGeRQKSEeKZAMBS1mYV2Q" key="setQuery" value="ACED0005740031247B517565727948322E6765745175657279526573706F73746146696E616C2870726F63657373496E7374616E6365297D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_mjGeRgKSEeKZAMBS1mYV2Q" key="setSsl" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_mjGeRwKSEeKZAMBS1mYV2Q" key="setUsername" value="ACED0005740009247B6462557365727D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_mjGeSAKSEeKZAMBS1mYV2Q" key="setPassword"/>
-            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_mjHFUAKSEeKZAMBS1mYV2Q" valueExpression="rowSet"/>
+          <connectors xmi:type="process:Connector" xmi:id="_Bn8G0PLrEeGcD7MAkxJ97A" name="h2_aluno2" label="h2-aluno2" connectorId="H2" event="taskOnReady" ignoreErrors="false">
+            <parameters xmi:type="process:Parameter" xmi:id="_Jn7Z0AiwEeKCv9ZMjn90zA" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Jn7Z0QiwEeKCv9ZMjn90zA" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Jn7Z0giwEeKCv9ZMjn90zA" key="setPort" value="ACED0005740009247B6462506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Jn7Z0wiwEeKCv9ZMjn90zA" key="setDatabase" value="ACED000574000A247B64624C6F63616C7D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Jn7Z1AiwEeKCv9ZMjn90zA" key="setLocal" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Jn7Z1QiwEeKCv9ZMjn90zA" key="setQuery" value="ACED0005740031247B517565727948322E6765745175657279526573706F73746146696E616C2870726F63657373496E7374616E6365297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Jn7Z1giwEeKCv9ZMjn90zA" key="setSsl" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Jn7Z1wiwEeKCv9ZMjn90zA" key="setUsername" value="ACED0005740009247B6462557365727D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_Jn7Z2AiwEeKCv9ZMjn90zA" key="setPassword"/>
+            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_Jn7Z2QiwEeKCv9ZMjn90zA" valueExpression="rowSet"/>
           </connectors>
-          <form xmi:type="form:Form" xmi:id="_t1KP8AZeEeK2VY7bHB7RzA" name="Avisa_ao_aluno_Aprovada" label="Avisa ao aluno-Aprovada" nLine="3" pageLabel="Avisa ao aluno-Aprovada">
-            <widgets xmi:type="form:SubmitFormButton" xmi:id="_t1KP8QZeEeK2VY7bHB7RzA" name="Enviar1" label="Enviar1" displayLabel="Enviar1">
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_t1KP8gZeEeK2VY7bHB7RzA" line="2"/>
+          <connectors xmi:type="process:Connector" xmi:id="_RtuxYAiyEeKCv9ZMjn90zA" name="reminder_aluno2" label="reminder aluno2" connectorId="Email" configurationId="reminder aluno conf" event="taskOnReady" ignoreErrors="false">
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxYQiyEeKCv9ZMjn90zA" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000A78"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxYgiyEeKCv9ZMjn90zA" key="setMessage" value="ACED00057401904F6CC3A12C0A0A3C703E53756120736F6C6963697461C3A7C3A36F206465206170726F76656974616D656E746F2064652041434720666F69206170726F766164613C2F703E0A0A506F72206661766F722C2061636573736520657374612055524C2070617261206D61697320646574616C6865733A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F72206661766F7220726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxYwiyEeKCv9ZMjn90zA" key="setSmtpHost" value="ACED000574000D247B6D61696C6572486F73747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxZAiyEeKCv9ZMjn90zA" key="setAttachments" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A657870000000017704000000017371007E00000000000177040000000A7400007878"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxZQiyEeKCv9ZMjn90zA" key="setReplyTo"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxZgiyEeKCv9ZMjn90zA" key="setSslSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxZwiyEeKCv9ZMjn90zA" key="setFrom" value="ACED00057400157765626D617374657240696E662E7566736D2E6272"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxaAiyEeKCv9ZMjn90zA" key="setTo" value="ACED000574002B247B47726F7570735574696C2E636F6E63617432286C6F67696E2C2240696E662E7566736D2E627222297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxaQiyEeKCv9ZMjn90zA" key="setBcc"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxagiyEeKCv9ZMjn90zA" key="setCc"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxawiyEeKCv9ZMjn90zA" key="setUserName"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxbAiyEeKCv9ZMjn90zA" key="setCharset" value="ACED00057400057574662D38"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxbQiyEeKCv9ZMjn90zA" key="setStarttlsSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxbgiyEeKCv9ZMjn90zA" key="setSmtpPort" value="ACED000574000D247B6D61696C6572506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxbwiyEeKCv9ZMjn90zA" key="setHtml" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxcAiyEeKCv9ZMjn90zA" key="setPassword"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_RtuxcQiyEeKCv9ZMjn90zA" key="setSubject" value="ACED000574002F536F6C6963697461C3A7C3A36F206465206170726F76656974616D656E746F20646520414347206170726F76616461"/>
+          </connectors>
+          <form xmi:type="form:Form" xmi:id="_t1KP8AZeEeK2VY7bHB7RzA" name="Avisa_ao_aluno_Aprovada" label="Avisa ao aluno-Aprovada" nLine="7" pageLabel="Avisa ao aluno-Aprovada">
+            <widgets xmi:type="form:SubmitFormButton" xmi:id="_t1KP8QZeEeK2VY7bHB7RzA" name="Enviar1" label="Enviar1" displayLabel="OK">
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_t1KP8gZeEeK2VY7bHB7RzA" line="6"/>
             </widgets>
             <widgets xmi:type="form:MessageInfo" xmi:id="_uqJXMAZeEeK2VY7bHB7RzA" name="Mensagem2" label="Mensagem2">
-              <script xmi:type="form:GroovyScript" xmi:id="_u9DsIAZeEeK2VY7bHB7RzA" inputScript="Solicitação aprovada."/>
+              <script xmi:type="form:GroovyScript" xmi:id="_u9DsIAZeEeK2VY7bHB7RzA" inputScript="Sua solicitação de Atividade Complementar de Graduação foi aprovada.&#xA;"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_uqWykAZeEeK2VY7bHB7RzA"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="__Ij38AivEeKCv9ZMjn90zA" name="Text2" label="Text2" displayLabel="Nome do aluno:">
+              <script xmi:type="form:GroovyScript" xmi:id="__Ij38QivEeKCv9ZMjn90zA" inputScript="${name}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="__Ij38givEeKCv9ZMjn90zA" line="1"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="__96LkAivEeKCv9ZMjn90zA" name="Text3" label="Text3" displayLabel="Matrícula:">
+              <script xmi:type="form:GroovyScript" xmi:id="__96LkQivEeKCv9ZMjn90zA" inputScript="${numeroMatricula}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="__96LkgivEeKCv9ZMjn90zA" line="2"/>
+            </widgets>
+            <widgets xmi:type="form:TextFormField" xmi:id="_B_mWgAiwEeKCv9ZMjn90zA" name="Text_field2" label="Text_field2" displayLabel="Carga horária aprovada:">
+              <script xmi:type="form:GroovyScript" xmi:id="_B_mWgQiwEeKCv9ZMjn90zA" inputScript="${cargaHoraria}" setVarScript="acgChAprovada"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_B_mWggiwEeKCv9ZMjn90zA" line="3"/>
+            </widgets>
+            <widgets xmi:type="form:SelectFormField" xmi:id="_DTg1cAiwEeKCv9ZMjn90zA" name="Select1" label="Select1" displayLabel="Tipo de ACG aprovado:" defaultValue="${tipoACG}">
+              <script xmi:type="form:GroovyScript" xmi:id="_DThcgAiwEeKCv9ZMjn90zA" inputScript="${GroupsUtil.getAllTipoACG()}" setVarScript="acgTipoAprovado"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_DThcgQiwEeKCv9ZMjn90zA" line="4"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_SyWQEAiyEeKCv9ZMjn90zA" name="Texto1" label="Texto1" displayLabel="Situação:">
+              <script xmi:type="form:GroovyScript" xmi:id="_T3i9kAiyEeKCv9ZMjn90zA" inputScript="Aprovada"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_SyYsUQiyEeKCv9ZMjn90zA" line="5"/>
             </widgets>
           </form>
         </elements>
         <elements xmi:type="process:Task" xmi:id="_YfLw4AZeEeK2VY7bHB7RzA" name="Avisa_ao_aluno_Indeferido" label="Avisa ao aluno-Indeferido" outgoing="_RnQtkPFnEeGfefz74zRb1Q" incoming="_AL0KYPFnEeGfefz74zRb1Q" user="" groups="_n3XBze4pEeGKhq6eruyG6w" overrideGroupsOfTheLane="true">
-          <connectors xmi:type="process:Connector" xmi:id="_TiDCcPFrEeGg2roXhIzz6Q" name="h2_indeferido" label="h2_indeferido" connectorId="H2" event="taskOnFinish" ignoreErrors="false">
-            <parameters xmi:type="process:Parameter" xmi:id="_qtLSAAKSEeKZAMBS1mYV2Q" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_qtLSAQKSEeKZAMBS1mYV2Q" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_qtLSAgKSEeKZAMBS1mYV2Q" key="setPort" value="ACED0005740009247B6462506F72747D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_qtL5EAKSEeKZAMBS1mYV2Q" key="setDatabase" value="ACED000574000A247B64624C6F63616C7D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_qtL5EQKSEeKZAMBS1mYV2Q" key="setLocal" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_qtL5EgKSEeKZAMBS1mYV2Q" key="setQuery" value="ACED0005740031247B517565727948322E6765745175657279526573706F73746146696E616C2870726F63657373496E7374616E6365297D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_qtL5EwKSEeKZAMBS1mYV2Q" key="setSsl" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_qtL5FAKSEeKZAMBS1mYV2Q" key="setUsername" value="ACED0005740009247B6462557365727D"/>
-            <parameters xmi:type="process:Parameter" xmi:id="_qtL5FQKSEeKZAMBS1mYV2Q" key="setPassword"/>
-            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_qtL5FgKSEeKZAMBS1mYV2Q" valueExpression="rowSet"/>
+          <connectors xmi:type="process:Connector" xmi:id="_TiDCcPFrEeGg2roXhIzz6Q" name="h2_indeferido" label="h2_indeferido" connectorId="H2" event="taskOnReady" ignoreErrors="false">
+            <parameters xmi:type="process:Parameter" xmi:id="_IYE7gAiwEeKCv9ZMjn90zA" key="setServer" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_IYE7gQiwEeKCv9ZMjn90zA" key="setHostName" value="ACED0005740009247B6462486F73747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_IYE7ggiwEeKCv9ZMjn90zA" key="setPort" value="ACED0005740009247B6462506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_IYE7gwiwEeKCv9ZMjn90zA" key="setDatabase" value="ACED000574000A247B64624C6F63616C7D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_IYE7hAiwEeKCv9ZMjn90zA" key="setLocal" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_IYE7hQiwEeKCv9ZMjn90zA" key="setQuery" value="ACED0005740031247B517565727948322E6765745175657279526573706F73746146696E616C2870726F63657373496E7374616E6365297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_IYE7hgiwEeKCv9ZMjn90zA" key="setSsl" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_IYE7hwiwEeKCv9ZMjn90zA" key="setUsername" value="ACED0005740009247B6462557365727D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_IYE7iAiwEeKCv9ZMjn90zA" key="setPassword"/>
+            <outputs xmi:type="process:OutputParameterMapping" xmi:id="_IYFikAiwEeKCv9ZMjn90zA" valueExpression="rowSet"/>
           </connectors>
-          <form xmi:type="form:Form" xmi:id="_ZwWoYAZfEeK2VY7bHB7RzA" name="Avisa_ao_aluno_Indeferido" label="Avisa ao aluno-Indeferido" nLine="3" pageLabel="Avisa ao aluno-Indeferido">
-            <widgets xmi:type="form:SubmitFormButton" xmi:id="_ZwXPcAZfEeK2VY7bHB7RzA" name="Enviar1" label="Enviar1" displayLabel="Enviar1">
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_ZwXPcQZfEeK2VY7bHB7RzA" line="2"/>
-            </widgets>
+          <connectors xmi:type="process:Connector" xmi:id="_LpPfYAiyEeKCv9ZMjn90zA" name="reminder_aluno1" label="reminder aluno1" connectorId="Email" configurationId="reminder aluno conf" event="taskOnReady" ignoreErrors="false">
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfYQiyEeKCv9ZMjn90zA" key="setHeaders" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A6578700000000077040000000A78"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfYgiyEeKCv9ZMjn90zA" key="setMessage" value="ACED00057401934F6CC3A12C0A0A3C703E53756120736F6C6963697461C3A7C3A36F206465206170726F76656974616D656E746F2064652041434720666F6920696E64656665726964612E3C2F703E0A0A506F72206661766F722C2061636573736520657374612055524C2070617261206D61697320646574616C6865733A3C62723E0A687474703A2F2F62706D2E696E662E7566736D2E62722F73690A3C62723E3C62723E0A4361736F20656E636F6E74726520616C67756D2070726F626C656D61206E6F2073697374656D612C20706F72206661766F7220726567697374726520756D61206F636F7272C3AA6E63696120617175693A3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F6973737565730A3C62723E3C62723E0A4174656E63696F73616D656E74652C0A3C62723E3C62723E0A45717569706520646520646573656E766F6C76696D656E746F2042504D2D496E665566736D3C62723E0A687474703A2F2F636F64652E676F6F676C652E636F6D2F702F62706D2D696E667566736D2F"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfYwiyEeKCv9ZMjn90zA" key="setSmtpHost" value="ACED000574000D247B6D61696C6572486F73747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfZAiyEeKCv9ZMjn90zA" key="setAttachments" value="ACED0005737200136A6176612E7574696C2E41727261794C6973747881D21D99C7619D03000149000473697A657870000000017704000000017371007E00000000000177040000000A7400007878"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfZQiyEeKCv9ZMjn90zA" key="setReplyTo"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfZgiyEeKCv9ZMjn90zA" key="setSslSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfZwiyEeKCv9ZMjn90zA" key="setFrom" value="ACED00057400157765626D617374657240696E662E7566736D2E6272"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfaAiyEeKCv9ZMjn90zA" key="setTo" value="ACED000574002B247B47726F7570735574696C2E636F6E63617432286C6F67696E2C2240696E662E7566736D2E627222297D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfaQiyEeKCv9ZMjn90zA" key="setBcc"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfagiyEeKCv9ZMjn90zA" key="setCc"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfawiyEeKCv9ZMjn90zA" key="setUserName"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfbAiyEeKCv9ZMjn90zA" key="setCharset" value="ACED00057400057574662D38"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfbQiyEeKCv9ZMjn90zA" key="setStarttlsSupport" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787000"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfbgiyEeKCv9ZMjn90zA" key="setSmtpPort" value="ACED000574000D247B6D61696C6572506F72747D"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfbwiyEeKCv9ZMjn90zA" key="setHtml" value="ACED0005737200116A6176612E6C616E672E426F6F6C65616ECD207280D59CFAEE0200015A000576616C7565787001"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfcAiyEeKCv9ZMjn90zA" key="setPassword"/>
+            <parameters xmi:type="process:Parameter" xmi:id="_LpPfcQiyEeKCv9ZMjn90zA" key="setSubject" value="ACED0005740031536F6C6963697461C3A7C3A36F206465206170726F76656974616D656E746F2064652041434720696E6465666572696461"/>
+          </connectors>
+          <form xmi:type="form:Form" xmi:id="_ZwWoYAZfEeK2VY7bHB7RzA" name="Avisa_ao_aluno_Indeferido" label="Avisa ao aluno-Indeferido" nLine="7" pageLabel="Avisa ao aluno-Indeferido">
             <widgets xmi:type="form:MessageInfo" xmi:id="_aaNdsAZfEeK2VY7bHB7RzA" name="Mensagem1" label="Mensagem1">
-              <script xmi:type="form:GroovyScript" xmi:id="_al4iMAZfEeK2VY7bHB7RzA" inputScript="SOlicitação indeferida."/>
+              <script xmi:type="form:GroovyScript" xmi:id="_al4iMAZfEeK2VY7bHB7RzA" inputScript="Sua solicitação de aproveitamento de Atividade Complementar de Graduação foi indeferida.&#xA;"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_aaPS4QZfEeK2VY7bHB7RzA"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_v5YYAQivEeKCv9ZMjn90zA" name="Text2" label="Text2" displayLabel="Nome do aluno:">
+              <script xmi:type="form:GroovyScript" xmi:id="_v5YYAgivEeKCv9ZMjn90zA" inputScript="${name}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_v5YYAwivEeKCv9ZMjn90zA" line="1"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_xWnLAAivEeKCv9ZMjn90zA" name="Text3" label="Text3" displayLabel="Matrícula:">
+              <script xmi:type="form:GroovyScript" xmi:id="_xWnLAQivEeKCv9ZMjn90zA" inputScript="${numeroMatricula}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_xWnLAgivEeKCv9ZMjn90zA" line="2"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_zfF6cAivEeKCv9ZMjn90zA" name="Text8" label="Text8" displayLabel="Carga horária:">
+              <script xmi:type="form:GroovyScript" xmi:id="_zfF6cQivEeKCv9ZMjn90zA" inputScript="${cargaHoraria}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_zfF6cgivEeKCv9ZMjn90zA" line="3"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_0ofygAivEeKCv9ZMjn90zA" name="Text9" label="Text9" displayLabel="Tipo de ACG:">
+              <script xmi:type="form:GroovyScript" xmi:id="_0ofygQivEeKCv9ZMjn90zA" inputScript="${GroupsUtil.concat(tipoACG,subtipoACG)}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_0ofyggivEeKCv9ZMjn90zA" line="4"/>
+            </widgets>
+            <widgets xmi:type="form:SubmitFormButton" xmi:id="_MP794AiwEeKCv9ZMjn90zA" name="Enviar1" label="Enviar1" displayLabel="OK">
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_MQDSpgiwEeKCv9ZMjn90zA" line="6"/>
+            </widgets>
+            <widgets xmi:type="form:TextInfo" xmi:id="_qPYXsAixEeKCv9ZMjn90zA" name="Texto1" label="Texto1" displayLabel="Situação:">
+              <script xmi:type="form:GroovyScript" xmi:id="_rYWx8AixEeKCv9ZMjn90zA" inputScript="Indeferido após reunião presencial."/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_qPbbAAixEeKCv9ZMjn90zA" line="5"/>
             </widgets>
           </form>
         </elements>
@@ -970,7 +1116,7 @@
       <data xmi:type="process:Data" xmi:id="_nio24PKzEeGJtsQHnHlI9Q" name="data_aval_sec" label="data_aval_sec" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue=""/>
       <data xmi:type="process:Data" xmi:id="_V4G0gPFjEeGfefz74zRb1Q" name="data_aval_tutor" label="data_aval_tutor" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue=""/>
       <data xmi:type="process:Data" xmi:id="_lW454PFnEeGfefz74zRb1Q" name="dbHost" label="dbHost" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="localhost"/>
-      <data xmi:type="process:Data" xmi:id="_hwtdYPFnEeGfefz74zRb1Q" name="dbLocal" label="dbLocal" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="/home/gabriel/ACGs"/>
+      <data xmi:type="process:Data" xmi:id="_hwtdYPFnEeGfefz74zRb1Q" name="dbLocal" label="dbLocal" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="/home/jessica/test"/>
       <data xmi:type="process:Data" xmi:id="_mlFLUPFnEeGfefz74zRb1Q" name="dbPort" label="dbPort" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="9092"/>
       <data xmi:type="process:Data" xmi:id="_jn4aYPFnEeGfefz74zRb1Q" name="dbUser" label="dbUser" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="sa"/>
       <data xmi:type="process:Data" xmi:id="_PWDNke9yEeGdDd8nrBFK1A" name="decisaoAprovado" label="decisaoAprovado" dataType="_n3Xozu4pEeGKhq6eruyG6w" defaultValue="Aprovar"/>
@@ -1099,7 +1245,7 @@
       <connections xmi:type="process:SequenceFlow" xmi:id="_n3WayO4pEeGKhq6eruyG6w" source="_n3PF4e4pEeGKhq6eruyG6w" target="_n3PF4u4pEeGKhq6eruyG6w">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3Waye4pEeGKhq6eruyG6w"/>
       </connections>
-      <connections xmi:type="process:SequenceFlow" xmi:id="_n3WazO4pEeGKhq6eruyG6w" source="_XhNxgO5cEeGo0f37u06zsQ" target="_n3TXYO4pEeGKhq6eruyG6w">
+      <connections xmi:type="process:SequenceFlow" xmi:id="_n3WazO4pEeGKhq6eruyG6w" source="_34OzAAixEeKCv9ZMjn90zA" target="_n3TXYO4pEeGKhq6eruyG6w">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3XBsO4pEeGKhq6eruyG6w"/>
       </connections>
       <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBs-4pEeGKhq6eruyG6w" name="aprovar" label="aprovar" source="_n3RiL-4pEeGKhq6eruyG6w" target="_n3T-bO4pEeGKhq6eruyG6w" condition="respostaTutor == decisaoAprovado">
@@ -1111,7 +1257,7 @@
       <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBue4pEeGKhq6eruyG6w" name="nao_necessita_tutor____tramite_normal" label="nao necessita tutor &amp;&amp; tramite normal" source="_n3PF4u4pEeGKhq6eruyG6w" target="_n3T-bO4pEeGKhq6eruyG6w" condition="!GroupsUtil.requerTutor(tipoACG)&amp;&amp;!GroupsUtil.tramiteCurto(tipoACG)">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3XBuu4pEeGKhq6eruyG6w"/>
       </connections>
-      <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBu-4pEeGKhq6eruyG6w" name="indeferir" label="indeferir" source="_n3RiL-4pEeGKhq6eruyG6w" target="_XhNxgO5cEeGo0f37u06zsQ" condition="respostaTutor == decisaoIndeferido">
+      <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBu-4pEeGKhq6eruyG6w" name="indeferir" label="indeferir" source="_n3RiL-4pEeGKhq6eruyG6w" target="_34OzAAixEeKCv9ZMjn90zA" condition="respostaTutor == decisaoIndeferido">
         <decisionTable xmi:type="decision:DecisionTable" xmi:id="_n3XBvO4pEeGKhq6eruyG6w"/>
       </connections>
       <connections xmi:type="process:SequenceFlow" xmi:id="_n3XBye4pEeGKhq6eruyG6w" name="indeferir" label="indeferir" source="_n3UllO4pEeGKhq6eruyG6w" target="_Jizbke99EeGDf8wCPuoYjQ" condition="respostaColegiado == decisaoIndeferido">
@@ -1433,9 +1579,9 @@
               </children>
               <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3YP8u4pEeGKhq6eruyG6w" x="1126" y="44"/>
             </children>
-            <children xmi:type="notation:Shape" xmi:id="_XhPmsO5cEeGo0f37u06zsQ" type="3006" element="_XhNxgO5cEeGo0f37u06zsQ" fontName="Cantarell" fillColor="14334392" lineColor="10710316">
-              <children xmi:type="notation:DecorationNode" xmi:id="_XhPmsu5cEeGo0f37u06zsQ" type="5006"/>
-              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XhPmse5cEeGo0f37u06zsQ" x="828" y="26" width="140" height="70"/>
+            <children xmi:type="notation:Shape" xmi:id="_34USkAixEeKCv9ZMjn90zA" type="3005" element="_34OzAAixEeKCv9ZMjn90zA" fontName="Ubuntu" fillColor="14334392" lineColor="10710316">
+              <children xmi:type="notation:DecorationNode" xmi:id="_34U5oAixEeKCv9ZMjn90zA" type="5005"/>
+              <layoutConstraint xmi:type="notation:Bounds" xmi:id="_34USkQixEeKCv9ZMjn90zA" x="828" y="26" width="140" height="70"/>
             </children>
           </children>
           <styles xmi:type="notation:DescriptionStyle" xmi:id="_n3YP-e4pEeGKhq6eruyG6w"/>
@@ -1539,7 +1685,7 @@
       <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_n3Zd9e4pEeGKhq6eruyG6w" id="(0.8,0.5294117647058824)"/>
       <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_n3Zd9u4pEeGKhq6eruyG6w" id="(0.0,0.44)"/>
     </edges>
-    <edges xmi:type="notation:Connector" xmi:id="_n3Zd_-4pEeGKhq6eruyG6w" type="4001" element="_n3WazO4pEeGKhq6eruyG6w" source="_XhPmsO5cEeGo0f37u06zsQ" target="_n3YP7-4pEeGKhq6eruyG6w" roundedBendpointsRadius="10" routing="Rectilinear" closestDistance="true">
+    <edges xmi:type="notation:Connector" xmi:id="_n3Zd_-4pEeGKhq6eruyG6w" type="4001" element="_n3WazO4pEeGKhq6eruyG6w" source="_34USkAixEeKCv9ZMjn90zA" target="_n3YP7-4pEeGKhq6eruyG6w" roundedBendpointsRadius="10" routing="Rectilinear" closestDistance="true">
       <children xmi:type="notation:DecorationNode" xmi:id="_n3ZeAO4pEeGKhq6eruyG6w" type="6001">
         <layoutConstraint xmi:type="notation:Location" xmi:id="_n3ZeAe4pEeGKhq6eruyG6w" y="-10"/>
       </children>
@@ -1585,7 +1731,7 @@
       <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_n3aFGO4pEeGKhq6eruyG6w" points="[2, 5, -238, -502]$[2, 240, -238, -267]$[225, 240, -15, -267]$[225, 476, -15, -31]"/>
       <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_n3aFGe4pEeGKhq6eruyG6w" id="(0.9827586206896551,0.9137931034482759)"/>
     </edges>
-    <edges xmi:type="notation:Connector" xmi:id="_n3aFGu4pEeGKhq6eruyG6w" type="4001" element="_n3XBu-4pEeGKhq6eruyG6w" source="_n3YP7O4pEeGKhq6eruyG6w" target="_XhPmsO5cEeGo0f37u06zsQ" roundedBendpointsRadius="10" routing="Rectilinear" closestDistance="true">
+    <edges xmi:type="notation:Connector" xmi:id="_n3aFGu4pEeGKhq6eruyG6w" type="4001" element="_n3XBu-4pEeGKhq6eruyG6w" source="_n3YP7O4pEeGKhq6eruyG6w" target="_34USkAixEeKCv9ZMjn90zA" roundedBendpointsRadius="10" routing="Rectilinear" closestDistance="true">
       <children xmi:type="notation:DecorationNode" xmi:id="_n3aFG-4pEeGKhq6eruyG6w" type="6001">
         <layoutConstraint xmi:type="notation:Location" xmi:id="_n3aFHO4pEeGKhq6eruyG6w" x="-140" y="-14"/>
       </children>
@@ -2125,10 +2271,6 @@
     <styles xmi:type="notation:DiagramStyle" xmi:id="_n3eWku4pEeGKhq6eruyG6w"/>
   </notation:Diagram>
   <notation:Diagram xmi:id="_n3eWk-4pEeGKhq6eruyG6w" type="Form" element="_n3Q7Me4pEeGKhq6eruyG6w" measurementUnit="Pixel">
-    <children xmi:type="notation:Shape" xmi:id="_n3eWlO4pEeGKhq6eruyG6w" type="2120" element="_n3Q7Mu4pEeGKhq6eruyG6w" fontName="Segoe UI">
-      <children xmi:type="notation:DecorationNode" xmi:id="_n3eWle4pEeGKhq6eruyG6w" type="5108"/>
-      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_n3eWlu4pEeGKhq6eruyG6w"/>
-    </children>
     <styles xmi:type="notation:DiagramStyle" xmi:id="_n3eWl-4pEeGKhq6eruyG6w"/>
   </notation:Diagram>
   <notation:Diagram xmi:id="_1yutYO5KEeGo0f37u06zsQ" type="Form" element="_1ypN0O5KEeGo0f37u06zsQ" measurementUnit="Pixel">
@@ -2416,6 +2558,26 @@
       <children xmi:type="notation:DecorationNode" xmi:id="_uqVkcgZeEeK2VY7bHB7RzA" type="5135"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_uqVkcQZeEeK2VY7bHB7RzA"/>
     </children>
+    <children xmi:type="notation:Shape" xmi:id="__Im7QAivEeKCv9ZMjn90zA" type="2132" element="__Ij38AivEeKCv9ZMjn90zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="__IniUQivEeKCv9ZMjn90zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="__IniUAivEeKCv9ZMjn90zA"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="__97ZsAivEeKCv9ZMjn90zA" type="2132" element="__96LkAivEeKCv9ZMjn90zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="__98AwAivEeKCv9ZMjn90zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="__97ZsQivEeKCv9ZMjn90zA"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_B_nkoAiwEeKCv9ZMjn90zA" type="2120" element="_B_mWgAiwEeKCv9ZMjn90zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_B_oLsAiwEeKCv9ZMjn90zA" type="5108"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_B_nkoQiwEeKCv9ZMjn90zA"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_DTiqoAiwEeKCv9ZMjn90zA" type="2119" element="_DTg1cAiwEeKCv9ZMjn90zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_DTiqogiwEeKCv9ZMjn90zA" type="5107"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_DTiqoQiwEeKCv9ZMjn90zA"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_SyYFQAiyEeKCv9ZMjn90zA" type="2132" element="_SyWQEAiyEeKCv9ZMjn90zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_SyYsUAiyEeKCv9ZMjn90zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_SyYFQQiyEeKCv9ZMjn90zA"/>
+    </children>
     <styles xmi:type="notation:DiagramStyle" xmi:id="_t1N6UQZeEeK2VY7bHB7RzA"/>
   </notation:Diagram>
   <notation:Diagram xmi:id="_xLfSkAZeEeK2VY7bHB7RzA" type="Form" measurementUnit="Pixel">
@@ -2426,17 +2588,40 @@
     <styles xmi:type="notation:DiagramStyle" xmi:id="_xLfSkQZeEeK2VY7bHB7RzA"/>
   </notation:Diagram>
   <notation:Diagram xmi:id="_ZwZrsAZfEeK2VY7bHB7RzA" type="Form" element="_ZwWoYAZfEeK2VY7bHB7RzA" measurementUnit="Pixel">
-    <children xmi:type="notation:Node" xmi:id="_ZwtNsAZfEeK2VY7bHB7RzA" type="2126" element="_ZwXPcAZfEeK2VY7bHB7RzA">
-      <children xmi:type="notation:DecorationNode" xmi:id="_ZwtNtQZfEeK2VY7bHB7RzA" type="5125"/>
-      <styles xmi:type="notation:DescriptionStyle" xmi:id="_ZwtNsQZfEeK2VY7bHB7RzA"/>
-      <styles xmi:type="notation:FontStyle" xmi:id="_ZwtNsgZfEeK2VY7bHB7RzA" fontName="Ubuntu"/>
-      <styles xmi:type="notation:LineStyle" xmi:id="_ZwtNswZfEeK2VY7bHB7RzA"/>
-      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_ZwtNtAZfEeK2VY7bHB7RzA"/>
-    </children>
     <children xmi:type="notation:Shape" xmi:id="_aaOr0AZfEeK2VY7bHB7RzA" type="2131" element="_aaNdsAZfEeK2VY7bHB7RzA" fontName="Ubuntu">
       <children xmi:type="notation:DecorationNode" xmi:id="_aaPS4AZfEeK2VY7bHB7RzA" type="5135"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_aaOr0QZfEeK2VY7bHB7RzA"/>
     </children>
+    <children xmi:type="notation:Shape" xmi:id="_v5rS8AivEeKCv9ZMjn90zA" type="2132" element="_v5YYAQivEeKCv9ZMjn90zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_v5vkYAivEeKCv9ZMjn90zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_v5rS8QivEeKCv9ZMjn90zA"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_xWoZIAivEeKCv9ZMjn90zA" type="2132" element="_xWnLAAivEeKCv9ZMjn90zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_xWoZIgivEeKCv9ZMjn90zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_xWoZIQivEeKCv9ZMjn90zA"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_zfHIkAivEeKCv9ZMjn90zA" type="2132" element="_zfF6cAivEeKCv9ZMjn90zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_zfHvoAivEeKCv9ZMjn90zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zfHIkQivEeKCv9ZMjn90zA"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_0ohAoAivEeKCv9ZMjn90zA" type="2132" element="_0ofygAivEeKCv9ZMjn90zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_0ohnsAivEeKCv9ZMjn90zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_0ohAoQivEeKCv9ZMjn90zA"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_MQDSoAiwEeKCv9ZMjn90zA" type="2126" element="_MP794AiwEeKCv9ZMjn90zA">
+      <children xmi:type="notation:DecorationNode" xmi:id="_MQDSpQiwEeKCv9ZMjn90zA" type="5125"/>
+      <styles xmi:type="notation:DescriptionStyle" xmi:id="_MQDSoQiwEeKCv9ZMjn90zA"/>
+      <styles xmi:type="notation:FontStyle" xmi:id="_MQDSogiwEeKCv9ZMjn90zA" fontName="Ubuntu"/>
+      <styles xmi:type="notation:LineStyle" xmi:id="_MQDSowiwEeKCv9ZMjn90zA"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_MQDSpAiwEeKCv9ZMjn90zA"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_qPaM4AixEeKCv9ZMjn90zA" type="2132" element="_qPYXsAixEeKCv9ZMjn90zA" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_qPaz8AixEeKCv9ZMjn90zA" type="5136"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_qPaM4QixEeKCv9ZMjn90zA"/>
+    </children>
     <styles xmi:type="notation:DiagramStyle" xmi:id="_ZwZrsQZfEeK2VY7bHB7RzA"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_6LCjIAixEeKCv9ZMjn90zA" type="Form" element="_6K-4wAixEeKCv9ZMjn90zA" measurementUnit="Pixel">
+    <styles xmi:type="notation:DiagramStyle" xmi:id="_6LCjIQixEeKCv9ZMjn90zA"/>
   </notation:Diagram>
 </xmi:XMI>

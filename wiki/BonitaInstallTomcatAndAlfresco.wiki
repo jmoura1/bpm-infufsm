@@ -63,7 +63,32 @@ MySQL Credentials
 root: <see internal docs>
 
 Admin Password: <see internal docs>
-}}
+}}}
+
+
+== Configuring Alfresco ==
+
+Change Tomcat ports to avoid conflicts between Alfresco and BOS.
+{{{
+[bpm@bpm alfresco-3.4.d]$ diff tomcat/conf/server.xml /home/jmoura/alfresco-3.4.d/tomcat/conf/server.xml
+22c22
+< <Server port="8005" shutdown="SHUTDOWN">
+---
+> <Server port="8015" shutdown="SHUTDOWN">
+69c69
+<     <Connector port="8080" URIEncoding="UTF-8" protocol="HTTP/1.1" 
+---
+>     <Connector port="9090" URIEncoding="UTF-8" protocol="HTTP/1.1" 
+84c84
+<     <Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
+---
+>     <Connector port="8453" protocol="HTTP/1.1" SSLEnabled="true"
+90c90
+<     <Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />
+---
+>     <Connector port="8019" protocol="AJP/1.3" redirectPort="8443" />
+}}}
+
 
 == Running Tomcat on port 80 ==
 

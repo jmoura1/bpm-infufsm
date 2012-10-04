@@ -2,9 +2,9 @@
 #labels Phase-Deploy
 
 == Requirements ==
- * Alfresco Community 3.4.d
-   [http://wiki.alfresco.com/wiki/Community_file_list_3.4.d]
-   Direct download: [http://dl.alfresco.com/release/community/build-3370/alfresco-community-3.4.d-installer-linux-x64.bin]
+ # Alfresco Community 3.4.d
+   * [http://wiki.alfresco.com/wiki/Community_file_list_3.4.d]
+   * Direct download: [http://dl.alfresco.com/release/community/build-3370/alfresco-community-3.4.d-installer-linux-x64.bin]
 
 == HowTos ==
 

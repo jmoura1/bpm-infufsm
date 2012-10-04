@@ -30,6 +30,41 @@
 /home/jmoura/novo/BOS-5.6.1-Tomcat-6.0.33/bin/shutdown.sh
 }}}
 
+
+== Installing Alfresco ==
+
+{{{
+wget http://dl.alfresco.com/release/community/build-3370/alfresco-community-3.4.d-installer-linux-x64.bin
+chmod a+x alfresco-community-3.4.d-installer-linux-x64.bin
+./alfresco-community-3.4.d-installer-linux-x64.bin
+
+1: English
+...
+SharePoint [Y/n] : n
+Records Management [Y/n] : n
+Web Quick Start [Y/n] : n
+Web Project Management (AVM) [Y/n] :n
+Quickr Connector Support [Y/n] :n
+OpenOffice [Y/n] :n
+Is the selection above correct? [Y/n]: y
+..
+Installation Type
+[1] Easy
+..
+Installation Folder
+Please choose a folder to install Alfresco Community
+Select a folder [/mnt/bpm/alfresco-3.4.d]:
+..
+Database Installation
+[1] I wish to use the bundled MySQL database
+Please choose an option [1] :
+..
+MySQL Credentials
+root: <see internal docs>
+
+Admin Password: <see internal docs>
+}}
+
 == Running Tomcat on port 80 ==
 
 Following these tips: http://hacksforge.com/How-to-run-Tomcat-on-port-80.html

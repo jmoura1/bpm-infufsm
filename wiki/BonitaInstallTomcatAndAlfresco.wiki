@@ -27,13 +27,13 @@
 Start server manually:
 
 {{{
-/etc/rc.d start alfresco
+rc.d start alfresco
 }}}
 
 Stop server manually:
 
 {{{
-/etc/rc.d stop alfresco
+rc.d stop alfresco
 }}}
 
 == Development environment ==

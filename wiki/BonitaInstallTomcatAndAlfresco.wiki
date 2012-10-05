@@ -5,6 +5,7 @@
  # Alfresco Community 3.4.d
    * [http://wiki.alfresco.com/wiki/Community_file_list_3.4.d]
    * Direct download: [http://dl.alfresco.com/release/community/build-3370/alfresco-community-3.4.d-installer-linux-x64.bin]
+   * Obs.: New version http://dl.alfresco.com/release/community/build-00007/alfresco-community-4.0.e-installer-linux-x64.bin didn't installed properly (installation process hangs at 50%) 
 
 == HowTos ==
 
@@ -110,7 +111,7 @@ Change Tomcat ports to avoid conflicts between Alfresco and BOS.
 == Alfresco startup script ==
 
 ArchLinux startup script.
-See: https://wiki.archlinux.org/index.php/Daemon and https://wiki.archlinux.org/index.php/Writing_rc.d_scripts
+See: https://wiki.archlinux.org/index.php/Daemon, https://wiki.archlinux.org/index.php/Writing_rc.d_scripts and http://aur.archlinux.org/packages/al/alfresco-community-tomcat/alfresco.rc
 
 {{{
 #!/bin/bash

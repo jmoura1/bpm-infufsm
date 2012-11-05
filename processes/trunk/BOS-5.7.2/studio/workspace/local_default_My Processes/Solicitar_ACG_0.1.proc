@@ -140,7 +140,7 @@
             <scripts xmi:type="form:GroovyScript" xmi:id="_n3PtB-4pEeGKhq6eruyG6w" exprScript="${GroupsUtil.getTime()}" setVarScript="timeStamp"/>
             <scripts xmi:type="form:GroovyScript" xmi:id="_q4WOIPtpEeGZ8tZOKDIqFA" exprScript="${GroupsUtil.nameOfLoggedUser()}" setVarScript="login"/>
           </form>
-          <form xmi:type="form:Form" xmi:id="_n3PtCO4pEeGKhq6eruyG6w" name="Solicitacao_de_Atividade_Complementar_de_Graduacao__2_2_" label="Solicitação de Atividade Complementar de Graduação (2/2)" nLine="8" pageLabel="Solicitação de ACG">
+          <form xmi:type="form:Form" xmi:id="_n3PtCO4pEeGKhq6eruyG6w" name="Solicitacao_de_Atividade_Complementar_de_Graduacao__2_2_" label="Solicitação de Atividade Complementar de Graduação (2/2)" nLine="9" pageLabel="Solicitação de ACG">
             <widgets xmi:type="form:SelectFormField" xmi:id="_n3PtCe4pEeGKhq6eruyG6w" name="Selecao2" label="Seleção2" displayLabel="Sub-tipo:">
               <script xmi:type="form:GroovyScript" xmi:id="_n3PtCu4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.listaSubtipos(field_TipoACG)}" setVarScript="subtipoACG"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtC-4pEeGKhq6eruyG6w" line="1"/>
@@ -148,25 +148,29 @@
             <widgets xmi:type="form:MessageInfo" xmi:id="_n3PtDO4pEeGKhq6eruyG6w" name="Mensagem1" label="Mensagem1">
               <htmlAttributes xmi:type="ecore:EStringToStringMapEntry" xmi:id="_n3PtDe4pEeGKhq6eruyG6w" key="input_css:text-center" value="enabled"/>
               <script xmi:type="form:GroovyScript" xmi:id="_n3PtDu4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.mensagem(field_TipoACG)}" allowHTMLInValues="true"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtD-4pEeGKhq6eruyG6w" line="3"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtD-4pEeGKhq6eruyG6w" line="4"/>
             </widgets>
             <widgets xmi:type="form:FileWidget" xmi:id="_n3PtEO4pEeGKhq6eruyG6w" name="Arquivo1" label="Arquivo1" displayLabel="Arquivo:" mandatory="true">
               <script xmi:type="form:GroovyScript" xmi:id="_n3PtEe4pEeGKhq6eruyG6w" setVarScript="file"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtEu4pEeGKhq6eruyG6w" line="4"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtEu4pEeGKhq6eruyG6w" line="5"/>
             </widgets>
             <widgets xmi:type="form:PreviousFormButton" xmi:id="_n3PtE-4pEeGKhq6eruyG6w" name="Anterior1" label="Anterior1" displayLabel="Anterior">
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtFO4pEeGKhq6eruyG6w" line="6"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3PtFO4pEeGKhq6eruyG6w" line="7"/>
             </widgets>
             <widgets xmi:type="form:SubmitFormButton" xmi:id="_n3QUAO4pEeGKhq6eruyG6w" name="Enviar1" label="Enviar1" displayLabel="Enviar">
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3QUAe4pEeGKhq6eruyG6w" line="7"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3QUAe4pEeGKhq6eruyG6w" line="8"/>
             </widgets>
             <widgets xmi:type="form:SelectFormField" xmi:id="_n3QUAu4pEeGKhq6eruyG6w" name="Selecao3" label="Seleção3" tooltip="" displayLabel="Tutor:" injectWidgetCondition="true" injectWidgetScript="${GroupsUtil.requerTutor(field_TipoACG)}">
               <script xmi:type="form:GroovyScript" xmi:id="_n3QUA-4pEeGKhq6eruyG6w" inputScript="${GroupsUtil.usuariosDoGrupoIncludingOne([grupoTutores],tutorNaoCadastrado)}" setVarScript="nomeTutor"/>
-              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3QUBO4pEeGKhq6eruyG6w" line="2"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_n3QUBO4pEeGKhq6eruyG6w" line="3"/>
             </widgets>
             <widgets xmi:type="form:TextInfo" xmi:id="_M7da4AKAEeKZAMBS1mYV2Q" name="Text3" label="Text3" displayLabel="Tipo de ACG:">
               <script xmi:type="form:GroovyScript" xmi:id="_SEH90AKAEeKZAMBS1mYV2Q" inputScript="${field_TipoACG}"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_M7i6cAKAEeKZAMBS1mYV2Q"/>
+            </widgets>
+            <widgets xmi:type="form:MessageInfo" xmi:id="_fbZmUScyEeKJ2PIAKAeq_Q" name="Mensagem2" label="Mensagem2">
+              <script xmi:type="form:GroovyScript" xmi:id="_ffeOACcyEeKJ2PIAKAeq_Q" inputScript="${Instruções:&#xD;&lt;ol>&#xD;&lt;li>Caso o nome do tutor responsável não esteja na lista abaixo, selecione a opção &quot;Não Cadastrado&quot;&lt;/li>&#xD;&lt;li>Se este for o seu caso, faça download do formulário e obtenha assinatura do professor&lt;/li>&#xD;&lt;li>No passo seguinte, será necessário que você anexe o formulário digitalizado &lt;/li>&#xD;&lt;/ol>}"/>
+              <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_fbvkkCcyEeKJ2PIAKAeq_Q" line="2"/>
             </widgets>
             <scripts xmi:type="form:GroovyScript" xmi:id="_WkSCkABMEeKNc5oRhz2Hxg" exprScript="${acgEstadoSolicitada}" setVarScript="acgEstado"/>
           </form>
@@ -211,7 +215,7 @@
             </widgets>
             <widgets xmi:type="form:MessageInfo" xmi:id="_1QYY0O5LEeGo0f37u06zsQ" name="msgInstrucoesParecerTutor" label="msgInstrucoesParecerTutor">
               <htmlAttributes xmi:type="ecore:EStringToStringMapEntry" xmi:id="_DOL7AO5NEeGo0f37u06zsQ" key="input_css:text-center" value="enabled"/>
-              <script xmi:type="form:GroovyScript" xmi:id="_1RoWAO5LEeGo0f37u06zsQ" inputScript="Instruções:&#xA;&lt;ol>&#xA;&lt;li>Faça download do formulário&lt;/li>&#xA;&lt;li>Preencha os dados da ACG&lt;/li>&#xA;&lt;li>Obtenha a assinatura do tutor&lt;/li>&#xA;&lt;li>Anexe o formulário digitalizado&lt;/li>&#xA;&lt;/ol>" allowHTMLInValues="true"/>
+              <script xmi:type="form:GroovyScript" xmi:id="_1RoWAO5LEeGo0f37u06zsQ" inputScript="Instruções:&#xA;&lt;ol>&#xA;&lt;li>Faça download do formulário&lt;/li>&#xA;&lt;li>Preencha os dados da ACG&lt;/li>&#xA;&lt;li>Obtenha a assinatura do tutor&lt;/li>&#xA;&lt;li>Anexe abaixo o formulário digitalizado&lt;/li>&#xA;&lt;/ol>" allowHTMLInValues="true"/>
               <widgetLayoutInfo xmi:type="form:WidgetLayoutInfo" xmi:id="_1QcDMe5LEeGo0f37u06zsQ"/>
             </widgets>
             <widgets xmi:type="form:FileWidget" xmi:id="_I0p-0O5OEeGo0f37u06zsQ" name="File1" label="File1" displayLabel="Arquivo:">
@@ -2178,6 +2182,10 @@
     <children xmi:type="notation:Shape" xmi:id="_M7hsUAKAEeKZAMBS1mYV2Q" type="2132" element="_M7da4AKAEeKZAMBS1mYV2Q" fontName="Cantarell">
       <children xmi:type="notation:DecorationNode" xmi:id="_M7iTYAKAEeKZAMBS1mYV2Q" type="5136"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_M7hsUQKAEeKZAMBS1mYV2Q"/>
+    </children>
+    <children xmi:type="notation:Shape" xmi:id="_fbuWcCcyEeKJ2PIAKAeq_Q" type="2131" element="_fbZmUScyEeKJ2PIAKAeq_Q" fontName="Ubuntu">
+      <children xmi:type="notation:DecorationNode" xmi:id="_fbu9gCcyEeKJ2PIAKAeq_Q" type="5135"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_fbuWcScyEeKJ2PIAKAeq_Q"/>
     </children>
     <styles xmi:type="notation:DiagramStyle" xmi:id="_n3dvfO4pEeGKhq6eruyG6w"/>
   </notation:Diagram>

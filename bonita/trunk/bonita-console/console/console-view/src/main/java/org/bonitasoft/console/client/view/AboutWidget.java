@@ -52,7 +52,8 @@ public class AboutWidget extends BonitaPanel {
     }
 
     public Widget buildAboutPanel() {
-        final Label theAboutLink = new Label(constants.about());
+       // final Label theAboutLink = new Label(constants.about());
+	final Label theAboutLink = new Label("Ajuda"); //nome do link na user xp
         theAboutLink.setStylePrimaryName("identif-2");
         theAboutLink.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
@@ -65,8 +66,14 @@ public class AboutWidget extends BonitaPanel {
                         theDialogBox.hide();
                     }
                 });
-                theDialogBox.setText(constants.about());
-                theDialogContent.add(new HTML(patterns.aboutContent(ConsoleConstants.BOS_VERSION)));
+		theDialogBox.setText("Ajuda"); //titulo
+                //theDialogBox.setText(constants.about()); 
+		theDialogContent.add(new HTML("<img scr\"http://bpm.inf.ufsm.br/si/console/pictures/bonitaOpenSolution.png\"</img>"));
+		theDialogContent.add(new HTML("<p align=\"center\">Para dúvidas ou sugestões:</p>"));
+theDialogContent.add(new HTML("<a href=\"http://code.google.com/p/bpm-infufsm/issues/list\">code.google.com/p/bpm-infufsm/issues/list</a>"));
+		//theDialogContent.add(new Label("Para dúvidas ou sugestões:"));
+		//theDialogContent.add(new Label("http://code.google.com/p/bpm-infufsm/issues/li"\"conteudo\"";st"));
+               /* theDialogContent.add(new HTML(patterns.aboutContent(ConsoleConstants.BOS_VERSION))); esse indica tudo que tá dentro do about*/
                 if (myUserProfile.getEdition() != null) {
                     theDialogContent.add(new HTML(patterns.productEdition(myUserProfile.getEdition())));
                 }

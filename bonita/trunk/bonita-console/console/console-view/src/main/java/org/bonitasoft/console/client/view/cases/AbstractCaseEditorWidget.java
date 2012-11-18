@@ -215,7 +215,7 @@ public abstract class AbstractCaseEditorWidget extends BonitaPanel implements Mo
         // Put the bottom menu.
         myOuterPanel.add(myBottomNavBar);
 
-        //initOverviewPanel();
+        initOverviewPanel();
         initOpenStepsPanel();
         //initSocialCollaborationPanel();
 

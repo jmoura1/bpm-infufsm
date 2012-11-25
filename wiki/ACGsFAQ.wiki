@@ -1,6 +1,9 @@
 #summary Perguntas respostas frequentes sobre o processo das ACGs.
 
+
+Horizontal rule
 ---- 
+
 = Geral =
 
 * _O que devo fazer se encontrar algum problema ou quiser sugerir algo?_

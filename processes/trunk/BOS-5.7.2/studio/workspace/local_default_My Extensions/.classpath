@@ -2,15 +2,15 @@
 <classpath>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/exchange/lib/stax-1.2.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/google/lib/gdata-client-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/sap/sap-5.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/geronimo-javamail_1.4_spec-1.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/sap/sap-5.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/woodstox-core-asl-4.1.1.jar"/>
-	<classpathentry kind="src" path="src-groovyScripts"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/drools/drools-5.7.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/abdera-client-0.3.0-incubating.jar"/>
+	<classpathentry kind="src" path="src-groovyScripts"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/drools/lib/antlr-runtime-3.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/cxf-api-2.2.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/abdera-client-0.3.0-incubating.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/spring-web-2.5.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/cxf-api-2.2.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/sharepoint/lib/activation-1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/spring-core-2.5.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/sugar/lib/axis-1.4.jar"/>
@@ -28,24 +28,24 @@
 	<classpathentry exported="true" kind="lib" path="provided-libs/google/lib/sample-util.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/bonita/bonita-5.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/exchange/lib/axis2-jws-api-1.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/cxf-rt-databinding-jaxb-2.2.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/sharepoint/lib/axis2-jws-api-1.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/cxf-rt-databinding-jaxb-2.2.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/cxf-rt-core-2.4.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/cxf-rt-bindings-xml-2.2.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/webdav/lib/slf4j-jdk14-1.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/exchange/lib/exchange-ws.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/webdav/lib/slf4j-jdk14-1.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/commons-codec-1.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/spring-context-3.0.5.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/exchange/exchange-5.7.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/talend/talend-5.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/cxf-rt-transports-http-2.2.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/talend/talend-5.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/cxf-rt-bindings-soap-2.4.0.jar"/>
 	<classpathentry exported="true" kind="con" path="GROOVY_SUPPORT"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/wsdl4j-1.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/sharepoint/sharepoint-5.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/cxf-rt-frontend-jaxws-2.4.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/xmlschema-core-2.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/drools/lib/xstream-1.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/xmlschema-core-2.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/sugar/lib/axis-saaj-1.4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/xwiki/lib/xwiki-rest-2.1.1.jar"/>
@@ -99,47 +99,48 @@
 	<classpathentry exported="true" kind="lib" path="provided-libs/drools/lib/message.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/talend/lib/org.talend.administrator.webservices.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/commons-lang-2.4.jar"/>
-	<classpathentry kind="src" path="src-validator"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/spring-asm-3.0.5.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/sharepoint/lib/webdav-5.7.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/spring-asm-3.0.5.RELEASE.jar"/>
+	<classpathentry kind="src" path="src-validator"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/exchange/lib/gmbal-3.0.0-b023.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/database/lib/h2-1.1.106.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/salesforce-partner/lib/gson-1.7.1.jar"/>
 	<classpathentry kind="src" path="src-connectors"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/xml-resolver-1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/jasper/jasper-5.7.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/salesforce-partner/lib/partner-18.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/cxf-rt-ws-addr-2.2.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/cxf-common-utilities-2.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/salesforce-partner/lib/partner-18.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/database/lib/mysql-connector-java-5.1.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/cxf-common-utilities-2.4.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/sharepoint/lib/sharepoint-ws.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/scripting/scripting-5.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/sharepoint/lib/commons-httpclient-3.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/scripting/scripting-5.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/xwiki/lib/commons-codec-1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/cxf-rt-transports-http-2.4.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/webdav/lib/jackrabbit-jcr-commons-1.6.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/database/lib/hsqldb-1.8.0.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/spring-context-2.5.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jasperreports-4.7.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/drools/lib/mvel2-2.1.0.drools2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/xml-resolver-1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/axiom-api-1.2.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/cxf-rt-bindings-soap-2.2.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/sugar/lib/wsdl4j-1.5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/drools/lib/drools-core-5.2.0.Final.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/sugar/lib/wsdl4j-1.5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/xwiki/xwiki-5.7.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/webdav/webdav-5.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/cxf-tools-common-2.2.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/webdav/webdav-5.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/drools/lib/antlr-3.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/spring-beans-2.5.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/stax2-api-3.0.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/database/database-5.7.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/wstx-asl-3.2.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/stax2-api-3.0.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/jasper/lib/jfreechart-1.0.12.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/wstx-asl-3.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/talend/lib/commons-discovery-0.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/twitter/twitter-5.7.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/spring-expression-3.0.5.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/google/lib/google-collect-1.0-rc1.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/spring-expression-3.0.5.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/drools/lib/drools-compiler-5.2.0.Final.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/neethi-2.0.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/jaxen-1.1.1.jar"/>
@@ -147,8 +148,8 @@
 	<classpathentry exported="true" kind="lib" path="provided-libs/ldap/ldap-5.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/webdav/lib/commons-codec-1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/google/lib/gdata-calendar-meta-2.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/cxf-tools-common-2.4.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/jasper/lib/commons-digester-1.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/cxf-tools-common-2.4.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/cxf-rt-frontend-simple-2.4.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/sharepoint/lib/slf4j-api-1.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/geronimo-javamail_1.4_spec-1.7.1.jar"/>
@@ -157,11 +158,11 @@
 	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/abdera-core-0.3.0-incubating.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/abdera-protocol-0.3.0-incubating.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/microsoft/sharepoint/lib/jackrabbit-jcr-commons-1.6.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/wsdl4j-1.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/database/lib/ojdbc5.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/wsdl4j-1.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/alfresco/lib/axiom-impl-1.2.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/XmlSchema-1.4.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/aopalliance-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="provided-libs/cxf/lib/XmlSchema-1.4.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/secure-webservice-cxf-2-4-0/lib/spring-beans-3.0.5.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/talend/lib/mail-1.4.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="provided-libs/google/lib/gdata-calendar-2.0.jar"/>

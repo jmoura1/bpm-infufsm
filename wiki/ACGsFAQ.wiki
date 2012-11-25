@@ -6,6 +6,9 @@
 == _O que devo fazer se encontrar algum problema ou quiser sugerir algo?_ ==
 Registre o problema ou sugestão aqui: http://code.google.com/p/bpm-infufsm/issues
 
+== _Onde estão as normas para ACGs?_ ==
+ * Curso de Ciência da Computação: http://www.inf.ufsm.br/index/graduacao/cc/normas-internas
+ * Curso de Sistemas de Informação: http://www.inf.ufsm.br/index/graduacao/si/normas-internas
 -----
 
 = Alunos =

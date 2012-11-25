@@ -12,3 +12,6 @@
 
  # _Posso colocar vários comprovantes e atividades numa mesma solicitação?_
  Pode, desde que todas as atividades sejam do mesmo tipo.
+
+ # _Meu supervisor de estágio não está cadastrado no sistema. O que devo fazer?_
+ Se ele for um professor da Informática/UFSM, você pode pedir que o mesmo se cadastre no sistema via admrede@inf.ufsm.br. Caso contrário, selecione a opção "Tutor não cadastrado" no segundo formulário de Solicitação de ACG e siga as orientações.

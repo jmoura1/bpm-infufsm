@@ -1,13 +1,15 @@
 #summary Perguntas respostas frequentes sobre o processo das ACGs.
 
+---- 
 = Geral =
 
-_O que devo fazer se encontrar algum problema ou quiser sugerir algo?_
+* _O que devo fazer se encontrar algum problema ou quiser sugerir algo?_
 
 {{{
-Registre o problema ou sugestão aqui: http://bpm-infufsm.googlecode.com
+Registre o problema ou sugestão aqui: [http://bpm-infufsm.googlecode.com]
 }}}
 
+---- 
 
 = Alunos =
 

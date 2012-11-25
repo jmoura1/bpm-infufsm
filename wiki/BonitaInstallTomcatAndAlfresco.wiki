@@ -12,7 +12,7 @@
 == HowTos ==
 
  * [http://www.bonitasoft.com/resources/documentation/bos-57/system-administration/installation/install-bos-bundles/install-bos-tomcat-bundle Install BOS-Tomcat bundle] (authentication required on [http://www.bonitasoft.com BonitaSoft])
- * All BOS dowloads: http://www.bonitasoft.com/products/BPM_downloads/all
+ * All BOS downloads: http://www.bonitasoft.com/products/BPM_downloads/all
 
 
 == Currently running on ==
@@ -216,6 +216,22 @@ exit 0
 }}}
 Obs.: Foi preciso ler o /etc/profile explicitamente, para forçar a configuração das variáveis de ambiente do Java (no shell aberto por esse script, o /etc/profile não estava sendo lido).
 
+== How do I override the default home page loaded by Tomcat? ==
+
+From: http://wiki.apache.org/tomcat/HowTo#How_do_I_override_the_default_home_page_loaded_by_Tomcat.3F
+
+{{{
+<html>
+
+<head>
+<meta http-equiv="refresh" content="0;URL=http://bpm-si.inf.ufsm.br/si/">
+</head>
+
+<body>
+</body>
+
+</html>
+}}}
 
 == Running Tomcat on port 80 ==
 

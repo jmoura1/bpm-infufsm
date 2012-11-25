@@ -8,9 +8,7 @@ Horizontal rule
 
 * _O que devo fazer se encontrar algum problema ou quiser sugerir algo?_
 
-{{{
-Registre o problema ou sugestão aqui: [http://bpm-infufsm.googlecode.com]
-}}}
+Registre o problema ou sugestão aqui: http://bpm-infufsm.googlecode.com
 
 ---- 
 
@@ -18,6 +16,4 @@ Registre o problema ou sugestão aqui: [http://bpm-infufsm.googlecode.com]
 
 _Posso colocar vários comprovantes e atividades numa mesma solicitação?_
 
-{{{
 Pode, desde que todas as atividades sejam do mesmo tipo.
-}}}

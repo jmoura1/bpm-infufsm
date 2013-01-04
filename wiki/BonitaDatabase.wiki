@@ -30,7 +30,7 @@ User Name: bonita
 Password: bpm
 }}}
 
-=== Recovering database ===
+=== Recovering ===
 http://infocenter.pentaho.com/help/index.jsp?topic=%2Fpdi_admin_guide%2Ftask_h2_db_recovery_tool.html
 
 == References ==

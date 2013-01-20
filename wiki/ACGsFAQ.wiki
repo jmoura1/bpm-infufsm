@@ -19,7 +19,7 @@ Pode, desde que todas as atividades sejam do mesmo tipo.
 ==  _Meu supervisor de estágio não está cadastrado no sistema. O que devo fazer?_ ==
 Se ele for um professor da Informática/UFSM, você pode pedir que o mesmo se cadastre no sistema via admrede@inf.ufsm.br. Caso contrário, selecione a opção "Tutor não cadastrado" no segundo formulário de Solicitação de ACG e siga as orientações.
 
-== _O quê devo fazer quando for necessário enviar mais de um documento comprobatório?_ ==
+== _O que devo fazer quando for necessário enviar mais de um documento comprobatório?_ ==
 Neste caso, os arquivos podem ser compactados e enviados como um arquivo .zip, .rar, etc.
 
 

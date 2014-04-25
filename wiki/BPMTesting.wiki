@@ -1,14 +1,6 @@
-#summary One-sentence summary of this page.
 #labels Phase-QA
+= Ferramentas utilizadas: =
 
-= Introduction =
-
-Add your content here.
-
-
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+*BlazeMeter*, utilizado na versão 1.15, o download pode ser feito na central de aplicativos do navegador (Mozilla FireFox,Google Chrome).
+*Jmeter*, utilizado na versão x.xx, download em: https://jmeter.apache.org/download_jmeter.cgi.
+*Selenium*, utilizado na versão x.xx, o download pode ser feito na central de aplicativos do navegador (Mozilla FireFox).

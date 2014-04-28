@@ -1,4 +1,7 @@
 #labels Phase-QA
+= *Teste automatizado de ferramentas BPMS* =
+
+
 = Ferramentas utilizadas: =
 
 *BlazeMeter*, utilizado na versão 1.15, o download pode ser feito na central de aplicativos do navegador (Mozilla FireFox,Google Chrome.

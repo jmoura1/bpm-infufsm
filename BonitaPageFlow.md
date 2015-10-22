@@ -1,0 +1,7 @@
+  * [difference between Entry PageFlow & View plageFlow](http://www.bonitasoft.org/forum/viewtopic.php?id=9386)
+  * [Use a view form (pageflow)](http://www.bonitasoft.com/resources/documentation/bos-57/web-applications/use-view-form-pageflow)
+  * [View Pageflow](http://www.bonitasoft.org/forum/viewtopic.php?id=7662)
+  * [View Pageflow](http://www.bonitasoft.org/forum/viewtopic.php?id=7296)
+  * [Pageflow issue](http://www.bonitasoft.org/forum/viewtopic.php?id=5256)
+  * [Entry PageView, View PageFlow and Overview PageView](http://www.bonitasoft.org/forum/viewtopic.php?id=7164)
+  * [Customize Web form layouts and templates](http://www.bonitasoft.com/resources/documentation/bos-56/web-applications/change-look-and-feel-web-forms/customize-web-form-layouts-and-templates)
